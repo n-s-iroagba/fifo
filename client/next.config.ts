@@ -3,7 +3,7 @@ import withPWAInit from "@ducanh2912/next-pwa";
 
 const withPWA = withPWAInit({
   dest: "public",
-  disable: false, // Enabled in dev for testing push notifications
+  disable: true, // Temporarily disabled to debug Vercel 404
   workboxOptions: {
     disableDevLogs: true,
     skipWaiting: true,
@@ -12,7 +12,7 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
-  turbopack: {},
+  // empty for now
 };
 
 export default withPWA(nextConfig);
