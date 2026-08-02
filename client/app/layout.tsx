@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
@@ -14,13 +14,18 @@ export const metadata: Metadata = {
   title: "BlueCollarRecruitment | Your Gateway to Global Opportunities",
   description: "Secure and transparent job application platform with real-time tracking.",
   manifest: "/manifest.json",
-  themeColor: "#0b3486",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "BlueCollarRecruitment",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0b3486",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
