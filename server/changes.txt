@@ -1,0 +1,40 @@
+1. page = /client/app/dashboard/cv/page.tsx
+1.1 the cv to be uploaded should be in ats format, the uploadd engine does not reject the upload of cv no matter the format of the cv.
+however the user should be  notified that the cv to be uploaded should be in ats format to be parsed for recommended jobs.
+the notification should be in the form of a toast message.
+1.2 theres should be a  button to download the ats cv template.
+1.3 should be a link that opens a new tab with the search on google for  'What is ATS CV format? and how to create one? and Why is it important?'
+1.4 An application should have the following 1 to many relationships with Tickets.
+1.4.0 When applyin for ticket sponsorship, they should carefully enter their bank account details for refunds.
+1.4.1  The user should enter the tickets there have which could be more than one when applying for a job i.e when uploading their cv.
+1.4.2 An application should have the following  status: 
+-  Active: the user has applied for the job and the application is being processed.
+-  Withdrawn: the user has withdrawn their application.
+-  Failed: the user has failed the application.
+-  Succeeded: the user has succeeded the application.
+-  Hired: the user has been hired for the job.
+1.4.3 Each ticket related to an application should have the following attributes:
+-   status: not_possessed | possessed 
+-   ticket_number: string | null (only if not_possessed)
+-   ticket_type: string
+-   description: string
+-   purchase_price: number
+-   purchase_date: string | null
+-   expiry_date: string | null
+-   proof: string | null
+-   proof_thumbnail: string | null
+-   sponsorship_deadline: date (default to  3 days after sponsorship approval)
+-   ticket_sponsorship: no_application| applied| first_attempt_approved| first_attempt_failed| second_attempt_approved| second_attempt_failed| ticket_issued
+-   ticket sponsorship_refund_amount: number | null
+1.4.4 for each change in the ticket there should be an 'Include Mail' button for the admin to send an email notification to the user.
+1.4.5 the admin should have pages to manipulate the ticket data
+1.4.6 Tickets are paid for in aveling app
+1.4.6.1 The user applies for ticket sponsorship on client app, when the admin appoves the sponsorship, the user should be recieved an email with a link to be redirected to aveling app to pay for the ticket.
+1.4.6.2 The user pays for the ticket in aveling app, when the payment is successful, the user should be redirected to the ticket course on aveling app and an email should be sent to the user with a link to the ticket course on aveling app.
+1.4.6.3 If the user passes the course exam on aveling app, the ticket status should be updated to ticket_issued and the user should be redirected to the ticket details page on client app, the ticket sponsorship refund amount be the ticket purchase price,
+the user can decide click 'Use the refund for another ticket' button to apply for another ticket sponsorship with the refund, in this case the ticket course will show as paid for aveling for the refund sponsored course.
+1.4.6.4 The user can chose to click 'No thanks, refund to my bank account' button to refund the ticket sponsorship amount to their wallet, in this case the ticket sponsorship refund amount will be added to their wallet and they can use it to apply for another ticket sponsorship in the future.
+1.4.7 If the user fails the course exam on aveling app, the ticket status should be updated to first_attempt_failed or second_attempt_failed depending on the number of attempts. and the user should be redirected to the ticket details page on client app
+1.4.7.1 For second attempt the user should pay the course fee again on aveling app
+1.4.7.2  if  they pass the second attempt, the ticket status should be updated to ticket_issued and the user should be redirected to the ticket details page on client app, the ticket sponsorship refund amount be the ticket purchase price * 2
+1.4.8 JobListing visa sponsorship attribute as boolean

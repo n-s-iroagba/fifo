@@ -1,0 +1,429 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.adminController = exports.AdminController = void 0;
+const AdminService_1 = require("../services/AdminService");
+const constants_1 = require("../constants");
+class AdminController {
+    // Maps to STK-ADM-HEALTH-001..003 — extended health metrics
+    async getHealth(req, res) {
+        try {
+            const health = await AdminService_1.adminService.getSystemHealth();
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(health);
+        }
+        catch (error) {
+            console.error('[AdminController.getHealth]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    // ==========================
+    // Financial Configurations — STK-ADM-BANK-001..004, STK-ADM-CRYPTO-001..003
+    // ==========================
+    async getFinancialConfigs(req, res) {
+        try {
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getFinancialConfigurations());
+        }
+        catch (error) {
+            console.error('[AdminController.getFinancialConfigs]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async getAllBankAccounts(req, res) {
+        try {
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getAllBankAccounts());
+        }
+        catch (error) {
+            console.error('[AdminController.getAllBankAccounts]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async getAllCryptoWallets(req, res) {
+        try {
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getAllCryptoWallets());
+        }
+        catch (error) {
+            console.error('[AdminController.getAllCryptoWallets]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async getBankAccountById(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getBankAccountById(id));
+        }
+        catch (error) {
+            console.error('[AdminController.getBankAccountById]', error);
+            const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
+            res.status(status).json({ error: error.message });
+        }
+    }
+    async getCryptoWalletById(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getCryptoWalletById(id));
+        }
+        catch (error) {
+            console.error('[AdminController.getCryptoWalletById]', error);
+            const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
+            res.status(status).json({ error: error.message });
+        }
+    }
+    // STK-ADM-BANK-003: get bank accounts filtered by payment amount
+    async getBankAccountsForAmount(req, res) {
+        try {
+            const amount = parseFloat(req.query.amount);
+            const accounts = await AdminService_1.adminService.getBankAccountForAmount(amount);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(accounts);
+        }
+        catch (error) {
+            console.error('[AdminController.getBankAccountsForAmount]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    // STK-ADM-CRYPTO-003: active wallets for applicant display
+    async getActiveCryptoWallets(req, res) {
+        try {
+            const wallets = await AdminService_1.adminService.getActiveCryptoWallets();
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(wallets);
+        }
+        catch (error) {
+            console.error('[AdminController.getActiveCryptoWallets]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    // Bank Account CRUD — STK-ADM-BANK-001
+    async createBankAccount(req, res) {
+        try {
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json(await AdminService_1.adminService.createBankAccount(req.body));
+        }
+        catch (error) {
+            console.error('[AdminController.createBankAccount]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async updateBankAccount(req, res) {
+        try {
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.updateBankAccount(parseInt(req.params.id, 10), req.body));
+        }
+        catch (error) {
+            console.error('[AdminController.updateBankAccount]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async deleteBankAccount(req, res) {
+        try {
+            await AdminService_1.adminService.deleteBankAccount(parseInt(req.params.id, 10));
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ message: constants_1.CONSTANTS.SUCCESS_MESSAGES.DELETED });
+        }
+        catch (error) {
+            console.error('[AdminController.deleteBankAccount]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    // Crypto Wallets CRUD — STK-ADM-CRYPTO-001
+    async createCryptoWallet(req, res) {
+        try {
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json(await AdminService_1.adminService.createCryptoWallet(req.body));
+        }
+        catch (error) {
+            console.error('[AdminController.createCryptoWallet]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async updateCryptoWallet(req, res) {
+        try {
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.updateCryptoWallet(parseInt(req.params.id, 10), req.body));
+        }
+        catch (error) {
+            console.error('[AdminController.updateCryptoWallet]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async deleteCryptoWallet(req, res) {
+        try {
+            await AdminService_1.adminService.deleteCryptoWallet(parseInt(req.params.id, 10));
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ message: constants_1.CONSTANTS.SUCCESS_MESSAGES.DELETED });
+        }
+        catch (error) {
+            console.error('[AdminController.deleteCryptoWallet]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    // ==========================
+    // Job Configurations — STK-ADM-CAT-001, STK-ADM-BEN-001, STK-ADM-COND-001
+    // ==========================
+    async getJobConfigs(req, res) {
+        try {
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getJobConfigurations());
+        }
+        catch (error) {
+            console.error('[AdminController.getJobConfigs]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async getAllCategories(req, res) {
+        try {
+            const limit = req.query.limit ? parseInt(req.query.limit, 10) : 20;
+            const offset = req.query.offset ? parseInt(req.query.offset, 10) : 0;
+            const searchQuery = req.query.searchQuery;
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getAllCategories({ limit, offset, searchQuery }));
+        }
+        catch (error) {
+            console.error('[AdminController.getAllCategories]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async getAllConditions(req, res) {
+        try {
+            const limit = req.query.limit ? parseInt(req.query.limit, 10) : 20;
+            const offset = req.query.offset ? parseInt(req.query.offset, 10) : 0;
+            const searchQuery = req.query.searchQuery;
+            const categoryId = req.query.categoryId ? parseInt(req.query.categoryId, 10) : undefined;
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getAllConditions({ limit, offset, searchQuery, categoryId }));
+        }
+        catch (error) {
+            console.error('[AdminController.getAllConditions]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async getAllBenefits(req, res) {
+        try {
+            const limit = req.query.limit ? parseInt(req.query.limit, 10) : 20;
+            const offset = req.query.offset ? parseInt(req.query.offset, 10) : 0;
+            const searchQuery = req.query.searchQuery;
+            const categoryId = req.query.categoryId ? parseInt(req.query.categoryId, 10) : undefined;
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getAllBenefits({ limit, offset, searchQuery, categoryId }));
+        }
+        catch (error) {
+            console.error('[AdminController.getAllBenefits]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async getCategoryById(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getCategoryById(id));
+        }
+        catch (error) {
+            console.error('[AdminController.getCategoryById]', error);
+            const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
+            res.status(status).json({ error: error.message });
+        }
+    }
+    async getConditionById(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getConditionById(id));
+        }
+        catch (error) {
+            console.error('[AdminController.getConditionById]', error);
+            const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
+            res.status(status).json({ error: error.message });
+        }
+    }
+    async getBenefitById(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getBenefitById(id));
+        }
+        catch (error) {
+            console.error('[AdminController.getBenefitById]', error);
+            const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
+            res.status(status).json({ error: error.message });
+        }
+    }
+    // Categories — STK-ADM-CAT-001
+    async createCategory(req, res) {
+        try {
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json(await AdminService_1.adminService.createCategory(req.body));
+        }
+        catch (error) {
+            console.error('[AdminController.createCategory]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async updateCategory(req, res) {
+        try {
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.updateCategory(parseInt(req.params.id, 10), req.body));
+        }
+        catch (error) {
+            console.error('[AdminController.updateCategory]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async deleteCategory(req, res) {
+        try {
+            await AdminService_1.adminService.deleteCategory(parseInt(req.params.id, 10));
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ message: constants_1.CONSTANTS.SUCCESS_MESSAGES.DELETED });
+        }
+        catch (error) {
+            console.error('[AdminController.deleteCategory]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    // Conditions — STK-ADM-COND-001
+    async createCondition(req, res) {
+        try {
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json(await AdminService_1.adminService.createCondition(req.body));
+        }
+        catch (error) {
+            console.error('[AdminController.createCondition]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async updateCondition(req, res) {
+        try {
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.updateCondition(parseInt(req.params.id, 10), req.body));
+        }
+        catch (error) {
+            console.error('[AdminController.updateCondition]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async deleteCondition(req, res) {
+        try {
+            await AdminService_1.adminService.deleteCondition(parseInt(req.params.id, 10));
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ message: constants_1.CONSTANTS.SUCCESS_MESSAGES.DELETED });
+        }
+        catch (error) {
+            console.error('[AdminController.deleteCondition]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    // Benefits — STK-ADM-BEN-001
+    async createBenefit(req, res) {
+        try {
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json(await AdminService_1.adminService.createBenefit(req.body));
+        }
+        catch (error) {
+            console.error('[AdminController.createBenefit]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async updateBenefit(req, res) {
+        try {
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.updateBenefit(parseInt(req.params.id, 10), req.body));
+        }
+        catch (error) {
+            console.error('[AdminController.updateBenefit]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async deleteBenefit(req, res) {
+        try {
+            await AdminService_1.adminService.deleteBenefit(parseInt(req.params.id, 10));
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ message: constants_1.CONSTANTS.SUCCESS_MESSAGES.DELETED });
+        }
+        catch (error) {
+            console.error('[AdminController.deleteBenefit]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    // ==========================
+    // Admin Communication — STK-ADM-APP-003, STK-ADM-APP-004
+    // ==========================
+    async sendMailToApplicant(req, res) {
+        try {
+            const { applicantId, subject, message, sendPushNotification, email, fromType } = req.body;
+            // Map multer files to Nodemailer attachments with explicit contentType for delivery success
+            const rawFiles = req.files;
+            console.log(`[AdminController.sendMailToApplicant] Received files: ${rawFiles?.length || 0}`);
+            const attachments = rawFiles?.map(file => ({
+                filename: file.originalname,
+                content: file.buffer,
+                contentType: file.mimetype
+            })) || [];
+            const result = await AdminService_1.adminService.sendMailToApplicant(applicantId ? parseInt(applicantId, 10) : undefined, subject, message, sendPushNotification === 'true' || sendPushNotification === true, email, attachments, fromType || 'info');
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(result);
+        }
+        catch (error) {
+            console.error('[AdminController.sendMailToApplicant]', error);
+            if (error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND) {
+                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: error.message });
+                return;
+            }
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async getApplicantById(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const user = await AdminService_1.adminService.getApplicantById(id);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    role: user.role,
+                    fullName: user.fullName,
+                    phoneNumber: user.phoneNumber,
+                    dateOfBirth: user.dateOfBirth,
+                    gender: user.gender,
+                    nationality: user.nationality,
+                    address: user.address,
+                    city: user.city,
+                    state: user.state,
+                    country: user.country,
+                    zipCode: user.zipCode,
+                    cvUrl: user.cvUrl
+                }
+            });
+        }
+        catch (error) {
+            console.error('[AdminController.getApplicantById]', error);
+            const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
+            res.status(status).json({ error: error.message });
+        }
+    }
+    // ==========================
+    // User Views — REG-004
+    // ==========================
+    async getAllApplicants(req, res) {
+        try {
+            const limit = req.query.limit ? parseInt(req.query.limit, 10) : 20;
+            const offset = req.query.offset ? parseInt(req.query.offset, 10) : 0;
+            const users = await AdminService_1.adminService.getAllApplicants(limit, offset);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(users);
+        }
+        catch (error) {
+            console.error('[AdminController.getAllApplicants]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async deleteApplicant(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            await AdminService_1.adminService.deleteApplicant(id);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ message: constants_1.CONSTANTS.SUCCESS_MESSAGES.DELETED });
+        }
+        catch (error) {
+            console.error('[AdminController.deleteApplicant]', error);
+            const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
+            res.status(status).json({ error: error.message });
+        }
+    }
+    async sendWelcomeMail(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const result = await AdminService_1.adminService.sendWelcomeMail(id);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(result);
+        }
+        catch (error) {
+            console.error('[AdminController.sendWelcomeMail]', error);
+            const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
+            res.status(status).json({ error: error.message });
+        }
+    }
+    async sendEOIMail(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const result = await AdminService_1.adminService.sendEOIMail(id);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(result);
+        }
+        catch (error) {
+            console.error('[AdminController.sendEOIMail]', error);
+            const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
+            res.status(status).json({ error: error.message });
+        }
+    }
+}
+exports.AdminController = AdminController;
+exports.adminController = new AdminController();
