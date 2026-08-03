@@ -36,6 +36,16 @@ export async function seedDatabase() {
         }
     }
     
+    // Safely add visaSponsorshipStatus to Application without triggering FK re-checks
+    try {
+        await sequelize.query("ALTER TABLE applications ADD COLUMN visaSponsorshipStatus ENUM('Pending', 'Approved', 'Rejected') DEFAULT NULL;");
+        console.log("Safely patched applications table with visaSponsorshipStatus.");
+    } catch (e: any) {
+        if (e.original && e.original.code !== 'ER_DUP_FIELDNAME') {
+            console.log("Notice: Column might already exist or could not be added:", e.message);
+        }
+    }
+    
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
 
 

@@ -19,11 +19,11 @@ const startServer = async () => {
         await connectDB();
         app.listen(PORT, async () => {
             logger.info(`Server activated and mapping routes on port ${PORT}`);
-            
+
             // Run heavy seeding and migrations in the background so Fly.io health checks don't timeout
             try {
                 await seedDatabase();
-                await run();
+                // await run();
                 if (process.env.NODE_ENV !== 'production') {
                     logger.info('Database Synchronized successfully.');
                 }

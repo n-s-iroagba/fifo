@@ -3,8 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import JivoChat from "@/components/ui/JivoChat";
-import { PushNotificationManager } from "@/components/PushNotificationManager";
-
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -44,7 +42,6 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans bg-surface text-on-surface">
         <Providers>
           {children}
-          <PushNotificationManager />
           <JivoChat />
         </Providers>
       </body>

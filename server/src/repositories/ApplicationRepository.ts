@@ -50,7 +50,7 @@ export class ApplicationRepository {
                 JobListing, 
                 Payment, 
                 User,
-                Ticket,
+                { model: Ticket, as: 'Tickets' },
                 { model: JobStage, as: 'JobStages' }
             ],
             transaction
