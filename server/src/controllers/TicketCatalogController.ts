@@ -20,22 +20,32 @@ export class TicketCatalogController {
         } catch (error) { next(error); }
     }
 
-    public async updateTicketCatalog(req: Request, res: Response): Promise<void> {
+    public async updateTicketCatalog(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const id = parseInt(req.params.id as string, 10);
-            const ticket = await ticketCatalogService.updateTicketCatalog(id, req.body);
-            res.status(CONSTANTS.HTTP_STATUS.OK).json(ticket);
+            const catalog = await TicketCatalog.findByPk(id);
+            if (!catalog) {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: 'Ticket catalog not found' });
+                return;
+            }
+            await catalog.update(req.body);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: catalog });
         } catch (error: any) {
             console.error('[TicketCatalogController.updateTicketCatalog]', error);
             res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
 
-    public async deleteTicketCatalog(req: Request, res: Response): Promise<void> {
+    public async deleteTicketCatalog(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const id = parseInt(req.params.id as string, 10);
-            await ticketCatalogService.deleteTicketCatalog(id);
-            res.status(CONSTANTS.HTTP_STATUS.OK).json({ message: CONSTANTS.SUCCESS_MESSAGES.DELETED });
+            const catalog = await TicketCatalog.findByPk(id);
+            if (!catalog) {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: 'Ticket catalog not found' });
+                return;
+            }
+            await catalog.destroy();
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: CONSTANTS.SUCCESS_MESSAGES.DELETED });
         } catch (error: any) {
             console.error('[TicketCatalogController.deleteTicketCatalog]', error);
             res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
