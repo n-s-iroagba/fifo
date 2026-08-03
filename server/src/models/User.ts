@@ -28,6 +28,9 @@ export class User extends Model {
     declare apexStatus: string | null; // 'PENDING', 'APPROVED', 'INVITED'
     declare candidateNumber: string | null;
     declare walletBalance: number;
+    declare bankName: string | null;
+    declare accountNumber: string | null;
+    declare accountName: string | null;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 }
@@ -141,6 +144,18 @@ User.init({
         type: DataTypes.FLOAT,
         defaultValue: 0,
         allowNull: false,
+    },
+    bankName: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    accountNumber: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    accountName: {
+        type: DataTypes.STRING,
+        allowNull: true,
     }
 }, {
     sequelize,

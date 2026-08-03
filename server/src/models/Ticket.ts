@@ -24,11 +24,11 @@ export class Ticket extends Model {
         | 'second_attempt_failed'
         | 'ticket_issued';
     declare ticketSponsorshipRefundAmount: number | null;
-    declare bankName: string | null;
-    declare accountNumber: string | null;
-    declare accountName: string | null;
     declare refundStatus: 'none' | 'requested' | 'refunded_to_wallet' | 'refunded_to_bank';
     declare courseId: string | null;
+    declare canApplySponsorship: boolean;
+    declare realPrice: number | null;
+    declare subsidisedPrice: number | null;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 
@@ -72,6 +72,14 @@ Ticket.init({
         type: DataTypes.FLOAT,
         defaultValue: 0,
     },
+    realPrice: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+    },
+    subsidisedPrice: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+    },
     purchaseDate: {
         type: DataTypes.DATE,
         allowNull: true,
@@ -105,20 +113,13 @@ Ticket.init({
         defaultValue: 'no_application',
         allowNull: false,
     },
+    canApplySponsorship: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
     ticketSponsorshipRefundAmount: {
         type: DataTypes.FLOAT,
-        allowNull: true,
-    },
-    bankName: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
-    accountNumber: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
-    accountName: {
-        type: DataTypes.STRING,
         allowNull: true,
     },
     refundStatus: {

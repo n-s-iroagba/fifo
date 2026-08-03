@@ -246,6 +246,34 @@ export class TicketController {
             next(error);
         }
     }
+    public async adminDeleteTicket(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const ticketId = parseInt(req.params.id as string, 10);
+            await ticketService.adminDeleteTicket(ticketId);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Ticket deleted successfully.' });
+        } catch (error: any) {
+            if (error.message === 'TICKET_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Ticket not found.' });
+                return;
+            }
+            next(error);
+        }
+    }
+
+    public async adminAddApplicationTicket(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const applicationId = parseInt(req.params.id as string, 10);
+            const ticket = await ticketService.adminAddApplicationTicket(applicationId, req.body);
+            res.status(CONSTANTS.HTTP_STATUS.CREATED).json({ success: true, data: ticket });
+        } catch (error: any) {
+            if (error.message === 'APPLICATION_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Application not found.' });
+                return;
+            }
+            next(error);
+        }
+    }
+
     public async adminBulkSeedTickets(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { tickets } = req.body;

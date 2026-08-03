@@ -189,8 +189,10 @@ router.post('/tickets/:id/checkout-email', apiLimiter, ticketController.sendChec
 // Admin Ticket Management Routes
 router.get('/admin/tickets', ...adminMW, ticketController.adminGetAllTickets.bind(ticketController));
 router.put('/admin/tickets/:id', ...adminMW, ticketController.adminUpdateTicket.bind(ticketController));
+router.delete('/admin/tickets/:id', ...adminMW, ticketController.adminDeleteTicket.bind(ticketController));
 router.post('/admin/tickets/bulk-seed', ...adminMW, ticketController.adminBulkSeedTickets.bind(ticketController));
 router.post('/admin/tickets/:id/approve-receipt', ...adminMW, ticketController.adminApproveReceipt.bind(ticketController));
+router.post('/admin/applications/:id/tickets', ...adminMW, ticketController.adminAddApplicationTicket.bind(ticketController));
 
 import { interestController } from '../controllers/InterestController';
 import { ticketCatalogController } from '../controllers/TicketCatalogController';

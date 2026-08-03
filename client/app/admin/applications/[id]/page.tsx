@@ -4,6 +4,144 @@ import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useApiQuery, useApiMutation } from '@/lib/hooks';
 import Link from 'next/link';
+import api from '@/lib/api';
+
+interface TicketReq {
+    id: number; ticketType: string; description?: string;
+    status: 'not_possessed' | 'possessed'; ticketSponsorship: string;
+    realPrice?: number; subsidisedPrice?: number; purchasePrice?: number;
+    canApplySponsorship?: boolean; courseId?: string;
+}
+
+const SPONS_MAP: Record<string, { label: string; cls: string }> = {
+    ticket_issued: { label: 'Issued', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    first_attempt_approved: { label: 'Approved', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
+    second_attempt_approved: { label: 'Re-Approved', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
+    applied: { label: 'Under Review', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+    first_attempt_failed: { label: 'Failed (1st)', cls: 'bg-red-50 text-red-700 border-red-200' },
+    second_attempt_failed: { label: 'Failed (2nd)', cls: 'bg-red-50 text-red-700 border-red-200' },
+    no_application: { label: 'No Sponsorship', cls: 'bg-slate-50 text-slate-600 border-slate-200' },
+};
+
+function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicationId: string; tickets: TicketReq[]; refetch: () => void; }) {
+    const [showAdd, setShowAdd] = useState(false);
+    const [editTicket, setEditTicket] = useState<TicketReq | null>(null);
+    const [saving, setSaving] = useState(false);
+    const [deleting, setDeleting] = useState<number | null>(null);
+    const [errMsg, setErrMsg] = useState<string | null>(null);
+    const [ticketType, setTicketType] = useState('');
+    const [description, setDescription] = useState('');
+    const [realPrice, setRealPrice] = useState('');
+    const [subsidisedPrice, setSubsidisedPrice] = useState('');
+    const [canApply, setCanApply] = useState(false);
+    const [courseId, setCourseId] = useState('');
+
+    const openAdd = () => { setEditTicket(null); setTicketType(''); setDescription(''); setRealPrice(''); setSubsidisedPrice(''); setCanApply(false); setCourseId(''); setErrMsg(null); setShowAdd(true); };
+    const openEdit = (t: TicketReq) => { setEditTicket(t); setTicketType(t.ticketType); setDescription(t.description || ''); setRealPrice(t.realPrice?.toString() || ''); setSubsidisedPrice(t.subsidisedPrice?.toString() || ''); setCanApply(t.canApplySponsorship || false); setCourseId(t.courseId || ''); setErrMsg(null); setShowAdd(true); };
+
+    const handleSave = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!ticketType.trim()) { setErrMsg('Ticket type is required.'); return; }
+        setSaving(true); setErrMsg(null);
+        try {
+            const payload = { ticketType, description: description || null, realPrice: realPrice ? parseFloat(realPrice) : null, subsidisedPrice: subsidisedPrice ? parseFloat(subsidisedPrice) : null, canApplySponsorship: canApply, courseId: courseId || null };
+            if (editTicket) { await api.put(`/admin/tickets/${editTicket.id}`, payload); }
+            else { await api.post(`/admin/applications/${applicationId}/tickets`, payload); }
+            setShowAdd(false); setEditTicket(null); refetch();
+        } catch (err: any) { setErrMsg(err.response?.data?.message || 'Failed to save.'); }
+        finally { setSaving(false); }
+    };
+
+    const handleDelete = async (ticketId: number) => {
+        if (!confirm('Delete this ticket requirement? This cannot be undone.')) return;
+        setDeleting(ticketId);
+        try { await api.delete(`/admin/tickets/${ticketId}`); refetch(); }
+        catch (err: any) { alert(err.response?.data?.message || 'Failed to delete.'); }
+        finally { setDeleting(null); }
+    };
+
+    return (
+        <div className="bg-white p-8 rounded-[2.5rem] border border-blue-100 shadow-2xl shadow-blue-900/5">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-blue-50">
+                <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-blue-900">confirmation_number</span>
+                    <h3 className="text-[10px] font-black text-blue-900 uppercase tracking-[0.2em]">Ticket Requirements</h3>
+                    <span className="bg-blue-100 text-blue-800 text-[9px] font-black px-2 py-0.5 rounded-full">{tickets.length}</span>
+                </div>
+                <button onClick={openAdd} className="bg-blue-900 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all flex items-center gap-1.5 shadow-lg shadow-blue-900/10">
+                    <span className="material-symbols-outlined text-sm">add</span> Add Requirement
+                </button>
+            </div>
+            {tickets.length === 0 ? (
+                <div className="py-10 text-center">
+                    <span className="material-symbols-outlined text-3xl text-blue-200 mb-2 block">confirmation_number</span>
+                    <p className="text-[9px] font-black text-blue-300 uppercase tracking-[0.3em]">No ticket requirements assigned</p>
+                    <button onClick={openAdd} className="mt-4 text-[10px] font-bold text-blue-600 hover:underline">+ Add first requirement</button>
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    {tickets.map(t => {
+                        const s = SPONS_MAP[t.ticketSponsorship] ?? SPONS_MAP.no_application;
+                        return (
+                            <div key={t.id} className="flex items-start justify-between gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                                        <p className="text-xs font-black text-blue-900">{t.ticketType}</p>
+                                        <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${s.cls}`}>{s.label}</span>
+                                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${t.status === 'possessed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>{t.status === 'possessed' ? 'Possessed' : 'Not Possessed'}</span>
+                                        {t.canApplySponsorship && <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-violet-50 text-violet-700 border border-violet-200">Can Apply</span>}
+                                    </div>
+                                    {t.description && <p className="text-[10px] text-slate-500">{t.description}</p>}
+                                    <div className="flex items-center gap-3 mt-1 flex-wrap text-[10px]">
+                                        {(t.subsidisedPrice != null || t.realPrice != null) && (
+                                            <span className="font-bold text-blue-900">${t.subsidisedPrice ?? t.realPrice}{t.subsidisedPrice != null && t.realPrice != null && t.realPrice > t.subsidisedPrice && <span className="line-through text-slate-400 ml-1">${t.realPrice}</span>}</span>
+                                        )}
+                                        {t.courseId && <span className="text-slate-400">Course: {t.courseId}</span>}
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-1.5 flex-shrink-0">
+                                    <button onClick={() => openEdit(t)} className="text-[9px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-all flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">edit</span> Edit</button>
+                                    <button onClick={() => handleDelete(t.id)} disabled={deleting === t.id} className="text-[9px] font-black uppercase tracking-widest text-red-500 bg-red-50 border border-red-100 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-all flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">delete</span>{deleting === t.id ? '...' : ' Delete'}</button>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+            {showAdd && (
+                <div className="fixed inset-0 z-50 bg-blue-950/40 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-blue-100 max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-blue-400 block mb-1">{editTicket ? 'Edit' : 'Add'} Ticket Requirement</span>
+                                <h2 className="text-lg font-bold text-blue-900">{editTicket?.ticketType || 'New Requirement'}</h2>
+                            </div>
+                            <button onClick={() => { setShowAdd(false); setEditTicket(null); }} className="text-slate-400 hover:text-slate-600"><span className="material-symbols-outlined">close</span></button>
+                        </div>
+                        {errMsg && <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-[10px] font-bold uppercase tracking-widest">{errMsg}</div>}
+                        <form onSubmit={handleSave} className="space-y-4">
+                            <div><label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Ticket / Certification Type *</label><input type="text" value={ticketType} onChange={e => setTicketType(e.target.value)} placeholder="e.g. White Card (CPCWHS1001)" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-medium" /></div>
+                            <div><label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Description</label><textarea value={description} onChange={e => setDescription(e.target.value)} rows={2} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-medium resize-none" /></div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div><label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Real Price ($)</label><input type="number" step="0.01" value={realPrice} onChange={e => setRealPrice(e.target.value)} placeholder="500.00" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" /></div>
+                                <div><label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Subsidised Price ($)</label><input type="number" step="0.01" value={subsidisedPrice} onChange={e => setSubsidisedPrice(e.target.value)} placeholder="250.00" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" /></div>
+                            </div>
+                            <div><label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Aveling Course ID</label><input type="text" value={courseId} onChange={e => setCourseId(e.target.value)} placeholder="e.g. course-abc123" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-medium" /></div>
+                            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-xl border border-blue-100">
+                                <div><p className="text-xs font-bold text-blue-900">Allow Sponsorship Applications</p><p className="text-[10px] text-slate-500">Applicant can apply for sponsorship for this ticket.</p></div>
+                                <label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked={canApply} onChange={e => setCanApply(e.target.checked)} className="sr-only peer" /><div className="w-11 h-6 bg-slate-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-900" /></label>
+                            </div>
+                            <div className="flex items-center justify-end gap-3 pt-2">
+                                <button type="button" onClick={() => { setShowAdd(false); setEditTicket(null); }} className="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100">Cancel</button>
+                                <button type="submit" disabled={saving} className="bg-blue-900 hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-blue-900/10">{saving ? 'Saving...' : (editTicket ? 'Save Changes' : 'Add Requirement')}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
 
 export default function ApplicationDetailPage() {
     const params = useParams();
@@ -342,6 +480,9 @@ export default function ApplicationDetailPage() {
                             )}
                         </div>
                     </div>
+
+                    {/* ── Ticket Requirements ── */}
+                    <TicketRequirementsPanel applicationId={id as string} tickets={application?.Tickets || []} refetch={refetch} />
                 </div>
 
                 {/* Applicant Overview Sidebar */}

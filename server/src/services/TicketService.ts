@@ -37,9 +37,6 @@ export class TicketService {
             expiryDate: data.expiryDate || null,
             proof: data.proof || null,
             proofThumbnail: data.proofThumbnail || null,
-            bankName: data.bankName || null,
-            accountNumber: data.accountNumber || null,
-            accountName: data.accountName || null,
             courseId: data.courseId || null,
             ticketSponsorship: data.applySponsorship ? 'applied' : 'no_application'
         });
@@ -68,9 +65,6 @@ export class TicketService {
             expiryDate: data.expiryDate !== undefined ? data.expiryDate : ticket.expiryDate,
             proof: data.proof !== undefined ? data.proof : ticket.proof,
             proofThumbnail: data.proofThumbnail !== undefined ? data.proofThumbnail : ticket.proofThumbnail,
-            bankName: data.bankName !== undefined ? data.bankName : ticket.bankName,
-            accountNumber: data.accountNumber !== undefined ? data.accountNumber : ticket.accountNumber,
-            accountName: data.accountName !== undefined ? data.accountName : ticket.accountName,
             courseId: data.courseId !== undefined ? data.courseId : ticket.courseId,
         });
 
@@ -82,10 +76,16 @@ export class TicketService {
         
         await ticket.update({
             ticketSponsorship: 'applied',
-            bankName: bankDetails.bankName,
-            accountNumber: bankDetails.accountNumber,
-            accountName: bankDetails.accountName,
         });
+        
+        const user = await User.findByPk(userId);
+        if (user) {
+            await user.update({
+                bankName: bankDetails.bankName,
+                accountNumber: bankDetails.accountNumber,
+                accountName: bankDetails.accountName,
+            });
+        }
 
         await notificationService.sendNotification(
             userId,
@@ -138,6 +138,9 @@ export class TicketService {
             ticketType: data.ticketType !== undefined ? data.ticketType : ticket.ticketType,
             description: data.description !== undefined ? data.description : ticket.description,
             purchasePrice: data.purchasePrice !== undefined ? data.purchasePrice : ticket.purchasePrice,
+            realPrice: data.realPrice !== undefined ? data.realPrice : ticket.realPrice,
+            subsidisedPrice: data.subsidisedPrice !== undefined ? data.subsidisedPrice : ticket.subsidisedPrice,
+            canApplySponsorship: data.canApplySponsorship !== undefined ? data.canApplySponsorship : ticket.canApplySponsorship,
             purchaseDate: data.purchaseDate !== undefined ? data.purchaseDate : ticket.purchaseDate,
             expiryDate: data.expiryDate !== undefined ? data.expiryDate : ticket.expiryDate,
             proof: data.proof !== undefined ? data.proof : ticket.proof,
@@ -145,9 +148,6 @@ export class TicketService {
             ticketSponsorship: newStatus,
             ticketSponsorshipRefundAmount: data.ticketSponsorshipRefundAmount !== undefined ? data.ticketSponsorshipRefundAmount : ticket.ticketSponsorshipRefundAmount,
             sponsorshipDeadline,
-            bankName: data.bankName !== undefined ? data.bankName : ticket.bankName,
-            accountNumber: data.accountNumber !== undefined ? data.accountNumber : ticket.accountNumber,
-            accountName: data.accountName !== undefined ? data.accountName : ticket.accountName,
             courseId: data.courseId !== undefined ? data.courseId : ticket.courseId,
         });
 
@@ -187,10 +187,11 @@ export class TicketService {
             );
         } else if (action === 'refund_to_bank') {
             await ticket.update({ refundStatus: 'refunded_to_bank' });
+            const user = await User.findByPk(userId);
             await notificationService.sendNotification(
                 userId,
                 'Bank Refund Requested',
-                `Your refund of $${ticket.ticketSponsorshipRefundAmount || ticket.purchasePrice} has been queued for payout to your registered bank account (${ticket.bankName} - ${ticket.accountNumber}).`
+                `Your refund of $${ticket.ticketSponsorshipRefundAmount || ticket.purchasePrice} has been queued for payout to your registered bank account (${user?.bankName || 'N/A'} - ${user?.accountNumber || 'N/A'}).`
             );
         }
 
@@ -319,13 +320,36 @@ export class TicketService {
                 status: item.status || 'not_possessed',
                 ticketSponsorship: item.ticketSponsorship || 'first_attempt_approved',
                 courseId: item.courseId || null,
-                bankName: item.bankName || 'Commonwealth Bank',
-                accountNumber: item.accountNumber || '10293847',
-                accountName: item.accountName || 'FIFO Training PTY LTD'
             });
             createdTickets.push(ticket);
         }
         return createdTickets;
+    }
+
+    public async adminDeleteTicket(ticketId: number) {
+        const ticket = await Ticket.findByPk(ticketId);
+        if (!ticket) throw new Error('TICKET_NOT_FOUND');
+        await ticket.destroy();
+    }
+
+    public async adminAddApplicationTicket(applicationId: number, data: any) {
+        const application = await Application.findByPk(applicationId);
+        if (!application) throw new Error('APPLICATION_NOT_FOUND');
+        
+        const ticket = await Ticket.create({
+            userId: application.userId,
+            applicationId: applicationId,
+            ticketType: data.ticketType,
+            status: 'not_possessed',
+            ticketSponsorship: 'no_application',
+            description: data.description || null,
+            realPrice: data.realPrice || null,
+            subsidisedPrice: data.subsidisedPrice || null,
+            canApplySponsorship: data.canApplySponsorship || false,
+            courseId: data.courseId || null,
+        });
+        
+        return ticket;
     }
 
     public async sendCheckoutPaymentEmail(ticketId: number) {
