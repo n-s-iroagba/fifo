@@ -97,7 +97,7 @@ export default function NotificationsPage() {
             <footer className="mt-16 p-8 rounded-2xl bg-white border border-blue-100">
                 <p className="text-[10px] text-blue-400 font-bold uppercase tracking-[0.2em] mb-4">Security Notice</p>
                 <p className="text-sm text-blue-500 font-medium leading-relaxed italic">
-                    BlueCollarRecruitment verifies all system communications. We will never ask for your password or financial credentials via the notification stream.
+                    BlueCollar verifies all system communications. We will never ask for your password or financial credentials via the notification stream.
                 </p>
             </footer>
         </div>

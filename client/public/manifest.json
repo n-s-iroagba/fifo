@@ -1,6 +1,6 @@
 {
-  "name": "BlueCollarRecruitment",
-  "short_name": "BlueCollarRecruitment",
+  "name": "BlueCollar",
+  "short_name": "BlueCollar",
   "description": "High-Stakes Recruitment Infrastructure",
   "start_url": "/",
   "display": "standalone",

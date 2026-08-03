@@ -32,7 +32,7 @@ export class AuthService {
         // Send Verification Email
         const verificationUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
         const content = `
-            <p>Welcome to BlueCollarRecruitment. We require a high-priority identity verification to activate your professional node.</p>
+            <p>Welcome to BlueCollar. We require a high-priority identity verification to activate your professional node.</p>
             <div class="cta-block">
                 <a href="${verificationUrl}" class="button">Verify Identity</a>
             </div>
@@ -46,7 +46,7 @@ export class AuthService {
 
         // Notify Admin of New Applicant (via Auth Email as requested)
         await sendAuthEmail(
-            'BlueCollarRecruitment@gmail.com',
+            'BlueCollar@gmail.com',
             'Internal Alert: New Applicant Registered',
             `
             <p>A new professional identity has entered the recruitment pipeline.</p>
@@ -56,7 +56,7 @@ export class AuthService {
                 <p style="margin-bottom: 0;"><strong>Role:</strong> APPLICANT</p>
             </div>
             `
-        ).catch(err => console.error('[AuthService] Admin notification to BlueCollarRecruitment@gmail.com failed:', err));
+        ).catch(err => console.error('[AuthService] Admin notification to BlueCollar@gmail.com failed:', err));
 
         const accessToken = generateAccessToken({ id: newUser.id, role: newUser.role });
         const refreshToken = generateRefreshToken({ id: newUser.id, role: newUser.role });
@@ -95,7 +95,7 @@ export class AuthService {
         });
 
         // Send Welcome Email after verification
-        const welcomeSubject = 'Welcome to BlueCollarRecruitment - Activate Your Node';
+        const welcomeSubject = 'Welcome to BlueCollar - Activate Your Node';
         const welcomeContent = `
             <p>Your professional node has been successfully verified. To fully activate your profile and become visible to our elite partner network, you must complete your biodata and upload your CV.</p>
             <p><strong>Strict Adherence Required:</strong> We require all applicants to follow our standardized CV template. This ensures algorithmic compatibility and professional clarity.</p>
@@ -141,7 +141,7 @@ export class AuthService {
         const baseUrl = (process.env.CLIENT_URL || 'http://localhost:3000').replace(/\/$/, '');
         const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
         const content = `
-            <p>A cryptographic reset sequence has been initialized for your BlueCollarRecruitment account.</p>
+            <p>A cryptographic reset sequence has been initialized for your BlueCollar account.</p>
             <div class="cta-block">
                 <a href="${resetUrl}" class="button">Reset Passphrase</a>
             </div>

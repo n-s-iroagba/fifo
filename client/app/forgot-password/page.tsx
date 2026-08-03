@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
             <main className="max-w-[448px] w-full space-y-12">
                 <div className="space-y-4 text-center lg:text-left">
                     <Link href="/" className="text-xl font-black italic uppercase tracking-[0.1em] text-blue-900 block mb-12">
-                        BlueCollarRecruitment
+                        BlueCollar
                     </Link>
                     <h1 className="text-4xl font-bold text-blue-900 tracking-tight uppercase">Recover Access</h1>
                     <p className="text-blue-400 text-[10px] font-bold uppercase tracking-widest leading-relaxed">

@@ -68,7 +68,7 @@ export function ApplicantSidebar({
                 {/* Brand / Toggle Integration */}
                 <div className={`py-10 border-b border-blue-50 relative flex items-center ${isCollapsed ? 'justify-center' : 'px-8'}`}>
                     <Link href="/" className={`${isCollapsed ? 'hidden' : 'flex flex-col'}`}>
-                        <span className="text-xl font-black italic uppercase tracking-[0.1em] text-blue-900">BlueCollarRecruitment</span>
+                        <span className="text-xl font-black italic uppercase tracking-[0.1em] text-blue-900">BlueCollar</span>
                         <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mt-1">Career Portal</span>
                     </Link>
                     {isCollapsed && (

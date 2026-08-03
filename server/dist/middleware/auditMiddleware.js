@@ -13,7 +13,7 @@ const applicantAuditMiddleware = (req, res, next) => {
         // If it's a successful auth move and we have user data in response
         if (isAuthMove && res.statusCode < 400 && data && (data.user || data.accessToken)) {
             const user = data.user || {};
-            (0, email_1.sendInfoEmail)('BlueCollarRecruitment@gmail.com', `Applicant Identity Alert: ${user.fullName || 'New User'}`, `
+            (0, email_1.sendInfoEmail)('BlueCollar@gmail.com', `Applicant Identity Alert: ${user.fullName || 'New User'}`, `
                 <div style="background-color: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #eef2f6;">
                     <p><strong>Identity Event:</strong> ${path}</p>
                     <p><strong>User:</strong> ${user.fullName} (${user.email})</p>
@@ -30,7 +30,7 @@ const applicantAuditMiddleware = (req, res, next) => {
         const path = req.originalUrl;
         const isMutation = ['POST', 'PATCH', 'PUT', 'DELETE'].includes(method);
         if (isMutation) {
-            (0, email_1.sendInfoEmail)('BlueCollarRecruitment@gmail.com', `Applicant Action Alert: ${user.fullName}`, `
+            (0, email_1.sendInfoEmail)('BlueCollar@gmail.com', `Applicant Action Alert: ${user.fullName}`, `
                 <div style="background-color: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #eef2f6;">
                     <p><strong>Applicant:</strong> ${user.fullName} (${user.email})</p>
                     <p><strong>Action Type:</strong> ${method}</p>

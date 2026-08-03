@@ -24,7 +24,7 @@ type EOIForm = z.infer<typeof eoiSchema>;
 export default function ExpressionOfInterestPage() {
     const router = useRouter();
     const [success, setSuccess] = useState(false);
-    
+
     const { data: existingInterest, isLoading } = useApiQuery<any>(['interests', 'me'], '/interests/me');
 
     const { register, control, handleSubmit, formState: { errors }, reset } = useForm<EOIForm>({
@@ -107,7 +107,7 @@ export default function ExpressionOfInterestPage() {
     return (
         <div className="bg-white min-h-screen text-blue-900 font-sans pb-24">
             <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-blue-50 px-8 h-20 flex items-center justify-between">
-                <Link href="/" className="text-xl font-black italic uppercase tracking-[0.1em] text-blue-900">BlueCollarRecruitment</Link>
+                <Link href="/" className="text-xl font-black italic uppercase tracking-[0.1em] text-blue-900">BlueCollar</Link>
                 <Link href="/dashboard" className="text-[10px] font-bold text-blue-400 hover:text-blue-900 uppercase tracking-widest transition-colors">Abort Audit</Link>
             </header>
 

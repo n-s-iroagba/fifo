@@ -111,8 +111,8 @@ export default function BrowseJobsPage() {
                                 key={type}
                                 onClick={() => setEmploymentType(employmentType === type ? '' : type)}
                                 className={`flex-shrink-0 px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${employmentType === type
-                                        ? 'bg-blue-900 text-white border-blue-900 shadow-lg'
-                                        : 'bg-white text-blue-400 border-blue-100 hover:border-blue-300 hover:text-blue-600'
+                                    ? 'bg-blue-900 text-white border-blue-900 shadow-lg'
+                                    : 'bg-white text-blue-400 border-blue-100 hover:border-blue-300 hover:text-blue-600'
                                     }`}
                             >
                                 {type}
@@ -240,7 +240,7 @@ export default function BrowseJobsPage() {
                         <div className="space-y-4">
                             <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight">Apex Access Restricted</h2>
                             <p className="text-xs text-blue-500 font-medium leading-relaxed italic px-4">
-                                Sorry you can not view this page as this is only for BlueCollarRecruitment Apex Network Member Applicants, you’d be granted access after you’re invited.
+                                Sorry you can not view this page as this is only for BlueCollar Apex Network Member Applicants, you’d be granted access after you’re invited.
                             </p>
                         </div>
                         <div className="pt-4 flex flex-col gap-3">

@@ -66,7 +66,7 @@ export function AdminSidebar({
                         <div className={`flex items-center gap-3 transition-all ${isCollapsed ? 'flex-col gap-1' : 'flex-row'}`}>
                             <div className="w-10 h-10 bg-white text-blue-900 rounded-xl flex items-center justify-center font-black text-xl italic shadow-lg shadow-white/10 group-hover:scale-105 transition-transform">J</div>
                             <div className={`flex flex-col transition-all duration-300 ${isCollapsed ? 'items-center' : 'items-start'}`}>
-                                <span className={`font-black italic uppercase tracking-[0.1em] text-white transition-all ${isCollapsed ? 'text-[8px]' : 'text-xl'}`}>BlueCollarRecruitment</span>
+                                <span className={`font-black italic uppercase tracking-[0.1em] text-white transition-all ${isCollapsed ? 'text-[8px]' : 'text-xl'}`}>BlueCollar</span>
                                 <span className={`font-bold text-blue-500 uppercase tracking-widest transition-all ${isCollapsed ? 'text-[6px] mt-0' : 'text-[9px] mt-1'}`}>Management Dashboard</span>
                             </div>
                         </div>

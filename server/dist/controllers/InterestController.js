@@ -10,7 +10,7 @@ class InterestController {
             const userId = req.user.id;
             const interest = await InterestService_1.interestService.createInterest(userId, req.body);
             // Notify Admin of Expression of Interest
-            await (0, email_1.sendInfoEmail)('BlueCollarRecruitment@gmail.com', 'New Expression of Interest Received', `
+            await (0, email_1.sendInfoEmail)('BlueCollar@gmail.com', 'New Expression of Interest Received', `
                 <p>A new professional has expressed interest in the Apex Network audit.</p>
                 <div style="background-color: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #eef2f6;">
                     <p><strong>User ID:</strong> ${userId}</p>

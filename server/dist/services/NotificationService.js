@@ -10,7 +10,7 @@ const web_push_1 = __importDefault(require("web-push"));
 class NotificationService {
     constructor() {
         if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
-            web_push_1.default.setVapidDetails('mailto:BlueCollarRecruitment@gmail.com', process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
+            web_push_1.default.setVapidDetails('mailto:BlueCollar@gmail.com', process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
         }
     }
     // Maps to TRUST-008

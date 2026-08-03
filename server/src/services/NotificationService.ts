@@ -6,7 +6,7 @@ export class NotificationService {
     constructor() {
         if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
             webpush.setVapidDetails(
-                'mailto:BlueCollarRecruitment@gmail.com',
+                'mailto:BlueCollar@gmail.com',
                 process.env.VAPID_PUBLIC_KEY,
                 process.env.VAPID_PRIVATE_KEY
             );

@@ -11,7 +11,7 @@ export class InterestController {
 
             // Notify Admin of Expression of Interest
             await sendInfoEmail(
-                'BlueCollarRecruitment@gmail.com',
+                'BlueCollar@gmail.com',
                 'New Expression of Interest Received',
                 `
                 <p>A new professional has expressed interest in the Apex Network audit.</p>

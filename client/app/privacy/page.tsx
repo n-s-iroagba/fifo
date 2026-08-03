@@ -18,7 +18,7 @@ export default function PrivacyPolicyPage() {
                         </div>
                         <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-on-surface mb-8">Data Protection <br /><span className="text-primary">& Transparency</span></h1>
                         <p className="text-on-surface-variant text-base lg:text-lg max-w-[640px] leading-relaxed font-light">
-                            At BlueCollarRecruitment, we prioritize your professional privacy. Our practices are designed to ensure your data is handled with clarity, security, and absolute integrity.
+                            At BlueCollar, we prioritize your professional privacy. Our practices are designed to ensure your data is handled with clarity, security, and absolute integrity.
                         </p>
                     </header>
 
@@ -87,7 +87,7 @@ export default function PrivacyPolicyPage() {
                             <div className="space-y-6 text-on-surface-variant leading-[1.8] text-sm font-medium">
                                 <p>You retain full sovereignty over your professional profile. You may request data erasure or rectification at any moment through our centralized compliance portal.</p>
                                 <div className="pt-8">
-                                    <a href="mailto:privacy@BlueCollarRecruitment.com" className="inline-flex items-center gap-3 bg-on-surface text-surface px-8 py-4 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] shadow-xl hover:bg-blue-800 transition-all active:scale-[0.98]">
+                                    <a href="mailto:privacy@BlueCollar.com" className="inline-flex items-center gap-3 bg-on-surface text-surface px-8 py-4 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] shadow-xl hover:bg-blue-800 transition-all active:scale-[0.98]">
                                         <span className="material-symbols-outlined text-lg">mail</span>
                                         Request Data Erasure
                                     </a>

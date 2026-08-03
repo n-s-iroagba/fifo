@@ -156,7 +156,7 @@ class ApplicationService {
                 type: 'SYSTEM',
             }, t);
             // Notify Admin of New Application
-            await (0, email_1.sendInfoEmail)('BlueCollarRecruitment@gmail.com', 'Internal Alert: New Application Received', `
+            await (0, email_1.sendInfoEmail)('BlueCollar@gmail.com', 'Internal Alert: New Application Received', `
                 <p>A new application has been submitted for a role.</p>
                 <div style="background-color: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #eef2f6;">
                     <p><strong>Job Title:</strong> ${job.title}</p>

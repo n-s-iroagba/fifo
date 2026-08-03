@@ -47,7 +47,7 @@ function JobsContent() {
                         </div>
                         <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600 group-hover:text-blue-300 mb-6 relative z-10 transition-colors">Direct Employment</h4>
                         <p className="text-xs text-blue-900 leading-loose relative z-10 font-bold group-hover:text-white transition-colors">
-                            BlueCollarRecruitment exclusively curates roles that offer direct contractual agreements with verified global entities. No intermediaries involved.
+                            BlueCollar exclusively curates roles that offer direct contractual agreements with verified global entities. No intermediaries involved.
                         </p>
                     </div>
                 </div>

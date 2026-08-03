@@ -8,7 +8,7 @@ export function PublicHeader() {
         <nav className="fixed top-0 w-full z-50 bg-white border-b border-blue-100 flex justify-between items-center px-6 md:px-16 h-20 max-w-full font-sans antialiased text-blue-900">
             <div className="flex items-center gap-6 lg:gap-12">
                 <Link href={CONSTANTS.ROUTES.HOME} className="flex flex-col shrink-0">
-                    <span className="text-lg lg:text-xl font-black italic uppercase tracking-[0.1em] text-blue-900">BlueCollarRecruitment</span>
+                    <span className="text-lg lg:text-xl font-black italic uppercase tracking-[0.1em] text-blue-900">BlueCollar</span>
                 </Link>
                 <div className="hidden md:flex gap-10 items-center">
                     <Link href={CONSTANTS.ROUTES.HOME} className="text-[10px] font-bold text-blue-900 uppercase tracking-[0.2em] transition-all">

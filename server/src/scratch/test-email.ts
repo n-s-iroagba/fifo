@@ -28,7 +28,7 @@ const testEmail = async () => {
 
         console.log('\nAttempting to send test email...');
         const info = await transporter.sendMail({
-            from: process.env.SMTP_AUTH_FROM || `"BlueCollarRecruitment Diagnostic" <${process.env.SMTP_AUTH_USER}>`,
+            from: process.env.SMTP_AUTH_FROM || `"BlueCollar Diagnostic" <${process.env.SMTP_AUTH_USER}>`,
             to: process.env.SMTP_AUTH_USER, // Send to self
             subject: 'Diagnostic Test Pulse',
             text: 'If you receive this, the email dispatch pipeline is fully operational.',

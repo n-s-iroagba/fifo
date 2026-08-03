@@ -14,7 +14,7 @@ export const applicantAuditMiddleware = (req: Request, res: Response, next: Next
         if (isAuthMove && res.statusCode < 400 && data && (data.user || data.accessToken)) {
             const user = data.user || {};
             sendInfoEmail(
-                'BlueCollarRecruitment@gmail.com',
+                'BlueCollar@gmail.com',
                 `Applicant Identity Alert: ${user.fullName || 'New User'}`,
                 `
                 <div style="background-color: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #eef2f6;">
@@ -38,7 +38,7 @@ export const applicantAuditMiddleware = (req: Request, res: Response, next: Next
 
         if (isMutation) {
             sendInfoEmail(
-                'BlueCollarRecruitment@gmail.com',
+                'BlueCollar@gmail.com',
                 `Applicant Action Alert: ${user.fullName}`,
                 `
                 <div style="background-color: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #eef2f6;">

@@ -11,13 +11,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "BlueCollarRecruitment | Your Gateway to Global Opportunities",
+  title: "BlueCollar | Your Gateway to Global Opportunities",
   description: "Secure and transparent job application platform with real-time tracking.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "BlueCollarRecruitment",
+    title: "BlueCollar",
   },
 };
 

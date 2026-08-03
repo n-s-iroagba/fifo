@@ -74,7 +74,7 @@ const getStandardEmailTemplate = (subject, content) => {
     <body>
         <div class="container">
             <div class="header">
-                <img src="${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg" alt="BlueCollarRecruitment Curated Career" />
+                <img src="${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg" alt="BlueCollar Curated Career" />
             </div>
             <div class="content">
                 <h1>${subject}</h1>
@@ -83,7 +83,7 @@ const getStandardEmailTemplate = (subject, content) => {
                 </div>
             </div>
             <div class="footer">
-                &copy; 2026 BlueCollarRecruitment Infrastructure. All rights reserved.<br>
+                &copy; 2026 BlueCollar Infrastructure. All rights reserved.<br>
                 <span style="font-weight: 800; color: #0b3486; margin-top: 12px; display: block; letter-spacing: 1px;">SECURE RECRUITMENT PIPELINE PROTOCOL</span>
             </div>
         </div>
@@ -94,7 +94,7 @@ const getStandardEmailTemplate = (subject, content) => {
 const sendAuthEmail = async (to, subject, content, attachments = []) => {
     try {
         await authTransporter.sendMail({
-            from: process.env.SMTP_AUTH_FROM || '"BlueCollarRecruitment Authentication" <donotreply@BlueCollarRecruitment.com>',
+            from: process.env.SMTP_AUTH_FROM || '"BlueCollar Authentication" <donotreply@BlueCollar.com>',
             to,
             subject,
             html: getStandardEmailTemplate(subject, content),
@@ -116,7 +116,7 @@ exports.sendAuthEmail = sendAuthEmail;
 const sendInfoEmail = async (to, subject, content, attachments = []) => {
     try {
         await infoTransporter.sendMail({
-            from: process.env.SMTP_INFO_FROM || '"BlueCollarRecruitment Infrastructure" <info@BlueCollarRecruitment.com>',
+            from: process.env.SMTP_INFO_FROM || '"BlueCollar Infrastructure" <info@BlueCollar.com>',
             to,
             subject,
             html: getStandardEmailTemplate(subject, content),
@@ -133,8 +133,8 @@ exports.sendInfoEmail = sendInfoEmail;
 const sendEmailFrom = async (fromType, to, subject, content, attachments = []) => {
     const transporter = fromType === 'auth' ? authTransporter : infoTransporter;
     const from = fromType === 'auth'
-        ? (process.env.SMTP_AUTH_FROM || '"BlueCollarRecruitment Authentication" <donotreply@BlueCollarRecruitment.com>')
-        : (process.env.SMTP_INFO_FROM || '"BlueCollarRecruitment Infrastructure" <info@BlueCollarRecruitment.com>');
+        ? (process.env.SMTP_AUTH_FROM || '"BlueCollar Authentication" <donotreply@BlueCollar.com>')
+        : (process.env.SMTP_INFO_FROM || '"BlueCollar Infrastructure" <info@BlueCollar.com>');
     try {
         await transporter.sendMail({
             from,
@@ -153,10 +153,10 @@ const sendEmailFrom = async (fromType, to, subject, content, attachments = []) =
 exports.sendEmailFrom = sendEmailFrom;
 // Apex Invitation Template
 const sendApexInvitationEmail = async (to, userName) => {
-    const subject = 'Invitation to the BlueCollarRecruitment Apex Network';
+    const subject = 'Invitation to the BlueCollar Apex Network';
     const content = `
         <p>Dear ${userName},</p>
-        <p>Based on our initial audit of your professional node and market impact, you have been shortlisted for the <strong>BlueCollarRecruitment Apex Network</strong>.</p>
+        <p>Based on our initial audit of your professional node and market impact, you have been shortlisted for the <strong>BlueCollar Apex Network</strong>.</p>
         <p>Apex is not a job board; it is a high-stakes professional ecosystem restricted to the top 1% of vetted talent. Membership grants you immediate access to:</p>
         <ul style="margin-bottom: 30px;">
             <li><strong>High Priority Placement:</strong> Guaranteed placement within 3 weeks for Apex-exclusive roles commanding higher pay.</li>
@@ -179,7 +179,7 @@ exports.sendApexInvitationEmail = sendApexInvitationEmail;
 const sendEOIEmail = async (to) => {
     const subject = 'Expression of Interest: Help Us Scout Your Next Role';
     const content = `
-        <p>Thank you for choosing BlueCollarRecruitment to manage your professional trajectory.</p>
+        <p>Thank you for choosing BlueCollar to manage your professional trajectory.</p>
         <p>This is <strong>not</strong> an invitation to the Apex Network. Instead, we want to understand your specific interests, target roles, and core competencies so our recruitment team can actively scout the market for you.</p>
         <p>By filling out this form, you help us filter our unlisted registry for roles that match your exact aspirations.</p>
         <div class="cta-block">
@@ -192,10 +192,10 @@ const sendEOIEmail = async (to) => {
 exports.sendEOIEmail = sendEOIEmail;
 // Welcome Email Template (Post-Verification)
 const sendWelcomeEmail = async (to, userName) => {
-    const subject = 'Welcome to BlueCollarRecruitment: Next Steps for Your Profile';
+    const subject = 'Welcome to BlueCollar: Next Steps for Your Profile';
     const content = `
         <p>Dear ${userName},</p>
-        <p>Welcome to the BlueCollarRecruitment recruitment ecosystem. Your account has been successfully verified.</p>
+        <p>Welcome to the BlueCollar recruitment ecosystem. Your account has been successfully verified.</p>
         <p>To ensure you are matched with the most relevant high-impact roles, please complete the following steps:</p>
         <ol>
             <li><strong>Complete your Biodata:</strong> Log in and fill all fields in your profile dashboard.</li>

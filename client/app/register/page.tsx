@@ -73,7 +73,7 @@ export default function RegisterPage() {
         <div className="bg-white text-blue-900 antialiased min-h-screen flex flex-col font-sans">
             {/* Top Navigation */}
             <header className="fixed top-0 w-full z-50 bg-white border-b border-blue-100 px-8 h-20 flex items-center justify-between">
-                <Link href="/" className="text-xl font-black italic uppercase tracking-[0.1em] text-blue-900">BlueCollarRecruitment</Link>
+                <Link href="/" className="text-xl font-black italic uppercase tracking-[0.1em] text-blue-900">BlueCollar</Link>
                 <Link href="/login" className="text-[10px] font-bold text-blue-400 hover:text-blue-900 uppercase tracking-widest transition-colors">Sign In</Link>
             </header>
 

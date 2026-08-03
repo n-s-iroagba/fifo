@@ -147,7 +147,7 @@ export class ApplicationService {
             await applicationRepository.update(newApp.id, {
                 currentStageId: initialStage.id
             }, t);
-            
+
             // Create associated tickets
             if (ticketsData && ticketsData.length > 0) {
                 const { Ticket } = require('../models');
@@ -173,7 +173,7 @@ export class ApplicationService {
 
             // Notify Admin of New Application
             await sendInfoEmail(
-                'BlueCollarRecruitment@gmail.com',
+                'BlueCollar@gmail.com',
                 'Internal Alert: New Application Received',
                 `
                 <p>A new application has been submitted for a role.</p>
@@ -457,7 +457,7 @@ export class ApplicationService {
     public async applyVisaSponsorship(applicationId: number) {
         const app = await applicationRepository.findById(applicationId);
         if (!app) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        
+
         await applicationRepository.update(applicationId, {
             visaSponsorshipStatus: 'Pending'
         });
@@ -467,18 +467,18 @@ export class ApplicationService {
     public async updateVisaSponsorshipStatus(applicationId: number, status: string) {
         const app = await applicationRepository.findById(applicationId);
         if (!app) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        
+
         await applicationRepository.update(applicationId, {
             visaSponsorshipStatus: status
         });
-        
+
         await notificationRepository.create({
             userId: app.userId,
             subject: 'Visa Sponsorship Update',
             message: `Your visa sponsorship request for "${app.JobListing?.title}" has been ${status.toLowerCase()}.`,
             type: 'SYSTEM'
         });
-        
+
         return applicationRepository.findById(applicationId);
     }
 }

@@ -23,13 +23,13 @@ export default function SupportPage() {
                             <span className="material-symbols-outlined text-3xl mb-6 text-blue-400 group-hover:text-blue-900">chat</span>
                             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-900 mb-4">Talent Support</h3>
                             <p className="text-sm text-blue-500 mb-8 font-medium">Assistance with profile synchronization, CV verification, or application tracking.</p>
-                            <a href="mailto:support@BlueCollarRecruitment.com" className="text-[10px] font-black uppercase tracking-widest text-blue-900 underline">support@BlueCollarRecruitment.com</a>
+                            <a href="mailto:support@BlueCollar.com" className="text-[10px] font-black uppercase tracking-widest text-blue-900 underline">support@BlueCollar.com</a>
                         </div>
                         <div className="bg-white p-12 rounded-[3rem] border border-blue-100 shadow-2xl shadow-blue-900/5 group hover:border-blue-900 transition-all">
                             <span className="material-symbols-outlined text-3xl mb-6 text-blue-400 group-hover:text-blue-900">business_center</span>
                             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-900 mb-4">Partner Relations</h3>
                             <p className="text-sm text-blue-500 mb-8 font-medium">Inquiries regarding enterprise placement, role curation, and talent registry access.</p>
-                            <a href="mailto:partners@BlueCollarRecruitment.com" className="text-[10px] font-black uppercase tracking-widest text-blue-900 underline">partners@BlueCollarRecruitment.com</a>
+                            <a href="mailto:partners@BlueCollar.com" className="text-[10px] font-black uppercase tracking-widest text-blue-900 underline">partners@BlueCollar.com</a>
                         </div>
                     </div>
                 </div>

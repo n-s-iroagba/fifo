@@ -14,7 +14,7 @@ export default function CompliancePage() {
                         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400 block mb-6">Security Integrity</span>
                         <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-blue-900 mb-8 leading-tight">Compliance <br /><span className="text-blue-400">Protocols.</span></h1>
                         <p className="text-blue-500 text-lg lg:text-xl max-w-[700px] leading-relaxed font-medium">
-                            BlueCollarRecruitment operates under rigorous regulatory and security frameworks to ensure every interaction within our ecosystem is verified and secure.
+                            BlueCollar operates under rigorous regulatory and security frameworks to ensure every interaction within our ecosystem is verified and secure.
                         </p>
                     </header>
 

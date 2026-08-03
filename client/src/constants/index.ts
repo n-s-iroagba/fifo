@@ -1,5 +1,5 @@
 export const CONSTANTS = {
-    APP_NAME: 'BlueCollarRecruitment',
+    APP_NAME: 'BlueCollar',
     API_BASE_URL: process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api` : 'http://localhost:5000/api',
 
     ROLES: {

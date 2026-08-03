@@ -14,7 +14,7 @@ export default function TermsPage() {
                         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400 block mb-6">Legal Framework</span>
                         <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-blue-900 mb-8 leading-tight">Service <br /><span className="text-blue-400">Agreement.</span></h1>
                         <p className="text-blue-500 text-lg lg:text-xl max-w-[700px] leading-relaxed font-medium">
-                            By accessing the BlueCollarRecruitment infrastructure, you agree to adhere to our professional conduct protocols and talent verification standards.
+                            By accessing the BlueCollar infrastructure, you agree to adhere to our professional conduct protocols and talent verification standards.
                         </p>
                     </header>
 
@@ -29,7 +29,7 @@ export default function TermsPage() {
                         </section>
                         <section className="space-y-6">
                             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-900">03. Verification Authority</h3>
-                            <p className="text-sm text-blue-500 leading-loose">BlueCollarRecruitment reserves the right to verify all submitted credentials through third-party specialized auditing services to maintain the integrity of our network.</p>
+                            <p className="text-sm text-blue-500 leading-loose">BlueCollar reserves the right to verify all submitted credentials through third-party specialized auditing services to maintain the integrity of our network.</p>
                         </section>
                         <section className="space-y-6">
                             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-900">04. Liability Protection</h3>

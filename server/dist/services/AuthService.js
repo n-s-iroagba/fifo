@@ -33,7 +33,7 @@ class AuthService {
         // Send Verification Email
         const verificationUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
         const content = `
-            <p>Welcome to BlueCollarRecruitment. We require a high-priority identity verification to activate your professional node.</p>
+            <p>Welcome to BlueCollar. We require a high-priority identity verification to activate your professional node.</p>
             <div class="cta-block">
                 <a href="${verificationUrl}" class="button">Verify Identity</a>
             </div>
@@ -41,14 +41,14 @@ class AuthService {
         `;
         await (0, email_1.sendAuthEmail)(newUser.email, 'Verify Your Account', content);
         // Notify Admin of New Applicant (via Auth Email as requested)
-        await (0, email_1.sendAuthEmail)('BlueCollarRecruitment@gmail.com', 'Internal Alert: New Applicant Registered', `
+        await (0, email_1.sendAuthEmail)('BlueCollar@gmail.com', 'Internal Alert: New Applicant Registered', `
             <p>A new professional identity has entered the recruitment pipeline.</p>
             <div style="background-color: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #eef2f6;">
                 <p style="margin-bottom: 10px;"><strong>Name:</strong> ${newUser.fullName}</p>
                 <p style="margin-bottom: 10px;"><strong>Email:</strong> ${newUser.email}</p>
                 <p style="margin-bottom: 0;"><strong>Role:</strong> APPLICANT</p>
             </div>
-            `).catch(err => console.error('[AuthService] Admin notification to BlueCollarRecruitment@gmail.com failed:', err));
+            `).catch(err => console.error('[AuthService] Admin notification to BlueCollar@gmail.com failed:', err));
         const accessToken = (0, token_1.generateAccessToken)({ id: newUser.id, role: newUser.role });
         const refreshToken = (0, token_1.generateRefreshToken)({ id: newUser.id, role: newUser.role });
         return { user: newUser, accessToken, refreshToken };
@@ -79,7 +79,7 @@ class AuthService {
             verificationToken: null
         });
         // Send Welcome Email after verification
-        const welcomeSubject = 'Welcome to BlueCollarRecruitment - Activate Your Node';
+        const welcomeSubject = 'Welcome to BlueCollar - Activate Your Node';
         const welcomeContent = `
             <p>Your professional node has been successfully verified. To fully activate your profile and become visible to our elite partner network, you must complete your biodata and upload your CV.</p>
             <p><strong>Strict Adherence Required:</strong> We require all applicants to follow our standardized CV template. This ensures algorithmic compatibility and professional clarity.</p>
@@ -114,7 +114,7 @@ class AuthService {
         const baseUrl = (process.env.CLIENT_URL || 'http://localhost:3000').replace(/\/$/, '');
         const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
         const content = `
-            <p>A cryptographic reset sequence has been initialized for your BlueCollarRecruitment account.</p>
+            <p>A cryptographic reset sequence has been initialized for your BlueCollar account.</p>
             <div class="cta-block">
                 <a href="${resetUrl}" class="button">Reset Passphrase</a>
             </div>

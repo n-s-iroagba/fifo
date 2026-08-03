@@ -57,7 +57,7 @@ export default function AdminRegisterPage() {
             {/* Header */}
             <header className="h-20 px-8 lg:px-16 flex items-center border-b border-blue-100 sticky top-0 bg-white z-50 justify-between">
                 <Link href="/" className="flex items-center gap-1">
-                    <span className="text-xl font-black italic uppercase tracking-[0.1em] text-blue-900">BlueCollarRecruitment</span>
+                    <span className="text-xl font-black italic uppercase tracking-[0.1em] text-blue-900">BlueCollar</span>
                 </Link>
                 <div className="flex items-center space-x-2">
                     <span className="w-2 h-2 rounded-full bg-blue-900"></span>
@@ -76,7 +76,7 @@ export default function AdminRegisterPage() {
                             </h1>
                         </div>
                         <p className="text-blue-500 text-lg font-medium leading-relaxed max-w-[440px]">
-                            Join the BlueCollarRecruitment control plane to manage institutional grade talent acquisitions and automated pipeline logistics.
+                            Join the BlueCollar control plane to manage institutional grade talent acquisitions and automated pipeline logistics.
                         </p>
                         <div className="flex items-center gap-4 pt-10 border-t border-blue-200">
                             <div className="flex -space-x-3">

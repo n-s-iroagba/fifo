@@ -76,7 +76,7 @@ function LoginContent() {
                     {/* Branding Header */}
                     <div className="mb-10">
                         <Link href="/" className="inline-flex items-center gap-2 text-xl font-bold tracking-tight text-blue-900">
-                            BlueCollarRecruitment
+                            BlueCollar
                         </Link>
                         <p className="text-blue-500 mt-1 text-sm">Sign in to your account</p>
                     </div>
@@ -202,7 +202,7 @@ function LoginContent() {
 
             <footer className="py-8 px-6 border-t border-blue-50">
                 <div className="max-w-[1280px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] font-bold text-blue-400 uppercase tracking-widest">
-                    <p>© 2026 BlueCollarRecruitment</p>
+                    <p>© 2026 BlueCollar</p>
                     <div className="flex gap-6">
                         <Link className="hover:text-blue-900 transition-colors" href={CONSTANTS.ROUTES.PRIVACY}>Privacy</Link>
                         <a className="hover:text-blue-900 transition-colors" href="#">Terms</a>

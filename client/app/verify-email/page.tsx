@@ -62,7 +62,7 @@ function VerifyEmailContent() {
         <main className="max-w-[448px] w-full space-y-12 text-center">
             <div className="space-y-6">
                 <Link href="/" className="text-xl font-black italic uppercase tracking-[0.1em] text-blue-900 block mb-12">
-                    BlueCollarRecruitment
+                    BlueCollar
                 </Link>
                 <div>
                     <div className={`w-20 h-20 rounded-2xl mx-auto flex items-center justify-center transition-all duration-700 shadow-xl ${status === 'loading' ? 'bg-blue-50 text-blue-300 shadow-blue-100' : status === 'success' ? 'bg-blue-900 text-white shadow-blue-900/10' : 'bg-red-50 text-red-600 shadow-red-100'}`}>
