@@ -231,34 +231,7 @@ export default function BrowseJobsPage() {
                 </div>
             )}
             {/* Apex Access Modal */}
-            {showApexModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-blue-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl border border-blue-100 text-center space-y-8 animate-in zoom-in-95 duration-300">
-                        <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto text-blue-900">
-                            <span className="material-symbols-outlined text-4xl">lock</span>
-                        </div>
-                        <div className="space-y-4">
-                            <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tight">Apex Access Restricted</h2>
-                            <p className="text-xs text-blue-500 font-medium leading-relaxed italic px-4">
-                                Sorry you can not view this page as this is only for BlueCollar Apex Network Member Applicants, you’d be granted access after you’re invited.
-                            </p>
-                        </div>
-                        <div className="pt-4 flex flex-col gap-3">
-                            <button
-                                onClick={() => setShowApexModal(false)}
-                                className="w-full bg-blue-900 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-900/10 hover:bg-blue-800 transition-all"
-                            >
-                                Back to Standard
-                            </button>
-                            <Link href="/apex/audit" className="w-full">
-                                <button className="w-full bg-white text-blue-900 border border-blue-100 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-50 transition-all">
-                                    Request Apex Audit
-                                </button>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            )}
+
         </div>
     );
 }

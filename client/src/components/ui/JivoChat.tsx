@@ -18,9 +18,8 @@ export default function JivoChat() {
 
     return (
         <Script
-            src="//code.jivosite.com/widget/bB4cO4DGRO"
+            src="//code.jivosite.com/widget/beo6Y2wbQVs"
             strategy="afterInteractive"
         />
     );
 }
-

@@ -97,7 +97,13 @@ export default function TicketDetailPage() {
         );
     }
 
-    const avelingPayUrl = `http://localhost:3002/checkout?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}`;
+    const { data: userRes } = useApiQuery<any>(
+        ['auth', 'me'],
+        '/auth/me'
+    );
+    const userWalletBalance = userRes?.walletBalance || 0;
+
+    const avelingPayUrl = `http://localhost:3002/checkout?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}&wallet=${userWalletBalance}`;
 
     return (
         <div className="font-sans text-blue-900 pb-24 max-w-4xl mx-auto">

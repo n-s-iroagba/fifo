@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useState } from 'react';
 import { useApiQuery } from '@/lib/hooks';
 import api from '@/lib/api';
 import Link from 'next/link';
@@ -10,10 +11,14 @@ import { Application } from '@/types/models';
 
 export default function AdminApplicantDetailPage() {
     const { id } = useParams();
-    const { data: userData, isLoading } = useApiQuery<any>(['admin', 'applicants', id], `/admin/users/${id}`);
+    const { data: userData, isLoading, refetch: refetchUser } = useApiQuery<any>(['admin', 'applicants', id], `/admin/users/${id}`);
     const { data: appsData, isLoading: isAppsLoading, refetch: refetchApps } = useApiQuery<{ rows: Application[] }>(['admin', 'applicants', id, 'applications'], `/admin/applications?userId=${id}`);
     const user = userData?.user;
     const applications = appsData?.rows || [];
+    
+    const [isEditingWallet, setIsEditingWallet] = useState(false);
+    const [walletAmount, setWalletAmount] = useState('');
+    const [isUpdatingWallet, setIsUpdatingWallet] = useState(false);
 
     if (isLoading) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-blue-400">Loading Applicant Profile...</div>;
     if (!user) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-red-500">Applicant Record Not Found</div>;
@@ -35,6 +40,24 @@ export default function AdminApplicantDetailPage() {
             }
         } catch (e: any) {
             alert(e.response?.data?.error || `Network error while sending ${type} mail.`);
+        }
+    };
+
+    const handleUpdateWallet = async () => {
+        setIsUpdatingWallet(true);
+        try {
+            const res = await api.put(`/admin/users/${id}/wallet`, { walletBalance: parseFloat(walletAmount) || 0 });
+            if (res.status === 200) {
+                alert('Refund wallet updated successfully.');
+                setIsEditingWallet(false);
+                refetchUser();
+            } else {
+                alert('Failed to update wallet.');
+            }
+        } catch (e: any) {
+            alert(e.response?.data?.error || 'Network error while updating wallet.');
+        } finally {
+            setIsUpdatingWallet(false);
         }
     };
 
@@ -123,6 +146,59 @@ export default function AdminApplicantDetailPage() {
                             <DataItem label="Email Address" value={user.email} />
                             <DataItem label="Primary Phone" value={user.phoneNumber} />
                         </div>
+                    </div>
+
+                    {/* Refund Wallet Card */}
+                    <div className="bg-white p-10 rounded-[2.5rem] border border-blue-100 shadow-2xl shadow-blue-900/5">
+                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-blue-50">
+                            <div className="flex items-center gap-4">
+                                <span className="material-symbols-outlined text-blue-900">account_balance_wallet</span>
+                                <h3 className="text-[10px] font-black text-blue-900 uppercase tracking-[0.2em]">Refund Wallet</h3>
+                            </div>
+                        </div>
+
+                        {!isEditingWallet ? (
+                            <div className="flex flex-col items-center">
+                                <span className="text-3xl font-black text-blue-900">${(user.walletBalance || 0).toFixed(2)}</span>
+                                <button
+                                    onClick={() => {
+                                        setWalletAmount((user.walletBalance || 0).toString());
+                                        setIsEditingWallet(true);
+                                    }}
+                                    className="mt-6 w-full py-3 bg-blue-50 text-blue-900 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-100 transition-all"
+                                >
+                                    Adjust Balance
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-4">
+                                <div>
+                                    <label className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-2 block">New Balance (USD)</label>
+                                    <input
+                                        type="number"
+                                        value={walletAmount}
+                                        onChange={(e) => setWalletAmount(e.target.value)}
+                                        className="w-full px-4 py-3 bg-blue-50 rounded-xl text-blue-900 font-bold border-none outline-none"
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={handleUpdateWallet}
+                                        disabled={isUpdatingWallet}
+                                        className="flex-1 py-3 bg-blue-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all disabled:opacity-50"
+                                    >
+                                        Save
+                                    </button>
+                                    <button
+                                        onClick={() => setIsEditingWallet(false)}
+                                        className="flex-1 py-3 bg-white text-blue-400 border border-blue-100 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-50 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* LMS Access Management */}

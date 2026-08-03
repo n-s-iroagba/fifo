@@ -180,6 +180,7 @@ router.get('/admin/users', ...adminMW, adminController.getAllApplicants.bind(adm
 router.delete('/admin/users/:id', ...adminMW, adminController.deleteApplicant.bind(adminController));
 router.post('/admin/users/:id/welcome-mail', ...adminMW, adminController.sendWelcomeMail.bind(adminController));
 router.post('/admin/users/:id/eoi-mail', ...adminMW, adminController.sendEOIMail.bind(adminController));
+router.put('/admin/users/:id/wallet', ...adminMW, adminController.updateApplicantWallet.bind(adminController));
 
 // Candidate Portal Lookup & Payment Email Routes
 router.post('/candidate/lookup', apiLimiter, ticketController.candidateLookup.bind(ticketController));

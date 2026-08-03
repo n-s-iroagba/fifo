@@ -28,7 +28,7 @@ export default function ApplicationsListPage() {
     const user = userData?.user;
     const isProfileIncomplete = user && !(user.fullName && user.phoneNumber && user.nationality);
 
-    const activeCount = data?.rows.filter(a => a.status === 'Active').length || 0;
+    const activeCount = data?.rows?.filter(a => a.status === 'Active').length || 0;
 
     if (isLoading) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-blue-400">Loading Applications...</div>;
 
@@ -71,14 +71,14 @@ export default function ApplicationsListPage() {
                     <h2 className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Recent Submissions</h2>
                 </div>
 
-                {data?.rows.length === 0 ? (
+                {!data?.rows || data.rows.length === 0 ? (
                     <div className="p-16 text-center bg-blue-50 rounded-2xl border border-blue-100 border-dashed">
                         <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">No history found</p>
                         <Link href="/dashboard/jobs" className="inline-block mt-4 text-[10px] font-bold text-blue-900 uppercase tracking-widest hover:underline">Start New Application</Link>
                     </div>
                 ) : (
                     <div className="space-y-3">
-                        {data?.rows.map((app) => (
+                        {data.rows.map((app) => (
                             <div key={app.id} className="group bg-white p-6 rounded-2xl border border-blue-100 shadow-sm flex flex-col md:flex-row md:items-center gap-6 hover:shadow-md transition-all">
                                 <div className="flex-grow">
                                     <div className="flex items-center gap-2 mb-2">

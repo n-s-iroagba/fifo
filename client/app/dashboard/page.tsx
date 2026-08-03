@@ -90,6 +90,38 @@ export default function ApplicantDashboard() {
                 );
             })()}
 
+            {/* Refund Wallet Section */}
+            {user && (
+                <div className="mb-12">
+                    <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white p-8 md:p-10 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl shadow-blue-900/20">
+                        <div className="flex items-center gap-6 w-full md:w-auto">
+                            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center shrink-0 border border-white/20">
+                                <span className="material-symbols-outlined text-3xl">account_balance_wallet</span>
+                            </div>
+                            <div>
+                                <h4 className="text-[10px] font-black text-blue-300 uppercase tracking-[0.3em] mb-1">Available Refund Wallet</h4>
+                                <div className="text-3xl md:text-4xl font-black tracking-tight">${(user?.walletBalance || 0).toFixed(2)}</div>
+                                <p className="text-[9px] font-bold text-blue-200 mt-1 uppercase tracking-widest">Available for Tickets or Withdrawal</p>
+                            </div>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                            <a
+                                href={`mailto:support@fifo.com?subject=Refund%20Withdrawal%20Request%20-%20${user?.email}&body=I%20would%20like%20to%20request%20a%20withdrawal%20of%20my%20refund%20wallet%20balance.%0A%0AMy%20details:%0AEmail:%20${user?.email}%0ABalance:%20$${user?.walletBalance}`}
+                                className="bg-white text-blue-900 px-6 py-4 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-blue-50 transition-all text-center"
+                            >
+                                Request Withdrawal
+                            </a>
+                            <a
+                                href={`mailto:support@fifo.com?subject=Ticket%20Purchase%20via%20Wallet%20-%20${user?.email}&body=I%20would%20like%20to%20use%20my%20refund%20wallet%20balance%20to%20purchase%20a%20ticket.%0A%0AMy%20details:%0AEmail:%20${user?.email}%0ABalance:%20$${user?.walletBalance}%0A%0APlease%20specify%20which%20ticket:`}
+                                className="bg-blue-800 text-white border border-blue-700 px-6 py-4 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-blue-700 transition-all text-center"
+                            >
+                                Use for Ticket
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
                 <div className="lg:col-span-2 space-y-8">
                     <section>

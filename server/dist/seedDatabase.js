@@ -31,6 +31,16 @@ async function seedDatabase() {
             await models_1.sequelize.models[modelName].sync({ alter: true });
         }
     }
+    // Safely add visaSponsorshipStatus to Application without triggering FK re-checks
+    try {
+        await models_1.sequelize.query("ALTER TABLE applications ADD COLUMN visaSponsorshipStatus ENUM('Pending', 'Approved', 'Rejected') DEFAULT NULL;");
+        console.log("Safely patched applications table with visaSponsorshipStatus.");
+    }
+    catch (e) {
+        if (e.original && e.original.code !== 'ER_DUP_FIELDNAME') {
+            console.log("Notice: Column might already exist or could not be added:", e.message);
+        }
+    }
     await models_1.sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
     // 4. Seed Categories
     const categoryMap = {};
@@ -61,10 +71,10 @@ async function seedDatabase() {
         { name: 'Entry-Level / Utility / Traineeship / Trades Assistant', description: 'Entry pathways into the resources sector.' }
     ];
     for (const sector of sectors) {
-        const [cat] = await models_1.JobCategory.findOrCreate({
-            where: { name: sector.name },
-            defaults: sector
-        });
+        let cat = await models_1.JobCategory.findOne({ where: { name: sector.name } });
+        if (!cat) {
+            cat = await models_1.JobCategory.create(sector);
+        }
         categoryMap[sector.name] = cat;
     }
     console.log(`Checking/Importing ${fifoJobs_1.fifoJobs.length} FIFO jobs...`);

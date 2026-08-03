@@ -10,7 +10,6 @@ const logger_1 = require("./utils/logger");
 // Initializes Associations Mapping
 require("./models");
 const seedDatabase_1 = require("./seedDatabase");
-const runMigration_1 = require("./runMigration");
 const PORT = process.env.PORT || 5000;
 const startServer = async () => {
     try {
@@ -20,7 +19,7 @@ const startServer = async () => {
             // Run heavy seeding and migrations in the background so Fly.io health checks don't timeout
             try {
                 await (0, seedDatabase_1.seedDatabase)();
-                await (0, runMigration_1.run)();
+                // await run();
                 if (process.env.NODE_ENV !== 'production') {
                     logger_1.logger.info('Database Synchronized successfully.');
                 }

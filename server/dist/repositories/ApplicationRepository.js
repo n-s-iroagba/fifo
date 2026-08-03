@@ -43,7 +43,7 @@ class ApplicationRepository {
                 models_1.JobListing,
                 models_1.Payment,
                 models_1.User,
-                models_1.Ticket,
+                { model: models_1.Ticket, as: 'Tickets' },
                 { model: models_1.JobStage, as: 'JobStages' }
             ],
             transaction

@@ -375,6 +375,18 @@ export class AdminController {
             res.status(status).json({ error: error.message });
         }
     }
+    public async updateApplicantWallet(req: Request, res: Response): Promise<void> {
+        try {
+            const id = parseInt(req.params.id as string, 10);
+            const { walletBalance } = req.body;
+            const result = await adminService.updateApplicantWallet(id, parseFloat(walletBalance));
+            res.status(CONSTANTS.HTTP_STATUS.OK).json(result);
+        } catch (error: any) {
+            console.error('[AdminController.updateApplicantWallet]', error);
+            const status = error.message === CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? CONSTANTS.HTTP_STATUS.NOT_FOUND : CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
+            res.status(status).json({ error: error.message });
+        }
+    }
 }
 
 export const adminController = new AdminController();

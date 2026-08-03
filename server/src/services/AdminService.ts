@@ -229,6 +229,24 @@ export class AdminService {
         await sendEOIEmail(user.email);
         return { success: true };
     }
+    public async updateApplicantWallet(id: number, walletBalance: number) {
+        const user = await userRepository.findById(id);
+        if (!user || user.role !== CONSTANTS.ROLES.APPLICANT) {
+            throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+        }
+        const oldBalance = user.walletBalance || 0;
+        await user.update({ walletBalance });
+
+        // Maintain robust audit trail for offline-to-online wallet balance updates
+        await notificationRepository.create({
+            userId: id,
+            title: 'Refund Wallet Updated',
+            message: `Your refund wallet balance was adjusted from $${oldBalance} to $${walletBalance}.`,
+            isRead: false
+        });
+
+        return { success: true, walletBalance: user.walletBalance };
+    }
 }
 
 export const adminService = new AdminService();
