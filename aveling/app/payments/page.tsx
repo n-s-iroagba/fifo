@@ -4,7 +4,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { CreditCard, FileText, Download, Tag, CheckCircle2 } from 'lucide-react';
-import { apiClient } from '../../lib/axios';
+import { apiClient } from '@/lib/axios';
 
 export default function PaymentsPage() {
     const [receipts, setReceipts] = React.useState<any[]>([]);
