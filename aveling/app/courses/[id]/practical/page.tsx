@@ -13,57 +13,50 @@ export default function PracticalSchedulingPage({ params }: { params: { id: stri
     const [bookingSuccess, setBookingSuccess] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
-    // Sequence gate status (Simulated: Theory completed)
-    const isTheoryComplete = true;
+    const [isTheoryComplete, setIsTheoryComplete] = useState<boolean>(false);
+    const [availableSlots, setAvailableSlots] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const availableSlots = [
-        {
-            id: 'slot-101',
-            date: 'Monday, 10 August 2026',
-            time: '08:00 AM - 12:00 PM',
-            facility: 'Aveling Perth Training Complex - Zone B (Heights Tower)',
-            location: 'Kwinana Industrial Area, WA',
-            instructor: 'Capt. Marcus Vance',
-            capacityTotal: 12,
-            capacityRemaining: 4
-        },
-        {
-            id: 'slot-102',
-            date: 'Wednesday, 12 August 2026',
-            time: '01:00 PM - 05:00 PM',
-            facility: 'Aveling Perth Training Complex - Zone B (Heights Tower)',
-            location: 'Kwinana Industrial Area, WA',
-            instructor: 'Sarah Jenkins',
-            capacityTotal: 12,
-            capacityRemaining: 8
-        },
-        {
-            id: 'slot-103',
-            date: 'Friday, 14 August 2026',
-            time: '08:00 AM - 12:00 PM',
-            facility: 'Pilbara Regional Hub - Dampier Facility',
-            location: 'Karratha, WA',
-            instructor: 'Dave Holloway',
-            capacityTotal: 10,
-            capacityRemaining: 2
-        }
-    ];
+    useEffect(() => {
+        const fetchPrerequisitesAndSlots = async () => {
+            try {
+                // Check theory gate
+                const checkRes = await apiClient.get(`/practical-sessions/prerequisite-check/${params.id}`);
+                setIsTheoryComplete(checkRes.data?.data?.cleared || false);
+
+                // Fetch real slots
+                const slotsRes = await apiClient.get('/practical-sessions/available-slots');
+                setAvailableSlots(slotsRes.data?.data || []);
+            } catch (e) {
+                console.error("Failed to load practical session data:", e);
+                setIsTheoryComplete(false);
+                setAvailableSlots([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPrerequisitesAndSlots();
+    }, [params.id]);
 
     const handleConfirmBooking = async () => {
         if (!selectedSlot) return;
         setSubmitting(true);
         try {
-            await apiClient.post('/practical-sessions/book', {
+            await apiClient.post('/practical-sessions/bookings', {
                 sessionId: selectedSlot,
                 courseId: params.id
             });
+            setBookingSuccess(true);
         } catch (e) {
-            // Fallback for local demo
+            console.error("Failed to book slot:", e);
+            alert("Failed to book slot. Please try again.");
         } finally {
             setSubmitting(false);
-            setBookingSuccess(true);
         }
     };
+
+    if (loading) return <div className="p-12 text-center text-xs font-bold text-amber-600">Loading Practical Schedule...</div>;
 
     return (
         <div className="mx-auto max-w-4xl space-y-6 py-4">

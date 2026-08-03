@@ -34,59 +34,9 @@ export default function CourseCatalogPage() {
                     setCourses(res.data.data);
                 }
             } catch (err) {
-                // Fallback demonstration courses mapped to FIFO gaps
-                setCourses([
-                    {
-                        id: 'crs-wah-101',
-                        name: 'RIIWHS204E - Work Safely at Heights',
-                        code: 'WAH-01',
-                        format: 'MIXED',
-                        certificationName: 'Working at Heights (RIIWHS204E)',
-                        description: 'Comprehensive training covering risk assessment, fall arrest equipment selection, inspection, and practical height simulation.',
-                        durationHours: 8,
-                        price: 280,
-                        subsidyAmount: 280, // 100% Subsidized by recruiter!
-                        subsidyReason: 'Recruiter Subsidized Placement Incentive',
-                        isGapRecommended: true
-                    },
-                    {
-                        id: 'crs-fa-301',
-                        name: 'HLTAID011 - Provide First Aid Refresher',
-                        code: 'FA-03',
-                        format: 'THEORY',
-                        certificationName: 'First Aid & CPR (HLTAID011)',
-                        description: 'Refresher course covering CPR techniques, automated external defibrillator (AED) usage, and emergency scene management.',
-                        durationHours: 4,
-                        price: 150,
-                        subsidyAmount: 75, // 50% Subsidized
-                        subsidyReason: 'FIFO Agency partial subsidy',
-                        isGapRecommended: true
-                    },
-                    {
-                        id: 'crs-cse-202',
-                        name: 'RIIWHS202E - Enter and Work in Confined Spaces',
-                        code: 'CSE-02',
-                        format: 'MIXED',
-                        certificationName: 'Confined Space Entry (RIIWHS202E)',
-                        description: 'Teaches atmospheric testing, gas monitoring, permit-to-work procedures, and emergency evacuation tactics.',
-                        durationHours: 12,
-                        price: 340,
-                        subsidyAmount: 0,
-                        isGapRecommended: false
-                    },
-                    {
-                        id: 'crs-gd-217',
-                        name: 'MSMWHS217 - Conduct Gas Testing Activities',
-                        code: 'GD-04',
-                        format: 'PRACTICAL',
-                        certificationName: 'Gas Detection (MSMWHS217)',
-                        description: 'Hands-on practical calibration and operation of multi-gas detection equipment for site safety officers.',
-                        durationHours: 6,
-                        price: 220,
-                        subsidyAmount: 0,
-                        isGapRecommended: false
-                    }
-                ]);
+                console.error("Failed to load courses:", err);
+                // Removed hardcoded fallback demonstration courses
+                setCourses([]);
             } finally {
                 setLoading(false);
             }

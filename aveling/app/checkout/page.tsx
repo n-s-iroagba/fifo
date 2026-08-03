@@ -39,33 +39,16 @@ function CheckoutContent() {
     useEffect(() => {
         const fetchBankDetails = async () => {
             try {
-                const res = await apiClient.get('/wallets/active');
-                // Try admin bank accounts as fallback
-                const bankRes = await apiClient.get('/admin/bank-accounts');
-                const firstBank = bankRes.data?.data?.[0];
-                if (firstBank) {
-                    setBankDetails({
-                        bankName: firstBank.bankName || 'Commonwealth Bank of Australia',
-                        bsb: firstBank.bsb || '066-000',
-                        accountNumber: firstBank.accountNumber || '1092 8841',
-                        accountName: firstBank.accountName || 'Aveling Training & FIFO Sponsorships',
-                    });
+                // Fetch the platform-wide bank account configured by admins
+                const bankRes = await apiClient.get('/admin/platform-bank');
+                if (bankRes.data?.data) {
+                    setBankDetails(bankRes.data.data);
                 } else {
-                    // Fallback to defaults
-                    setBankDetails({
-                        bankName: 'Commonwealth Bank of Australia',
-                        bsb: '066-000',
-                        accountNumber: '1092 8841',
-                        accountName: 'Aveling Training & FIFO Sponsorships',
-                    });
+                    setBankDetails(null);
                 }
-            } catch {
-                setBankDetails({
-                    bankName: 'Commonwealth Bank of Australia',
-                    bsb: '066-000',
-                    accountNumber: '1092 8841',
-                    accountName: 'Aveling Training & FIFO Sponsorships',
-                });
+            } catch (err) {
+                console.error("Failed to fetch bank details", err);
+                setBankDetails(null);
             } finally {
                 setBankLoading(false);
             }

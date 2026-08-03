@@ -58,4 +58,24 @@ export class CourseService {
         await course.update({ isPublished });
         return course;
     }
+
+    static async getPublishedCourses() {
+        return await Course.findAll({ 
+            where: { isPublished: true },
+            include: [CertificationType],
+            order: [['createdAt', 'DESC']]
+        });
+    }
+
+    static async getCourseById(courseId: string) {
+        const course = await Course.findByPk(courseId, {
+            include: [CertificationType]
+        });
+        if (!course) throw new Error('COURSE_NOT_FOUND');
+        const modules = await CourseModule.findAll({ 
+            where: { courseId }, 
+            order: [['sequenceOrder', 'ASC']] 
+        });
+        return { course, modules };
+    }
 }

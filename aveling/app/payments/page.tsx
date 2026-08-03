@@ -4,26 +4,28 @@
 import React from 'react';
 import Link from 'next/link';
 import { CreditCard, FileText, Download, Tag, CheckCircle2 } from 'lucide-react';
+import { apiClient } from '../../lib/axios';
 
 export default function PaymentsPage() {
-    const receipts = [
-        {
-            id: 'REC-2026-99182',
-            date: '2026-08-01',
-            courses: ['RIIWHS204E - Work Safely at Heights', 'HLTAID011 - Provide First Aid Refresher'],
-            amountPaid: 75.00,
-            subsidiesCovered: 355.00,
-            status: 'PAID'
-        },
-        {
-            id: 'REC-2025-44102',
-            date: '2025-11-10',
-            courses: ['MSMWHS217 - Conduct Gas Testing Activities'],
-            amountPaid: 220.00,
-            subsidiesCovered: 0.00,
-            status: 'PAID'
-        }
-    ];
+    const [receipts, setReceipts] = React.useState<any[]>([]);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const fetchReceipts = async () => {
+            try {
+                // Endpoint might not exist yet, but we remove hardcoded fallback
+                const res = await apiClient.get('/payments/me');
+                if (res.data?.data) {
+                    setReceipts(res.data.data);
+                }
+            } catch {
+                setReceipts([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchReceipts();
+    }, []);
 
     return (
         <div className="space-y-6">
@@ -38,7 +40,13 @@ export default function PaymentsPage() {
             </div>
 
             <div className="space-y-4">
-                {receipts.map((rec) => (
+                {loading && <div className="text-xs text-zinc-500 font-bold p-4">Loading receipts...</div>}
+                {!loading && receipts.length === 0 && (
+                    <div className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm text-center dark:border-zinc-800 dark:bg-zinc-900">
+                        <p className="text-xs font-bold text-zinc-500">No payment receipts found.</p>
+                    </div>
+                )}
+                {!loading && receipts.map((rec) => (
                     <div key={rec.id} className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div className="space-y-2">
                             <div className="flex items-center gap-2">
@@ -49,7 +57,7 @@ export default function PaymentsPage() {
                             </div>
 
                             <ul className="text-xs font-bold text-zinc-900 dark:text-white space-y-1">
-                                {rec.courses.map((c, i) => (
+                                {rec.courses?.map((c: any, i: number) => (
                                     <li key={i} className="flex items-center gap-1.5">
                                         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
                                         {c}
@@ -60,7 +68,7 @@ export default function PaymentsPage() {
                             {rec.subsidiesCovered > 0 && (
                                 <div className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded dark:bg-amber-950 dark:text-amber-300">
                                     <Tag className="h-3 w-3" />
-                                    Recruiter Subsidy Applied: -${rec.subsidiesCovered.toFixed(2)}
+                                    Recruiter Subsidy Applied: -${rec.subsidiesCovered?.toFixed(2)}
                                 </div>
                             )}
                         </div>
@@ -68,7 +76,7 @@ export default function PaymentsPage() {
                         <div className="flex items-center justify-between md:justify-end gap-6 pt-4 md:pt-0 border-t md:border-t-0 border-zinc-100 dark:border-zinc-800">
                             <div className="text-right">
                                 <span className="text-[10px] uppercase font-bold text-zinc-400">Learner Paid</span>
-                                <p className="text-xl font-extrabold text-zinc-900 dark:text-white">${rec.amountPaid.toFixed(2)}</p>
+                                <p className="text-xl font-extrabold text-zinc-900 dark:text-white">${rec.amountPaid?.toFixed(2)}</p>
                             </div>
 
                             <button

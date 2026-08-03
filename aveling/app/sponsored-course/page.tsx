@@ -58,44 +58,9 @@ export default function SponsoredCourseLookupPage() {
                 setError(res.data?.message || 'Candidate record not found.');
             }
         } catch (err: any) {
-            // Fallback interactive demonstration profile if server route not reached
-            setProfile({
-                id: 'usr-cnd-10001',
-                name: 'Alex Johnson',
-                email: 'alex.johnson@fifo-recruitment.com.au',
-                candidateNumber: candidateInput.trim().toUpperCase() || 'CND-10001',
-                walletBalance: 280.00, // Refund balance from previous completion
-                tickets: [
-                    {
-                        id: 'tkt-wah-991',
-                        ticketType: 'Working at Heights (RIIWHS204E)',
-                        status: 'missing',
-                        ticketSponsorship: 'first_attempt_approved',
-                        purchasePrice: 280.00,
-                        assignedCourse: {
-                            id: 'crs-wah-101',
-                            name: 'RIIWHS204E - Work Safely at Heights',
-                            code: 'WAH-01',
-                            format: 'MIXED',
-                            price: 280.00
-                        }
-                    },
-                    {
-                        id: 'tkt-fa-882',
-                        ticketType: 'First Aid & CPR (HLTAID011)',
-                        status: 'missing',
-                        ticketSponsorship: 'applied',
-                        purchasePrice: 150.00,
-                        assignedCourse: {
-                            id: 'crs-fa-301',
-                            name: 'HLTAID011 - Provide First Aid Refresher',
-                            code: 'FA-03',
-                            format: 'THEORY',
-                            price: 150.00
-                        }
-                    }
-                ]
-            });
+            console.error('Failed to lookup candidate:', err);
+            setError(err.response?.data?.message || 'Failed to lookup candidate record.');
+            setProfile(null);
         } finally {
             setLoading(false);
         }

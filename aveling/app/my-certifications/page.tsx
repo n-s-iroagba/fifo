@@ -30,42 +30,8 @@ export default function MyCertificationsPage() {
                     setCertificates(res.data.data);
                 }
             } catch (err) {
-                // Fallback demonstration data tailored to FIFO roles if unauthenticated or demo
-                setCertificates([
-                    {
-                        id: 'gap-1',
-                        certName: 'Working at Heights (RIIWHS204E)',
-                        code: 'WAH-01',
-                        status: 'MISSING',
-                        courseId: 'crs-wah-101'
-                    },
-                    {
-                        id: 'gap-2',
-                        certName: 'Confined Space Entry (RIIWHS202E)',
-                        code: 'CSE-02',
-                        status: 'VALID',
-                        issuedAt: '2026-01-15',
-                        expiresAt: '2028-01-15',
-                        certificateNumber: 'AVL-2026-88492'
-                    },
-                    {
-                        id: 'gap-3',
-                        certName: 'First Aid & CPR (HLTAID011)',
-                        code: 'FA-03',
-                        status: 'EXPIRED',
-                        expiresAt: '2026-06-30',
-                        courseId: 'crs-fa-301'
-                    },
-                    {
-                        id: 'gap-4',
-                        certName: 'Gas Detection (MSMWHS217)',
-                        code: 'GD-04',
-                        status: 'VALID',
-                        issuedAt: '2025-11-10',
-                        expiresAt: '2027-11-10',
-                        certificateNumber: 'AVL-2025-44102'
-                    }
-                ]);
+                console.error('Failed to load certificates:', err);
+                setCertificates([]);
             } finally {
                 setLoading(false);
             }

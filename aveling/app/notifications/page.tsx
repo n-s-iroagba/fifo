@@ -5,40 +5,24 @@ import React from 'react';
 import { Bell, Tag, CheckCircle2, Award, Calendar, AlertCircle } from 'lucide-react';
 
 export default function NotificationsPage() {
-    const notifications = [
-        {
-            id: 'n1',
-            title: 'Recruiter Subsidy Applied!',
-            message: 'Your recruiter has applied a 100% full subsidy ($280.00) for RIIWHS204E Work Safely at Heights.',
-            time: '2 hours ago',
-            icon: Tag,
-            type: 'subsidy'
-        },
-        {
-            id: 'n2',
-            title: 'Theory Exam Result: Passed (100%)',
-            message: 'You successfully passed your theory exam for Work Safely at Heights. Practical session booking unlocked!',
-            time: '4 hours ago',
-            icon: CheckCircle2,
-            type: 'exam'
-        },
-        {
-            id: 'n3',
-            title: 'Practical Assessment Booked',
-            message: 'Slot confirmed for Monday, 10 August 2026 at Aveling Perth Complex Zone B.',
-            time: '1 day ago',
-            icon: Calendar,
-            type: 'booking'
-        },
-        {
-            id: 'n4',
-            title: 'New Certification Gap Assigned',
-            message: 'Admin flagged First Aid & CPR (HLTAID011) as expired on your profile.',
-            time: '3 days ago',
-            icon: AlertCircle,
-            type: 'gap'
-        }
-    ];
+    const [notifications, setNotifications] = React.useState<any[]>([]);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const fetchNotifications = async () => {
+            try {
+                // Endpoint might not exist yet, removing hardcoded fallback
+                // const res = await apiClient.get('/notifications/me');
+                // if (res.data?.data) setNotifications(res.data.data);
+                setNotifications([]);
+            } catch {
+                setNotifications([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchNotifications();
+    }, []);
 
     return (
         <div className="space-y-6">
@@ -53,8 +37,14 @@ export default function NotificationsPage() {
             </div>
 
             <div className="space-y-3">
-                {notifications.map((n) => {
-                    const Icon = n.icon;
+                {loading && <div className="text-xs text-zinc-500 font-bold p-4">Loading notifications...</div>}
+                {!loading && notifications.length === 0 && (
+                    <div className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm text-center dark:border-zinc-800 dark:bg-zinc-900">
+                        <p className="text-xs font-bold text-zinc-500">No new notifications.</p>
+                    </div>
+                )}
+                {!loading && notifications.map((n) => {
+                    const Icon = n.icon || Bell;
                     return (
                         <div key={n.id} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 flex items-start gap-4">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400">

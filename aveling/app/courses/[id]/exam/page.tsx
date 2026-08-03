@@ -33,39 +33,29 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
     const [refundProcessing, setRefundProcessing] = useState(false);
     const [refundDone, setRefundDone] = useState(false);
 
-    // STEP-1.1.24: Mixed question types
-    const questions: ExamQuestion[] = [
-        {
-            id: 'q1',
-            type: 'MCQ',
-            question: 'What is the maximum fall distance allowed before a fall arrest system must lock under Australian WHS regulations?',
-            options: ['1.0 metre', '2.0 metres', '3.5 metres', '5.0 metres'],
-            correctIdx: 1
-        },
-        {
-            id: 'q2',
-            type: 'INPUT_ANSWER',
-            question: 'What is the minimum static load strength (in kN) required for a single-person anchor point according to AS/NZS 1891?',
-            expectedKeyword: '15'
-        },
-        {
-            id: 'q3',
-            type: 'ESSAY',
-            question: 'Detail the step-by-step procedures for conducting a pre-use inspection of a full-body safety harness before ascending to a high work area.',
-        },
-        {
-            id: 'q4',
-            type: 'MCQ',
-            question: 'What action must be taken immediately if a safety harness exhibits fraying or chemical contamination?',
-            options: [
-                'Wrap duct tape around the frayed webbing',
-                'Tag out of service, destroy, and log incident report',
-                'Use it only for ground-level tethering',
-                'Ignore if used less than 1 hour'
-            ],
-            correctIdx: 1
+    const [questions, setQuestions] = useState<any[]>([]);
+    const [attemptId, setAttemptId] = useState('');
+    const [starting, setStarting] = useState(false);
+
+    const startAssessment = async () => {
+        setStarting(true);
+        try {
+            const res = await apiClient.post('/exams/attempts/start', { courseId: params.id });
+            const attempt = res.data?.data;
+            if (attempt?.id) {
+                setAttemptId(attempt.id);
+                // Fetch questions for this attempt
+                const detailsRes = await apiClient.get(`/exams/attempts/${attempt.id}`);
+                setQuestions(detailsRes.data?.data?.questions || []);
+                setPhase('active');
+            }
+        } catch (err: any) {
+            console.error("Failed to start assessment:", err);
+            alert(err.response?.data?.message || "Failed to start assessment");
+        } finally {
+            setStarting(false);
         }
-    ];
+    };
 
     const handleSelectOption = (qId: string, optionIdx: number) => {
         setAnswers(prev => ({ ...prev, [qId]: optionIdx }));
@@ -75,7 +65,6 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
         setAnswers(prev => ({ ...prev, [qId]: val }));
     };
 
-    // STEP-1.1.20: On submit, set review-awaiting FIRST, then grade
     const handleSubmitExam = async () => {
         setSubmitting(true);
 
@@ -88,19 +77,13 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
 
         setPhase('review_awaiting');
 
-        // Grade after short delay to simulate review process
-        setTimeout(async () => {
-            let points = 0;
-            questions.forEach(q => {
-                if (q.type === 'MCQ' && answers[q.id] === q.correctIdx) points += 100;
-                else if (q.type === 'INPUT_ANSWER' && String(answers[q.id] || '').trim().includes(q.expectedKeyword || '15')) points += 100;
-                else if (q.type === 'ESSAY' && String(answers[q.id] || '').trim().length > 20) points += 100;
-            });
-
-            const score = Math.round(points / questions.length);
-            const passed = score >= 75;
+        try {
+            const res = await apiClient.post(`/exams/attempts/${attemptId}/submit`, { answers });
+            const result = res.data?.data;
+            const passed = result?.isPass;
+            const score = result?.score || 0;
             const refund = passed ? (attemptParam >= 2 ? 560 : 280) : 0;
-
+            
             setScorePct(score);
             setRefundAmount(refund);
 
@@ -114,9 +97,13 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
                 } catch { /* non-blocking */ }
             }
 
-            setSubmitting(false);
             setPhase(passed ? 'passed' : 'failed');
-        }, 1500);
+        } catch (err) {
+            console.error("Failed to submit exam:", err);
+            setPhase('failed');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     // STEP-1.1.17 & 1.1.18: Refund choice handler
@@ -165,21 +152,22 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
                     </div>
 
                     <button
-                        onClick={() => setPhase('active')}
-                        className="w-full inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black py-4 text-xs font-black uppercase tracking-wider rounded-xl shadow-lg hover:bg-yellow-400 transition-all"
+                        onClick={startAssessment}
+                        disabled={starting}
+                        className="w-full inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black py-4 text-xs font-black uppercase tracking-wider rounded-xl shadow-lg hover:bg-yellow-400 transition-all disabled:opacity-50"
                     >
-                        Begin Assessment
+                        {starting ? 'Preparing...' : 'Begin Assessment'}
                         <ArrowRight className="h-4 w-4 stroke-[3]" />
                     </button>
                 </div>
             )}
 
             {/* PHASE: Active Questions */}
-            {phase === 'active' && (
+            {phase === 'active' && questions.length > 0 && (
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-6">
                     <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
                         <span className="text-xs font-extrabold uppercase tracking-wider text-zinc-500">
-                            Question {currentIdx + 1} of {questions.length} • {questions[currentIdx].type}
+                            Question {currentIdx + 1} of {questions.length} • {questions[currentIdx]?.questionType}
                         </span>
                         <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
                             Pass: 75%
@@ -187,12 +175,12 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
                     </div>
 
                     <h2 className="text-base font-extrabold text-zinc-900 dark:text-white">
-                        {questions[currentIdx].question}
+                        {questions[currentIdx]?.questionText}
                     </h2>
 
-                    {questions[currentIdx].type === 'MCQ' && (
+                    {questions[currentIdx]?.questionType === 'mcq' && (
                         <div className="space-y-2.5">
-                            {questions[currentIdx].options?.map((opt, optIdx) => {
+                            {questions[currentIdx]?.options?.map((opt: string, optIdx: number) => {
                                 const selected = answers[questions[currentIdx].id] === optIdx;
                                 return (
                                     <button
@@ -216,7 +204,7 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
                         </div>
                     )}
 
-                    {questions[currentIdx].type === 'INPUT_ANSWER' && (
+                    {questions[currentIdx]?.questionType === 'input_answer' && (
                         <input
                             type="text"
                             value={answers[questions[currentIdx].id] || ''}
@@ -226,7 +214,7 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
                         />
                     )}
 
-                    {questions[currentIdx].type === 'ESSAY' && (
+                    {questions[currentIdx]?.questionType === 'essay' && (
                         <textarea
                             rows={5}
                             value={answers[questions[currentIdx].id] || ''}
