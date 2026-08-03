@@ -29,6 +29,10 @@ export class Ticket extends Model {
     declare canApplySponsorship: boolean;
     declare realPrice: number | null;
     declare subsidisedPrice: number | null;
+    declare receiptUrl: string | null;
+    declare receiptReference: string | null;
+    declare paymentStatus: 'unpaid' | 'receipt_submitted' | 'payment_verified';
+    declare courseAccessGranted: boolean;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 
@@ -130,7 +134,25 @@ Ticket.init({
     courseId: {
         type: DataTypes.STRING,
         allowNull: true,
-    }
+    },
+    receiptUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    receiptReference: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    paymentStatus: {
+        type: DataTypes.ENUM('unpaid', 'receipt_submitted', 'payment_verified'),
+        defaultValue: 'unpaid',
+        allowNull: false,
+    },
+    courseAccessGranted: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
 }, {
     sequelize,
     tableName: 'tickets',

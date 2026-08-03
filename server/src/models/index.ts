@@ -27,6 +27,7 @@ import { ExamAttempt } from './ExamAttempt';
 import { Certificate } from './Certificate';
 import { Ticket } from './Ticket';
 import { TicketCatalog } from './TicketCatalog';
+import { PlatformSetting } from './PlatformSetting';
 
 // User <-> Ticket
 User.hasMany(Ticket, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
@@ -194,5 +195,6 @@ export {
     ExamAttempt,
     Certificate,
     Ticket,
-    TicketCatalog
+    TicketCatalog,
+    PlatformSetting
 };

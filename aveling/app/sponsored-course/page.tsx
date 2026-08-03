@@ -13,6 +13,8 @@ interface MappedTicket {
     status: 'missing' | 'applied' | 'first_attempt_approved' | 'ticket_issued' | 'possessed';
     ticketSponsorship?: 'applied' | 'first_attempt_approved' | 'ticket_issued';
     purchasePrice: number;
+    paymentStatus?: 'unpaid' | 'receipt_submitted' | 'payment_verified';
+    courseAccessGranted?: boolean;
     assignedCourse?: {
         id: string;
         name: string;
@@ -244,13 +246,31 @@ export default function SponsoredCourseLookupPage() {
 
                                         {/* Action Button → Navigate to Checkout with live params */}
                                         <div className="shrink-0 pt-2 lg:pt-0">
-                                            <button
-                                                onClick={() => router.push(`/checkout?ticketId=${tkt.id}&candidateNumber=${profile.candidateNumber}&courseId=${tkt.assignedCourse?.id || ''}&price=${tkt.purchasePrice}&wallet=${profile.walletBalance}`)}
-                                                className="w-full lg:w-auto inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black font-extrabold text-xs px-8 py-4 rounded-xl hover:bg-yellow-400 transition-all uppercase tracking-wider shadow-md"
-                                            >
-                                                <span>Start Course & Checkout</span>
-                                                <ArrowRight className="h-4 w-4 stroke-[3]" />
-                                            </button>
+                                            {tkt.paymentStatus === 'payment_verified' || tkt.courseAccessGranted ? (
+                                                <button
+                                                    onClick={() => router.push(`/courses/${tkt.assignedCourse?.id || ''}`)}
+                                                    className="w-full lg:w-auto inline-flex items-center justify-center gap-2 bg-emerald-500 text-white font-extrabold text-xs px-8 py-4 rounded-xl hover:bg-emerald-600 transition-all uppercase tracking-wider shadow-md"
+                                                >
+                                                    <span>Go to Course Workspace</span>
+                                                    <ArrowRight className="h-4 w-4 stroke-[3]" />
+                                                </button>
+                                            ) : tkt.paymentStatus === 'receipt_submitted' ? (
+                                                <button
+                                                    disabled
+                                                    className="w-full lg:w-auto inline-flex items-center justify-center gap-2 bg-amber-200 text-amber-800 font-extrabold text-xs px-8 py-4 rounded-xl uppercase tracking-wider shadow-inner cursor-not-allowed"
+                                                >
+                                                    <Lock className="h-4 w-4 stroke-[3]" />
+                                                    <span>Awaiting Admin Verification</span>
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => router.push(`/checkout?ticketId=${tkt.id}&candidateNumber=${profile.candidateNumber}&courseId=${tkt.assignedCourse?.id || ''}&price=${tkt.purchasePrice}&wallet=${profile.walletBalance}`)}
+                                                    className="w-full lg:w-auto inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black font-extrabold text-xs px-8 py-4 rounded-xl hover:bg-yellow-400 transition-all uppercase tracking-wider shadow-md"
+                                                >
+                                                    <span>Start Course & Checkout</span>
+                                                    <ArrowRight className="h-4 w-4 stroke-[3]" />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 );

@@ -300,6 +300,82 @@ export class TicketController {
             next(error);
         }
     }
+
+    public async adminGenerateAvelingCredentials(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const ticketId = parseInt(req.params.id as string, 10);
+            const result = await ticketService.generateAvelingCredentials(ticketId);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result });
+        } catch (error: any) {
+            if (error.message === 'TICKET_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Ticket not found.' });
+                return;
+            }
+            if (error.message === 'TICKET_NOT_APPROVED') {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Sponsorship is not approved yet.' });
+                return;
+            }
+            next(error);
+        }
+    }
+
+    public async submitReceipt(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const ticketId = parseInt(req.params.id as string, 10);
+            const userId = (req as any).user!.id;
+            const ticket = await ticketService.submitReceipt(ticketId, userId, req.body);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: ticket });
+        } catch (error: any) {
+            if (error.message === 'TICKET_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Ticket not found.' });
+                return;
+            }
+            next(error);
+        }
+    }
+
+    public async adminValidatePayment(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const ticketId = parseInt(req.params.id as string, 10);
+            const ticket = await ticketService.adminValidatePayment(ticketId);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: ticket });
+        } catch (error: any) {
+            if (error.message === 'TICKET_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Ticket not found.' });
+                return;
+            }
+            next(error);
+        }
+    }
+
+    public async adminApproveExamResult(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const ticketId = parseInt(req.params.id as string, 10);
+            const { passed } = req.body;
+            const ticket = await ticketService.adminApproveExamResult(ticketId, passed);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: ticket });
+        } catch (error: any) {
+            if (error.message === 'TICKET_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Ticket not found.' });
+                return;
+            }
+            next(error);
+        }
+    }
+
+    public async getPlatformBank(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const bankDetails = await ticketService.getPlatformBankAccount();
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: bankDetails });
+        } catch (error) { next(error); }
+    }
+
+    public async updatePlatformBank(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const bankDetails = await ticketService.updatePlatformBankAccount(req.body);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: bankDetails });
+        } catch (error) { next(error); }
+    }
 }
 
 export const ticketController = new TicketController();

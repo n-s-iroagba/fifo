@@ -164,8 +164,17 @@ router.post('/tickets/:id/checkout-email', rateLimiter_1.apiLimiter, TicketContr
 // Admin Ticket Management Routes
 router.get('/admin/tickets', ...adminMW, TicketController_1.ticketController.adminGetAllTickets.bind(TicketController_1.ticketController));
 router.put('/admin/tickets/:id', ...adminMW, TicketController_1.ticketController.adminUpdateTicket.bind(TicketController_1.ticketController));
+router.delete('/admin/tickets/:id', ...adminMW, TicketController_1.ticketController.adminDeleteTicket.bind(TicketController_1.ticketController));
 router.post('/admin/tickets/bulk-seed', ...adminMW, TicketController_1.ticketController.adminBulkSeedTickets.bind(TicketController_1.ticketController));
 router.post('/admin/tickets/:id/approve-receipt', ...adminMW, TicketController_1.ticketController.adminApproveReceipt.bind(TicketController_1.ticketController));
+router.post('/admin/applications/:id/tickets', ...adminMW, TicketController_1.ticketController.adminAddApplicationTicket.bind(TicketController_1.ticketController));
+router.post('/admin/tickets/:id/generate-credentials', ...adminMW, TicketController_1.ticketController.adminGenerateAvelingCredentials.bind(TicketController_1.ticketController));
+router.post('/admin/tickets/:id/validate-payment', ...adminMW, TicketController_1.ticketController.adminValidatePayment.bind(TicketController_1.ticketController));
+router.post('/admin/tickets/:id/approve-exam', ...adminMW, TicketController_1.ticketController.adminApproveExamResult.bind(TicketController_1.ticketController));
+router.get('/admin/platform-bank', ...adminMW, TicketController_1.ticketController.getPlatformBank.bind(TicketController_1.ticketController));
+router.put('/admin/platform-bank', ...adminMW, TicketController_1.ticketController.updatePlatformBank.bind(TicketController_1.ticketController));
+// Candidate receipt submission (authenticated applicant)
+router.post('/tickets/:id/submit-receipt', ...applicantMW, TicketController_1.ticketController.submitReceipt.bind(TicketController_1.ticketController));
 const InterestController_1 = require("../controllers/InterestController");
 const TicketCatalogController_1 = require("../controllers/TicketCatalogController");
 // Expression of Interest Routes

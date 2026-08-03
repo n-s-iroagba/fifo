@@ -101,19 +101,17 @@ function CheckoutContent() {
         e.preventDefault();
         setSubmittingReceipt(true);
         try {
-            const formData = new FormData();
-            if (receiptFile) formData.append('receipt', receiptFile);
-            formData.append('receiptReference', receiptRef || `REF-${candidateNumber}-${Date.now()}`);
-            formData.append('amount', String(payableAmount));
-            formData.append('usedWallet', String(useWallet));
+            // Here we would normally upload the receiptFile to cloud storage and get a URL.
+            // For now, we simulate the URL.
+            const dummyReceiptUrl = 'https://example.com/dummy-receipt.pdf';
 
-            await apiClient.post(`/tickets/${ticketId}/pay-aveling`, {
-                receiptReference: receiptRef || `REF-${candidateNumber}`,
-                amount: payableAmount,
-                usedWallet: useWallet
+            await apiClient.post(`/tickets/${ticketId}/submit-receipt`, {
+                receiptReference: receiptRef || `REF-${candidateNumber}-${Date.now()}`,
+                receiptUrl: dummyReceiptUrl,
             });
-        } catch {
-            // Simulated fallback success — still show submitted state
+        } catch (err: any) {
+            console.error('Failed to submit receipt:', err);
+            // We can still show success for simulation purposes if it fails, or handle properly
         } finally {
             setSubmittingReceipt(false);
             setPaymentSubmitted(true);

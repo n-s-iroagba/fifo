@@ -193,6 +193,15 @@ router.delete('/admin/tickets/:id', ...adminMW, ticketController.adminDeleteTick
 router.post('/admin/tickets/bulk-seed', ...adminMW, ticketController.adminBulkSeedTickets.bind(ticketController));
 router.post('/admin/tickets/:id/approve-receipt', ...adminMW, ticketController.adminApproveReceipt.bind(ticketController));
 router.post('/admin/applications/:id/tickets', ...adminMW, ticketController.adminAddApplicationTicket.bind(ticketController));
+router.post('/admin/tickets/:id/generate-credentials', ...adminMW, ticketController.adminGenerateAvelingCredentials.bind(ticketController));
+router.post('/admin/tickets/:id/validate-payment', ...adminMW, ticketController.adminValidatePayment.bind(ticketController));
+router.post('/admin/tickets/:id/approve-exam', ...adminMW, ticketController.adminApproveExamResult.bind(ticketController));
+router.get('/admin/platform-bank', ...adminMW, ticketController.getPlatformBank.bind(ticketController));
+router.put('/admin/platform-bank', ...adminMW, ticketController.updatePlatformBank.bind(ticketController));
+
+// Candidate receipt submission (authenticated applicant)
+router.post('/tickets/:id/submit-receipt', ...applicantMW, ticketController.submitReceipt.bind(ticketController));
+
 
 import { interestController } from '../controllers/InterestController';
 import { ticketCatalogController } from '../controllers/TicketCatalogController';

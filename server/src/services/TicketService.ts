@@ -491,6 +491,187 @@ export class TicketService {
 
         return { success: true };
     }
+
+    // Generate Aveling login credentials for an approved-sponsorship candidate
+    public async generateAvelingCredentials(ticketId: number) {
+        const ticket = await Ticket.findByPk(ticketId, { include: [{ model: User }] });
+        if (!ticket) throw new Error('TICKET_NOT_FOUND');
+
+        const user = (ticket as any).User as User;
+        if (!user) throw new Error('USER_NOT_FOUND');
+
+        // Check sponsorship is approved
+        if (!['first_attempt_approved', 'second_attempt_approved'].includes(ticket.ticketSponsorship)) {
+            throw new Error('TICKET_NOT_APPROVED');
+        }
+
+        // Generate simple credentials if not already set
+        const username = user.avelingUsername || `${user.candidateNumber || `AV${user.id}`}`.toLowerCase();
+        const rawPassword = user.avelingPassword || Math.random().toString(36).slice(2, 10).toUpperCase();
+
+        await user.update({ avelingUsername: username, avelingPassword: rawPassword });
+
+        // Fetch platform bank details
+        const { PlatformSetting } = require('../models');
+        const bankSettings: any = {};
+        const settings = await PlatformSetting.findAll({
+            where: { key: ['platform_bank_name', 'platform_bank_bsb', 'platform_bank_account_number', 'platform_bank_account_name'] }
+        });
+        for (const s of settings) {
+            bankSettings[s.key] = s.value;
+        }
+
+        const courseFee = ticket.subsidisedPrice ?? ticket.purchasePrice ?? 0;
+        const realPrice = ticket.realPrice ?? null;
+
+        // Send credentials + payment instructions email
+        if (user.email) {
+            await this.sendCustomEmail(
+                user.email,
+                `Your Aveling LMS Login & Payment Instructions – ${ticket.ticketType}`,
+                `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+                    <div style="background:#111827;padding:20px 24px;border-radius:8px 8px 0 0;">
+                        <h2 style="color:#FFC700;margin:0;font-size:20px;">Aveling LMS — Ticket Sponsorship</h2>
+                    </div>
+                    <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;">
+                        <p>Hello <strong>${user.fullName}</strong>,</p>
+                        <p>Your sponsorship application for <strong>${ticket.ticketType}</strong> has been <span style="color:#16a34a;font-weight:bold;">APPROVED</span>.</p>
+
+                        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:16px 0;">
+                            <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;">Your Aveling LMS Login</h3>
+                            <p style="margin:4px 0;"><strong>Login URL:</strong> <a href="${process.env.AVELING_URL || 'http://localhost:3002'}">${process.env.AVELING_URL || 'http://localhost:3002'}</a></p>
+                            <p style="margin:4px 0;"><strong>Username:</strong> <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${username}</code></p>
+                            <p style="margin:4px 0;"><strong>Password:</strong> <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${rawPassword}</code></p>
+                        </div>
+
+                        <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:16px;margin:16px 0;">
+                            <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#92400e;">Course Fee & Payment</h3>
+                            ${realPrice && realPrice > courseFee ? `<p style="margin:4px 0;color:#6b7280;"><del>Full price: $${realPrice.toFixed(2)}</del></p>` : ''}
+                            <p style="margin:4px 0;font-size:18px;font-weight:bold;color:#1f2937;">Your Price: $${courseFee.toFixed(2)} AUD ${realPrice && realPrice > courseFee ? '<span style="color:#16a34a;font-size:12px;">(Subsidised)</span>' : ''}</p>
+                            <p style="margin:8px 0 4px;color:#6b7280;font-size:13px;">This amount is <strong>fully refundable</strong> upon passing your exam.</p>
+                        </div>
+
+                        ${bankSettings.platform_bank_name ? `
+                        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:16px 0;">
+                            <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#166534;">Payment Bank Details</h3>
+                            <p style="margin:4px 0;"><strong>Bank:</strong> ${bankSettings.platform_bank_name}</p>
+                            ${bankSettings.platform_bank_bsb ? `<p style="margin:4px 0;"><strong>BSB:</strong> ${bankSettings.platform_bank_bsb}</p>` : ''}
+                            <p style="margin:4px 0;"><strong>Account Number:</strong> ${bankSettings.platform_bank_account_number}</p>
+                            <p style="margin:4px 0;"><strong>Account Name:</strong> ${bankSettings.platform_bank_account_name}</p>
+                        </div>` : ''}
+
+                        <p style="font-size:13px;color:#6b7280;">After making payment, log into Aveling and upload your transfer receipt. Course materials will unlock once admin verifies your payment.</p>
+                    </div>
+                </div>`
+            );
+        }
+
+        return { username, password: rawPassword, credentialsGenerated: true };
+    }
+
+    // Candidate submits payment receipt
+    public async submitReceipt(ticketId: number, userId: number, data: { receiptReference?: string; receiptUrl?: string }) {
+        const ticket = await Ticket.findOne({ where: { id: ticketId, userId } });
+        if (!ticket) throw new Error('TICKET_NOT_FOUND');
+
+        await ticket.update({
+            paymentStatus: 'receipt_submitted',
+            receiptReference: data.receiptReference || null,
+            receiptUrl: data.receiptUrl || null,
+        });
+
+        // Notify admins (fire-and-forget)
+        const { User: UserModel } = require('../models');
+        const admins = await UserModel.findAll({ where: { role: 'admin' } });
+        for (const admin of admins) {
+            await notificationService.sendNotification(
+                admin.id,
+                'Payment Receipt Submitted',
+                `Candidate has submitted a payment receipt for ${ticket.ticketType} (Ticket #${ticket.id}). Please verify and unlock course access.`
+            );
+        }
+
+        return ticket;
+    }
+
+    // Admin validates payment and unlocks course access
+    public async adminValidatePayment(ticketId: number) {
+        const ticket = await Ticket.findByPk(ticketId, { include: [{ model: User }] });
+        if (!ticket) throw new Error('TICKET_NOT_FOUND');
+
+        const user = (ticket as any).User as User;
+
+        await ticket.update({
+            paymentStatus: 'payment_verified',
+            courseAccessGranted: true,
+        });
+
+        if (user?.id) {
+            await notificationService.sendNotification(
+                user.id,
+                'Payment Verified – Course Unlocked!',
+                `Your payment for ${ticket.ticketType} has been verified. Log into Aveling LMS to start your course and exam.`
+            );
+        }
+
+        if (user?.email && ticket.courseId) {
+            const courseUrl = `${process.env.AVELING_URL || 'http://localhost:3002'}/courses/${ticket.courseId}`;
+            await this.sendCustomEmail(
+                user.email,
+                `Payment Verified – Start Your Course Now: ${ticket.ticketType}`,
+                `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+                    <div style="background:#111827;padding:20px 24px;border-radius:8px 8px 0 0;">
+                        <h2 style="color:#FFC700;margin:0;">Payment Verified ✓</h2>
+                    </div>
+                    <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;">
+                        <p>Hello <strong>${user.fullName}</strong>,</p>
+                        <p>Your payment for <strong>${ticket.ticketType}</strong> has been verified by our admin team.</p>
+                        <p>Your course materials and exam are now accessible on Aveling LMS.</p>
+                        <p><a href="${courseUrl}" style="background:#FFC700;color:#000;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold;">Start Your Course Now →</a></p>
+                        <p style="font-size:12px;color:#6b7280;margin-top:16px;">Remember: exam results undergo a proper grading review process. Results will be communicated to you once grading is complete.</p>
+                    </div>
+                </div>`
+            );
+        }
+
+        return ticket;
+    }
+
+    // Admin marks exam result (subject to approval - candidate sees "grading in progress")
+    public async adminApproveExamResult(ticketId: number, passed: boolean) {
+        return this.recordExamOutcome(ticketId, passed);
+    }
+
+    // Platform bank account management
+    public async getPlatformBankAccount() {
+        const { PlatformSetting } = require('../models');
+        const keys = ['platform_bank_name', 'platform_bank_bsb', 'platform_bank_account_number', 'platform_bank_account_name'];
+        const settings = await PlatformSetting.findAll({ where: { key: keys } });
+        const result: any = {};
+        for (const s of settings) result[s.key] = s.value;
+        return {
+            bankName: result.platform_bank_name || null,
+            bsb: result.platform_bank_bsb || null,
+            accountNumber: result.platform_bank_account_number || null,
+            accountName: result.platform_bank_account_name || null,
+        };
+    }
+
+    public async updatePlatformBankAccount(data: { bankName?: string; bsb?: string; accountNumber?: string; accountName?: string }) {
+        const { PlatformSetting } = require('../models');
+        const entries: Record<string, string | undefined> = {
+            platform_bank_name: data.bankName,
+            platform_bank_bsb: data.bsb,
+            platform_bank_account_number: data.accountNumber,
+            platform_bank_account_name: data.accountName,
+        };
+        for (const [key, value] of Object.entries(entries)) {
+            if (value !== undefined) {
+                await PlatformSetting.upsert({ key, value });
+            }
+        }
+        return this.getPlatformBankAccount();
+    }
 }
 
 export const ticketService = new TicketService();

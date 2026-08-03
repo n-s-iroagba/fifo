@@ -41,6 +41,14 @@ Ticket.init({
         type: sequelize_1.DataTypes.FLOAT,
         defaultValue: 0,
     },
+    realPrice: {
+        type: sequelize_1.DataTypes.FLOAT,
+        allowNull: true,
+    },
+    subsidisedPrice: {
+        type: sequelize_1.DataTypes.FLOAT,
+        allowNull: true,
+    },
     purchaseDate: {
         type: sequelize_1.DataTypes.DATE,
         allowNull: true,
@@ -66,20 +74,13 @@ Ticket.init({
         defaultValue: 'no_application',
         allowNull: false,
     },
+    canApplySponsorship: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
     ticketSponsorshipRefundAmount: {
         type: sequelize_1.DataTypes.FLOAT,
-        allowNull: true,
-    },
-    bankName: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: true,
-    },
-    accountNumber: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: true,
-    },
-    accountName: {
-        type: sequelize_1.DataTypes.STRING,
         allowNull: true,
     },
     refundStatus: {
@@ -90,7 +91,25 @@ Ticket.init({
     courseId: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: true,
-    }
+    },
+    receiptUrl: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
+    receiptReference: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
+    paymentStatus: {
+        type: sequelize_1.DataTypes.ENUM('unpaid', 'receipt_submitted', 'payment_verified'),
+        defaultValue: 'unpaid',
+        allowNull: false,
+    },
+    courseAccessGranted: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
 }, {
     sequelize: database_1.sequelize,
     tableName: 'tickets',

@@ -116,7 +116,27 @@ User.init({
         type: sequelize_1.DataTypes.FLOAT,
         defaultValue: 0,
         allowNull: false,
-    }
+    },
+    bankName: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
+    accountNumber: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
+    accountName: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
+    avelingUsername: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
+    avelingPassword: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
 }, {
     sequelize: database_1.sequelize,
     tableName: 'users',

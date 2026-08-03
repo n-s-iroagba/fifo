@@ -31,6 +31,8 @@ export class User extends Model {
     declare bankName: string | null;
     declare accountNumber: string | null;
     declare accountName: string | null;
+    declare avelingUsername: string | null;
+    declare avelingPassword: string | null;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 }
@@ -156,7 +158,15 @@ User.init({
     accountName: {
         type: DataTypes.STRING,
         allowNull: true,
-    }
+    },
+    avelingUsername: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    avelingPassword: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
 }, {
     sequelize,
     tableName: 'users',
