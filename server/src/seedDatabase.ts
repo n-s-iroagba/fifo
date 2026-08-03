@@ -81,14 +81,12 @@ export async function seedDatabase() {
     ];
 
     for (const sector of sectors) {
-        const [cat] = await JobCategory.findOrCreate({
-            where: { name: sector.name },
-            defaults: sector
-        });
+        let cat = await JobCategory.findOne({ where: { name: sector.name } });
+        if (!cat) {
+            cat = await JobCategory.create(sector);
+        }
         categoryMap[sector.name] = cat;
     }
-
-
     console.log(`Checking/Importing ${fifoJobs.length} FIFO jobs...`);
 
     for (const jobData of fifoJobs) {
