@@ -14,9 +14,22 @@ const app = (0, express_1.default)();
 app.set('trust proxy', 1);
 // Security and utility middlewares
 app.use((0, helmet_1.default)());
+const envOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [];
+const defaultOrigins = ['http://localhost:3000', 'http://localhost:3002', 'https://blue-collar-ten.vercel.app'];
+const allowedOrigins = Array.from(new Set([...envOrigins, ...defaultOrigins]))
+    .map((o) => o.trim())
+    .filter(Boolean);
 app.use((0, cors_1.default)({
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
-    credentials: true
+    origin: (origin, callback) => {
+        // Allow server-to-server requests (no origin) and whitelisted origins
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error(`CORS policy: origin ${origin} is not allowed.`));
+        }
+    },
+    credentials: true,
 }));
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());

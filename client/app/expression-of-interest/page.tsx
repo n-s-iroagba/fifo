@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useApiMutation } from '@/lib/hooks';
+import { useApiMutation, useApiQuery } from '@/lib/hooks';
 import { useRouter } from 'next/navigation';
-import { CONSTANTS } from '@/constants';
 import Link from 'next/link';
 
 const eoiSchema = z.object({
@@ -25,7 +24,10 @@ type EOIForm = z.infer<typeof eoiSchema>;
 export default function ExpressionOfInterestPage() {
     const router = useRouter();
     const [success, setSuccess] = useState(false);
-    const { register, control, handleSubmit, formState: { errors } } = useForm<EOIForm>({
+    
+    const { data: existingInterest, isLoading } = useApiQuery<any>(['interests', 'me'], '/interests/me');
+
+    const { register, control, handleSubmit, formState: { errors }, reset } = useForm<EOIForm>({
         resolver: zodResolver(eoiSchema),
         defaultValues: {
             roles: [''],
@@ -35,12 +37,30 @@ export default function ExpressionOfInterestPage() {
         }
     });
 
+    useEffect(() => {
+        if (existingInterest) {
+            reset({
+                roles: existingInterest.roles?.length ? existingInterest.roles : [''],
+                skills: existingInterest.skills?.length ? existingInterest.skills : [''],
+                qualifications: existingInterest.qualifications?.length ? existingInterest.qualifications : [''],
+                experience: existingInterest.experience?.length ? existingInterest.experience : [{ company: '', role: '', achievements: '' }],
+            });
+        }
+    }, [existingInterest, reset]);
+
     const { fields: roleFields, append: appendRole } = useFieldArray({ control, name: 'roles' as any });
     const { fields: skillFields, append: appendSkill } = useFieldArray({ control, name: 'skills' as any });
     const { fields: qualFields, append: appendQual } = useFieldArray({ control, name: 'qualifications' as any });
     const { fields: expFields, append: appendExp } = useFieldArray({ control, name: 'experience' as any });
 
-    const mutation = useApiMutation('post', '/interests', {
+    const createMutation = useApiMutation('post', '/interests', {
+        onSuccess: () => {
+            setSuccess(true);
+            setTimeout(() => router.push('/dashboard'), 3000);
+        }
+    });
+
+    const updateMutation = useApiMutation('put', '/interests/me', {
         onSuccess: () => {
             setSuccess(true);
             setTimeout(() => router.push('/dashboard'), 3000);
@@ -48,8 +68,20 @@ export default function ExpressionOfInterestPage() {
     });
 
     const onSubmit = (data: EOIForm) => {
-        mutation.mutate(data);
+        if (existingInterest) {
+            updateMutation.mutate(data);
+        } else {
+            createMutation.mutate(data);
+        }
     };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
+    }
 
     if (success) {
         return (
@@ -58,9 +90,9 @@ export default function ExpressionOfInterestPage() {
                     <span className="material-symbols-outlined text-4xl">done_all</span>
                 </div>
                 <div className="space-y-4">
-                    <h2 className="text-3xl font-black text-blue-900 uppercase tracking-tight">Audit Initiated</h2>
+                    <h2 className="text-3xl font-black text-blue-900 uppercase tracking-tight">{existingInterest ? 'Audit Updated' : 'Audit Initiated'}</h2>
                     <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] max-w-sm mx-auto leading-relaxed">
-                        Your professional profile has been submitted for cryptographic verification. You will be notified via secure email if you meet the Apex threshold.
+                        Your professional profile has been {existingInterest ? 'updated and re-submitted' : 'submitted'} for cryptographic verification. You will be notified via secure email if you meet the Apex threshold.
                     </p>
                 </div>
                 <p className="text-[9px] font-black text-blue-300 uppercase tracking-widest italic animate-pulse">
@@ -69,6 +101,8 @@ export default function ExpressionOfInterestPage() {
             </div>
         );
     }
+
+    const isPending = createMutation.isPending || updateMutation.isPending;
 
     return (
         <div className="bg-white min-h-screen text-blue-900 font-sans pb-24">
@@ -162,10 +196,10 @@ export default function ExpressionOfInterestPage() {
 
                     <button
                         type="submit"
-                        disabled={mutation.isPending}
+                        disabled={isPending}
                         className="w-full bg-blue-900 text-white py-6 rounded-none font-black text-[11px] uppercase tracking-[0.4em] shadow-2xl shadow-blue-900/20 hover:bg-blue-800 transition-all disabled:opacity-50"
                     >
-                        {mutation.isPending ? 'Uploading Audit Data...' : 'Submit Verification Request'}
+                        {isPending ? 'Uploading Audit Data...' : (existingInterest ? 'Update Verification Request' : 'Submit Verification Request')}
                     </button>
                 </form>
             </main>

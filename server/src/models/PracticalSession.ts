@@ -25,9 +25,9 @@ PracticalSession.init({
     onDelete: 'CASCADE'
   },
   instructorId: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     allowNull: false,
-    references: { model: 'Users', key: 'id' }
+    references: { model: 'users', key: 'id' }
   },
   startTime: {
     type: DataTypes.DATE,

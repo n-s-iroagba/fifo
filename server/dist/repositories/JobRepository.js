@@ -13,13 +13,22 @@ class JobRepository {
             whereClause.employmentType = options.employmentType;
         if (options.searchQuery) {
             const searchPattern = `%${options.searchQuery}%`;
-            whereClause[sequelize_1.Op.or] = [
+            const lowerSearch = options.searchQuery.toLowerCase();
+            const orConditions = [
                 { title: { [sequelize_1.Op.like]: searchPattern } },
                 { location: { [sequelize_1.Op.like]: searchPattern } },
                 { company: { [sequelize_1.Op.like]: searchPattern } },
                 { description: { [sequelize_1.Op.like]: searchPattern } },
+                { employmentType: { [sequelize_1.Op.like]: searchPattern } },
+                { salary: { [sequelize_1.Op.like]: searchPattern } },
+                { jobType: { [sequelize_1.Op.like]: searchPattern } },
                 { '$JobCategory.name$': { [sequelize_1.Op.like]: searchPattern } }
             ];
+            if (lowerSearch.includes('visa') || lowerSearch.includes('sponsor')) {
+                const wantsNoVisa = lowerSearch.includes('no ') || lowerSearch.includes('without');
+                orConditions.push({ visaSponsorship: !wantsNoVisa });
+            }
+            whereClause[sequelize_1.Op.or] = orConditions;
         }
         const order = [];
         if (options.sortBy) {
@@ -59,13 +68,22 @@ class JobRepository {
             whereClause.employmentType = options.employmentType;
         if (options.searchQuery) {
             const searchPattern = `%${options.searchQuery}%`;
-            whereClause[sequelize_1.Op.or] = [
+            const lowerSearch = options.searchQuery.toLowerCase();
+            const orConditions = [
                 { title: { [sequelize_1.Op.like]: searchPattern } },
                 { location: { [sequelize_1.Op.like]: searchPattern } },
                 { company: { [sequelize_1.Op.like]: searchPattern } },
                 { description: { [sequelize_1.Op.like]: searchPattern } },
+                { employmentType: { [sequelize_1.Op.like]: searchPattern } },
+                { salary: { [sequelize_1.Op.like]: searchPattern } },
+                { jobType: { [sequelize_1.Op.like]: searchPattern } },
                 { '$JobCategory.name$': { [sequelize_1.Op.like]: searchPattern } }
             ];
+            if (lowerSearch.includes('visa') || lowerSearch.includes('sponsor')) {
+                const wantsNoVisa = lowerSearch.includes('no ') || lowerSearch.includes('without');
+                orConditions.push({ visaSponsorship: !wantsNoVisa });
+            }
+            whereClause[sequelize_1.Op.or] = orConditions;
         }
         const order = [];
         if (options.sortBy) {

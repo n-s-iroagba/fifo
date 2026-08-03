@@ -84,7 +84,14 @@ function JobsContent() {
                                         <span className="text-[9px] font-black bg-blue-50 text-blue-400 px-3 py-1.5 rounded-lg uppercase tracking-widest">
                                             {job.JobCategory?.name || 'GENERIC'}
                                         </span>
-                                        <span className="material-symbols-outlined text-blue-200 group-hover:text-blue-900 transition-colors">east</span>
+                                        <div className="flex items-center gap-2">
+                                            {job.visaSponsorship && (
+                                                <span className="text-[8px] font-black bg-emerald-50 text-emerald-600 px-2 py-1 rounded-lg uppercase tracking-widest border border-emerald-100">
+                                                    Visa Sponsor
+                                                </span>
+                                            )}
+                                            <span className="material-symbols-outlined text-blue-200 group-hover:text-blue-900 transition-colors">east</span>
+                                        </div>
                                     </div>
                                     <h3 className="text-xl font-black uppercase tracking-tight group-hover:italic transition-all leading-tight">{job.title}</h3>
 

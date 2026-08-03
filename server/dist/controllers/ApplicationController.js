@@ -207,6 +207,37 @@ class ApplicationController {
             res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
+    async applyVisaSponsorship(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const app = await ApplicationService_1.applicationService.applyVisaSponsorship(id);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(app);
+        }
+        catch (error) {
+            console.error('[ApplicationController.applyVisaSponsorship]', error);
+            if (error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND) {
+                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: error.message });
+                return;
+            }
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async updateVisaSponsorshipStatus(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const { status } = req.body;
+            const app = await ApplicationService_1.applicationService.updateVisaSponsorshipStatus(id, status);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(app);
+        }
+        catch (error) {
+            console.error('[ApplicationController.updateVisaSponsorshipStatus]', error);
+            if (error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND) {
+                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: error.message });
+                return;
+            }
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
 }
 exports.ApplicationController = ApplicationController;
 exports.applicationController = new ApplicationController();

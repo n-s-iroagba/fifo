@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PublicHeader } from '@/components/layout/PublicHeader';
 import { PublicFooter } from '@/components/layout/PublicFooter';
 import { useApiQuery } from '@/lib/hooks';
@@ -87,6 +87,7 @@ export default function HomePage() {
   );
 
   const jobList = jobs?.rows || [];
+  const doubledPartners = useMemo(() => PARTNERS.concat(PARTNERS), []);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -150,7 +151,7 @@ export default function HomePage() {
           </div>
           <div className="flex whitespace-nowrap overflow-hidden">
             <div className="flex gap-20 md:gap-32 animate-marquee items-center min-w-full justify-around opacity-60 hover:opacity-100 transition-all duration-700 grayscale hover:grayscale-0">
-              {PARTNERS.concat(PARTNERS).map((partner, i) => (
+              {doubledPartners.map((partner, i) => (
                 <div key={i} className="flex flex-col items-center gap-2 group">
                   <div className="flex items-center gap-4">
                     <span className="material-symbols-outlined text-3xl md:text-4xl text-blue-900 transition-transform group-hover:scale-110 group-hover:text-blue-600">
@@ -372,18 +373,6 @@ export default function HomePage() {
 
       <PublicFooter />
 
-      <style jsx global>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-marquee {
-          animation: marquee 20s linear infinite;
-        }
-        .animate-marquee:hover {
-          animation-play-state: paused;
-        }
-      `}</style>
     </div>
   );
 }

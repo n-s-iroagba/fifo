@@ -97,9 +97,12 @@ export default function JobDetailPage() {
             {/* Hero Job Header */}
             <div className="flex flex-col xl:flex-row gap-12 items-start">
                 <div className="flex-1 space-y-8">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 flex-wrap">
                         <span className="bg-blue-900 text-white px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.3em]">Verified Listing</span>
                         <span className="text-blue-400 text-[9px] font-black uppercase tracking-[0.2em]">{job.employmentType}</span>
+                        {job.visaSponsorship && (
+                            <span className="bg-emerald-50 text-emerald-600 px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.3em] border border-emerald-100">Visa Sponsor</span>
+                        )}
                     </div>
                     <h1 className="text-5xl lg:text-7xl font-bold leading-[1.1] tracking-tighter text-blue-900 drop-shadow-sm">{job.title}</h1>
                     <div className="flex flex-wrap gap-6 text-blue-400 font-bold">

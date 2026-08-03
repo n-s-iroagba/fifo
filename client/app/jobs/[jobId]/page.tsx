@@ -18,6 +18,7 @@ interface JobDetail {
     JobCategory: { name: string };
     JobBenefits: { benefitType: string; description: string }[];
     JobConditions: { name: string; description: string }[];
+    visaSponsorship: boolean;
 }
 
 export default function JobDetailPage() {
@@ -93,9 +94,14 @@ export default function JobDetailPage() {
                     {/* Main Content Area */}
                     <div className="lg:col-span-2 space-y-12">
                         <header className="space-y-6">
-                            <div className="flex flex-wrap gap-4">
+                            <div className="flex flex-wrap gap-4 items-center">
                                 <span className="text-[10px] font-black italic text-blue-900 uppercase tracking-[0.3em] bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">{job.JobCategory?.name}</span>
                                 <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] py-1.5">{job.employmentType}</span>
+                                {job.visaSponsorship && (
+                                    <span className="text-[9px] font-black bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg uppercase tracking-widest border border-emerald-100">
+                                        Visa Sponsor
+                                    </span>
+                                )}
                             </div>
                             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black italic uppercase tracking-tighter text-blue-900 leading-none">
                                 {job.title}

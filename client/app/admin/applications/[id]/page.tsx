@@ -91,6 +91,16 @@ export default function ApplicationDetailPage() {
         }
     );
 
+    const visaSponsorshipMutation = useApiMutation(
+        'put',
+        `/admin/applications/${id}/visa-sponsorship`,
+        {
+            onSuccess: () => {
+                refetch();
+            }
+        }
+    );
+
     const resetStageForm = () => {
         setStageName('');
         setStageDesc('');
@@ -391,7 +401,38 @@ export default function ApplicationDetailPage() {
                             <h3 className="text-[10px] font-black text-blue-900 uppercase tracking-[0.2em]">Process Status</h3>
                         </div>
 
-
+                        {application.visaSponsorshipStatus && (
+                            <div className="p-5 bg-blue-50/50 rounded-2xl border border-blue-100 mb-6">
+                                <h4 className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-3">Visa Sponsorship Request</h4>
+                                <div className="flex items-center justify-between mb-4">
+                                    <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border ${
+                                        application.visaSponsorshipStatus === 'Pending' ? 'bg-amber-50 text-amber-600 border-amber-200' :
+                                        application.visaSponsorshipStatus === 'Approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                                        'bg-red-50 text-red-600 border-red-200'
+                                    }`}>
+                                        {application.visaSponsorshipStatus}
+                                    </span>
+                                </div>
+                                {application.visaSponsorshipStatus === 'Pending' && (
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => { if (confirm('Approve visa sponsorship request?')) visaSponsorshipMutation.mutate({ data: { status: 'Approved' } }) }}
+                                            disabled={visaSponsorshipMutation.isPending}
+                                            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-black uppercase tracking-widest py-3 rounded-xl transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-50"
+                                        >
+                                            Approve
+                                        </button>
+                                        <button
+                                            onClick={() => { if (confirm('Reject visa sponsorship request?')) visaSponsorshipMutation.mutate({ data: { status: 'Rejected' } }) }}
+                                            disabled={visaSponsorshipMutation.isPending}
+                                            className="flex-1 bg-white hover:bg-red-50 text-red-600 border-2 border-red-100 hover:border-red-200 text-[9px] font-black uppercase tracking-widest py-3 rounded-xl transition-all disabled:opacity-50"
+                                        >
+                                            Reject
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="bg-blue-900 p-10 rounded-[3rem] text-white shadow-2xl shadow-blue-900/20">

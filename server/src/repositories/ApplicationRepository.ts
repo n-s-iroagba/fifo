@@ -1,5 +1,5 @@
 import { Transaction } from 'sequelize';
-import { Application, JobListing, Payment, JobStage, User } from '../models';
+import { Application, JobListing, Payment, JobStage, User, Ticket } from '../models';
 
 export interface FindApplicationOptions {
     limit?: number;
@@ -16,7 +16,7 @@ export class ApplicationRepository {
             limit: options.limit || 10,
             offset: options.offset || 0,
             include: [
-                { model: JobListing, attributes: ['id', 'title', 'company', 'location', 'salary'] }
+                { model: JobListing, attributes: ['id', 'title', 'company', 'location', 'salary', 'ticketIds', 'visaSponsorship'] }
             ],
             order: [['updatedAt', 'DESC']],
             transaction
@@ -50,6 +50,7 @@ export class ApplicationRepository {
                 JobListing, 
                 Payment, 
                 User,
+                Ticket,
                 { model: JobStage, as: 'JobStages' }
             ],
             transaction

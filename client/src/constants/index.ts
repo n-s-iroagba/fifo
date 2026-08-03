@@ -35,7 +35,6 @@ export const CONSTANTS = {
             BENEFITS: '/admin/benefits',
             CONDITIONS: '/admin/conditions',
             BANK_ACCOUNTS: '/admin/bank-accounts',
-            CRYPTO_WALLETS: '/admin/crypto-wallets',
             NEW_APPS: '/admin/applications/new',
             DRAFTS: '/admin/applications/drafts',
             UNPAID: '/admin/payments/unpaid',

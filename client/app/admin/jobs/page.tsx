@@ -136,7 +136,12 @@ export default function AdminJobsPage() {
                                             <div className="w-8 h-8 rounded-lg bg-blue-900 text-white flex items-center justify-center font-bold text-xs uppercase">
                                                 {job.title.charAt(0)}
                                             </div>
-                                            <span className="text-sm font-medium text-blue-900">{job.title}</span>
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-medium text-blue-900">{job.title}</span>
+                                                {job.visaSponsorship && (
+                                                    <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest mt-1 bg-emerald-50 w-fit px-1.5 py-0.5 rounded border border-emerald-100">Visa Sponsor</span>
+                                                )}
+                                            </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5">

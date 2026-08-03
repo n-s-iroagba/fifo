@@ -5,7 +5,6 @@ const database_1 = require("../config/database");
 const PaymentRepository_1 = require("../repositories/PaymentRepository");
 const NotificationRepository_1 = require("../repositories/NotificationRepository");
 const BankAccountRepository_1 = require("../repositories/BankAccountRepository");
-const CryptoWalletRepository_1 = require("../repositories/CryptoWalletRepository");
 const email_1 = require("../utils/email");
 const constants_1 = require("../constants");
 const ApplicationService_1 = require("./ApplicationService");
@@ -27,12 +26,9 @@ class PaymentService {
         if (relevantBankAccounts.length === 0) {
             relevantBankAccounts = activeBankAccounts;
         }
-        const allWallets = await CryptoWalletRepository_1.cryptoWalletRepository.findAll();
-        const activeCryptoWallets = allWallets.rows.filter(w => w.isActive);
         return {
             payment,
             bankAccounts: relevantBankAccounts, // STK-APP-PAY-001
-            cryptoWallets: activeCryptoWallets, // STK-ADM-CRYPTO-003
             isHighValue: amount >= constants_1.CONSTANTS.SEED_DEFAULTS.HIGH_VALUE_THRESHOLD,
         };
     }

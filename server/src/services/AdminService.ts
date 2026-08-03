@@ -1,5 +1,5 @@
 import { bankAccountRepository } from '../repositories/BankAccountRepository';
-import { cryptoWalletRepository } from '../repositories/CryptoWalletRepository';
+
 import { jobCategoryRepository, FindCategoryOptions } from '../repositories/JobCategoryRepository';
 import { jobConditionRepository, FindConditionOptions } from '../repositories/JobConditionRepository';
 import { jobBenefitRepository, FindBenefitOptions } from '../repositories/JobBenefitRepository';
@@ -48,16 +48,10 @@ export class AdminService {
         };
     }
 
-    // ==========================
-    // Financial Configurations
-    // ==========================
-    // STK-ADM-BANK-001, STK-ADM-CRYPTO-001 (Read)
     public async getFinancialConfigurations() {
         const banks = await bankAccountRepository.findAll();
-        const wallets = await cryptoWalletRepository.findAll();
         return {
             bankAccounts: banks.rows,
-            cryptoWallets: wallets.rows,
         };
     }
 
@@ -66,12 +60,6 @@ export class AdminService {
         const account = await bankAccountRepository.findById(id);
         if (!account) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
         return account;
-    }
-    public async getAllCryptoWallets() { return cryptoWalletRepository.findAll(); }
-    public async getCryptoWalletById(id: number) {
-        const wallet = await cryptoWalletRepository.findById(id);
-        if (!wallet) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        return wallet;
     }
 
     // STK-ADM-BANK-003: get bank account by amount threshold
@@ -93,21 +81,6 @@ export class AdminService {
     }
     public async deleteBankAccount(id: number) { await bankAccountRepository.delete(id); }
 
-    // Crypto Wallet CRUD — STK-ADM-CRYPTO-001
-    public async createCryptoWallet(data: any) { return cryptoWalletRepository.create(data); }
-    public async updateCryptoWallet(id: number, data: any) {
-        const wallet = await cryptoWalletRepository.findById(id);
-        if (!wallet) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        await cryptoWalletRepository.update(id, data);
-        return cryptoWalletRepository.findById(id);
-    }
-    public async deleteCryptoWallet(id: number) { await cryptoWalletRepository.delete(id); }
-
-    // Active crypto wallets for display — STK-ADM-CRYPTO-003
-    public async getActiveCryptoWallets() {
-        const result = await cryptoWalletRepository.findAll();
-        return result.rows.filter(w => w.isActive);
-    }
 
     // ==========================
     // Job Configurations

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { JobListing, JobCategory, JobBenefit, JobCondition } from '@/types/models';
 
 interface JobFormProps {
-    initialData?: JobListing & { JobBenefits?: JobBenefit[], JobConditions?: JobCondition[] };
+    initialData?: JobListing & { JobBenefits?: JobBenefit[], JobConditions?: JobCondition[], ticketIds?: number[] };
     isEdit?: boolean;
 }
 
@@ -18,9 +18,11 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
 
     const { data: benefitsResult } = useApiQuery<{ rows: JobBenefit[], count: number }>(['admin', 'benefits'], '/admin/benefits');
     const { data: conditionsResult } = useApiQuery<{ rows: JobCondition[], count: number }>(['admin', 'conditions'], '/admin/conditions');
+    const { data: ticketsResult } = useApiQuery<{ success: boolean; data: any[] }>(['admin', 'ticket-catalogs'], '/ticket-catalogs');
 
     const allBenefits = benefitsResult?.rows || [];
     const allConditions = conditionsResult?.rows || [];
+    const allTickets = ticketsResult?.data || [];
 
     const [title, setTitle] = useState(initialData?.title || '');
     const [categoryId, setCategoryId] = useState(initialData?.categoryId || '');
@@ -38,9 +40,12 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
     const [selectedConditions, setSelectedConditions] = useState<number[]>(
         initialData?.JobConditions?.map(c => c.id) || []
     );
+    const [selectedTickets, setSelectedTickets] = useState<number[]>(
+        initialData?.ticketIds || []
+    );
 
     const [company, setCompany] = useState(initialData?.company || '');
-    const [visaSponsorship, setVisaSponsorship] = useState(initialData?.visaSponsorship || false);
+    const [visaSponsorship, setVisaSponsorship] = useState(initialData?.visaSponsorship ?? true);
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [categorySearch, setCategorySearch] = useState('');
@@ -71,6 +76,7 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
             setJobType(initialData.jobType || 'NORMAL');
             setSelectedBenefits(initialData.JobBenefits?.map(b => b.id) || []);
             setSelectedConditions(initialData.JobConditions?.map(c => c.id) || []);
+            setSelectedTickets(initialData.ticketIds || []);
         }
     }, [initialData]);
 
@@ -105,7 +111,8 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
                 visaSponsorship,
                 jobType,
                 benefitsIds: selectedBenefits,
-                conditionsIds: selectedConditions
+                conditionsIds: selectedConditions,
+                ticketIds: selectedTickets
             });
         } catch (err) {
             console.error(err);
@@ -343,6 +350,34 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
                                     >
                                         <span className={isSelected ? 'text-blue-200' : 'text-blue-400'}>{condition.name}</span>
                                         <span>{condition.description}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div className="space-y-4 border-t border-blue-50 pt-10">
+                        <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1">Ticket Sponsorship Selection</label>
+                            <Link href="/admin/tickets" className="text-[9px] font-bold text-blue-900 uppercase tracking-widest hover:underline">
+                                Manage Tickets
+                            </Link>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                            {allTickets.map(ticket => {
+                                const isSelected = selectedTickets.includes(ticket.id);
+                                return (
+                                    <button
+                                        key={ticket.id}
+                                        type="button"
+                                        onClick={() => setSelectedTickets(prev => isSelected ? prev.filter(id => id !== ticket.id) : [...prev, ticket.id])}
+                                        className={`px-5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border text-left flex flex-col gap-1 ${isSelected
+                                            ? 'bg-blue-900 text-white border-blue-900 shadow-lg shadow-blue-900/10'
+                                            : 'bg-white text-blue-900 border-blue-100 hover:border-blue-300 hover:bg-blue-50/50'
+                                            }`}
+                                    >
+                                        <span className={isSelected ? 'text-blue-200' : 'text-blue-400'}>{ticket.name}</span>
+                                        <span>Norm: ${ticket.normalPrice} | Spon: ${ticket.sponsorshipPrice}</span>
                                     </button>
                                 );
                             })}

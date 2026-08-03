@@ -18,6 +18,10 @@ JobListing.init({
     conditionIds: {
         type: sequelize_1.DataTypes.JSON
     },
+    ticketIds: {
+        type: sequelize_1.DataTypes.JSON,
+        allowNull: true,
+    },
     stages: {
         type: sequelize_1.DataTypes.JSON,
         allowNull: true,
@@ -29,6 +33,7 @@ JobListing.init({
     visaSponsorship: {
         type: sequelize_1.DataTypes.BOOLEAN,
         allowNull: false,
+        defaultValue: true,
     },
     title: {
         type: sequelize_1.DataTypes.STRING,

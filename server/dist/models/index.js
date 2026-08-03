@@ -1,14 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Ticket = exports.Certificate = exports.ExamAttempt = exports.PracticalBooking = exports.PracticalSession = exports.Enrollment = exports.CourseSubsidy = exports.CertificationGap = exports.PracticalCriterion = exports.ExamQuestion = exports.ExamConfig = exports.CourseModule = exports.Course = exports.CertificationType = exports.LmsCredential = exports.PushSubscription = exports.Interest = exports.Notification = exports.Payment = exports.Application = exports.JobStage = exports.JobCondition = exports.JobBenefit = exports.JobListing = exports.JobCategory = exports.CryptoWallet = exports.BankAccount = exports.User = exports.sequelize = void 0;
+exports.TicketCatalog = exports.Ticket = exports.Certificate = exports.ExamAttempt = exports.PracticalBooking = exports.PracticalSession = exports.Enrollment = exports.CourseSubsidy = exports.CertificationGap = exports.PracticalCriterion = exports.ExamQuestion = exports.ExamConfig = exports.CourseModule = exports.Course = exports.CertificationType = exports.LmsCredential = exports.PushSubscription = exports.Interest = exports.Notification = exports.Payment = exports.Application = exports.JobStage = exports.JobCondition = exports.JobBenefit = exports.JobListing = exports.JobCategory = exports.BankAccount = exports.User = exports.sequelize = void 0;
 const database_1 = require("../config/database");
 Object.defineProperty(exports, "sequelize", { enumerable: true, get: function () { return database_1.sequelize; } });
 const User_1 = require("./User");
 Object.defineProperty(exports, "User", { enumerable: true, get: function () { return User_1.User; } });
 const BankAccount_1 = require("./BankAccount");
 Object.defineProperty(exports, "BankAccount", { enumerable: true, get: function () { return BankAccount_1.BankAccount; } });
-const CryptoWallet_1 = require("./CryptoWallet");
-Object.defineProperty(exports, "CryptoWallet", { enumerable: true, get: function () { return CryptoWallet_1.CryptoWallet; } });
 const JobCategory_1 = require("./JobCategory");
 Object.defineProperty(exports, "JobCategory", { enumerable: true, get: function () { return JobCategory_1.JobCategory; } });
 const JobListing_1 = require("./JobListing");
@@ -59,6 +57,8 @@ const Certificate_1 = require("./Certificate");
 Object.defineProperty(exports, "Certificate", { enumerable: true, get: function () { return Certificate_1.Certificate; } });
 const Ticket_1 = require("./Ticket");
 Object.defineProperty(exports, "Ticket", { enumerable: true, get: function () { return Ticket_1.Ticket; } });
+const TicketCatalog_1 = require("./TicketCatalog");
+Object.defineProperty(exports, "TicketCatalog", { enumerable: true, get: function () { return TicketCatalog_1.TicketCatalog; } });
 // User <-> Ticket
 User_1.User.hasMany(Ticket_1.Ticket, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
 Ticket_1.Ticket.belongsTo(User_1.User, { foreignKey: 'userId' });

@@ -3,7 +3,7 @@ import { paymentRepository } from '../repositories/PaymentRepository';
 import { applicationRepository } from '../repositories/ApplicationRepository';
 import { notificationRepository } from '../repositories/NotificationRepository';
 import { bankAccountRepository } from '../repositories/BankAccountRepository';
-import { cryptoWalletRepository } from '../repositories/CryptoWalletRepository';
+
 import { sendInfoEmail } from '../utils/email';
 import { CONSTANTS } from '../constants';
 import { applicationService } from './ApplicationService';
@@ -29,13 +29,9 @@ export class PaymentService {
             relevantBankAccounts = activeBankAccounts;
         }
 
-        const allWallets = await cryptoWalletRepository.findAll();
-        const activeCryptoWallets = allWallets.rows.filter(w => w.isActive);
-
         return {
             payment,
             bankAccounts: relevantBankAccounts,    // STK-APP-PAY-001
-            cryptoWallets: activeCryptoWallets,     // STK-ADM-CRYPTO-003
             isHighValue: amount >= CONSTANTS.SEED_DEFAULTS.HIGH_VALUE_THRESHOLD,
         };
     }

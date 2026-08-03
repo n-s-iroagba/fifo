@@ -20,7 +20,6 @@ const navItems = [
     { label: 'Mail', href: CONSTANTS.ROUTES.ADMIN.MAIL, icon: 'mail' },
     { label: 'Health', href: CONSTANTS.ROUTES.ADMIN.HEALTH, icon: 'health_and_safety' },
     { label: 'Bank Accounts', href: CONSTANTS.ROUTES.ADMIN.BANK_ACCOUNTS, icon: 'account_balance' },
-    { label: 'Wallets', href: CONSTANTS.ROUTES.ADMIN.CRYPTO_WALLETS, icon: 'account_balance_wallet' },
     { label: 'Security', href: '/admin/security', icon: 'lock' },
 ];
 

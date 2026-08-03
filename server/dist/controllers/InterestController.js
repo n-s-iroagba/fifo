@@ -45,6 +45,32 @@ class InterestController {
             res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
+    async updateInterest(req, res) {
+        try {
+            const userId = req.user.id;
+            const interest = await InterestService_1.interestService.updateInterest(userId, req.body);
+            if (!interest) {
+                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND });
+                return;
+            }
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(interest);
+        }
+        catch (error) {
+            console.error('[InterestController.updateInterest]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async deleteInterest(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            await InterestService_1.interestService.deleteInterest(id);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ message: constants_1.CONSTANTS.SUCCESS_MESSAGES.DELETED });
+        }
+        catch (error) {
+            console.error('[InterestController.deleteInterest]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
 }
 exports.InterestController = InterestController;
 exports.interestController = new InterestController();

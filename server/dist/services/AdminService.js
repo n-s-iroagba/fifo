@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.adminService = exports.AdminService = void 0;
 const BankAccountRepository_1 = require("../repositories/BankAccountRepository");
-const CryptoWalletRepository_1 = require("../repositories/CryptoWalletRepository");
 const JobCategoryRepository_1 = require("../repositories/JobCategoryRepository");
 const JobConditionRepository_1 = require("../repositories/JobConditionRepository");
 const JobBenefitRepository_1 = require("../repositories/JobBenefitRepository");
@@ -48,16 +47,10 @@ class AdminService {
             timestamp: new Date().toISOString(),
         };
     }
-    // ==========================
-    // Financial Configurations
-    // ==========================
-    // STK-ADM-BANK-001, STK-ADM-CRYPTO-001 (Read)
     async getFinancialConfigurations() {
         const banks = await BankAccountRepository_1.bankAccountRepository.findAll();
-        const wallets = await CryptoWalletRepository_1.cryptoWalletRepository.findAll();
         return {
             bankAccounts: banks.rows,
-            cryptoWallets: wallets.rows,
         };
     }
     async getAllBankAccounts() { return BankAccountRepository_1.bankAccountRepository.findAll(); }
@@ -66,13 +59,6 @@ class AdminService {
         if (!account)
             throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
         return account;
-    }
-    async getAllCryptoWallets() { return CryptoWalletRepository_1.cryptoWalletRepository.findAll(); }
-    async getCryptoWalletById(id) {
-        const wallet = await CryptoWalletRepository_1.cryptoWalletRepository.findById(id);
-        if (!wallet)
-            throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        return wallet;
     }
     // STK-ADM-BANK-003: get bank account by amount threshold
     async getBankAccountForAmount(amount) {
@@ -92,21 +78,6 @@ class AdminService {
         return BankAccountRepository_1.bankAccountRepository.findById(id);
     }
     async deleteBankAccount(id) { await BankAccountRepository_1.bankAccountRepository.delete(id); }
-    // Crypto Wallet CRUD — STK-ADM-CRYPTO-001
-    async createCryptoWallet(data) { return CryptoWalletRepository_1.cryptoWalletRepository.create(data); }
-    async updateCryptoWallet(id, data) {
-        const wallet = await CryptoWalletRepository_1.cryptoWalletRepository.findById(id);
-        if (!wallet)
-            throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        await CryptoWalletRepository_1.cryptoWalletRepository.update(id, data);
-        return CryptoWalletRepository_1.cryptoWalletRepository.findById(id);
-    }
-    async deleteCryptoWallet(id) { await CryptoWalletRepository_1.cryptoWalletRepository.delete(id); }
-    // Active crypto wallets for display — STK-ADM-CRYPTO-003
-    async getActiveCryptoWallets() {
-        const result = await CryptoWalletRepository_1.cryptoWalletRepository.findAll();
-        return result.rows.filter(w => w.isActive);
-    }
     // ==========================
     // Job Configurations
     // ==========================

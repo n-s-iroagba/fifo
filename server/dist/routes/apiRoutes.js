@@ -53,8 +53,6 @@ router.put('/auth/change-password', auth_1.requireAuth, AuthController_1.authCon
 router.use('/jobs', rateLimiter_1.apiLimiter);
 router.get('/jobs', JobController_1.jobController.getActiveJobs.bind(JobController_1.jobController));
 router.get('/jobs/:id', JobController_1.jobController.getJobDetails.bind(JobController_1.jobController));
-// STK-ADM-CRYPTO-003: active crypto wallets for public display (payment pages)
-router.get('/wallets/active', rateLimiter_1.apiLimiter, AdminController_1.adminController.getActiveCryptoWallets.bind(AdminController_1.adminController));
 // =======================
 // Applicant Routes (requireAuth + APPLICANT role)
 // =======================
@@ -66,6 +64,7 @@ router.post('/applications', ...applicantMW, ApplicationController_1.application
 router.get('/applications', ...applicantMW, ApplicationController_1.applicationController.getUserApplications.bind(ApplicationController_1.applicationController));
 router.get('/applications/:id', ...applicantMW, ApplicationController_1.applicationController.getApplicationDetails.bind(ApplicationController_1.applicationController));
 router.post('/applications/:id/advance', ...applicantMW, ApplicationController_1.applicationController.advanceApplication.bind(ApplicationController_1.applicationController));
+router.post('/applications/:id/visa-sponsorship', ...applicantMW, ApplicationController_1.applicationController.applyVisaSponsorship.bind(ApplicationController_1.applicationController));
 // STK-APP-CV-001..004
 router.get('/cv', ...applicantMW, CvController_1.cvController.getCv.bind(CvController_1.cvController));
 router.post('/cv', ...applicantMW, CvController_1.cvController.uploadCv.bind(CvController_1.cvController));
@@ -80,6 +79,7 @@ router.post('/tickets/:id/apply-sponsorship', ...applicantMW, TicketController_1
 router.post('/tickets/:id/refund-choice', ...applicantMW, TicketController_1.ticketController.processRefundChoice.bind(TicketController_1.ticketController));
 router.post('/tickets/:id/pay-aveling', ...applicantMW, TicketController_1.ticketController.payTicketOnAveling.bind(TicketController_1.ticketController));
 router.post('/tickets/:id/exam-outcome', ...applicantMW, TicketController_1.ticketController.recordExamOutcome.bind(TicketController_1.ticketController));
+router.post('/tickets/:id/set-review-awaiting', ...applicantMW, TicketController_1.ticketController.setExamReviewAwaiting.bind(TicketController_1.ticketController));
 // STK-APP-PAY-001: payment details with bank account routing
 router.get('/payments/:id', ...applicantMW, PaymentController_1.paymentController.getPaymentDetails.bind(PaymentController_1.paymentController));
 // STK-APP-PAY-002, STK-APP-PAY-003: upload proof
@@ -110,6 +110,7 @@ router.post('/admin/applications/:id/stages/:stageId/complete', ...adminMW, Appl
 router.post('/admin/applications/:id/complete', ...adminMW, ApplicationController_1.applicationController.completeApplication.bind(ApplicationController_1.applicationController));
 router.delete('/admin/applications/:id', ...adminMW, ApplicationController_1.applicationController.deleteApplication.bind(ApplicationController_1.applicationController));
 router.get('/admin/applications/:id', ...adminMW, ApplicationController_1.applicationController.getApplicationDetails.bind(ApplicationController_1.applicationController));
+router.put('/admin/applications/:id/visa-sponsorship', ...adminMW, ApplicationController_1.applicationController.updateVisaSponsorshipStatus.bind(ApplicationController_1.applicationController));
 // STK-ADM-PAY-003: unpaid payments view
 router.get('/admin/payments/unpaid', ...adminMW, PaymentController_1.paymentController.getPendingPaymentsAdmin.bind(PaymentController_1.paymentController));
 // STK-ADM-PAY-004: unverified payments (screenshot uploaded, not confirmed)
@@ -127,16 +128,10 @@ router.delete('/admin/jobs/:id', ...adminMW, JobController_1.jobController.delet
 router.get('/admin/finance/configs', ...adminMW, AdminController_1.adminController.getFinancialConfigs.bind(AdminController_1.adminController));
 router.get('/admin/bank-accounts', ...adminMW, AdminController_1.adminController.getAllBankAccounts.bind(AdminController_1.adminController));
 router.get('/admin/bank-accounts/:id', ...adminMW, AdminController_1.adminController.getBankAccountById.bind(AdminController_1.adminController));
-router.get('/admin/crypto-wallets', ...adminMW, AdminController_1.adminController.getAllCryptoWallets.bind(AdminController_1.adminController));
-router.get('/admin/crypto-wallets/:id', ...adminMW, AdminController_1.adminController.getCryptoWalletById.bind(AdminController_1.adminController));
 router.get('/admin/finance/bank-accounts/by-amount', ...adminMW, AdminController_1.adminController.getBankAccountsForAmount.bind(AdminController_1.adminController));
 router.post('/admin/bank-accounts', ...adminMW, AdminController_1.adminController.createBankAccount.bind(AdminController_1.adminController));
 router.put('/admin/bank-accounts/:id', ...adminMW, AdminController_1.adminController.updateBankAccount.bind(AdminController_1.adminController));
 router.delete('/admin/bank-accounts/:id', ...adminMW, AdminController_1.adminController.deleteBankAccount.bind(AdminController_1.adminController));
-// STK-ADM-CRYPTO-001..003
-router.post('/admin/crypto-wallets', ...adminMW, AdminController_1.adminController.createCryptoWallet.bind(AdminController_1.adminController));
-router.put('/admin/crypto-wallets/:id', ...adminMW, AdminController_1.adminController.updateCryptoWallet.bind(AdminController_1.adminController));
-router.delete('/admin/crypto-wallets/:id', ...adminMW, AdminController_1.adminController.deleteCryptoWallet.bind(AdminController_1.adminController));
 // STK-ADM-CAT-001..003
 router.get('/admin/jobs/metadata', ...adminMW, AdminController_1.adminController.getJobConfigs.bind(AdminController_1.adminController));
 router.get('/admin/categories', ...adminMW, AdminController_1.adminController.getAllCategories.bind(AdminController_1.adminController));
@@ -169,11 +164,22 @@ router.post('/tickets/:id/checkout-email', rateLimiter_1.apiLimiter, TicketContr
 router.get('/admin/tickets', ...adminMW, TicketController_1.ticketController.adminGetAllTickets.bind(TicketController_1.ticketController));
 router.put('/admin/tickets/:id', ...adminMW, TicketController_1.ticketController.adminUpdateTicket.bind(TicketController_1.ticketController));
 router.post('/admin/tickets/bulk-seed', ...adminMW, TicketController_1.ticketController.adminBulkSeedTickets.bind(TicketController_1.ticketController));
+router.post('/admin/tickets/:id/approve-receipt', ...adminMW, TicketController_1.ticketController.adminApproveReceipt.bind(TicketController_1.ticketController));
 const InterestController_1 = require("../controllers/InterestController");
+const TicketCatalogController_1 = require("../controllers/TicketCatalogController");
 // Expression of Interest Routes
 router.post('/interests', ...applicantMW, InterestController_1.interestController.createInterest.bind(InterestController_1.interestController));
+router.put('/interests/me', ...applicantMW, InterestController_1.interestController.updateInterest.bind(InterestController_1.interestController));
 router.get('/interests/me', ...applicantMW, InterestController_1.interestController.getUserInterest.bind(InterestController_1.interestController));
 router.get('/admin/interests', ...adminMW, InterestController_1.interestController.getAllInterests.bind(InterestController_1.interestController));
+router.delete('/admin/interests/:id', ...adminMW, InterestController_1.interestController.deleteInterest.bind(InterestController_1.interestController));
+// =======================
+// Ticket Catalog Routes
+// =======================
+router.get('/ticket-catalogs', TicketCatalogController_1.ticketCatalogController.getAll.bind(TicketCatalogController_1.ticketCatalogController));
+router.post('/admin/ticket-catalogs', ...adminMW, TicketCatalogController_1.ticketCatalogController.create.bind(TicketCatalogController_1.ticketCatalogController));
+router.put('/admin/ticket-catalogs/:id', ...adminMW, TicketCatalogController_1.ticketCatalogController.update.bind(TicketCatalogController_1.ticketCatalogController));
+router.delete('/admin/ticket-catalogs/:id', ...adminMW, TicketCatalogController_1.ticketCatalogController.delete.bind(TicketCatalogController_1.ticketCatalogController));
 // =======================
 // LMS Routes
 // =======================

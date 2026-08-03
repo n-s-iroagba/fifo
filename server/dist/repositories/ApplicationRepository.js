@@ -10,7 +10,7 @@ class ApplicationRepository {
             limit: options.limit || 10,
             offset: options.offset || 0,
             include: [
-                { model: models_1.JobListing, attributes: ['id', 'title', 'company', 'location', 'salary'] }
+                { model: models_1.JobListing, attributes: ['id', 'title', 'company', 'location', 'salary', 'ticketIds', 'visaSponsorship'] }
             ],
             order: [['updatedAt', 'DESC']],
             transaction
@@ -43,6 +43,7 @@ class ApplicationRepository {
                 models_1.JobListing,
                 models_1.Payment,
                 models_1.User,
+                models_1.Ticket,
                 { model: models_1.JobStage, as: 'JobStages' }
             ],
             transaction

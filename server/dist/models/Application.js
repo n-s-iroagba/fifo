@@ -37,6 +37,11 @@ Application.init({
                 return false;
             return payments.some((p) => p.status === constants_1.CONSTANTS.PAYMENT_STATUSES.VERIFIED);
         }
+    },
+    visaSponsorshipStatus: {
+        type: sequelize_1.DataTypes.ENUM('Pending', 'Approved', 'Rejected'),
+        allowNull: true,
+        defaultValue: null
     }
 }, {
     sequelize: database_1.sequelize,

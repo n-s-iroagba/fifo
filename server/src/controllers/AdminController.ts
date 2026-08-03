@@ -35,14 +35,7 @@ export class AdminController {
         }
     }
 
-    public async getAllCryptoWallets(req: Request, res: Response): Promise<void> {
-        try {
-            res.status(CONSTANTS.HTTP_STATUS.OK).json(await adminService.getAllCryptoWallets());
-        } catch (error) {
-            console.error('[AdminController.getAllCryptoWallets]', error);
-            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
+
 
     public async getBankAccountById(req: Request, res: Response): Promise<void> {
         try {
@@ -55,16 +48,7 @@ export class AdminController {
         }
     }
 
-    public async getCryptoWalletById(req: Request, res: Response): Promise<void> {
-        try {
-            const id = parseInt(req.params.id as string, 10);
-            res.status(CONSTANTS.HTTP_STATUS.OK).json(await adminService.getCryptoWalletById(id));
-        } catch (error: any) {
-            console.error('[AdminController.getCryptoWalletById]', error);
-            const status = error.message === CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? CONSTANTS.HTTP_STATUS.NOT_FOUND : CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
-            res.status(status).json({ error: error.message });
-        }
-    }
+
 
     // STK-ADM-BANK-003: get bank accounts filtered by payment amount
     public async getBankAccountsForAmount(req: Request, res: Response): Promise<void> {
@@ -78,16 +62,7 @@ export class AdminController {
         }
     }
 
-    // STK-ADM-CRYPTO-003: active wallets for applicant display
-    public async getActiveCryptoWallets(req: Request, res: Response): Promise<void> {
-        try {
-            const wallets = await adminService.getActiveCryptoWallets();
-            res.status(CONSTANTS.HTTP_STATUS.OK).json(wallets);
-        } catch (error) {
-            console.error('[AdminController.getActiveCryptoWallets]', error);
-            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
+
 
     // Bank Account CRUD — STK-ADM-BANK-001
     public async createBankAccount(req: Request, res: Response): Promise<void> {
@@ -116,32 +91,7 @@ export class AdminController {
         }
     }
 
-    // Crypto Wallets CRUD — STK-ADM-CRYPTO-001
-    public async createCryptoWallet(req: Request, res: Response): Promise<void> {
-        try {
-            res.status(CONSTANTS.HTTP_STATUS.CREATED).json(await adminService.createCryptoWallet(req.body));
-        } catch (error) {
-            console.error('[AdminController.createCryptoWallet]', error);
-            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    public async updateCryptoWallet(req: Request, res: Response): Promise<void> {
-        try {
-            res.status(CONSTANTS.HTTP_STATUS.OK).json(await adminService.updateCryptoWallet(parseInt(req.params.id as string, 10), req.body));
-        } catch (error) {
-            console.error('[AdminController.updateCryptoWallet]', error);
-            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    public async deleteCryptoWallet(req: Request, res: Response): Promise<void> {
-        try {
-            await adminService.deleteCryptoWallet(parseInt(req.params.id as string, 10));
-            res.status(CONSTANTS.HTTP_STATUS.OK).json({ message: CONSTANTS.SUCCESS_MESSAGES.DELETED });
-        } catch (error) {
-            console.error('[AdminController.deleteCryptoWallet]', error);
-            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
+
 
     // ==========================
     // Job Configurations — STK-ADM-CAT-001, STK-ADM-BEN-001, STK-ADM-COND-001

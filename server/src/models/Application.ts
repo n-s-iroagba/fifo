@@ -10,6 +10,7 @@ export class Application extends Model {
     declare status: string;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
+    declare visaSponsorshipStatus: string | null;
 
     // Associations
     declare User?: any;
@@ -56,6 +57,11 @@ Application.init({
             if (!payments || !Array.isArray(payments)) return false;
             return payments.some((p: any) => p.status === CONSTANTS.PAYMENT_STATUSES.VERIFIED);
         }
+    },
+    visaSponsorshipStatus: {
+        type: DataTypes.ENUM('Pending', 'Approved', 'Rejected'),
+        allowNull: true,
+        defaultValue: null
     }
 }, {
     sequelize,

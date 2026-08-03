@@ -20,9 +20,9 @@ CertificationGap.init({
         primaryKey: true,
     },
     userId: {
-        type: sequelize_1.DataTypes.UUID,
+        type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
-        references: { model: 'Users', key: 'id' },
+        references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE'
     },
     certificationTypeId: {
@@ -37,9 +37,9 @@ CertificationGap.init({
         defaultValue: 'Missing'
     },
     assignedByAdminId: {
-        type: sequelize_1.DataTypes.UUID,
+        type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
-        references: { model: 'Users', key: 'id' }
+        references: { model: 'users', key: 'id' }
     }
 }, {
     sequelize: database_1.sequelize,

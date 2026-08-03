@@ -3,10 +3,35 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.seedDatabase = seedDatabase;
 const models_1 = require("./models");
 const fifoJobs_1 = require("./data/fifoJobs");
+const lmsData_1 = require("./data/lmsData");
 async function seedDatabase() {
     console.log('Starting idempotent seeding process...');
     // 1. Initialize Tables (Safe Sync)
-    await models_1.sequelize.sync({ force: true });
+    // Using alter: true to preserve existing data. Skipping User, Application, and LmsCredential as requested.
+    // 1. Clean up Corrupted LMS Tables (from the UUID mismatch) and Orphaned Job Data
+    await models_1.sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
+    // Explicitly drop the corrupted LMS tables so alter: true recreates them with INTEGER
+    await models_1.sequelize.query('DROP TABLE IF EXISTS certification_gaps;');
+    await models_1.sequelize.query('DROP TABLE IF EXISTS exam_attempts;');
+    await models_1.sequelize.query('DROP TABLE IF EXISTS certificates;');
+    await models_1.sequelize.query('DROP TABLE IF EXISTS practical_bookings;');
+    await models_1.sequelize.query('DROP TABLE IF EXISTS practical_sessions;');
+    await models_1.sequelize.query('DROP TABLE IF EXISTS enrollments;');
+    await models_1.sequelize.query('DROP TABLE IF EXISTS course_subsidies;');
+    // Truncate the job tables to clear out any orphaned data from previous failed seeds
+    await models_1.sequelize.query('TRUNCATE TABLE ListingBenefits;');
+    await models_1.sequelize.query('TRUNCATE TABLE ListingConditions;');
+    await models_1.sequelize.query('TRUNCATE TABLE job_conditions;');
+    await models_1.sequelize.query('TRUNCATE TABLE job_benefits;');
+    await models_1.sequelize.query('TRUNCATE TABLE job_listings;');
+    await models_1.sequelize.query('TRUNCATE TABLE job_categories;');
+    const excludedModels = ['User', 'Application', 'LmsCredential'];
+    for (const modelName of Object.keys(models_1.sequelize.models)) {
+        if (!excludedModels.includes(modelName)) {
+            await models_1.sequelize.models[modelName].sync({ alter: true });
+        }
+    }
+    await models_1.sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
     // 4. Seed Categories
     const categoryMap = {};
     const sectors = [
@@ -89,6 +114,62 @@ async function seedDatabase() {
                 }
             });
             await job.addJobCondition(condition);
+        }
+    }
+    console.log('Seeding LMS Data (Courses, Exams, Criteria)...');
+    for (const data of lmsData_1.lmsSeedData) {
+        // Create Certification Type
+        const [certType] = await models_1.CertificationType.findOrCreate({
+            where: { name: data.certificationName },
+            defaults: {
+                description: data.description,
+                validityMonths: 24,
+                requiresRefresher: true
+            }
+        });
+        // Create Course
+        const [course] = await models_1.Course.findOrCreate({
+            where: { title: data.course.title },
+            defaults: {
+                description: data.course.description,
+                certificationTypeId: certType.id,
+                format: data.course.format,
+                price: data.course.price,
+                durationHours: data.course.duration,
+                capacity: data.course.capacity,
+                isPublished: true
+            }
+        });
+        // Create Exam Config
+        const [examConfig] = await models_1.ExamConfig.findOrCreate({
+            where: { courseId: course.id },
+            defaults: {
+                passThreshold: data.course.examConfig.passThreshold,
+                maxAttempts: data.course.examConfig.maxAttempts,
+                timeLimitMinutes: 60,
+                randomizeQuestions: true
+            }
+        });
+        // Create Exam Questions
+        for (const q of data.course.questions) {
+            await models_1.ExamQuestion.findOrCreate({
+                where: { courseId: course.id, questionText: q.questionText },
+                defaults: {
+                    questionType: q.questionType,
+                    options: q.options,
+                    correctAnswer: q.correctAnswer,
+                    weighting: q.weighting
+                }
+            });
+        }
+        // Create Practical Criteria
+        for (const crit of data.course.practicalCriteria) {
+            await models_1.PracticalCriterion.findOrCreate({
+                where: { courseId: course.id, description: crit },
+                defaults: {
+                    isMandatory: true
+                }
+            });
         }
     }
     console.log('Idempotent seeding completed successfully!');

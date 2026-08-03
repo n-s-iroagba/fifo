@@ -122,17 +122,7 @@ export interface BankAccount {
     updatedAt: string;
 }
 
-export interface CryptoWallet {
-    id: number;
-    currencyName: string;
-    networkType: string;
-    walletAddress: string;
-    memoTag: string | null;
-    isActive: boolean;
-    displayLabel: string;
-    createdAt: string;
-    updatedAt: string;
-}
+
 
 export interface Payment {
     id: number;

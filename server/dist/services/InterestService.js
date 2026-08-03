@@ -9,6 +9,16 @@ class InterestService {
             ...data
         });
     }
+    async updateInterest(userId, data) {
+        const [updated] = await models_1.Interest.update(data, { where: { userId } });
+        if (updated) {
+            return models_1.Interest.findOne({ where: { userId } });
+        }
+        return null;
+    }
+    async deleteInterest(id) {
+        return models_1.Interest.destroy({ where: { id } });
+    }
     async getUserInterest(userId) {
         return models_1.Interest.findOne({ where: { userId } });
     }

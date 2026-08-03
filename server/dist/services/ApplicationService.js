@@ -404,6 +404,30 @@ class ApplicationService {
     async deleteApplication(id) {
         await ApplicationRepository_1.applicationRepository.delete(id);
     }
+    async applyVisaSponsorship(applicationId) {
+        const app = await ApplicationRepository_1.applicationRepository.findById(applicationId);
+        if (!app)
+            throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+        await ApplicationRepository_1.applicationRepository.update(applicationId, {
+            visaSponsorshipStatus: 'Pending'
+        });
+        return ApplicationRepository_1.applicationRepository.findById(applicationId);
+    }
+    async updateVisaSponsorshipStatus(applicationId, status) {
+        const app = await ApplicationRepository_1.applicationRepository.findById(applicationId);
+        if (!app)
+            throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+        await ApplicationRepository_1.applicationRepository.update(applicationId, {
+            visaSponsorshipStatus: status
+        });
+        await NotificationRepository_1.notificationRepository.create({
+            userId: app.userId,
+            subject: 'Visa Sponsorship Update',
+            message: `Your visa sponsorship request for "${app.JobListing?.title}" has been ${status.toLowerCase()}.`,
+            type: 'SYSTEM'
+        });
+        return ApplicationRepository_1.applicationRepository.findById(applicationId);
+    }
 }
 exports.ApplicationService = ApplicationService;
 exports.applicationService = new ApplicationService();

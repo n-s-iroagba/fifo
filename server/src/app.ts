@@ -12,9 +12,10 @@ app.set('trust proxy', 1);
 
 // Security and utility middlewares
 app.use(helmet());
-// Build allowed origins list from env — supports comma-separated list for multiple frontends
-const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3002')
-    .split(',')
+const envOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [];
+const defaultOrigins = ['http://localhost:3000', 'http://localhost:3002', 'https://blue-collar-ten.vercel.app'];
+
+const allowedOrigins = Array.from(new Set([...envOrigins, ...defaultOrigins]))
     .map((o) => o.trim())
     .filter(Boolean);
 

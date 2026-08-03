@@ -123,6 +123,22 @@ class TicketController {
             next(error);
         }
     }
+    // STEP-1.1.20: Called when candidate submits exam — sets course to review-awaiting before grading
+    async setExamReviewAwaiting(req, res, next) {
+        try {
+            const userId = req.user.id;
+            const ticketId = parseInt(req.params.id, 10);
+            const result = await TicketService_1.ticketService.setExamReviewAwaiting(ticketId, userId);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result });
+        }
+        catch (error) {
+            if (error.message === 'TICKET_NOT_FOUND') {
+                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Ticket not found.' });
+                return;
+            }
+            next(error);
+        }
+    }
     async candidateLookup(req, res, next) {
         try {
             const { candidateNumber } = req.body;
@@ -242,6 +258,21 @@ class TicketController {
             res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json({ success: true, data: created });
         }
         catch (error) {
+            next(error);
+        }
+    }
+    // STEP-1.1.11: Admin approves uploaded payment receipt → unlocks course for candidate
+    async adminApproveReceipt(req, res, next) {
+        try {
+            const ticketId = parseInt(req.params.id, 10);
+            const ticket = await TicketService_1.ticketService.adminApproveTicketReceipt(ticketId);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: ticket });
+        }
+        catch (error) {
+            if (error.message === 'TICKET_NOT_FOUND') {
+                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Ticket not found.' });
+                return;
+            }
             next(error);
         }
     }

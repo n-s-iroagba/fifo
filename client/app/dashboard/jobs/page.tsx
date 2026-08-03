@@ -12,6 +12,7 @@ interface Job {
     type: string;
     description: string;
     company: string;
+    visaSponsorship: boolean;
     JobCategory?: { name: string };
 }
 
@@ -160,6 +161,11 @@ export default function BrowseJobsPage() {
                                         <span className="text-[9px] font-black text-blue-300 uppercase tracking-widest leading-none bg-blue-50 px-3 py-1 rounded-lg">
                                             {job.JobCategory?.name || 'High Impact'}
                                         </span>
+                                        {job.visaSponsorship && (
+                                            <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100">
+                                                Visa Sponsor
+                                            </span>
+                                        )}
                                         {viewType === 'APEX' && (
                                             <div className="flex items-center gap-1.5 px-3 py-1 bg-black text-white text-[8px] font-black uppercase tracking-[0.2em] rounded-lg">
                                                 <span className="material-symbols-outlined text-[10px]">visibility_off</span>

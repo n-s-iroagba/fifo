@@ -18,9 +18,9 @@ Certificate.init({
     primaryKey: true,
   },
   userId: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     allowNull: false,
-    references: { model: 'Users', key: 'id' },
+    references: { model: 'users', key: 'id' },
     onDelete: 'CASCADE'
   },
   certificationTypeId: {

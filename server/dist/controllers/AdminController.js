@@ -36,15 +36,6 @@ class AdminController {
             res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
-    async getAllCryptoWallets(req, res) {
-        try {
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getAllCryptoWallets());
-        }
-        catch (error) {
-            console.error('[AdminController.getAllCryptoWallets]', error);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
     async getBankAccountById(req, res) {
         try {
             const id = parseInt(req.params.id, 10);
@@ -52,17 +43,6 @@ class AdminController {
         }
         catch (error) {
             console.error('[AdminController.getBankAccountById]', error);
-            const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
-            res.status(status).json({ error: error.message });
-        }
-    }
-    async getCryptoWalletById(req, res) {
-        try {
-            const id = parseInt(req.params.id, 10);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getCryptoWalletById(id));
-        }
-        catch (error) {
-            console.error('[AdminController.getCryptoWalletById]', error);
             const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
             res.status(status).json({ error: error.message });
         }
@@ -76,17 +56,6 @@ class AdminController {
         }
         catch (error) {
             console.error('[AdminController.getBankAccountsForAmount]', error);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    // STK-ADM-CRYPTO-003: active wallets for applicant display
-    async getActiveCryptoWallets(req, res) {
-        try {
-            const wallets = await AdminService_1.adminService.getActiveCryptoWallets();
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(wallets);
-        }
-        catch (error) {
-            console.error('[AdminController.getActiveCryptoWallets]', error);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
@@ -116,35 +85,6 @@ class AdminController {
         }
         catch (error) {
             console.error('[AdminController.deleteBankAccount]', error);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    // Crypto Wallets CRUD — STK-ADM-CRYPTO-001
-    async createCryptoWallet(req, res) {
-        try {
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json(await AdminService_1.adminService.createCryptoWallet(req.body));
-        }
-        catch (error) {
-            console.error('[AdminController.createCryptoWallet]', error);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    async updateCryptoWallet(req, res) {
-        try {
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.updateCryptoWallet(parseInt(req.params.id, 10), req.body));
-        }
-        catch (error) {
-            console.error('[AdminController.updateCryptoWallet]', error);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    async deleteCryptoWallet(req, res) {
-        try {
-            await AdminService_1.adminService.deleteCryptoWallet(parseInt(req.params.id, 10));
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ message: constants_1.CONSTANTS.SUCCESS_MESSAGES.DELETED });
-        }
-        catch (error) {
-            console.error('[AdminController.deleteCryptoWallet]', error);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }

@@ -20,13 +20,24 @@ export class JobRepository {
         if (options.employmentType) whereClause.employmentType = options.employmentType;
         if (options.searchQuery) {
             const searchPattern = `%${options.searchQuery}%`;
-            whereClause[Op.or] = [
+            const lowerSearch = options.searchQuery.toLowerCase();
+            const orConditions: any[] = [
                 { title: { [Op.like]: searchPattern } },
                 { location: { [Op.like]: searchPattern } },
                 { company: { [Op.like]: searchPattern } },
                 { description: { [Op.like]: searchPattern } },
+                { employmentType: { [Op.like]: searchPattern } },
+                { salary: { [Op.like]: searchPattern } },
+                { jobType: { [Op.like]: searchPattern } },
                 { '$JobCategory.name$': { [Op.like]: searchPattern } }
             ];
+
+            if (lowerSearch.includes('visa') || lowerSearch.includes('sponsor')) {
+                const wantsNoVisa = lowerSearch.includes('no ') || lowerSearch.includes('without');
+                orConditions.push({ visaSponsorship: !wantsNoVisa });
+            }
+
+            whereClause[Op.or] = orConditions;
         }
 
         const order: any[] = [];
@@ -70,13 +81,24 @@ export class JobRepository {
         if (options.employmentType) whereClause.employmentType = options.employmentType;
         if (options.searchQuery) {
             const searchPattern = `%${options.searchQuery}%`;
-            whereClause[Op.or] = [
+            const lowerSearch = options.searchQuery.toLowerCase();
+            const orConditions: any[] = [
                 { title: { [Op.like]: searchPattern } },
                 { location: { [Op.like]: searchPattern } },
                 { company: { [Op.like]: searchPattern } },
                 { description: { [Op.like]: searchPattern } },
+                { employmentType: { [Op.like]: searchPattern } },
+                { salary: { [Op.like]: searchPattern } },
+                { jobType: { [Op.like]: searchPattern } },
                 { '$JobCategory.name$': { [Op.like]: searchPattern } }
             ];
+
+            if (lowerSearch.includes('visa') || lowerSearch.includes('sponsor')) {
+                const wantsNoVisa = lowerSearch.includes('no ') || lowerSearch.includes('without');
+                orConditions.push({ visaSponsorship: !wantsNoVisa });
+            }
+
+            whereClause[Op.or] = orConditions;
         }
 
         const order: any[] = [];

@@ -10,7 +10,7 @@ interface Application {
     status: string;
 
     updatedAt: string;
-    JobListing: { title: string };
+    JobListing: { title: string; visaSponsorship: boolean };
 }
 
 interface ApplicationsResponse {
@@ -96,10 +96,18 @@ export default function ApplicationsListPage() {
                                 <div className="flex md:flex-col items-end gap-2 shrink-0">
                                     <Link
                                         href={`/dashboard/applications/${app.id}`}
-                                        className="bg-blue-50 text-blue-900 px-6 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-blue-100 transition-all border border-blue-100"
+                                        className="bg-blue-50 text-blue-900 px-6 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-blue-100 transition-all border border-blue-100 text-center w-full"
                                     >
                                         View Detail
                                     </Link>
+                                    {app.JobListing?.visaSponsorship && (
+                                        <Link
+                                            href={`/dashboard/applications/${app.id}/sponsorship`}
+                                            className="bg-blue-900 text-white px-6 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-blue-800 transition-all shadow-md text-center w-full"
+                                        >
+                                            Apply for Visa Sponsorship
+                                        </Link>
+                                    )}
                                 </div>
                             </div>
                         ))}

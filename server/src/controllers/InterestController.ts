@@ -49,6 +49,31 @@ export class InterestController {
             res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
+    public async updateInterest(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = (req as any).user.id;
+            const interest = await interestService.updateInterest(userId, req.body);
+            if (!interest) {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND });
+                return;
+            }
+            res.status(CONSTANTS.HTTP_STATUS.OK).json(interest);
+        } catch (error) {
+            console.error('[InterestController.updateInterest]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+
+    public async deleteInterest(req: Request, res: Response): Promise<void> {
+        try {
+            const id = parseInt(req.params.id as string, 10);
+            await interestService.deleteInterest(id);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ message: CONSTANTS.SUCCESS_MESSAGES.DELETED });
+        } catch (error) {
+            console.error('[InterestController.deleteInterest]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
 }
 
 export const interestController = new InterestController();

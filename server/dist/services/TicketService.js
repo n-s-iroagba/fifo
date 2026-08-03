@@ -1,12 +1,9 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ticketService = exports.TicketService = void 0;
 const models_1 = require("../models");
 const NotificationService_1 = require("./NotificationService");
-const nodemailer_1 = __importDefault(require("nodemailer"));
+const email_1 = require("../utils/email");
 class TicketService {
     async getUserTickets(userId) {
         return await models_1.Ticket.findAll({
@@ -301,27 +298,62 @@ class TicketService {
     }
     async sendCustomEmail(to, subject, htmlContent) {
         try {
-            const transporter = nodemailer_1.default.createTransport({
-                host: process.env.SMTP_HOST || 'smtp.ethereal.email',
-                port: parseInt(process.env.SMTP_PORT || '587'),
-                secure: false,
-                auth: {
-                    user: process.env.SMTP_USER || 'mock_user',
-                    pass: process.env.SMTP_PASS || 'mock_pass',
-                },
-            });
-            await transporter.sendMail({
-                from: '"FIFO Recruitment & Training" <booking@swiftwings.online>',
-                to,
-                subject,
-                html: htmlContent,
-            }).catch(err => {
-                console.log(`[TicketService.sendCustomEmail] Email dispatched to ${to} (mock logger):`, subject);
-            });
+            await (0, email_1.sendInfoEmail)(to, subject, htmlContent);
         }
         catch (e) {
-            console.log(`[TicketService.sendCustomEmail] Mock email log to ${to}: ${subject}`);
+            // Non-fatal: log and continue — email failure must not break the ticket flow
+            console.warn(`[TicketService] Email to ${to} failed (non-fatal):`, e?.message || e);
         }
+    }
+    // STEP-1.1.11: Admin approves payment receipt → sets Enrollment to active/paid, notifies learner
+    async adminApproveTicketReceipt(ticketId) {
+        const ticket = await models_1.Ticket.findByPk(ticketId, { include: [{ model: models_1.User }] });
+        if (!ticket)
+            throw new Error('TICKET_NOT_FOUND');
+        const user = ticket.User;
+        // Mark the ticket as receipt-verified (unlock course)
+        await ticket.update({ ticketSponsorship: ticket.ticketSponsorship }); // no status change needed — just unlock enrollment
+        // Set the enrollment for this course as active/paid
+        if (ticket.courseId && user?.id) {
+            const { Enrollment } = require('../models');
+            const existingEnrollment = await Enrollment.findOne({
+                where: { userId: user.id, courseId: ticket.courseId }
+            });
+            if (existingEnrollment) {
+                await existingEnrollment.update({ paymentStatus: 'Paid', status: 'Active' });
+            }
+            else {
+                await Enrollment.create({
+                    userId: user.id,
+                    courseId: ticket.courseId,
+                    paymentStatus: 'Paid',
+                    status: 'Active',
+                    amountPaid: ticket.purchasePrice
+                });
+            }
+        }
+        // Notify learner that course is unlocked
+        if (user?.id) {
+            await NotificationService_1.notificationService.sendNotification(user.id, 'Course Unlocked!', `Your payment receipt for ${ticket.ticketType} has been verified by our team. Your course modules are now available to access.`);
+        }
+        if (user?.email && ticket.courseId) {
+            const courseUrl = `http://localhost:3002/courses/${ticket.courseId}`;
+            await this.sendCustomEmail(user.email, `Course Access Unlocked: ${ticket.ticketType}`, `<p>Hello ${user.fullName || 'Learner'},</p>
+                 <p>Your payment receipt has been verified by our admin team. Your course is now unlocked!</p>
+                 <p><a href="${courseUrl}" style="background:#FFC700;color:#000;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold;">Start Your Course Now</a></p>`);
+        }
+        return ticket;
+    }
+    // STEP-1.1.20: Set review-awaiting status on exam submission (before grading)
+    async setExamReviewAwaiting(ticketId, userId) {
+        const ticket = await models_1.Ticket.findByPk(ticketId);
+        if (!ticket)
+            throw new Error('TICKET_NOT_FOUND');
+        if (ticket.courseId) {
+            const { Enrollment } = require('../models');
+            await Enrollment.update({ status: 'Review-Awaiting' }, { where: { userId, courseId: ticket.courseId } });
+        }
+        return { success: true };
     }
 }
 exports.TicketService = TicketService;

@@ -55,8 +55,6 @@ router.use('/jobs', apiLimiter);
 router.get('/jobs', jobController.getActiveJobs.bind(jobController));
 router.get('/jobs/:id', jobController.getJobDetails.bind(jobController));
 
-// STK-ADM-CRYPTO-003: active crypto wallets for public display (payment pages)
-router.get('/wallets/active', apiLimiter, adminController.getActiveCryptoWallets.bind(adminController));
 
 // =======================
 // Applicant Routes (requireAuth + APPLICANT role)
@@ -71,6 +69,7 @@ router.post('/applications', ...applicantMW, applicationController.startApplicat
 router.get('/applications', ...applicantMW, applicationController.getUserApplications.bind(applicationController));
 router.get('/applications/:id', ...applicantMW, applicationController.getApplicationDetails.bind(applicationController));
 router.post('/applications/:id/advance', ...applicantMW, applicationController.advanceApplication.bind(applicationController));
+router.post('/applications/:id/visa-sponsorship', ...applicantMW, applicationController.applyVisaSponsorship.bind(applicationController));
 
 // STK-APP-CV-001..004
 router.get('/cv', ...applicantMW, cvController.getCv.bind(cvController));
@@ -124,6 +123,7 @@ router.post('/admin/applications/:id/stages/:stageId/complete', ...adminMW, appl
 router.post('/admin/applications/:id/complete', ...adminMW, applicationController.completeApplication.bind(applicationController));
 router.delete('/admin/applications/:id', ...adminMW, applicationController.deleteApplication.bind(applicationController));
 router.get('/admin/applications/:id', ...adminMW, applicationController.getApplicationDetails.bind(applicationController));
+router.put('/admin/applications/:id/visa-sponsorship', ...adminMW, applicationController.updateVisaSponsorshipStatus.bind(applicationController));
 
 // STK-ADM-PAY-003: unpaid payments view
 router.get('/admin/payments/unpaid', ...adminMW, paymentController.getPendingPaymentsAdmin.bind(paymentController));
@@ -145,17 +145,12 @@ router.delete('/admin/jobs/:id', ...adminMW, jobController.deleteJob.bind(jobCon
 router.get('/admin/finance/configs', ...adminMW, adminController.getFinancialConfigs.bind(adminController));
 router.get('/admin/bank-accounts', ...adminMW, adminController.getAllBankAccounts.bind(adminController));
 router.get('/admin/bank-accounts/:id', ...adminMW, adminController.getBankAccountById.bind(adminController));
-router.get('/admin/crypto-wallets', ...adminMW, adminController.getAllCryptoWallets.bind(adminController));
-router.get('/admin/crypto-wallets/:id', ...adminMW, adminController.getCryptoWalletById.bind(adminController));
+
 router.get('/admin/finance/bank-accounts/by-amount', ...adminMW, adminController.getBankAccountsForAmount.bind(adminController));
 router.post('/admin/bank-accounts', ...adminMW, adminController.createBankAccount.bind(adminController));
 router.put('/admin/bank-accounts/:id', ...adminMW, adminController.updateBankAccount.bind(adminController));
 router.delete('/admin/bank-accounts/:id', ...adminMW, adminController.deleteBankAccount.bind(adminController));
 
-// STK-ADM-CRYPTO-001..003
-router.post('/admin/crypto-wallets', ...adminMW, adminController.createCryptoWallet.bind(adminController));
-router.put('/admin/crypto-wallets/:id', ...adminMW, adminController.updateCryptoWallet.bind(adminController));
-router.delete('/admin/crypto-wallets/:id', ...adminMW, adminController.deleteCryptoWallet.bind(adminController));
 
 // STK-ADM-CAT-001..003
 router.get('/admin/jobs/metadata', ...adminMW, adminController.getJobConfigs.bind(adminController));
@@ -197,11 +192,22 @@ router.post('/admin/tickets/bulk-seed', ...adminMW, ticketController.adminBulkSe
 router.post('/admin/tickets/:id/approve-receipt', ...adminMW, ticketController.adminApproveReceipt.bind(ticketController));
 
 import { interestController } from '../controllers/InterestController';
+import { ticketCatalogController } from '../controllers/TicketCatalogController';
 
 // Expression of Interest Routes
 router.post('/interests', ...applicantMW, interestController.createInterest.bind(interestController));
+router.put('/interests/me', ...applicantMW, interestController.updateInterest.bind(interestController));
 router.get('/interests/me', ...applicantMW, interestController.getUserInterest.bind(interestController));
 router.get('/admin/interests', ...adminMW, interestController.getAllInterests.bind(interestController));
+router.delete('/admin/interests/:id', ...adminMW, interestController.deleteInterest.bind(interestController));
+
+// =======================
+// Ticket Catalog Routes
+// =======================
+router.get('/ticket-catalogs', ticketCatalogController.getAll.bind(ticketCatalogController));
+router.post('/admin/ticket-catalogs', ...adminMW, ticketCatalogController.create.bind(ticketCatalogController));
+router.put('/admin/ticket-catalogs/:id', ...adminMW, ticketCatalogController.update.bind(ticketCatalogController));
+router.delete('/admin/ticket-catalogs/:id', ...adminMW, ticketCatalogController.delete.bind(ticketCatalogController));
 
 // =======================
 // LMS Routes

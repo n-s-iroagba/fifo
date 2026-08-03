@@ -1,11 +1,24 @@
 'use client';
 
 import React from 'react';
-import { useApiQuery } from '@/lib/hooks';
+import { useApiQuery, useApiMutation } from '@/lib/hooks';
 import Link from 'next/link';
 
 export default function AdminInterestsPage() {
-    const { data: interests = [], isLoading } = useApiQuery<any[]>(['admin', 'interests'], '/admin/interests');
+    const { data: interests = [], isLoading, refetch } = useApiQuery<any[]>(['admin', 'interests'], '/admin/interests');
+
+    const deleteMutation = useApiMutation('delete', '', {
+        onSuccess: () => refetch()
+    });
+
+    const handleDelete = (id: number) => {
+        if (confirm('Are you sure you want to delete this expression of interest?')) {
+            deleteMutation.mutate(null, {
+                onSuccess: () => refetch(),
+                // API hooks might need dynamic URL, so we can override the mutation function or pass URL in the mutation hook properly.
+            });
+        }
+    };
 
     if (isLoading) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-blue-400">Loading Market Interests...</div>;
 
@@ -37,7 +50,7 @@ export default function AdminInterestsPage() {
                                         <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">{interest.User?.email}</p>
                                     </div>
                                 </div>
-                                <div className="flex gap-3">
+                                <div className="flex flex-wrap gap-3">
                                     <Link 
                                         href={`/admin/applicants/${interest.userId}`}
                                         className="px-6 py-3 bg-blue-50 text-blue-900 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-900 hover:text-white transition-all shadow-sm"
@@ -50,6 +63,19 @@ export default function AdminInterestsPage() {
                                     >
                                         Scout Candidate
                                     </Link>
+                                    <button 
+                                        onClick={() => {
+                                            if (confirm('Delete this interest?')) {
+                                                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/admin/interests/${interest.id}`, {
+                                                    method: 'DELETE',
+                                                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                                                }).then(() => refetch());
+                                            }
+                                        }}
+                                        className="px-6 py-3 bg-red-50 text-red-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                                    >
+                                        Delete
+                                    </button>
                                 </div>
                             </div>
 

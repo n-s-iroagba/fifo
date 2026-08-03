@@ -1,7 +1,6 @@
 import { sequelize } from '../config/database';
 import { User } from './User';
 import { BankAccount } from './BankAccount';
-import { CryptoWallet } from './CryptoWallet';
 import { JobCategory } from './JobCategory';
 import { JobListing } from './JobListing';
 import { JobBenefit } from './JobBenefit';
@@ -27,6 +26,7 @@ import { PracticalBooking } from './PracticalBooking';
 import { ExamAttempt } from './ExamAttempt';
 import { Certificate } from './Certificate';
 import { Ticket } from './Ticket';
+import { TicketCatalog } from './TicketCatalog';
 
 // User <-> Ticket
 User.hasMany(Ticket, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
@@ -169,7 +169,6 @@ export {
     sequelize,
     User,
     BankAccount,
-    CryptoWallet,
     JobCategory,
     JobListing,
     JobBenefit,
@@ -194,5 +193,6 @@ export {
     PracticalBooking,
     ExamAttempt,
     Certificate,
-    Ticket
+    Ticket,
+    TicketCatalog
 };
