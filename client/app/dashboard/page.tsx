@@ -288,75 +288,11 @@ export default function ApplicantDashboard() {
                         </div>
                     </section>
 
-                    {/* Black Box Dashboard — Apex Locked */}
-                    <section className={`relative overflow-hidden p-8 rounded-[2.5rem] border transition-all duration-500 ${user?.user?.isApexMember ? 'bg-blue-900 text-white border-blue-900 shadow-2xl' : 'bg-white border-blue-100 grayscale-[0.8] opacity-60'}`}>
-                        {!user?.user?.isApexMember && (
-                            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/40 backdrop-blur-[2px] p-6 text-center">
-                                <span className="material-symbols-outlined text-3xl text-blue-900 mb-3">lock</span>
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-900 mb-1">Black Box Dashboard</h4>
-                                <p className="text-[8px] font-bold text-blue-400 uppercase leading-tight">Apex Membership Required</p>
-                                <Link href="/apex/audit" className="mt-4 text-[8px] font-black text-blue-900 underline uppercase tracking-widest">Apply for Audit</Link>
-                            </div>
-                        )}
-                        <div className="space-y-6 relative z-0">
-                            <h3 className={`text-[10px] font-black uppercase tracking-[0.3em] mb-4 flex items-center gap-2 ${user?.user?.isApexMember ? 'text-white/60' : 'text-blue-400'}`}>
-                                <span className="material-symbols-outlined text-base">monitoring</span>
-                                Market Intelligence
-                            </h3>
-                            <div className="space-y-5">
-                                <div className="space-y-1">
-                                    <p className={`text-[8px] font-bold uppercase tracking-widest ${user?.user?.isApexMember ? 'text-white/40' : 'text-blue-300'}`}>Budget Ceiling (Avg)</p>
-                                    <p className="text-xl font-black tabular-nums tracking-tighter">$142,500 - $190,000</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className={`text-[8px] font-bold uppercase tracking-widest ${user?.user?.isApexMember ? 'text-white/40' : 'text-blue-300'}`}>Avg. Engineering Turnover</p>
-                                    <p className="text-xl font-black tabular-nums tracking-tighter">4.2% / Year</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className={`text-[8px] font-bold uppercase tracking-widest ${user?.user?.isApexMember ? 'text-white/40' : 'text-blue-300'}`}>Time-to-Hire Metric</p>
-                                    <p className="text-xl font-black tabular-nums tracking-tighter">18.5 Days</p>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
+
                 </div>
             </div>
 
-            {selectedPaymentApp && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-blue-900/95 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] border border-white/20">
-                        <div className="p-8 bg-white border-b border-blue-50 flex items-center justify-between">
-                            <div>
-                                <h3 className="text-xs font-black text-blue-900 uppercase tracking-widest">Payment Gateway</h3>
-                                <p className="text-[9px] font-bold text-blue-400 uppercase mt-1">Ref ID: #TXN-{selectedPaymentApp.applicationId.toString().padStart(5, '0')}897XVB</p>
-                            </div>
-                            <button onClick={() => setSelectedPaymentApp(null)} className="w-10 h-10 rounded-xl hover:bg-blue-50 text-blue-400 hover:text-blue-900 transition-all flex items-center justify-center">
-                                <span className="material-symbols-outlined">close</span>
-                            </button>
-                        </div>
 
-                        <div className="flex-1 overflow-y-auto p-10 custom-scrollbar">
-                            {getPaymentForApp(selectedPaymentApp) ? (
-                                <PaymentUpload
-                                    paymentId={getPaymentForApp(selectedPaymentApp).id}
-                                    amount={selectedPaymentApp.amount}
-                                    onSuccess={() => {
-                                        setSelectedPaymentApp(null);
-                                        refetch();
-                                    }}
-                                />
-                            ) : (
-                                <div className="p-12 text-center">
-                                    <span className="material-symbols-outlined text-5xl text-red-100 mb-4">error</span>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-red-500">
-                                        Notice: No payment record found for this stage.
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

@@ -25,34 +25,36 @@ class TicketCatalogController {
             next(error);
         }
     }
-    async update(req, res, next) {
+    async updateTicketCatalog(req, res, next) {
         try {
             const id = parseInt(req.params.id, 10);
             const catalog = await models_1.TicketCatalog.findByPk(id);
             if (!catalog) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Not found' });
+                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: 'Ticket catalog not found' });
                 return;
             }
             await catalog.update(req.body);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: catalog });
         }
         catch (error) {
-            next(error);
+            console.error('[TicketCatalogController.updateTicketCatalog]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
-    async delete(req, res, next) {
+    async deleteTicketCatalog(req, res, next) {
         try {
             const id = parseInt(req.params.id, 10);
             const catalog = await models_1.TicketCatalog.findByPk(id);
             if (!catalog) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Not found' });
+                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: 'Ticket catalog not found' });
                 return;
             }
             await catalog.destroy();
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true });
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: constants_1.CONSTANTS.SUCCESS_MESSAGES.DELETED });
         }
         catch (error) {
-            next(error);
+            console.error('[TicketCatalogController.deleteTicketCatalog]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
 }

@@ -178,8 +178,8 @@ router.delete('/admin/interests/:id', ...adminMW, InterestController_1.interestC
 // =======================
 router.get('/ticket-catalogs', TicketCatalogController_1.ticketCatalogController.getAll.bind(TicketCatalogController_1.ticketCatalogController));
 router.post('/admin/ticket-catalogs', ...adminMW, TicketCatalogController_1.ticketCatalogController.create.bind(TicketCatalogController_1.ticketCatalogController));
-router.put('/admin/ticket-catalogs/:id', ...adminMW, TicketCatalogController_1.ticketCatalogController.update.bind(TicketCatalogController_1.ticketCatalogController));
-router.delete('/admin/ticket-catalogs/:id', ...adminMW, TicketCatalogController_1.ticketCatalogController.delete.bind(TicketCatalogController_1.ticketCatalogController));
+router.put('/admin/ticket-catalogs/:id', ...adminMW, TicketCatalogController_1.ticketCatalogController.updateTicketCatalog.bind(TicketCatalogController_1.ticketCatalogController));
+router.delete('/admin/ticket-catalogs/:id', ...adminMW, TicketCatalogController_1.ticketCatalogController.deleteTicketCatalog.bind(TicketCatalogController_1.ticketCatalogController));
 // =======================
 // LMS Routes
 // =======================
