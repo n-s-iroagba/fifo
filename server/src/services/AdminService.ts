@@ -157,7 +157,7 @@ export class AdminService {
         sendPushNotification: boolean = false,
         email?: string,
         attachments: any[] = [],
-        fromType: 'auth' | 'info' = 'info'
+        fromType: 'auth' | 'info' | 'aveling' = 'info'
     ) {
         let user;
         let targetEmail = email;

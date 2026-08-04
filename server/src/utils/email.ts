@@ -15,6 +15,7 @@ const createTransporter = (user: string | undefined, pass: string | undefined) =
 
 const authTransporter = createTransporter(process.env.SMTP_AUTH_USER, process.env.SMTP_AUTH_PASS);
 const infoTransporter = createTransporter(process.env.SMTP_INFO_USER, process.env.SMTP_INFO_PASS);
+const avelingTransporter = createTransporter(process.env.AV_SMTP_INFO_USER, process.env.AV_SMTP_INFO_PASS);
 
 // Self-Diagnostic: Verify connection on startup
 authTransporter.verify((error, success) => {
@@ -30,6 +31,14 @@ infoTransporter.verify((error, success) => {
         console.error('[EmailUtil] Info Transporter Connection Error:', error);
     } else {
         console.log('[EmailUtil] Info Transporter ready to dispatch.');
+    }
+});
+
+avelingTransporter.verify((error, success) => {
+    if (error) {
+        console.error('[EmailUtil] Aveling Transporter Connection Error:', error);
+    } else {
+        console.log('[EmailUtil] Aveling Transporter ready to dispatch.');
     }
 });
 
@@ -128,11 +137,33 @@ export const sendInfoEmail = async (to: string, subject: string, content: string
     }
 };
 
-export const sendEmailFrom = async (fromType: 'auth' | 'info', to: string, subject: string, content: string, attachments: any[] = []): Promise<void> => {
-    const transporter = fromType === 'auth' ? authTransporter : infoTransporter;
-    const from = fromType === 'auth'
-        ? (process.env.SMTP_AUTH_FROM || '"BlueCollar Authentication" <donotreply@BlueCollar.com>')
-        : (process.env.SMTP_INFO_FROM || '"BlueCollar Infrastructure" <info@BlueCollar.com>');
+export const sendAvelingEmail = async (to: string, subject: string, content: string, attachments: any[] = []): Promise<void> => {
+    try {
+        await avelingTransporter.sendMail({
+            from: process.env.AV_SMTP_INFO_FROM || '"BlueCollarRecruitment Aveling" <info@jobnexe.com>',
+            to,
+            subject,
+            html: getStandardEmailTemplate(subject, content),
+            attachments,
+        });
+        console.log(`[EmailUtil] Aveling email dispatched to: ${to}`);
+    } catch (error) {
+        console.error(`[EmailUtil] Aveling email failed:`, error);
+        throw new Error('Aveling email dispatch failed');
+    }
+};
+
+export const sendEmailFrom = async (fromType: 'auth' | 'info' | 'aveling', to: string, subject: string, content: string, attachments: any[] = []): Promise<void> => {
+    let transporter = infoTransporter;
+    let from = process.env.SMTP_INFO_FROM || '"BlueCollar Infrastructure" <info@BlueCollar.com>';
+
+    if (fromType === 'auth') {
+        transporter = authTransporter;
+        from = process.env.SMTP_AUTH_FROM || '"BlueCollar Authentication" <donotreply@BlueCollar.com>';
+    } else if (fromType === 'aveling') {
+        transporter = avelingTransporter;
+        from = process.env.AV_SMTP_INFO_FROM || '"BlueCollarRecruitment Aveling" <info@jobnexe.com>';
+    }
 
     try {
         await transporter.sendMail({

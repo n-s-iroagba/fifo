@@ -16,7 +16,7 @@ const CustomEditor = dynamic(() => import('@/components/admin/Editor'), {
 });
 
 function MailComposerContent() {
-    const [fromType, setFromType] = useState<'auth' | 'info'>('info');
+    const [fromType, setFromType] = useState<'auth' | 'info' | 'aveling'>('info');
     const searchParams = useSearchParams();
     const [to, setTo] = useState(searchParams.get('to') || '');
     const [subject, setSubject] = useState('');
@@ -119,6 +119,13 @@ function MailComposerContent() {
                                     className={`flex-1 py-3 px-4 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all ${fromType === 'auth' ? 'bg-blue-900 text-white border-blue-900 shadow-lg shadow-blue-900/10' : 'bg-blue-50 text-blue-400 border-blue-100 hover:border-blue-300'}`}
                                 >
                                     Auth Protocol
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setFromType('aveling')}
+                                    className={`flex-1 py-3 px-4 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all ${fromType === 'aveling' ? 'bg-blue-900 text-white border-blue-900 shadow-lg shadow-blue-900/10' : 'bg-blue-50 text-blue-400 border-blue-100 hover:border-blue-300'}`}
+                                >
+                                    Aveling LMS
                                 </button>
                             </div>
                         </div>
