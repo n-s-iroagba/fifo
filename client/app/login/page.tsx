@@ -34,8 +34,13 @@ function LoginContent() {
         onSuccess: (data: any) => {
             login(data.accessToken, data.user);
 
-            if (requestedRedirect) {
-                router.push(requestedRedirect);
+            let targetRedirect = requestedRedirect;
+            if (targetRedirect && targetRedirect.startsWith('/jobs/')) {
+                targetRedirect = targetRedirect.replace('/jobs/', '/dashboard/jobs/');
+            }
+
+            if (targetRedirect) {
+                router.push(targetRedirect);
             } else {
                 const targetPath = data.user.role === CONSTANTS.ROLES.ADMIN
                     ? CONSTANTS.ROUTES.ADMIN.DASHBOARD
@@ -194,7 +199,7 @@ function LoginContent() {
                     <div className="mt-10 pt-6 text-center border-t border-blue-50">
                         <p className="text-xs text-blue-500">
                             Don't have an account?
-                            <Link href={CONSTANTS.ROUTES.REGISTER} className="font-bold text-blue-900 hover:underline ml-1 uppercase tracking-wider text-[11px]">Create Account</Link>
+                            <Link href={`${CONSTANTS.ROUTES.REGISTER}${requestedRedirect ? `?redirect=${encodeURIComponent(requestedRedirect)}` : ''}`} className="font-bold text-blue-900 hover:underline ml-1 uppercase tracking-wider text-[11px]">Create Account</Link>
                         </p>
                     </div>
                 </div>

@@ -15,6 +15,13 @@ function VerifyEmailContent() {
     const [email, setEmail] = useState('');
     const [resendStatus, setResendStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
+    const rawRedirect = searchParams.get('redirect');
+    const redirectParam = rawRedirect
+        ? (rawRedirect.startsWith('/jobs/') ? rawRedirect.replace('/jobs/', '/dashboard/jobs/') : rawRedirect)
+        : null;
+
+    const loginUrl = `/login${redirectParam ? `?redirect=${encodeURIComponent(redirectParam)}` : ''}`;
+
     const { data, error } = useApiQuery<any>(
         ['auth', 'verify-email', token || ''],
         `/auth/verify-email?token=${token}`,
@@ -31,7 +38,7 @@ function VerifyEmailContent() {
         if (data) {
             setStatus('success');
             setMessage(data.message || 'Identity verified successfully.');
-            const timer = setTimeout(() => router.push(CONSTANTS.ROUTES.LOGIN), 3000);
+            const timer = setTimeout(() => router.push(loginUrl), 3000);
             return () => clearTimeout(timer);
         }
 
@@ -39,7 +46,7 @@ function VerifyEmailContent() {
             setStatus('error');
             setMessage((error as any).response?.data?.error || 'Verification failed. Bridge link may be expired.');
         }
-    }, [data, error, token, router]);
+    }, [data, error, token, router, loginUrl]);
 
     const resendMutation = useApiMutation<any, any>('post', '/auth/resend-verification', {
         onSuccess: () => {
@@ -114,7 +121,7 @@ function VerifyEmailContent() {
             )}
 
             {(status === 'error' || status === 'success') && (
-                <Link href={CONSTANTS.ROUTES.LOGIN} className="block w-full">
+                <Link href={loginUrl} className="block w-full">
                     <button className="w-full py-4 bg-blue-900 text-white rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-blue-900/10 hover:bg-blue-800 transition-all active:scale-[0.98]">
                         Return to Login
                     </button>

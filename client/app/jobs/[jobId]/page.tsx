@@ -96,7 +96,7 @@ export default function JobDetailPage() {
 
     const handleApply = () => {
         if (!user) {
-            router.push(`/register?redirect=/jobs/${jobId}`);
+            router.push(`/register?redirect=/dashboard/jobs/${jobId}`);
             return;
         }
         if (requirements.complete) {
@@ -149,15 +149,21 @@ export default function JobDetailPage() {
                             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-900">Application Access</h3>
 
                             {!user ? (
-                                <div className="space-y-6">
+                                <div className="space-y-4">
                                     <button
                                         onClick={handleApply}
                                         className="w-full bg-blue-900 text-white py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] shadow-xl shadow-blue-900/10 hover:bg-black transition-all active:scale-[0.98]"
                                     >
                                         Apply for Role
                                     </button>
+                                    <Link
+                                        href={`/login?redirect=/dashboard/jobs/${jobId}`}
+                                        className="block text-center w-full bg-blue-50 text-blue-900 border border-blue-100 py-4 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-blue-100 transition-all"
+                                    >
+                                        Already Registered? Sign In
+                                    </Link>
                                     <p className="text-[9px] font-bold text-blue-400 text-center uppercase tracking-widest leading-loose">
-                                        Independent verification required. Register as talent to continue.
+                                        Independent verification required. Create an account to access talent dashboard.
                                     </p>
                                 </div>
                             ) : hasAlreadyApplied ? (

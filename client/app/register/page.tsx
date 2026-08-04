@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useApiMutation } from '@/lib/hooks';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { CONSTANTS } from '@/constants';
 import Link from 'next/link';
 
@@ -29,8 +29,15 @@ const registerSchema = z.object({
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
-export default function RegisterPage() {
+function RegisterContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const rawRedirect = searchParams.get('redirect');
+    const redirectParam = rawRedirect
+        ? (rawRedirect.startsWith('/jobs/') ? rawRedirect.replace('/jobs/', '/dashboard/jobs/') : rawRedirect)
+        : null;
+
+    const loginUrl = `/login${redirectParam ? `?redirect=${encodeURIComponent(redirectParam)}` : ''}`;
     const [regError, setRegError] = useState<string | null>(null);
     const [isRegistered, setIsRegistered] = useState(false);
     const [registeredEmail, setRegisteredEmail] = useState('');
@@ -74,7 +81,7 @@ export default function RegisterPage() {
             {/* Top Navigation */}
             <header className="fixed top-0 w-full z-50 bg-white border-b border-blue-100 px-8 h-20 flex items-center justify-between">
                 <Link href="/" className="text-xl font-black italic uppercase tracking-[0.1em] text-blue-900">BlueCollar</Link>
-                <Link href="/login" className="text-[10px] font-bold text-blue-400 hover:text-blue-900 uppercase tracking-widest transition-colors">Sign In</Link>
+                <Link href={loginUrl} className="text-[10px] font-bold text-blue-400 hover:text-blue-900 uppercase tracking-widest transition-colors">Sign In</Link>
             </header>
 
             <main className="flex-grow w-full flex flex-col items-center justify-center pt-32 pb-24 px-6">
@@ -92,7 +99,7 @@ export default function RegisterPage() {
                                     We've dispatched a secure verification bridge to <span className="text-blue-900 font-bold">{registeredEmail}</span>. Please authorize your access to continue.
                                 </p>
                             </div>
-                            <Link href="/login" className="block w-full">
+                            <Link href={loginUrl} className="block w-full">
                                 <button className="w-full bg-blue-900 text-white py-4 rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-blue-900/10 hover:bg-blue-800 transition-all active:scale-[0.98]">
                                     Proceed to Login
                                 </button>
@@ -226,7 +233,7 @@ export default function RegisterPage() {
 
                             <div className="pt-8 border-t border-blue-50 text-center">
                                 <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest">
-                                    Already part of the network? <Link className="text-blue-900 hover:underline ml-1" href={CONSTANTS.ROUTES.LOGIN}>Sign In</Link>
+                                    Already part of the network? <Link className="text-blue-900 hover:underline ml-1" href={loginUrl}>Sign In</Link>
                                 </p>
                             </div>
                         </div>
@@ -244,5 +251,17 @@ export default function RegisterPage() {
                 </div>
             </footer>
         </div>
+    );
+}
+
+export default function RegisterPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-blue-400">Loading Registry...</div>
+            </div>
+        }>
+            <RegisterContent />
+        </Suspense>
     );
 }

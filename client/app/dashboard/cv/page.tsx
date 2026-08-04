@@ -79,33 +79,98 @@ function CvContent() {
     };
 
     const handleDownloadTemplate = () => {
-        const templateContent = `[FIRST NAME] [LAST NAME]
-Email: applicant@example.com | Phone: +61 400 000 000 | Location: Perth, WA
-FIFO Candidate Profile — ATS Standard Format
+        const templateContent = `BILLY MEGA BERLIN
+Phone: +61-417593439 | Email: Billymega26@gmail.com
 
-PROFESSIONAL SUMMARY
-Experienced FIFO Specialist with active site certifications. Proven track record in mining operations, site safety compliance, and heavy equipment operation.
+================================================================================
+PROFILE
+================================================================================
+Dedicated and hardworking professional with strong integrity and a proven ability to exceed expectations. Highly adaptable and communicative, with a proactive mindset and strong commitment to delivering quality results. A valuable team player in any organization or work environment.
 
-CERTIFICATIONS & TICKETS
-• Working at Heights (RIIWHS204D) — Active
-• Enter & Work in Confined Spaces (RIIWHS202D) — Active
-• Standard 11 Surface Refresher — Active
-• First Aid & CPR (HLTAID011) — Active
-• C Class Driver's License — Active
+================================================================================
+SKILLS & PERSONALITY
+================================================================================
+• Strategic Planning
+• Problem Solving
+• Tool Setup and Cleanup
+• Creative Thinking
+• Hard Work
+• Initiative and knowing priorities
+• Power Tools Operation
+• Hand Tools Proficiency
+• Fast Learner and Fast Adaptation
+• Safety Procedures Compliance
+• Manual Handling
+• Operate Machine
+• Inventory Management
 
+================================================================================
 WORK EXPERIENCE
-FIFO Site Worker | Mining Operations Corp (2022 - Present)
-• Completed scheduled operational maintenance and safety compliance protocols.
-• Enforced site safety standards and emergency response protocols.
+================================================================================
+Baiada Poultry                                                Aug 2025 - Present
+Cleaner Factory Machine
+References: Didik (Leader) +614399283454
+  • Cleaner (Cleaning the factory and Machine)
+    - Cleaning hanging room, hanging machine and conveyor belt, vacuum packing machine, and marinate machine.
+    - Chemical handling and working with PPE (Topax686, Chlorine, Sanitize)
+    - Safety and hygiene
 
-EDUCATION & TRAINING
-• Certificate III in Surface Extraction Operations`;
+Howe Farm Enterprises (Heavy Labour)                           Jan 2025 - Sept 2025
+Banana Farm Shed & Paddock
+References: Jerome (Manager) +61413856221 | Yansiy (Supervisor) +61422187016
+  • Unloading, operate hydraulic hang machine to hang the bunch, after open bag and put chain
+  • Dehanding the bunch, cutting all banana from running hook into a hand of bananas.
+  • Clustering hand of bananas, cutting in running belt from a hand of bananas into a small cut and also grading at the same time.
+  • Stacking the box of bananas, with 4 different box with 14-15kg for small box and 17-18kg for big box, put the lids before and also filling the boxes, big plastic, small plastic, paper and lids for the packers.
+  • Boxes, operate Visy Box machine to make box from cut board.
+  • Recycle, operate recycle machine to make a big box of plastic recycle.
+  • Dieseling the trees of bananas after they harvest it.
+  • Dileaving the leaves, cutting the broken Leaves
+  • Drive Tractor with the trailer before do unloading
+  • Humping the banana around 40 - 80kg/bunch and put in trailer
+  • Cleaning Shed and all the machine with chemical handling
+
+PT. Intersoft Solutions (iSeller)                             Apr 2021 - Nov 2024
+Pre - Sales officer and Lead of Pre-Sales (Product Specialist)
+References: Imam (Head of Pre-Sales) +6282129244224 | Moses (Head of Enterprise) +6281210719909
+  • Pitching Enterprise client.
+  • Lead the project.
+  • Giving efficient flow for back system.
+  • Make PRD and lead programmer also Product Owner Team base on client requirements.
+  • Connecting API to third party (WMS, ERP, In house client system, etc).
+
+PT. Albarsha Group Persada                                    Feb 2018 - Apr 2021
+Entertainment Providers (Event Organizer and Event Production)
+References: Aldira Akbar (CEO) +6287763764359 | Nm. Arief (Manager) +628111198919
+  • Trade Assistant Rigging (Setup Stage and Event)
+    - Assisting with tools and equipment
+    - Help tradies do their job
+    - Site preparation and clean up
+    - Equipment maintenance
+  • General Labourer (Setup Stage and Event)
+    - Pallet Jack Operation
+    - Loading & Unloading Deliveries
+    - Lifting weights stuff for installment
+    - Waste Removal & Site Cleanup
+
+================================================================================
+EDUCATION
+================================================================================
+• Bina Nusantara University (Binus) - School of Computer Science
+
+================================================================================
+TICKET (CERTIFICATIONS & LICENSES)
+================================================================================
+• White Card - CPCWHS1001
+• Driving License Australia - Class C 'Manual'
+• HLTAID009, HLTAID010, HLTAID011
+ps: Another ticket would be taken immediately if it's necessary as a requirement, thank you.`;
 
         const blob = new Blob([templateContent], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'ATS_CV_Template.txt';
+        a.download = 'ATS_Compliance_CV_Template.txt';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -246,6 +311,155 @@ EDUCATION & TRAINING
                     <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100 italic text-[10px] text-blue-400 font-medium uppercase tracking-tight">
                         Note: Ensure your resume remains up to date in ATS format so FIFO recruiters can quickly assess site certifications.
                     </div>
+
+                    {/* ATS Compliance Template Visual Card */}
+                    <section className="bg-white p-6 md:p-8 rounded-2xl border border-blue-200 shadow-lg space-y-6">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-blue-100 pb-4">
+                            <div>
+                                <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100">
+                                    Official Standard
+                                </span>
+                                <h3 className="text-lg font-bold text-blue-900 mt-1">ATS Compliance Resume Template</h3>
+                            </div>
+                            <button
+                                onClick={handleDownloadTemplate}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm transition-all"
+                            >
+                                <span className="material-symbols-outlined text-sm">download</span>
+                                Download Template
+                            </button>
+                        </div>
+
+                        {/* Interactive ATS Resume Preview Container */}
+                        <div className="bg-white border border-slate-300 rounded-xl p-6 md:p-8 font-sans text-slate-800 text-xs shadow-inner max-w-4xl mx-auto space-y-6">
+                            {/* Header */}
+                            <div className="border-b-2 border-slate-900 pb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-2">
+                                <div>
+                                    <h2 className="text-2xl font-extrabold uppercase tracking-tight text-slate-900">BILLY MEGA BERLIN</h2>
+                                </div>
+                                <div className="text-[11px] font-medium text-slate-600 space-y-0.5 md:text-right">
+                                    <p>📱 +61-417593439</p>
+                                    <p>✉️ Billymega26@gmail.com</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                {/* Left Sidebar Column */}
+                                <div className="space-y-6 md:border-r md:border-slate-200 md:pr-6">
+                                    {/* Profile */}
+                                    <div className="space-y-2">
+                                        <h4 className="font-bold uppercase tracking-wider text-slate-900 text-[11px] border-b border-slate-300 pb-1">PROFILE</h4>
+                                        <p className="text-[11px] leading-relaxed text-slate-600">
+                                            Dedicated and hardworking professional with strong integrity and a proven ability to exceed expectations. Highly adaptable and communicative, with a proactive mindset and strong commitment to delivering quality results. A valuable team player in any organization or work environment.
+                                        </p>
+                                    </div>
+
+                                    {/* Skills & Personality */}
+                                    <div className="space-y-2">
+                                        <h4 className="font-bold uppercase tracking-wider text-slate-900 text-[11px] border-b border-slate-300 pb-1">SKILLS & PERSONALITY</h4>
+                                        <ul className="text-[11px] space-y-1 text-slate-700 list-disc list-inside">
+                                            <li>Strategic Planning</li>
+                                            <li>Problem Solving</li>
+                                            <li>Tool Setup and Cleanup</li>
+                                            <li>Creative Thinking</li>
+                                            <li>Hard Work</li>
+                                            <li>Initiative & Priorities</li>
+                                            <li>Power Tools Operation</li>
+                                            <li>Hand Tools Proficiency</li>
+                                            <li>Fast Learner & Adaptation</li>
+                                            <li>Safety Compliance</li>
+                                            <li>Manual Handling</li>
+                                            <li>Machine Operation</li>
+                                            <li>Inventory Management</li>
+                                        </ul>
+                                    </div>
+
+                                    {/* Education */}
+                                    <div className="space-y-2">
+                                        <h4 className="font-bold uppercase tracking-wider text-slate-900 text-[11px] border-b border-slate-300 pb-1">EDUCATION</h4>
+                                        <p className="text-[11px] font-semibold text-slate-900">Bina Nusantara University (Binus)</p>
+                                        <p className="text-[10px] text-slate-600">School of Computer Science</p>
+                                    </div>
+
+                                    {/* Ticket */}
+                                    <div className="space-y-2">
+                                        <h4 className="font-bold uppercase tracking-wider text-slate-900 text-[11px] border-b border-slate-300 pb-1">TICKETS & LICENSES</h4>
+                                        <ul className="text-[11px] space-y-1 text-slate-700 list-disc list-inside">
+                                            <li>White Card - CPCWHS1001</li>
+                                            <li>Driving License Class C (Manual)</li>
+                                            <li>HLTAID009, HLTAID010, HLTAID011</li>
+                                        </ul>
+                                        <p className="text-[9px] italic text-slate-500 mt-2">
+                                            ps: Additional tickets taken immediately as required by site.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Main Experience Column */}
+                                <div className="md:col-span-2 space-y-6">
+                                    <h4 className="font-bold uppercase tracking-wider text-slate-900 text-[11px] border-b border-slate-300 pb-1">WORK EXPERIENCE</h4>
+
+                                    {/* Exp 1 */}
+                                    <div className="space-y-1.5">
+                                        <div className="flex justify-between items-baseline">
+                                            <h5 className="font-bold text-slate-900 text-[12px]">Baiada Poultry</h5>
+                                            <span className="text-[10px] text-slate-500 font-medium">Aug 2025 – Present</span>
+                                        </div>
+                                        <p className="font-semibold text-slate-700 text-[11px]">Cleaner Factory Machine</p>
+                                        <p className="text-[10px] text-slate-500 italic">References: Didik (Leader) +614399283454</p>
+                                        <ul className="text-[11px] space-y-1 text-slate-600 list-disc list-inside pt-1">
+                                            <li>Cleaner (Cleaning factory & machinery: hanging room, conveyor belt, vacuum packing, marinate machine).</li>
+                                            <li>Chemical handling with required PPE (Topax686, Chlorine, Sanitize).</li>
+                                            <li>Safety and hygiene compliance.</li>
+                                        </ul>
+                                    </div>
+
+                                    {/* Exp 2 */}
+                                    <div className="space-y-1.5 pt-2">
+                                        <div className="flex justify-between items-baseline">
+                                            <h5 className="font-bold text-slate-900 text-[12px]">Howe Farm Enterprises (Heavy Labour)</h5>
+                                            <span className="text-[10px] text-slate-500 font-medium">Jan 2025 – Sept 2025</span>
+                                        </div>
+                                        <p className="font-semibold text-slate-700 text-[11px]">Banana Farm Shed & Paddock</p>
+                                        <p className="text-[10px] text-slate-500 italic">References: Jerome (Manager) +61413856221 | Yansiy (Supervisor) +61422187016</p>
+                                        <ul className="text-[11px] space-y-1 text-slate-600 list-disc list-inside pt-1">
+                                            <li>Operated hydraulic hang machines for unloading bunches; dehanding & clustering bananas.</li>
+                                            <li>Operated Visy Box machine and plastic recycling machine.</li>
+                                            <li>Tractor driving with trailers, field dieseling, dileaving, and humping 40-80kg bunches.</li>
+                                        </ul>
+                                    </div>
+
+                                    {/* Exp 3 */}
+                                    <div className="space-y-1.5 pt-2">
+                                        <div className="flex justify-between items-baseline">
+                                            <h5 className="font-bold text-slate-900 text-[12px]">PT. Intersoft Solutions (iSeller)</h5>
+                                            <span className="text-[10px] text-slate-500 font-medium">Apr 2021 – Nov 2024</span>
+                                        </div>
+                                        <p className="font-semibold text-slate-700 text-[11px]">Lead of Pre-Sales (Product Specialist)</p>
+                                        <p className="text-[10px] text-slate-500 italic">References: Imam (Head of Pre-Sales) +6282129244224 | Moses (Head of Enterprise) +6281210719909</p>
+                                        <ul className="text-[11px] space-y-1 text-slate-600 list-disc list-inside pt-1">
+                                            <li>Enterprise client pitching, system flow design, and PRD ownership.</li>
+                                            <li>API third-party integrations (WMS, ERP, In-house client systems).</li>
+                                        </ul>
+                                    </div>
+
+                                    {/* Exp 4 */}
+                                    <div className="space-y-1.5 pt-2">
+                                        <div className="flex justify-between items-baseline">
+                                            <h5 className="font-bold text-slate-900 text-[12px]">PT. Albarsha Group Persada</h5>
+                                            <span className="text-[10px] text-slate-500 font-medium">Feb 2018 – Apr 2021</span>
+                                        </div>
+                                        <p className="font-semibold text-slate-700 text-[11px]">Trade Assistant Rigging / General Labourer</p>
+                                        <p className="text-[10px] text-slate-500 italic">References: Aldira Akbar (CEO) +6287763764359 | Nm. Arief (Manager) +628111198919</p>
+                                        <ul className="text-[11px] space-y-1 text-slate-600 list-disc list-inside pt-1">
+                                            <li>Setup stage & event rigging, site preparation, and tool maintenance.</li>
+                                            <li>Pallet jack operation, heavy lifting, loading/unloading deliveries, and waste removal.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 </div>
 
                 <aside className="space-y-8">
