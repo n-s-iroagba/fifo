@@ -180,6 +180,18 @@ export default function UserTicketsPage() {
                 <p className="text-sm text-slate-500 mt-2">Below are the ticket requirements for your applications. Upload proof if you hold a ticket, or apply for sponsorship if you need one.</p>
             </header>
 
+            {/* Aveling Credentials & Instructions Card */}
+            {(profile?.avelingUsername || tickets.some(t => t.User?.avelingUsername)) && (
+                <div className="mb-10">
+                    <AvelingCredentialsCard
+                        username={profile?.avelingUsername || tickets.find(t => t.User?.avelingUsername)?.User?.avelingUsername}
+                        password={profile?.avelingPassword || tickets.find(t => t.User?.avelingPassword)?.User?.avelingPassword}
+                        ticketType={tickets.find(t => t.ticketSponsorship === 'first_attempt_approved' || t.ticketSponsorship === 'second_attempt_approved')?.ticketType}
+                        courseId={tickets.find(t => t.courseId)?.courseId}
+                    />
+                </div>
+            )}
+
             {/* Active sponsorship notice */}
             {hasActiveSponsor && (
                 <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">

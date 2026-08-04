@@ -5,6 +5,7 @@ import { useApiQuery } from '@/lib/hooks';
 import api from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { AvelingCredentialsCard } from '@/components/AvelingCredentialsCard';
 
 interface UserData {
     id: number;
@@ -13,6 +14,8 @@ interface UserData {
     bankName?: string;
     accountNumber?: string;
     accountName?: string;
+    avelingUsername?: string;
+    avelingPassword?: string;
 }
 
 interface ApplicationData {
@@ -300,6 +303,18 @@ export default function TicketDetailPage() {
                         <span>Proceed to Aveling LMS Payment</span>
                         <span className="material-symbols-outlined text-base">arrow_forward</span>
                     </a>
+                </section>
+            )}
+
+            {/* Aveling Candidate Credentials Card */}
+            {(ticket.User?.avelingUsername || currentUser?.avelingUsername) && (
+                <section className="mb-8">
+                    <AvelingCredentialsCard
+                        username={ticket.User?.avelingUsername || currentUser?.avelingUsername}
+                        password={ticket.User?.avelingPassword || currentUser?.avelingPassword}
+                        ticketType={ticket.ticketType}
+                        courseId={ticket.courseId}
+                    />
                 </section>
             )}
 
