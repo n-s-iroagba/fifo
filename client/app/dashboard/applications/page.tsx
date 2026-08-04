@@ -8,9 +8,10 @@ import Link from 'next/link';
 interface Application {
     id: number;
     status: string;
-
+    currentStageId?: number | null;
     updatedAt: string;
     JobListing: { title: string; visaSponsorship: boolean };
+    JobStages?: Array<{ id: number; name: string }>;
 }
 
 interface ApplicationsResponse {
@@ -116,7 +117,8 @@ export default function ApplicationsListPage() {
                                     )}
                                 </div>
                             </div>
-                        ))}
+                        );
+                    })}
                     </div>
                 )}
             </section>

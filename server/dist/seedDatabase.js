@@ -10,7 +10,7 @@ async function seedDatabase() {
     // Using alter: true to preserve existing data. Skipping User, Application, and LmsCredential as requested.
     // 1. Clean up Corrupted LMS Tables (from the UUID mismatch) and Orphaned Job Data
     await models_1.sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
-    // Explicitly drop the corrupted LMS tables so alter: true recreates them with INTEGER
+    // Explicitly drop the corrupted LMS tables and certification_types to prevent duplicate index accumulation
     await models_1.sequelize.query('DROP TABLE IF EXISTS certification_gaps;');
     await models_1.sequelize.query('DROP TABLE IF EXISTS exam_attempts;');
     await models_1.sequelize.query('DROP TABLE IF EXISTS certificates;');
@@ -18,6 +18,7 @@ async function seedDatabase() {
     await models_1.sequelize.query('DROP TABLE IF EXISTS practical_sessions;');
     await models_1.sequelize.query('DROP TABLE IF EXISTS enrollments;');
     await models_1.sequelize.query('DROP TABLE IF EXISTS course_subsidies;');
+    await models_1.sequelize.query('DROP TABLE IF EXISTS certification_types;');
     // Truncate and drop the job tables to clear out any orphaned data and prevent ER_TOO_MANY_KEYS on job_categories
     await models_1.sequelize.query('DROP TABLE IF EXISTS ListingBenefits;');
     await models_1.sequelize.query('DROP TABLE IF EXISTS ListingConditions;');
@@ -28,7 +29,7 @@ async function seedDatabase() {
     const excludedModels = ['User', 'Application', 'LmsCredential'];
     for (const modelName of Object.keys(models_1.sequelize.models)) {
         if (!excludedModels.includes(modelName)) {
-            await models_1.sequelize.models[modelName].sync({ alter: true });
+            await models_1.sequelize.models[modelName].sync();
         }
     }
     // Safely add visaSponsorshipStatus to Application without triggering FK re-checks

@@ -10,7 +10,8 @@ class ApplicationRepository {
             limit: options.limit || 10,
             offset: options.offset || 0,
             include: [
-                { model: models_1.JobListing }
+                { model: models_1.JobListing },
+                { model: models_1.JobStage, as: 'JobStages' }
             ],
             order: [['updatedAt', 'DESC']],
             transaction
@@ -20,16 +21,6 @@ class ApplicationRepository {
                 const job = await models_1.JobListing.findByPk(app.jobId, { transaction });
                 if (job) {
                     app.setDataValue('JobListing', job.toJSON());
-                }
-                else {
-                    app.setDataValue('JobListing', {
-                        id: app.jobId,
-                        title: 'General FIFO Application',
-                        company: 'BlueCollar Recruitment',
-                        location: 'Australia',
-                        salary: 'Competitive',
-                        visaSponsorship: false
-                    });
                 }
             }
         }
@@ -49,6 +40,7 @@ class ApplicationRepository {
             include: [
                 { model: models_1.User, attributes: ['id', 'fullName', 'email'] },
                 { model: models_1.JobListing },
+                { model: models_1.JobStage, as: 'JobStages' },
                 { model: models_1.Payment, include: [{ model: models_1.JobStage, attributes: ['name'] }] }
             ],
             order: [['createdAt', 'DESC']],
