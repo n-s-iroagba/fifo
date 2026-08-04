@@ -88,7 +88,7 @@ export default function ApplicationsListPage() {
                                         </span>
                                         <span className="text-blue-400 text-[9px] font-bold uppercase tracking-widest">• Updated {new Date(app.updatedAt).toLocaleDateString()}</span>
                                     </div>
-                                    <h3 className="text-lg font-bold text-blue-900 tracking-tight group-hover:text-blue-600 transition-colors uppercase">{app.JobListing?.title || 'Unknown Job'}</h3>
+                                    <h3 className="text-lg font-bold text-blue-900 tracking-tight group-hover:text-blue-600 transition-colors uppercase">{app.JobListing?.title}</h3>
 
 
                                 </div>
