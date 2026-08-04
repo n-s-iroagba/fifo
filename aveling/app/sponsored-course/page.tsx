@@ -90,7 +90,7 @@ export default function SponsoredCourseLookupPage() {
                             Candidate Number or Email Address:
                         </label>
                         <div className="relative">
-                            <input 
+                            <input
                                 type="text"
                                 value={candidateInput}
                                 onChange={(e) => setCandidateInput(e.target.value)}
@@ -143,7 +143,7 @@ export default function SponsoredCourseLookupPage() {
                             </div>
                             <div>
                                 <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider block">
-                                    Available Wallet Balance
+                                    Available Ticket Sponsorship Wallet Balance
                                 </span>
                                 <span className="text-2xl font-black text-[#FFC700]">
                                     ${profile.walletBalance.toFixed(2)} AUD
@@ -166,7 +166,7 @@ export default function SponsoredCourseLookupPage() {
                             {profile.tickets.map((tkt) => {
                                 const isApproved = tkt.ticketSponsorship === 'first_attempt_approved' || tkt.status === 'possessed';
                                 return (
-                                    <div 
+                                    <div
                                         key={tkt.id}
                                         className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col lg:flex-row justify-between lg:items-center gap-6"
                                     >
@@ -175,13 +175,12 @@ export default function SponsoredCourseLookupPage() {
                                                 <span className="font-mono text-xs font-bold text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded">
                                                     TICKET ID: {tkt.id}
                                                 </span>
-                                                <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider ${
-                                                    tkt.ticketSponsorship === 'first_attempt_approved' 
+                                                <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider ${tkt.ticketSponsorship === 'first_attempt_approved'
                                                         ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300'
                                                         : tkt.ticketSponsorship === 'ticket_issued'
-                                                        ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-300'
-                                                        : 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300 border border-amber-300'
-                                                }`}>
+                                                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-300'
+                                                            : 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300 border border-amber-300'
+                                                    }`}>
                                                     SPONSORSHIP STATE: {tkt.ticketSponsorship || tkt.status}
                                                 </span>
                                                 {tkt.assignedCourse?.format && (

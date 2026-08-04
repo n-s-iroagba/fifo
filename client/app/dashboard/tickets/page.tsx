@@ -4,6 +4,15 @@ import React, { useState } from 'react';
 import { useApiQuery } from '@/lib/hooks';
 import api from '@/lib/api';
 import Link from 'next/link';
+import { AvelingCredentialsCard } from '@/components/AvelingCredentialsCard';
+
+interface UserData {
+    id: number;
+    fullName?: string;
+    email?: string;
+    avelingUsername?: string;
+    avelingPassword?: string;
+}
 
 interface Ticket {
     id: number;
@@ -20,14 +29,18 @@ interface Ticket {
     ticketSponsorshipRefundAmount?: number;
     refundStatus?: string;
     proof?: string;
+    courseId?: string;
     createdAt?: string;
     applicationId?: number;
+    User?: UserData;
 }
 
 interface UserProfile {
     bankName?: string;
     accountNumber?: string;
     accountName?: string;
+    avelingUsername?: string;
+    avelingPassword?: string;
 }
 
 const sponsorshipInProgress = (s: string) =>
