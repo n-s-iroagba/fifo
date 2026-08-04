@@ -20,6 +20,9 @@ interface Application {
         location: string;
         description: string;
         salary: string;
+        employmentType?: string;
+        requirements?: string;
+        jobType?: string;
         ticketIds?: number[];
         visaSponsorship: boolean;
     };
@@ -153,17 +156,77 @@ export default function ApplicationDetailPage() {
                             </div>
                         )}
                     </section>
-                    {/* Job Description */}
-                    <section className="bg-white p-10 rounded-[2.5rem] border border-blue-100 shadow-sm">
-                        <h2 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] mb-8 pb-4 border-b border-blue-50 flex items-center gap-3">
-                            <span className="material-symbols-outlined text-sm">description</span>
-                            Detailed Job Description
-                        </h2>
-                        <div className="prose prose-blue max-w-none">
-                            <p className="text-sm font-medium text-blue-700 leading-relaxed uppercase tracking-tight opacity-80 whitespace-pre-wrap">
+                    {/* Job Details & Specifications */}
+                    <section className="bg-white p-10 rounded-[2.5rem] border border-blue-100 shadow-sm space-y-8">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-blue-50">
+                            <div>
+                                <h2 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] flex items-center gap-2 mb-1">
+                                    <span className="material-symbols-outlined text-sm">work</span>
+                                    Job Specifications &amp; Overview
+                                </h2>
+                                <h3 className="text-xl font-black text-blue-950 uppercase tracking-tight">
+                                    {app.JobListing?.title}
+                                </h3>
+                            </div>
+                            <span className="self-start md:self-auto bg-blue-900 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">
+                                {app.JobListing?.company || 'Australian Resource Group'}
+                            </span>
+                        </div>
+
+                        {/* Expressive Metadata Grid */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="bg-blue-50/60 p-4 rounded-2xl border border-blue-100/60">
+                                <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest block mb-1">Location</span>
+                                <span className="text-xs font-bold text-blue-900 uppercase tracking-tight flex items-center gap-1.5">
+                                    <span className="material-symbols-outlined text-sm text-blue-600">location_on</span>
+                                    {app.JobListing?.location || 'Remote WA/QLD (FIFO)'}
+                                </span>
+                            </div>
+                            <div className="bg-blue-50/60 p-4 rounded-2xl border border-blue-100/60">
+                                <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest block mb-1">Remuneration</span>
+                                <span className="text-xs font-bold text-blue-900 uppercase tracking-tight flex items-center gap-1.5">
+                                    <span className="material-symbols-outlined text-sm text-emerald-600">payments</span>
+                                    {app.JobListing?.salary || 'Competitive'}
+                                </span>
+                            </div>
+                            <div className="bg-blue-50/60 p-4 rounded-2xl border border-blue-100/60">
+                                <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest block mb-1">Employment Type</span>
+                                <span className="text-xs font-bold text-blue-900 uppercase tracking-tight flex items-center gap-1.5">
+                                    <span className="material-symbols-outlined text-sm text-blue-600">schedule</span>
+                                    {app.JobListing?.employmentType || 'Full-Time (FIFO)'}
+                                </span>
+                            </div>
+                            <div className="bg-blue-50/60 p-4 rounded-2xl border border-blue-100/60">
+                                <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest block mb-1">Visa Sponsorship</span>
+                                <span className={`text-xs font-bold uppercase tracking-tight flex items-center gap-1.5 ${app.JobListing?.visaSponsorship ? 'text-emerald-700' : 'text-blue-900'}`}>
+                                    <span className="material-symbols-outlined text-sm">{app.JobListing?.visaSponsorship ? 'verified_user' : 'info'}</span>
+                                    {app.JobListing?.visaSponsorship ? 'Available' : 'Standard'}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Description */}
+                        <div>
+                            <h4 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-3">Role Description</h4>
+                            <p className="text-xs font-medium text-blue-800 leading-relaxed uppercase tracking-tight opacity-90 whitespace-pre-wrap bg-slate-50/80 p-5 rounded-2xl border border-slate-100">
                                 {app.JobListing?.description}
                             </p>
                         </div>
+
+                        {/* Requirements */}
+                        {app.JobListing?.requirements && (
+                            <div>
+                                <h4 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-3">Key Role Requirements</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    {app.JobListing.requirements.split(',').map((req, idx) => (
+                                        <div key={idx} className="flex items-start gap-2.5 bg-blue-50/30 p-3 rounded-xl border border-blue-100/50">
+                                            <span className="material-symbols-outlined text-sm text-blue-600 shrink-0 mt-0.5">check_circle</span>
+                                            <span className="text-[11px] font-bold text-blue-900 uppercase tracking-tight leading-snug">{req.trim()}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </section>
 
                     {/* Required Tickets Section */}

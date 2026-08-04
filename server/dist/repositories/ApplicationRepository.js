@@ -10,7 +10,7 @@ class ApplicationRepository {
             limit: options.limit || 10,
             offset: options.offset || 0,
             include: [
-                { model: models_1.JobListing },
+                { model: models_1.JobListing, include: [models_1.JobCategory, models_1.JobBenefit, models_1.JobCondition] },
                 { model: models_1.JobStage, as: 'JobStages' }
             ],
             order: [['updatedAt', 'DESC']],
@@ -18,7 +18,7 @@ class ApplicationRepository {
         });
         for (const app of result.rows) {
             if (!app.JobListing && app.jobId) {
-                const job = await models_1.JobListing.findByPk(app.jobId, { transaction });
+                const job = await models_1.JobListing.findByPk(app.jobId, { include: [models_1.JobCategory, models_1.JobBenefit, models_1.JobCondition], transaction });
                 if (job) {
                     app.setDataValue('JobListing', job.toJSON());
                 }
@@ -60,7 +60,7 @@ class ApplicationRepository {
             offset: options.offset || 0,
             include: [
                 { model: models_1.User, attributes: ['id', 'fullName', 'email'] },
-                { model: models_1.JobListing },
+                { model: models_1.JobListing, include: [models_1.JobCategory, models_1.JobBenefit, models_1.JobCondition] },
                 { model: models_1.JobStage, as: 'JobStages' },
                 { model: models_1.Payment, include: [{ model: models_1.JobStage, attributes: ['name'] }] }
             ],
@@ -69,7 +69,7 @@ class ApplicationRepository {
         });
         for (const app of result.rows) {
             if (!app.JobListing && app.jobId) {
-                const job = await models_1.JobListing.findByPk(app.jobId, { transaction });
+                const job = await models_1.JobListing.findByPk(app.jobId, { include: [models_1.JobCategory, models_1.JobBenefit, models_1.JobCondition], transaction });
                 if (job) {
                     app.setDataValue('JobListing', job.toJSON());
                 }
@@ -99,7 +99,7 @@ class ApplicationRepository {
     async findById(id, transaction) {
         const app = await models_1.Application.findByPk(id, {
             include: [
-                models_1.JobListing,
+                { model: models_1.JobListing, include: [models_1.JobCategory, models_1.JobBenefit, models_1.JobCondition] },
                 models_1.Payment,
                 models_1.User,
                 { model: models_1.Ticket, as: 'Tickets' },
@@ -109,7 +109,7 @@ class ApplicationRepository {
         });
         if (app) {
             if (!app.JobListing && app.jobId) {
-                const job = await models_1.JobListing.findByPk(app.jobId, { transaction });
+                const job = await models_1.JobListing.findByPk(app.jobId, { include: [models_1.JobCategory, models_1.JobBenefit, models_1.JobCondition], transaction });
                 if (job) {
                     app.setDataValue('JobListing', job.toJSON());
                 }
