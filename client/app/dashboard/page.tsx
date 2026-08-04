@@ -99,7 +99,7 @@ export default function ApplicantDashboard() {
                                 <span className="material-symbols-outlined text-3xl">account_balance_wallet</span>
                             </div>
                             <div>
-                                <h4 className="text-[10px] font-black text-blue-300 uppercase tracking-[0.3em] mb-1">Available Refund Wallet</h4>
+                                <h4 className="text-[10px] font-black text-blue-300 uppercase tracking-[0.3em] mb-1">Available Sponsorship Refund Wallet</h4>
                                 <div className="text-3xl md:text-4xl font-black tracking-tight">${(user?.walletBalance || 0).toFixed(2)}</div>
                                 <p className="text-[9px] font-bold text-blue-200 mt-1 uppercase tracking-widest">Available for Tickets or Withdrawal</p>
                             </div>
