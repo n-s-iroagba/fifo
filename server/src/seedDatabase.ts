@@ -7,29 +7,8 @@ import { lmsSeedData } from './data/lmsData';
 export async function seedDatabase() {
     console.log('Starting idempotent seeding process...');
 
-    // 1. Initialize Tables (Safe Sync)
-    // Using alter: true to preserve existing data. Skipping User, Application, and LmsCredential as requested.
-    // 1. Clean up Corrupted LMS Tables (from the UUID mismatch) and Orphaned Job Data
-    await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
-
-    // Explicitly drop the corrupted LMS tables and certification_types to prevent duplicate index accumulation
-    await sequelize.query('DROP TABLE IF EXISTS certification_gaps;');
-    await sequelize.query('DROP TABLE IF EXISTS exam_attempts;');
-    await sequelize.query('DROP TABLE IF EXISTS certificates;');
-    await sequelize.query('DROP TABLE IF EXISTS practical_bookings;');
-    await sequelize.query('DROP TABLE IF EXISTS practical_sessions;');
-    await sequelize.query('DROP TABLE IF EXISTS enrollments;');
-    await sequelize.query('DROP TABLE IF EXISTS course_subsidies;');
-    await sequelize.query('DROP TABLE IF EXISTS certification_types;');
-
-    // Truncate and drop the job tables to clear out any orphaned data and prevent ER_TOO_MANY_KEYS on job_categories
-    await sequelize.query('DROP TABLE IF EXISTS ListingBenefits;');
-    await sequelize.query('DROP TABLE IF EXISTS ListingConditions;');
-    await sequelize.query('DROP TABLE IF EXISTS job_conditions;');
-    await sequelize.query('DROP TABLE IF EXISTS job_benefits;');
-    await sequelize.query('DROP TABLE IF EXISTS job_listings;');
-    await sequelize.query('DROP TABLE IF EXISTS job_categories;');
-
+    // 1. Initialize Tables (Safe Non-Destructive Production Sync)
+    // Runs standard model sync (CREATE TABLE IF NOT EXISTS) preserving all production data.
     const excludedModels = ['User', 'Application', 'LmsCredential'];
     for (const modelName of Object.keys(sequelize.models)) {
         if (!excludedModels.includes(modelName)) {
