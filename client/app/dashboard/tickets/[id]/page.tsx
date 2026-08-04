@@ -1,26 +1,60 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApiQuery } from '@/lib/hooks';
 import api from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+interface UserData {
+    id: number;
+    fullName?: string;
+    email?: string;
+    bankName?: string;
+    accountNumber?: string;
+    accountName?: string;
+}
+
+interface ApplicationData {
+    id: number;
+    jobId?: number;
+    status?: string;
+    isPaid?: boolean;
+    JobListing?: {
+        id: number;
+        title?: string;
+        company?: string;
+    };
+}
+
 interface Ticket {
     id: number;
+    userId?: number;
+    applicationId?: number;
     ticketType: string;
     status: 'not_possessed' | 'possessed';
     ticketNumber?: string;
     description?: string;
     purchasePrice?: number;
+    realPrice?: number;
+    subsidisedPrice?: number;
     sponsorshipDeadline?: string;
     ticketSponsorship: string;
+    canApplySponsorship?: boolean;
     ticketSponsorshipRefundAmount?: number;
     bankName?: string;
     accountNumber?: string;
     accountName?: string;
     refundStatus?: string;
     courseId?: string;
+    paymentStatus?: string;
+    courseAccessGranted?: boolean;
+    receiptUrl?: string;
+    receiptReference?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    User?: UserData;
+    Application?: ApplicationData;
 }
 
 export default function TicketDetailPage() {
@@ -28,23 +62,48 @@ export default function TicketDetailPage() {
     const router = useRouter();
     const ticketId = params.id as string;
 
-    const { data: ticketRes, isLoading, refetch } = useApiQuery<{ success: boolean; data: Ticket }>(
+    const { data: ticketRes, isLoading, refetch } = useApiQuery<any>(
         ['ticket-detail', ticketId],
         `/tickets/${ticketId}`
     );
-    const ticket = ticketRes?.data;
+
+    // Support both wrapped res.data and unwrapped response objects
+    const ticket: Ticket | undefined = ticketRes?.data?.id
+        ? ticketRes.data
+        : ticketRes?.id
+        ? ticketRes
+        : undefined;
+
+    const { data: userRes } = useApiQuery<any>(
+        ['auth', 'me'],
+        '/auth/me'
+    );
+    const currentUser = userRes?.data || userRes;
+    const userWalletBalance = currentUser?.walletBalance || 0;
 
     const [bankName, setBankName] = useState('');
     const [accountNumber, setAccountNumber] = useState('');
     const [accountName, setAccountName] = useState('');
     const [applyError, setApplyError] = useState<string | null>(null);
+    const [applySuccess, setApplySuccess] = useState<string | null>(null);
     const [applying, setApplying] = useState(false);
     const [refundProcessing, setRefundProcessing] = useState(false);
     const [refundMessage, setRefundMessage] = useState<string | null>(null);
 
+    // Prefill bank account details when user or ticket User data loads
+    useEffect(() => {
+        const u = ticket?.User || currentUser;
+        if (u) {
+            if (u.bankName && !bankName) setBankName(u.bankName);
+            if (u.accountNumber && !accountNumber) setAccountNumber(u.accountNumber);
+            if (u.accountName && !accountName) setAccountName(u.accountName);
+        }
+    }, [ticket, currentUser]);
+
     const handleApplySponsorship = async (e: React.FormEvent) => {
         e.preventDefault();
         setApplyError(null);
+        setApplySuccess(null);
 
         if (!bankName.trim() || !accountNumber.trim() || !accountName.trim()) {
             setApplyError('Please carefully provide complete bank account details for refund processing.');
@@ -58,6 +117,7 @@ export default function TicketDetailPage() {
                 accountNumber,
                 accountName
             });
+            setApplySuccess('Sponsorship request submitted successfully!');
             refetch();
         } catch (err: any) {
             setApplyError(err.response?.data?.message || 'Failed to apply for sponsorship.');
@@ -70,7 +130,7 @@ export default function TicketDetailPage() {
         setRefundProcessing(true);
         setRefundMessage(null);
         try {
-            const res = await api.post(`/tickets/${ticketId}/refund-choice`, { action });
+            await api.post(`/tickets/${ticketId}/refund-choice`, { action });
             setRefundMessage(
                 action === 'use_for_another_ticket'
                     ? 'Refund successfully applied to your next ticket sponsorship credit!'
@@ -85,25 +145,48 @@ export default function TicketDetailPage() {
     };
 
     if (isLoading) {
-        return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-blue-400">Loading Ticket Details...</div>;
-    }
-
-    if (!ticket) {
         return (
             <div className="p-12 text-center">
-                <p className="text-red-500 font-bold text-sm mb-4">Ticket not found.</p>
-                <Link href="/dashboard/tickets" className="text-blue-900 underline text-xs">Back to Tickets</Link>
+                <div className="inline-flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-900 rounded-full animate-spin" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400">Loading Ticket Details...</span>
+                </div>
             </div>
         );
     }
 
-    const { data: userRes } = useApiQuery<any>(
-        ['auth', 'me'],
-        '/auth/me'
-    );
-    const userWalletBalance = userRes?.walletBalance || 0;
+    if (!ticket) {
+        return (
+            <div className="p-12 text-center bg-white rounded-3xl border border-blue-100 max-w-xl mx-auto my-12">
+                <span className="material-symbols-outlined text-4xl text-red-400 mb-3 block">confirmation_number</span>
+                <p className="text-red-600 font-bold text-sm mb-4">Ticket details could not be found.</p>
+                <Link href="/dashboard/tickets" className="inline-flex items-center gap-2 bg-blue-900 text-white px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-blue-800 transition-all">
+                    <span className="material-symbols-outlined text-sm">arrow_back</span>
+                    Return to Tickets
+                </Link>
+            </div>
+        );
+    }
 
-    const avelingPayUrl = `http://localhost:3002/checkout?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}&wallet=${userWalletBalance}`;
+    // Pricing calculation
+    const payablePrice = ticket.subsidisedPrice ?? ticket.purchasePrice ?? 0;
+    const originalPrice = ticket.realPrice;
+    const isSubsidised = originalPrice !== undefined && originalPrice !== null && payablePrice < originalPrice;
+
+    // Bank information source
+    const effectiveBankName = ticket.bankName || ticket.User?.bankName;
+    const effectiveAccountNumber = ticket.accountNumber || ticket.User?.accountNumber;
+    const effectiveAccountName = ticket.accountName || ticket.User?.accountName;
+
+    // Aveling LMS Link
+    const avelingBaseUrl = typeof window !== 'undefined'
+        ? (process.env.NEXT_PUBLIC_AVELING_URL || `${window.location.protocol}//${window.location.hostname}:3002`)
+        : 'http://localhost:3002';
+    const avelingPayUrl = `${avelingBaseUrl}/checkout?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}&wallet=${userWalletBalance}`;
+
+    const canSubmitSponsorshipForm =
+        ticket.canApplySponsorship &&
+        (ticket.ticketSponsorship === 'no_application' || ticket.ticketSponsorship === 'none' || !ticket.ticketSponsorship);
 
     return (
         <div className="font-sans text-blue-900 pb-24 max-w-4xl mx-auto">
@@ -112,18 +195,43 @@ export default function TicketDetailPage() {
                 Back to All Tickets
             </Link>
 
+            {/* Header Card */}
             <header className="mb-8 bg-white p-8 rounded-3xl border border-blue-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                    <span className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em] block mb-1">Ticket Details</span>
+                <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-3">
+                        <span className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em]">Ticket Details</span>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                            ticket.status === 'possessed'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : 'bg-amber-50 text-amber-700 border-amber-200'
+                        }`}>
+                            {ticket.status === 'possessed' ? 'Possessed' : 'Not Possessed'}
+                        </span>
+                    </div>
                     <h1 className="text-2xl font-bold text-blue-900">{ticket.ticketType}</h1>
-                    <p className="text-xs text-slate-500 mt-1">
-                        Status: <span className="font-semibold text-blue-900">{ticket.status === 'possessed' ? 'Possessed' : 'Not Possessed'}</span>
-                    </p>
+                    {ticket.description && (
+                        <p className="text-xs text-slate-600 font-medium max-w-2xl leading-relaxed">{ticket.description}</p>
+                    )}
+                    {ticket.ticketNumber && (
+                        <p className="text-xs text-slate-500">
+                            Ticket Number: <strong className="text-blue-950">{ticket.ticketNumber}</strong>
+                        </p>
+                    )}
                 </div>
 
-                <div className="text-right">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Estimated Fee</span>
-                    <span className="text-2xl font-extrabold text-blue-900">${ticket.purchasePrice || 0}</span>
+                <div className="text-left md:text-right bg-blue-50/50 md:bg-transparent p-4 md:p-0 rounded-2xl border md:border-none border-blue-100 shrink-0">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Course Fee</span>
+                    <div className="flex items-baseline gap-2 md:justify-end">
+                        <span className="text-3xl font-extrabold text-blue-900">${payablePrice.toFixed(2)}</span>
+                        {isSubsidised && (
+                            <span className="text-xs text-slate-400 line-through">${originalPrice.toFixed(2)}</span>
+                        )}
+                    </div>
+                    {isSubsidised && (
+                        <span className="inline-block mt-1 text-[9px] font-black text-emerald-700 uppercase tracking-widest bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                            Subsidised
+                        </span>
+                    )}
                 </div>
             </header>
 
@@ -138,7 +246,7 @@ export default function TicketDetailPage() {
                             <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-300 block">Ticket Issued & Verified</span>
                             <h2 className="text-xl font-bold text-white mt-1">Claim Your Sponsorship Refund</h2>
                             <p className="text-xs text-emerald-200 mt-1 leading-relaxed">
-                                You passed your exam! Eligible Refund Amount: <strong className="text-white">${ticket.ticketSponsorshipRefundAmount || ticket.purchasePrice || 0}</strong>
+                                You passed your exam! Eligible Refund Amount: <strong className="text-white">${ticket.ticketSponsorshipRefundAmount || payablePrice}</strong>
                             </p>
                         </div>
                     </div>
@@ -158,27 +266,27 @@ export default function TicketDetailPage() {
                                 disabled={refundProcessing}
                                 className="w-full sm:w-auto bg-emerald-400 hover:bg-emerald-300 text-emerald-950 px-6 py-3.5 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-md transition-all"
                             >
-                                Use the refund for another ticket
+                                Use refund for another ticket credit
                             </button>
                             <button
                                 onClick={() => handleRefundChoice('refund_to_bank')}
                                 disabled={refundProcessing}
                                 className="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-700 text-white border border-emerald-700 px-6 py-3.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
                             >
-                                No thanks, refund to my bank account
+                                Refund to my bank account
                             </button>
                         </div>
                     )}
                 </section>
             )}
 
-            {/* Approval Action Banner when Sponsorship Approved */}
+            {/* Action Banner when Sponsorship Approved */}
             {(ticket.ticketSponsorship === 'first_attempt_approved' || ticket.ticketSponsorship === 'second_attempt_approved') && (
                 <section className="mb-8 p-8 bg-blue-900 text-white rounded-3xl shadow-xl shadow-blue-900/10 border border-blue-800 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div>
-                        <span className="text-[10px] font-bold text-blue-300 uppercase tracking-widest block">Sponsorship Approved!</span>
-                        <h2 className="text-xl font-bold text-white mt-1">Complete Course Payment on Aveling LMS</h2>
-                        <p className="text-xs text-blue-200 mt-1">
+                    <div className="space-y-1">
+                        <span className="text-[10px] font-bold text-blue-300 uppercase tracking-widest block">Sponsorship Approved</span>
+                        <h2 className="text-xl font-bold text-white">Complete Course Payment on Aveling LMS</h2>
+                        <p className="text-xs text-blue-200">
                             Deadline: <strong className="text-white">{ticket.sponsorshipDeadline ? new Date(ticket.sponsorshipDeadline).toLocaleDateString() : '3 days'}</strong>
                         </p>
                     </div>
@@ -195,8 +303,44 @@ export default function TicketDetailPage() {
                 </section>
             )}
 
-            {/* Sponsorship Form if No Sponsorship Application Yet */}
-            {ticket.ticketSponsorship === 'no_application' && (
+            {/* Course & LMS Training Card */}
+            <section className="mb-8 bg-white p-8 rounded-3xl border border-blue-100 shadow-sm space-y-6">
+                <div className="flex items-center justify-between border-b border-blue-50 pb-4">
+                    <div>
+                        <span className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em] block mb-1">Aveling Training LMS</span>
+                        <h3 className="text-base font-bold text-blue-900">Course & LMS Delivery</h3>
+                    </div>
+                    {ticket.paymentStatus && (
+                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                            ticket.paymentStatus === 'paid'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : 'bg-amber-50 text-amber-700 border-amber-200'
+                        }`}>
+                            Payment: {ticket.paymentStatus}
+                        </span>
+                    )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Course Reference</span>
+                        <p className="text-xs font-bold text-blue-950 mt-1">{ticket.courseId || 'Not Assigned'}</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Payment Status</span>
+                        <p className="text-xs font-bold text-blue-950 mt-1 uppercase">{ticket.paymentStatus || 'Unpaid'}</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Course Access</span>
+                        <p className={`text-xs font-bold mt-1 ${ticket.courseAccessGranted ? 'text-emerald-700' : 'text-amber-700'}`}>
+                            {ticket.courseAccessGranted ? 'Access Granted ✓' : 'Pending Payment'}
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            {/* Sponsorship Form if Eligible to Apply */}
+            {canSubmitSponsorshipForm && (
                 <section className="mb-8 bg-white p-8 rounded-3xl border border-blue-100 shadow-sm">
                     <span className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em] block mb-2">Apply For Sponsorship</span>
                     <h2 className="text-lg font-bold text-blue-900 mb-2">Submit Bank Account Details</h2>
@@ -209,6 +353,11 @@ export default function TicketDetailPage() {
                             {applyError}
                         </div>
                     )}
+                    {applySuccess && (
+                        <div className="mb-6 p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-700 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+                            {applySuccess}
+                        </div>
+                    )}
 
                     <form onSubmit={handleApplySponsorship} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -216,10 +365,10 @@ export default function TicketDetailPage() {
                                 <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Bank Name</label>
                                 <input
                                     type="text"
-                                    placeholder="e.g. Westpac / ANZ"
+                                    placeholder="e.g. Commonwealth / ANZ"
                                     value={bankName}
                                     onChange={(e) => setBankName(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-medium"
                                 />
                             </div>
                             <div>
@@ -229,7 +378,7 @@ export default function TicketDetailPage() {
                                     placeholder="e.g. 062-000 12345678"
                                     value={accountNumber}
                                     onChange={(e) => setAccountNumber(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-medium"
                                 />
                             </div>
                             <div>
@@ -239,7 +388,7 @@ export default function TicketDetailPage() {
                                     placeholder="e.g. John Doe"
                                     value={accountName}
                                     onChange={(e) => setAccountName(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-medium"
                                 />
                             </div>
                         </div>
@@ -264,15 +413,15 @@ export default function TicketDetailPage() {
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Stage 1</span>
                         <p className="text-xs font-bold text-blue-950 mt-1">Application</p>
                         <p className="text-[11px] text-slate-500 mt-1">
-                            Status: <span className="font-semibold uppercase">{ticket.ticketSponsorship}</span>
+                            Status: <span className="font-semibold uppercase">{ticket.ticketSponsorship || 'No Application'}</span>
                         </p>
                     </div>
 
                     <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Stage 2</span>
                         <p className="text-xs font-bold text-blue-950 mt-1">Bank Refund Info</p>
-                        <p className="text-[11px] text-slate-500 mt-1">
-                            {ticket.bankName ? `${ticket.bankName} (${ticket.accountNumber})` : 'Not Provided'}
+                        <p className="text-[11px] text-slate-500 mt-1 font-medium">
+                            {effectiveBankName ? `${effectiveBankName} (${effectiveAccountNumber})` : 'Not Provided'}
                         </p>
                     </div>
 
@@ -280,11 +429,29 @@ export default function TicketDetailPage() {
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Stage 3</span>
                         <p className="text-xs font-bold text-blue-950 mt-1">Exam & Refund</p>
                         <p className="text-[11px] text-slate-500 mt-1">
-                            Refund Amount: ${ticket.ticketSponsorshipRefundAmount || ticket.purchasePrice || 0}
+                            Refund Amount: ${ticket.ticketSponsorshipRefundAmount || payablePrice}
                         </p>
                     </div>
                 </div>
             </section>
+
+            {/* Application Handoff Card if linked */}
+            {ticket.Application && (
+                <section className="mt-8 bg-white p-8 rounded-3xl border border-blue-100 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest block mb-1">Associated Application</span>
+                        <h4 className="text-sm font-bold text-blue-900">Application #{ticket.Application.id}</h4>
+                        <p className="text-xs text-slate-500">Status: <span className="font-semibold">{ticket.Application.status}</span></p>
+                    </div>
+                    <Link
+                        href={`/dashboard/applications/${ticket.Application.id}`}
+                        className="bg-blue-50 text-blue-900 border border-blue-200 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-blue-100 transition-all"
+                    >
+                        View Application
+                    </Link>
+                </section>
+            )}
         </div>
     );
 }
+
