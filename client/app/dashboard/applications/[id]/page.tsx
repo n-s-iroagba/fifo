@@ -65,7 +65,8 @@ export default function ApplicationDetailPage() {
     const currentStage = stages[currentStageIndex];
     const currentPayment = app.Payments?.find(p => p.stageId === app.currentStageId);
 
-    const requiredTicketIds = app.JobListing?.ticketIds || [];
+    const parsedTicketIds = typeof app.JobListing?.ticketIds === 'string' ? JSON.parse(app.JobListing.ticketIds) : app.JobListing?.ticketIds;
+    const requiredTicketIds = Array.isArray(parsedTicketIds) ? parsedTicketIds : [];
     const requiredCatalogs = catalogs.filter(c => requiredTicketIds.includes(c.id));
     const userTickets = app.Tickets || [];
 
