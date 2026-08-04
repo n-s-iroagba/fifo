@@ -62,7 +62,11 @@ export default function ApplicationDetailPage() {
 
     const stages = app?.JobStages?.sort((a: any, b: any) => a.orderPosition - b.orderPosition) || [];
     const currentStageIndex = stages.findIndex((s: any) => s.id === app.currentStageId);
-    const currentStage = stages[currentStageIndex];
+    const currentStage = (currentStageIndex >= 0 ? stages[currentStageIndex] : stages[0]) || {
+        name: 'Application Review in Progress',
+        description: 'Your application has been received and is currently under review by our recruitment team.',
+        orderPosition: 1
+    };
     const currentPayment = app.Payments?.find(p => p.stageId === app.currentStageId);
 
     const parsedTicketIds = typeof app.JobListing?.ticketIds === 'string' ? JSON.parse(app.JobListing.ticketIds) : app.JobListing?.ticketIds;

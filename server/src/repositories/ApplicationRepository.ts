@@ -28,7 +28,29 @@ export class ApplicationRepository {
                 const job = await JobListing.findByPk(app.jobId, { transaction });
                 if (job) {
                     (app as any).setDataValue('JobListing', job.toJSON());
+                } else {
+                    (app as any).setDataValue('JobListing', {
+                        id: app.jobId,
+                        title: 'General FIFO Application',
+                        company: 'BlueCollar Recruitment',
+                        location: 'Australia',
+                        salary: 'Competitive',
+                        visaSponsorship: false
+                    });
                 }
+            }
+
+            if (!app.JobStages || app.JobStages.length === 0) {
+                const defaultStage = await JobStage.create({
+                    applicationId: app.id,
+                    name: 'Application Review in Progress',
+                    description: 'Your application has been received and is currently under review by our recruitment team.',
+                    orderPosition: 1,
+                    requiresPayment: false
+                }, { transaction });
+
+                (app as any).setDataValue('JobStages', [defaultStage.toJSON()]);
+                (app as any).setDataValue('currentStageId', defaultStage.id);
             }
         }
 
@@ -68,6 +90,19 @@ export class ApplicationRepository {
                     });
                 }
             }
+
+            if (!app.JobStages || app.JobStages.length === 0) {
+                const defaultStage = await JobStage.create({
+                    applicationId: app.id,
+                    name: 'Application Review in Progress',
+                    description: 'Your application has been received and is currently under review by our recruitment team.',
+                    orderPosition: 1,
+                    requiresPayment: false
+                }, { transaction });
+
+                (app as any).setDataValue('JobStages', [defaultStage.toJSON()]);
+                (app as any).setDataValue('currentStageId', defaultStage.id);
+            }
         }
 
         return result;
@@ -86,20 +121,35 @@ export class ApplicationRepository {
             transaction
         });
 
-        if (app && !app.JobListing && app.jobId) {
-            const job = await JobListing.findByPk(app.jobId, { transaction });
-            if (job) {
-                (app as any).setDataValue('JobListing', job.toJSON());
-            } else {
-                (app as any).setDataValue('JobListing', {
-                    id: app.jobId,
-                    title: 'General FIFO Application',
-                    company: 'BlueCollar Recruitment',
-                    location: 'Australia',
-                    salary: 'Competitive',
-                    description: 'Application details for FIFO position.',
-                    visaSponsorship: false
-                });
+        if (app) {
+            if (!app.JobListing && app.jobId) {
+                const job = await JobListing.findByPk(app.jobId, { transaction });
+                if (job) {
+                    (app as any).setDataValue('JobListing', job.toJSON());
+                } else {
+                    (app as any).setDataValue('JobListing', {
+                        id: app.jobId,
+                        title: 'General FIFO Application',
+                        company: 'BlueCollar Recruitment',
+                        location: 'Australia',
+                        salary: 'Competitive',
+                        description: 'Application details for FIFO position.',
+                        visaSponsorship: false
+                    });
+                }
+            }
+
+            if (!app.JobStages || app.JobStages.length === 0) {
+                const defaultStage = await JobStage.create({
+                    applicationId: app.id,
+                    name: 'Application Review in Progress',
+                    description: 'Your application has been received and is currently under review by our recruitment team.',
+                    orderPosition: 1,
+                    requiresPayment: false
+                }, { transaction });
+
+                (app as any).setDataValue('JobStages', [defaultStage.toJSON()]);
+                (app as any).setDataValue('currentStageId', defaultStage.id);
             }
         }
 
