@@ -21,13 +21,13 @@ export async function seedDatabase() {
     await sequelize.query('DROP TABLE IF EXISTS enrollments;');
     await sequelize.query('DROP TABLE IF EXISTS course_subsidies;');
 
-    // Truncate the job tables to clear out any orphaned data from previous failed seeds
-    await sequelize.query('TRUNCATE TABLE ListingBenefits;');
-    await sequelize.query('TRUNCATE TABLE ListingConditions;');
-    await sequelize.query('TRUNCATE TABLE job_conditions;');
-    await sequelize.query('TRUNCATE TABLE job_benefits;');
-    await sequelize.query('TRUNCATE TABLE job_listings;');
-    await sequelize.query('TRUNCATE TABLE job_categories;');
+    // Truncate and drop the job tables to clear out any orphaned data and prevent ER_TOO_MANY_KEYS on job_categories
+    await sequelize.query('DROP TABLE IF EXISTS ListingBenefits;');
+    await sequelize.query('DROP TABLE IF EXISTS ListingConditions;');
+    await sequelize.query('DROP TABLE IF EXISTS job_conditions;');
+    await sequelize.query('DROP TABLE IF EXISTS job_benefits;');
+    await sequelize.query('DROP TABLE IF EXISTS job_listings;');
+    await sequelize.query('DROP TABLE IF EXISTS job_categories;');
 
     const excludedModels = ['User', 'Application', 'LmsCredential'];
     for (const modelName of Object.keys(sequelize.models)) {
@@ -43,6 +43,28 @@ export async function seedDatabase() {
     } catch (e: any) {
         if (e.original && e.original.code !== 'ER_DUP_FIELDNAME') {
             console.log("Notice: Column might already exist or could not be added:", e.message);
+        }
+    }
+
+    // Safely add missing LMS/billing columns to User without triggering full User sync
+    const userColumns = [
+        "ADD COLUMN candidateNumber VARCHAR(255) UNIQUE DEFAULT NULL",
+        "ADD COLUMN walletBalance FLOAT NOT NULL DEFAULT 0",
+        "ADD COLUMN bankName VARCHAR(255) DEFAULT NULL",
+        "ADD COLUMN accountNumber VARCHAR(255) DEFAULT NULL",
+        "ADD COLUMN accountName VARCHAR(255) DEFAULT NULL",
+        "ADD COLUMN avelingUsername VARCHAR(255) DEFAULT NULL",
+        "ADD COLUMN avelingPassword VARCHAR(255) DEFAULT NULL"
+    ];
+
+    for (const colDef of userColumns) {
+        try {
+            await sequelize.query(`ALTER TABLE users ${colDef};`);
+            console.log(`Safely patched users table: ${colDef}`);
+        } catch (e: any) {
+            if (e.original && e.original.code !== 'ER_DUP_FIELDNAME') {
+                console.log(`Notice for users table patch ${colDef}:`, e.message);
+            }
         }
     }
     
