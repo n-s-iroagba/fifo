@@ -77,6 +77,16 @@ export default function ApplicationDetailPage() {
     const requiredCatalogs = catalogs.filter(c => requiredTicketIds.includes(c.id));
     const userTickets = app.Tickets || [];
 
+    const totalRequiredTickets = requiredCatalogs.length;
+    const possessedTicketsCount = requiredCatalogs.filter(catalog => {
+        const userTicket = userTickets.find(t => t.ticketType === catalog.name);
+        return userTicket?.status === 'possessed' || userTicket?.status === 'ticket_issued';
+    }).length;
+    const missingTicketsCount = Math.max(0, totalRequiredTickets - possessedTicketsCount);
+    const readinessPercentage = totalRequiredTickets > 0
+        ? Math.round((possessedTicketsCount / totalRequiredTickets) * 100)
+        : 100;
+
     const isPendingVerification = currentPayment?.status === 'Pending';
 
     const handleVisaSponsorship = () => {
@@ -229,42 +239,120 @@ export default function ApplicationDetailPage() {
                         )}
                     </section>
 
-                    {/* Required Tickets Section */}
+                    {/* Required Tickets & Certification Readiness Section */}
                     {requiredCatalogs.length > 0 && (
-                        <section className="bg-white p-10 rounded-[2.5rem] border border-blue-100 shadow-sm">
-                            <h2 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] mb-8 pb-4 border-b border-blue-50 flex items-center gap-3">
-                                <span className="material-symbols-outlined text-sm">verified</span>
-                                Required Certifications &amp; Tickets
-                            </h2>
+                        <section className="bg-white p-10 rounded-[2.5rem] border border-blue-100 shadow-sm space-y-8">
+                            {/* Section Header */}
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-blue-50">
+                                <div>
+                                    <h2 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] flex items-center gap-2 mb-1">
+                                        <span className="material-symbols-outlined text-sm">verified</span>
+                                        Certification &amp; Ticket Readiness
+                                    </h2>
+                                    <p className="text-xs font-bold text-blue-950 uppercase tracking-tight">
+                                        Track your required tickets and apply for sponsorship to complete your application
+                                    </p>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <Link
+                                        href="/dashboard/tickets"
+                                        className="bg-blue-900 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-800 transition-all flex items-center gap-2 shadow-md"
+                                    >
+                                        <span className="material-symbols-outlined text-sm">upload_file</span>
+                                        Upload / Manage Tickets
+                                    </Link>
+                                    {missingTicketsCount > 0 && (
+                                        <Link
+                                            href="/dashboard/tickets"
+                                            className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-md"
+                                        >
+                                            <span className="material-symbols-outlined text-sm">school</span>
+                                            Apply for Ticket Sponsorship
+                                        </Link>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Ticket Readiness Counter & Progress Bar */}
+                            <div className="bg-gradient-to-r from-blue-50 via-slate-50 to-indigo-50/50 p-6 rounded-2xl border border-blue-100/80 space-y-4">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div>
+                                        <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest block mb-1">Ticket Audit Summary</span>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-2xl font-black text-blue-900">{possessedTicketsCount} of {totalRequiredTickets}</span>
+                                            <span className="text-xs font-bold text-blue-700 uppercase tracking-tight">Required Tickets Verified</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl border border-blue-100 shadow-sm">
+                                        <span className="text-xs font-black text-blue-900">{readinessPercentage}%</span>
+                                        <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Application Ready</span>
+                                    </div>
+                                </div>
+
+                                {/* Progress Bar */}
+                                <div className="w-full bg-blue-100/80 rounded-full h-2.5 overflow-hidden">
+                                    <div
+                                        className={`h-full transition-all duration-500 rounded-full ${readinessPercentage === 100 ? 'bg-emerald-500' : 'bg-blue-600'}`}
+                                        style={{ width: `${readinessPercentage}%` }}
+                                    ></div>
+                                </div>
+
+                                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
+                                    <span className={possessedTicketsCount === totalRequiredTickets ? 'text-emerald-700' : 'text-amber-700'}>
+                                        {possessedTicketsCount === totalRequiredTickets
+                                            ? '✓ All required certifications verified for placement'
+                                            : `⚠️ ${missingTicketsCount} required ticket(s) missing or unverified`}
+                                    </span>
+                                    <span className="text-blue-500">
+                                        {possessedTicketsCount} Verified • {missingTicketsCount} Missing
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Required Tickets Cards Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {requiredCatalogs.map(catalog => {
                                     const userTicket = userTickets.find(t => t.ticketType === catalog.name);
                                     const isPossessed = userTicket?.status === 'possessed' || userTicket?.status === 'ticket_issued';
 
                                     return (
-                                        <div key={catalog.id} className="p-6 rounded-2xl border border-blue-50 bg-slate-50 flex flex-col justify-between">
+                                        <div key={catalog.id} className={`p-6 rounded-2xl border flex flex-col justify-between transition-all ${isPossessed ? 'border-emerald-200 bg-emerald-50/20' : 'border-amber-200/80 bg-amber-50/10'}`}>
                                             <div>
-                                                <div className="flex items-start justify-between mb-2">
-                                                    <h3 className="font-bold text-blue-900 tracking-tight leading-tight">{catalog.name}</h3>
+                                                <div className="flex items-start justify-between mb-2 gap-3">
+                                                    <h3 className="font-bold text-blue-900 tracking-tight leading-tight uppercase text-sm">{catalog.name}</h3>
                                                     {isPossessed ? (
-                                                        <span className="material-symbols-outlined text-emerald-500">check_circle</span>
+                                                        <span className="bg-emerald-100 text-emerald-700 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0">
+                                                            <span className="material-symbols-outlined text-xs">check_circle</span> Verified
+                                                        </span>
                                                     ) : (
-                                                        <span className="material-symbols-outlined text-amber-500">warning</span>
+                                                        <span className="bg-amber-100 text-amber-800 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0">
+                                                            <span className="material-symbols-outlined text-xs">warning</span> Action Required
+                                                        </span>
                                                     )}
                                                 </div>
-                                                <p className="text-[10px] font-medium text-slate-500 line-clamp-2 mb-4">{catalog.description}</p>
+                                                <p className="text-[11px] font-medium text-slate-600 line-clamp-2 mb-4 leading-relaxed">{catalog.description}</p>
                                             </div>
-                                            <div className="pt-4 border-t border-slate-200/60">
+
+                                            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
                                                 {isPossessed ? (
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg">Verified Owned</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 flex items-center gap-1">
+                                                        <span className="material-symbols-outlined text-sm">verified_user</span> Certificate Uploaded
+                                                    </span>
                                                 ) : (
-                                                    <div className="flex flex-col gap-1">
-                                                        <span className="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-1">Missing Ticket</span>
-                                                        <div className="flex items-center gap-3">
-                                                            <span className="text-sm font-bold text-slate-400 line-through">${catalog.normalPrice}</span>
-                                                            <span className="text-lg font-black text-blue-600">${catalog.sponsorshipPrice}</span>
-                                                            <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest bg-blue-50 px-2 py-1 rounded">Sponsorship Price</span>
+                                                    <div className="w-full flex items-center justify-between gap-4">
+                                                        <div>
+                                                            <span className="text-[9px] font-black text-amber-700 uppercase tracking-widest block">Sponsorship Rate</span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs font-bold text-slate-400 line-through">${catalog.normalPrice}</span>
+                                                                <span className="text-base font-black text-emerald-700">${catalog.sponsorshipPrice}</span>
+                                                            </div>
                                                         </div>
+                                                        <Link
+                                                            href="/dashboard/tickets"
+                                                            className="bg-blue-900 text-white px-3.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-blue-800 transition-all flex items-center gap-1 shrink-0"
+                                                        >
+                                                            Fix Missing Ticket
+                                                        </Link>
                                                     </div>
                                                 )}
                                             </div>
