@@ -113,9 +113,15 @@ export default function ApplicationDetailPage() {
                         </div>
                     </div>
                 </div>
-                <div className="flex gap-4">
-                    <div className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border-2 ${app.status === 'ACTIVE' ? 'bg-blue-900 text-white border-blue-900 shadow-xl shadow-blue-900/10' : 'bg-white text-blue-400 border-blue-50'}`}>
-                        Application Status: {app.status}
+                <div className="flex flex-wrap gap-4 items-center">
+                    {currentStage && (
+                        <div className="px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] bg-blue-50 text-blue-900 border-2 border-blue-200 shadow-sm flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+                            Current Stage: {currentStage.name}
+                        </div>
+                    )}
+                    <div className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border-2 ${app.status === 'ACTIVE' || app.status === 'Active' ? 'bg-blue-900 text-white border-blue-900 shadow-xl shadow-blue-900/10' : 'bg-white text-blue-400 border-blue-50'}`}>
+                        Status: {app.status}
                     </div>
                 </div>
             </div>
@@ -124,6 +130,25 @@ export default function ApplicationDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 {/* Left Column */}
                 <div className="lg:col-span-2 space-y-12">
+                    {/* Active Stage Banner */}
+                    <section className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 p-8 rounded-[2.5rem] text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-blue-700/50">
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+                                <span className="text-[10px] font-black text-blue-200 uppercase tracking-[0.3em]">Active Recruitment Stage</span>
+                            </div>
+                            <h2 className="text-2xl font-bold tracking-tight uppercase text-white">{currentStage?.name || 'Application Under Review'}</h2>
+                            {currentStage?.description && (
+                                <p className="text-[11px] font-medium text-blue-200 max-w-xl leading-relaxed opacity-90">{currentStage.description}</p>
+                            )}
+                        </div>
+                        {stages.length > 0 && (
+                            <div className="flex flex-col items-start md:items-end flex-shrink-0 bg-white/10 px-5 py-3 rounded-2xl backdrop-blur-md border border-white/10">
+                                <span className="text-[9px] font-black uppercase tracking-widest text-blue-300">Stage Position</span>
+                                <span className="text-sm font-bold text-white uppercase tracking-wider">{currentStageIndex >= 0 ? `Stage ${currentStageIndex + 1} of ${stages.length}` : 'Active'}</span>
+                            </div>
+                        )}
+                    </section>
                     {/* Job Description */}
                     <section className="bg-white p-10 rounded-[2.5rem] border border-blue-100 shadow-sm">
                         <h2 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] mb-8 pb-4 border-b border-blue-50 flex items-center gap-3">

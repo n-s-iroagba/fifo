@@ -5,16 +5,35 @@ const models_1 = require("../models");
 class ApplicationRepository {
     // Maps to STK-APP-APPLIST-001, SCR-APP-APPLIST-001
     async findByUserId(userId, options = {}, transaction) {
-        return models_1.Application.findAndCountAll({
+        const result = await models_1.Application.findAndCountAll({
             where: { userId },
             limit: options.limit || 10,
             offset: options.offset || 0,
             include: [
-                { model: models_1.JobListing, attributes: ['id', 'title', 'company', 'location', 'salary', 'ticketIds', 'visaSponsorship'] }
+                { model: models_1.JobListing }
             ],
             order: [['updatedAt', 'DESC']],
             transaction
         });
+        for (const app of result.rows) {
+            if (!app.JobListing && app.jobId) {
+                const job = await models_1.JobListing.findByPk(app.jobId, { transaction });
+                if (job) {
+                    app.setDataValue('JobListing', job.toJSON());
+                }
+                else {
+                    app.setDataValue('JobListing', {
+                        id: app.jobId,
+                        title: 'General FIFO Application',
+                        company: 'BlueCollar Recruitment',
+                        location: 'Australia',
+                        salary: 'Competitive',
+                        visaSponsorship: false
+                    });
+                }
+            }
+        }
+        return result;
     }
     // Maps to STK-ADM-APP-001, SCR-ADM-NEWAPPS-001
     async findAllAdmin(options = {}, transaction) {
@@ -23,22 +42,38 @@ class ApplicationRepository {
             whereClause.status = options.status;
         if (options.userId)
             whereClause.userId = options.userId;
-        return models_1.Application.findAndCountAll({
+        const result = await models_1.Application.findAndCountAll({
             where: whereClause,
             limit: options.limit || 20,
             offset: options.offset || 0,
             include: [
                 { model: models_1.User, attributes: ['id', 'fullName', 'email'] },
-                { model: models_1.JobListing, attributes: ['id', 'title'] },
+                { model: models_1.JobListing },
                 { model: models_1.Payment, include: [{ model: models_1.JobStage, attributes: ['name'] }] }
             ],
             order: [['createdAt', 'DESC']],
             transaction
         });
+        for (const app of result.rows) {
+            if (!app.JobListing && app.jobId) {
+                const job = await models_1.JobListing.findByPk(app.jobId, { transaction });
+                if (job) {
+                    app.setDataValue('JobListing', job.toJSON());
+                }
+                else {
+                    app.setDataValue('JobListing', {
+                        id: app.jobId,
+                        title: 'General FIFO Application',
+                        company: 'BlueCollar Recruitment'
+                    });
+                }
+            }
+        }
+        return result;
     }
     // Maps to STK-APP-APPLY-002, SCR-APP-JOBAPPLY-001
     async findById(id, transaction) {
-        return models_1.Application.findByPk(id, {
+        const app = await models_1.Application.findByPk(id, {
             include: [
                 models_1.JobListing,
                 models_1.Payment,
@@ -48,6 +83,24 @@ class ApplicationRepository {
             ],
             transaction
         });
+        if (app && !app.JobListing && app.jobId) {
+            const job = await models_1.JobListing.findByPk(app.jobId, { transaction });
+            if (job) {
+                app.setDataValue('JobListing', job.toJSON());
+            }
+            else {
+                app.setDataValue('JobListing', {
+                    id: app.jobId,
+                    title: 'General FIFO Application',
+                    company: 'BlueCollar Recruitment',
+                    location: 'Australia',
+                    salary: 'Competitive',
+                    description: 'Application details for FIFO position.',
+                    visaSponsorship: false
+                });
+            }
+        }
+        return app;
     }
     // Maps to STK-APP-APPLY-001, TRUST-009
     async create(appData, transaction) {

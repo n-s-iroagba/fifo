@@ -200,6 +200,8 @@ router.post('/lms-auth/login', LmsAuthController_1.lmsAuthController.login.bind(
 router.get('/lms-credentials/applicants/:applicantId', ...adminMW, LmsAuthController_1.lmsAuthController.getLmsCredentialsStatus.bind(LmsAuthController_1.lmsAuthController));
 router.post('/lms-credentials/generate', ...adminMW, LmsAuthController_1.lmsAuthController.generateCredentials.bind(LmsAuthController_1.lmsAuthController));
 // Admin Course Management (STEP-001 - STEP-006)
+router.get('/courses', CourseController_1.courseController.getPublishedCourses.bind(CourseController_1.courseController));
+router.get('/courses/:id', CourseController_1.courseController.getCourseById.bind(CourseController_1.courseController));
 router.get('/courses/certifications/lookup', ...adminMW, CourseController_1.courseController.getCertificationTypes.bind(CourseController_1.courseController));
 router.post('/courses', ...adminMW, CourseController_1.courseController.createCourse.bind(CourseController_1.courseController));
 router.get('/courses/admin/all', ...adminMW, CourseController_1.courseController.getAllAdminCourses.bind(CourseController_1.courseController));

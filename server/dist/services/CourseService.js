@@ -53,5 +53,24 @@ class CourseService {
         await course.update({ isPublished });
         return course;
     }
+    static async getPublishedCourses() {
+        return await Course_1.Course.findAll({
+            where: { isPublished: true },
+            include: [CertificationType_1.CertificationType],
+            order: [['createdAt', 'DESC']]
+        });
+    }
+    static async getCourseById(courseId) {
+        const course = await Course_1.Course.findByPk(courseId, {
+            include: [CertificationType_1.CertificationType]
+        });
+        if (!course)
+            throw new Error('COURSE_NOT_FOUND');
+        const modules = await CourseModule_1.CourseModule.findAll({
+            where: { courseId },
+            order: [['sequenceOrder', 'ASC']]
+        });
+        return { course, modules };
+    }
 }
 exports.CourseService = CourseService;

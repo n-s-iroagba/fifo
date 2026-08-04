@@ -94,6 +94,26 @@ class CourseController {
             next(error);
         }
     }
+    async getPublishedCourses(req, res, next) {
+        try {
+            const data = await CourseService_1.CourseService.getPublishedCourses();
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getCourseById(req, res, next) {
+        try {
+            const data = await CourseService_1.CourseService.getCourseById(req.params.id);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data });
+        }
+        catch (error) {
+            if (error.message === 'COURSE_NOT_FOUND')
+                return res.status(404).json({ code: 404, message: 'Course not found.' });
+            next(error);
+        }
+    }
 }
 exports.CourseController = CourseController;
 exports.courseController = new CourseController();

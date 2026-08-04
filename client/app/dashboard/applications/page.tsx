@@ -78,20 +78,26 @@ export default function ApplicationsListPage() {
                     </div>
                 ) : (
                     <div className="space-y-3">
-                        {data.rows.map((app) => (
-                            <div key={app.id} className="group bg-white p-6 rounded-2xl border border-blue-100 shadow-sm flex flex-col md:flex-row md:items-center gap-6 hover:shadow-md transition-all">
-                                <div className="flex-grow">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest ${app.status === 'Active' ? 'bg-blue-900 text-white' : 'bg-blue-100 text-blue-500'
-                                            }`}>
-                                            {app.status}
-                                        </span>
-                                        <span className="text-blue-400 text-[9px] font-bold uppercase tracking-widest">• Updated {new Date(app.updatedAt).toLocaleDateString()}</span>
+                        {data.rows.map((app) => {
+                            const currentStage = app.JobStages?.find((s: any) => s.id === app.currentStageId) || app.JobStages?.[0];
+                            return (
+                                <div key={app.id} className="group bg-white p-6 rounded-2xl border border-blue-100 shadow-sm flex flex-col md:flex-row md:items-center gap-6 hover:shadow-md transition-all">
+                                    <div className="flex-grow">
+                                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest ${app.status === 'Active' ? 'bg-blue-900 text-white' : 'bg-blue-100 text-blue-500'
+                                                }`}>
+                                                {app.status}
+                                            </span>
+                                            {currentStage && (
+                                                <span className="bg-blue-50 text-blue-900 border border-blue-200 px-2.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+                                                    Stage: {currentStage.name}
+                                                </span>
+                                            )}
+                                            <span className="text-blue-400 text-[9px] font-bold uppercase tracking-widest">• Updated {new Date(app.updatedAt).toLocaleDateString()}</span>
+                                        </div>
+                                        <h3 className="text-lg font-bold text-blue-900 tracking-tight group-hover:text-blue-600 transition-colors uppercase">{app.JobListing?.title}</h3>
                                     </div>
-                                    <h3 className="text-lg font-bold text-blue-900 tracking-tight group-hover:text-blue-600 transition-colors uppercase">{app.JobListing?.title}</h3>
-
-
-                                </div>
 
                                 <div className="flex md:flex-col items-end gap-2 shrink-0">
                                     <Link

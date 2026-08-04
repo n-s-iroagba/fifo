@@ -11,8 +11,8 @@ export async function seedDatabase() {
     // Using alter: true to preserve existing data. Skipping User, Application, and LmsCredential as requested.
     // 1. Clean up Corrupted LMS Tables (from the UUID mismatch) and Orphaned Job Data
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
-    
-    // Explicitly drop the corrupted LMS tables so alter: true recreates them with INTEGER
+
+    // Explicitly drop the corrupted LMS tables and certification_types to prevent duplicate index accumulation
     await sequelize.query('DROP TABLE IF EXISTS certification_gaps;');
     await sequelize.query('DROP TABLE IF EXISTS exam_attempts;');
     await sequelize.query('DROP TABLE IF EXISTS certificates;');
@@ -20,6 +20,7 @@ export async function seedDatabase() {
     await sequelize.query('DROP TABLE IF EXISTS practical_sessions;');
     await sequelize.query('DROP TABLE IF EXISTS enrollments;');
     await sequelize.query('DROP TABLE IF EXISTS course_subsidies;');
+    await sequelize.query('DROP TABLE IF EXISTS certification_types;');
 
     // Truncate and drop the job tables to clear out any orphaned data and prevent ER_TOO_MANY_KEYS on job_categories
     await sequelize.query('DROP TABLE IF EXISTS ListingBenefits;');
@@ -32,10 +33,10 @@ export async function seedDatabase() {
     const excludedModels = ['User', 'Application', 'LmsCredential'];
     for (const modelName of Object.keys(sequelize.models)) {
         if (!excludedModels.includes(modelName)) {
-            await sequelize.models[modelName].sync({ alter: true });
+            await sequelize.models[modelName].sync();
         }
     }
-    
+
     // Safely add visaSponsorshipStatus to Application without triggering FK re-checks
     try {
         await sequelize.query("ALTER TABLE applications ADD COLUMN visaSponsorshipStatus ENUM('Pending', 'Approved', 'Rejected') DEFAULT NULL;");
@@ -67,7 +68,7 @@ export async function seedDatabase() {
             }
         }
     }
-    
+
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
 
 
@@ -164,7 +165,7 @@ export async function seedDatabase() {
     }
 
     console.log('Seeding LMS Data (Courses, Exams, Criteria)...');
-    
+
     for (const data of lmsSeedData) {
         // Create Certification Type
         const [certType] = await CertificationType.findOrCreate({

@@ -11,16 +11,28 @@ export interface FindApplicationOptions {
 export class ApplicationRepository {
     // Maps to STK-APP-APPLIST-001, SCR-APP-APPLIST-001
     public async findByUserId(userId: number, options: FindApplicationOptions = {}, transaction?: Transaction): Promise<{ rows: Application[]; count: number }> {
-        return Application.findAndCountAll({
+        const result = await Application.findAndCountAll({
             where: { userId },
             limit: options.limit || 10,
             offset: options.offset || 0,
             include: [
-                { model: JobListing, attributes: ['id', 'title', 'company', 'location', 'salary', 'ticketIds', 'visaSponsorship'] }
+                { model: JobListing },
+                { model: JobStage, as: 'JobStages' }
             ],
             order: [['updatedAt', 'DESC']],
             transaction
         });
+
+        for (const app of result.rows) {
+            if (!app.JobListing && app.jobId) {
+                const job = await JobListing.findByPk(app.jobId, { transaction });
+                if (job) {
+                    (app as any).setDataValue('JobListing', job.toJSON());
+                }
+            }
+        }
+
+        return result;
     }
 
     // Maps to STK-ADM-APP-001, SCR-ADM-NEWAPPS-001
@@ -29,32 +41,69 @@ export class ApplicationRepository {
         if (options.status) whereClause.status = options.status;
         if (options.userId) whereClause.userId = options.userId;
 
-        return Application.findAndCountAll({
+        const result = await Application.findAndCountAll({
             where: whereClause,
             limit: options.limit || 20,
             offset: options.offset || 0,
             include: [
                 { model: User, attributes: ['id', 'fullName', 'email'] },
-                { model: JobListing, attributes: ['id', 'title'] },
+                { model: JobListing },
+                { model: JobStage, as: 'JobStages' },
                 { model: Payment, include: [{ model: JobStage, attributes: ['name'] }] }
             ],
             order: [['createdAt', 'DESC']],
             transaction
         });
+
+        for (const app of result.rows) {
+            if (!app.JobListing && app.jobId) {
+                const job = await JobListing.findByPk(app.jobId, { transaction });
+                if (job) {
+                    (app as any).setDataValue('JobListing', job.toJSON());
+                } else {
+                    (app as any).setDataValue('JobListing', {
+                        id: app.jobId,
+                        title: 'General FIFO Application',
+                        company: 'BlueCollar Recruitment'
+                    });
+                }
+            }
+        }
+
+        return result;
     }
 
     // Maps to STK-APP-APPLY-002, SCR-APP-JOBAPPLY-001
     public async findById(id: number, transaction?: Transaction): Promise<Application | null> {
-        return Application.findByPk(id, {
+        const app = await Application.findByPk(id, {
             include: [
-                JobListing, 
-                Payment, 
+                JobListing,
+                Payment,
                 User,
                 { model: Ticket, as: 'Tickets' },
                 { model: JobStage, as: 'JobStages' }
             ],
             transaction
         });
+
+        if (app && !app.JobListing && app.jobId) {
+            const job = await JobListing.findByPk(app.jobId, { transaction });
+            if (job) {
+                (app as any).setDataValue('JobListing', job.toJSON());
+            } else {
+                (app as any).setDataValue('JobListing', {
+                    id: app.jobId,
+                    title: 'General FIFO Application',
+                    company: 'BlueCollar Recruitment',
+                    location: 'Australia',
+                    salary: 'Competitive',
+                    description: 'Application details for FIFO position.',
+                    visaSponsorship: false
+                });
+            }
+        }
+
+        return app;
     }
 
     // Maps to STK-APP-APPLY-001, TRUST-009
