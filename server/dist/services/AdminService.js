@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.adminService = exports.AdminService = void 0;
 const BankAccountRepository_1 = require("../repositories/BankAccountRepository");
@@ -10,6 +13,8 @@ const NotificationRepository_1 = require("../repositories/NotificationRepository
 const email_1 = require("../utils/email");
 const database_1 = require("../config/database");
 const constants_1 = require("../constants");
+const LmsCredential_1 = require("../models/LmsCredential");
+const bcrypt_1 = __importDefault(require("bcrypt"));
 class AdminService {
     // ==========================
     // Health Monitoring — STK-ADM-HEALTH-001..003
@@ -226,6 +231,43 @@ class AdminService {
             isRead: false
         });
         return { success: true, walletBalance: user.walletBalance };
+    }
+    async updateAvelingCredentials(id, avelingUsername, avelingPassword) {
+        const user = await UserRepository_1.userRepository.findById(id);
+        if (!user || user.role !== constants_1.CONSTANTS.ROLES.APPLICANT) {
+            throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+        }
+        const updateData = {};
+        if (avelingUsername !== undefined)
+            updateData.avelingUsername = avelingUsername ? avelingUsername.trim() : null;
+        if (avelingPassword !== undefined)
+            updateData.avelingPassword = avelingPassword ? avelingPassword.trim() : null;
+        await user.update(updateData);
+        // Also sync LmsCredential if provided
+        if (updateData.avelingUsername || updateData.avelingPassword) {
+            const existingCred = await LmsCredential_1.LmsCredential.findOne({ where: { userId: String(id) } });
+            const passwordHash = updateData.avelingPassword ? await bcrypt_1.default.hash(updateData.avelingPassword, 10) : (existingCred?.passwordHash || '');
+            const finalUsername = updateData.avelingUsername || existingCred?.lmsUsername || `AVELING-${user.id}`;
+            if (existingCred) {
+                await existingCred.update({
+                    lmsUsername: finalUsername,
+                    ...(updateData.avelingPassword ? { passwordHash } : {})
+                });
+            }
+            else if (updateData.avelingUsername && passwordHash) {
+                await LmsCredential_1.LmsCredential.create({
+                    userId: String(id),
+                    lmsUsername: finalUsername,
+                    passwordHash,
+                    isActive: true
+                });
+            }
+        }
+        return {
+            success: true,
+            avelingUsername: user.avelingUsername,
+            avelingPassword: user.avelingPassword
+        };
     }
 }
 exports.AdminService = AdminService;

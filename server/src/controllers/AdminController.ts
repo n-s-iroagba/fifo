@@ -316,7 +316,10 @@ export class AdminController {
                     state: user.state,
                     country: user.country,
                     zipCode: user.zipCode,
-                    cvUrl: user.cvUrl
+                    cvUrl: user.cvUrl,
+                    walletBalance: user.walletBalance,
+                    avelingUsername: user.avelingUsername,
+                    avelingPassword: user.avelingPassword
                 }
             });
         } catch (error: any) {
@@ -383,6 +386,19 @@ export class AdminController {
             res.status(CONSTANTS.HTTP_STATUS.OK).json(result);
         } catch (error: any) {
             console.error('[AdminController.updateApplicantWallet]', error);
+            const status = error.message === CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? CONSTANTS.HTTP_STATUS.NOT_FOUND : CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
+            res.status(status).json({ error: error.message });
+        }
+    }
+
+    public async updateAvelingCredentials(req: Request, res: Response): Promise<void> {
+        try {
+            const id = parseInt(req.params.id as string, 10);
+            const { avelingUsername, avelingPassword } = req.body;
+            const result = await adminService.updateAvelingCredentials(id, avelingUsername, avelingPassword);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json(result);
+        } catch (error: any) {
+            console.error('[AdminController.updateAvelingCredentials]', error);
             const status = error.message === CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? CONSTANTS.HTTP_STATUS.NOT_FOUND : CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
             res.status(status).json({ error: error.message });
         }

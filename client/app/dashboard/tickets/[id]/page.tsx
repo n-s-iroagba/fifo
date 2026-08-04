@@ -71,8 +71,8 @@ export default function TicketDetailPage() {
     const ticket: Ticket | undefined = ticketRes?.data?.id
         ? ticketRes.data
         : ticketRes?.id
-        ? ticketRes
-        : undefined;
+            ? ticketRes
+            : undefined;
 
     const { data: userRes } = useApiQuery<any>(
         ['auth', 'me'],
@@ -182,7 +182,8 @@ export default function TicketDetailPage() {
     const avelingBaseUrl = typeof window !== 'undefined'
         ? (process.env.NEXT_PUBLIC_AVELING_URL || `${window.location.protocol}//${window.location.hostname}:3002`)
         : 'http://localhost:3002';
-    const avelingPayUrl = `${avelingBaseUrl}/checkout?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}&wallet=${userWalletBalance}`;
+    const avelingPayUrl = 'https://aveling.online'
+    // `${avelingBaseUrl}/checkout?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}&wallet=${userWalletBalance}`;
 
     const canSubmitSponsorshipForm =
         ticket.canApplySponsorship &&
@@ -200,11 +201,10 @@ export default function TicketDetailPage() {
                 <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-3">
                         <span className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em]">Ticket Details</span>
-                        <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
-                            ticket.status === 'possessed'
+                        <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${ticket.status === 'possessed'
                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                 : 'bg-amber-50 text-amber-700 border-amber-200'
-                        }`}>
+                            }`}>
                             {ticket.status === 'possessed' ? 'Possessed' : 'Not Possessed'}
                         </span>
                     </div>
@@ -311,11 +311,10 @@ export default function TicketDetailPage() {
                         <h3 className="text-base font-bold text-blue-900">Course & LMS Delivery</h3>
                     </div>
                     {ticket.paymentStatus && (
-                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
-                            ticket.paymentStatus === 'paid'
+                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${ticket.paymentStatus === 'paid'
                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                 : 'bg-amber-50 text-amber-700 border-amber-200'
-                        }`}>
+                            }`}>
                             Payment: {ticket.paymentStatus}
                         </span>
                     )}

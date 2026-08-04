@@ -202,7 +202,12 @@ export default function AdminApplicantDetailPage() {
                     </div>
 
                     {/* LMS Access Management */}
-                    <LmsAccessPanel applicantId={id as string} />
+                    <LmsAccessPanel 
+                        applicantId={id as string} 
+                        initialUsername={user.avelingUsername} 
+                        initialPassword={user.avelingPassword}
+                        onUpdated={refetchUser}
+                    />
 
                 </div>
 

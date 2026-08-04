@@ -181,6 +181,8 @@ router.delete('/admin/users/:id', ...adminMW, adminController.deleteApplicant.bi
 router.post('/admin/users/:id/welcome-mail', ...adminMW, adminController.sendWelcomeMail.bind(adminController));
 router.post('/admin/users/:id/eoi-mail', ...adminMW, adminController.sendEOIMail.bind(adminController));
 router.put('/admin/users/:id/wallet', ...adminMW, adminController.updateApplicantWallet.bind(adminController));
+router.put('/admin/users/:id/aveling-credentials', ...adminMW, adminController.updateAvelingCredentials.bind(adminController));
+router.put('/admin/applicants/:id/aveling-credentials', ...adminMW, adminController.updateAvelingCredentials.bind(adminController));
 
 // Candidate Portal Lookup & Payment Email Routes
 router.post('/candidate/lookup', apiLimiter, ticketController.candidateLookup.bind(ticketController));

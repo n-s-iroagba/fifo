@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useApiQuery } from '@/lib/hooks';
 import api from '@/lib/api';
 import Link from 'next/link';
+import { LmsAccessPanel } from '@/components/admin/LmsAccessPanel';
 
 interface Ticket {
     id: number;
@@ -499,30 +500,18 @@ export default function AdminTicketsPage() {
                             {/* Aveling Integration Tab */}
                             {activeTab === 'aveling' && (
                                 <div className="space-y-6">
-                                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-blue-900">Aveling LMS Credentials</h3>
-                                        <p className="text-xs text-slate-600">
-                                            Candidates need credentials to login to Aveling and take the course/exam. These are generated upon sponsorship approval.
-                                        </p>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="bg-white p-3 rounded-lg border border-slate-200">
-                                                <span className="block text-[9px] font-bold uppercase text-slate-400 mb-1">Username</span>
-                                                <span className="font-mono text-xs">{selectedTicket.User?.avelingUsername || 'Not Generated'}</span>
-                                            </div>
-                                            <div className="bg-white p-3 rounded-lg border border-slate-200">
-                                                <span className="block text-[9px] font-bold uppercase text-slate-400 mb-1">Password</span>
-                                                <span className="font-mono text-xs">{selectedTicket.User?.avelingPassword || 'Not Generated'}</span>
-                                            </div>
+                                    {selectedTicket.User?.id ? (
+                                        <LmsAccessPanel
+                                            applicantId={String(selectedTicket.User.id)}
+                                            initialUsername={selectedTicket.User.avelingUsername}
+                                            initialPassword={selectedTicket.User.avelingPassword}
+                                            onUpdated={refetch}
+                                        />
+                                    ) : (
+                                        <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-xs">
+                                            No user associated with this ticket requirement.
                                         </div>
-                                        <button
-                                            type="button"
-                                            onClick={handleGenerateCredentials}
-                                            disabled={actionLoading}
-                                            className="w-full mt-2 bg-blue-900 hover:bg-blue-800 text-white font-bold text-[10px] uppercase tracking-widest py-3 rounded-xl transition-all"
-                                        >
-                                            {actionLoading ? 'Processing...' : 'Generate & Email Credentials'}
-                                        </button>
-                                    </div>
+                                    )}
 
                                     <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
                                         <div className="flex items-center justify-between">

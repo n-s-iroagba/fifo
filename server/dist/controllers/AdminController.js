@@ -303,7 +303,10 @@ class AdminController {
                     state: user.state,
                     country: user.country,
                     zipCode: user.zipCode,
-                    cvUrl: user.cvUrl
+                    cvUrl: user.cvUrl,
+                    walletBalance: user.walletBalance,
+                    avelingUsername: user.avelingUsername,
+                    avelingPassword: user.avelingPassword
                 }
             });
         }
@@ -373,6 +376,19 @@ class AdminController {
         }
         catch (error) {
             console.error('[AdminController.updateApplicantWallet]', error);
+            const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
+            res.status(status).json({ error: error.message });
+        }
+    }
+    async updateAvelingCredentials(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const { avelingUsername, avelingPassword } = req.body;
+            const result = await AdminService_1.adminService.updateAvelingCredentials(id, avelingUsername, avelingPassword);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(result);
+        }
+        catch (error) {
+            console.error('[AdminController.updateAvelingCredentials]', error);
             const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
             res.status(status).json({ error: error.message });
         }

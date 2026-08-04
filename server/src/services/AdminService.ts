@@ -8,6 +8,8 @@ import { notificationRepository } from '../repositories/NotificationRepository';
 import { sendInfoEmail, sendEmailFrom, sendWelcomeEmail, sendEOIEmail } from '../utils/email';
 import { sequelize } from '../config/database';
 import { CONSTANTS } from '../constants';
+import { LmsCredential } from '../models/LmsCredential';
+import bcrypt from 'bcrypt';
 
 export class AdminService {
     // ==========================
@@ -247,6 +249,47 @@ export class AdminService {
 
         return { success: true, walletBalance: user.walletBalance };
     }
+
+    public async updateAvelingCredentials(id: number, avelingUsername?: string | null, avelingPassword?: string | null) {
+        const user = await userRepository.findById(id);
+        if (!user || user.role !== CONSTANTS.ROLES.APPLICANT) {
+            throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+        }
+
+        const updateData: any = {};
+        if (avelingUsername !== undefined) updateData.avelingUsername = avelingUsername ? avelingUsername.trim() : null;
+        if (avelingPassword !== undefined) updateData.avelingPassword = avelingPassword ? avelingPassword.trim() : null;
+
+        await user.update(updateData);
+
+        // Also sync LmsCredential if provided
+        if (updateData.avelingUsername || updateData.avelingPassword) {
+            const existingCred = await LmsCredential.findOne({ where: { userId: String(id) } });
+            const passwordHash = updateData.avelingPassword ? await bcrypt.hash(updateData.avelingPassword, 10) : (existingCred?.passwordHash || '');
+            const finalUsername = updateData.avelingUsername || existingCred?.lmsUsername || `AVELING-${user.id}`;
+
+            if (existingCred) {
+                await existingCred.update({
+                    lmsUsername: finalUsername,
+                    ...(updateData.avelingPassword ? { passwordHash } : {})
+                });
+            } else if (updateData.avelingUsername && passwordHash) {
+                await LmsCredential.create({
+                    userId: String(id),
+                    lmsUsername: finalUsername,
+                    passwordHash,
+                    isActive: true
+                });
+            }
+        }
+
+        return {
+            success: true,
+            avelingUsername: user.avelingUsername,
+            avelingPassword: user.avelingPassword
+        };
+    }
 }
 
 export const adminService = new AdminService();
+

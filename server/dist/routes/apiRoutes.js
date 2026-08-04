@@ -158,6 +158,8 @@ router.delete('/admin/users/:id', ...adminMW, AdminController_1.adminController.
 router.post('/admin/users/:id/welcome-mail', ...adminMW, AdminController_1.adminController.sendWelcomeMail.bind(AdminController_1.adminController));
 router.post('/admin/users/:id/eoi-mail', ...adminMW, AdminController_1.adminController.sendEOIMail.bind(AdminController_1.adminController));
 router.put('/admin/users/:id/wallet', ...adminMW, AdminController_1.adminController.updateApplicantWallet.bind(AdminController_1.adminController));
+router.put('/admin/users/:id/aveling-credentials', ...adminMW, AdminController_1.adminController.updateAvelingCredentials.bind(AdminController_1.adminController));
+router.put('/admin/applicants/:id/aveling-credentials', ...adminMW, AdminController_1.adminController.updateAvelingCredentials.bind(AdminController_1.adminController));
 // Candidate Portal Lookup & Payment Email Routes
 router.post('/candidate/lookup', rateLimiter_1.apiLimiter, TicketController_1.ticketController.candidateLookup.bind(TicketController_1.ticketController));
 router.post('/tickets/:id/checkout-email', rateLimiter_1.apiLimiter, TicketController_1.ticketController.sendCheckoutPaymentEmail.bind(TicketController_1.ticketController));
