@@ -4,7 +4,7 @@
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Award, CheckCircle2, XCircle, ShieldCheck, ChevronRight, ArrowRight, Wallet, RotateCcw, Banknote } from 'lucide-react';
+import { Award, CheckCircle2, XCircle, ShieldCheck, ChevronRight, ArrowRight, Wallet, RotateCcw, Banknote, Mail } from 'lucide-react';
 import { apiClient } from '../../../../lib/axios';
 
 interface ExamQuestion {
@@ -286,6 +286,16 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
                                 Ticket Status Updated to 'ticket_issued'
                             </p>
                             <p>Your certification result has been sent to your recruiter dashboard.</p>
+                        </div>
+
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-900 text-left space-y-1">
+                            <p className="font-extrabold flex items-center gap-1.5 text-blue-950">
+                                <Mail className="h-4 w-4 text-blue-600 shrink-0" />
+                                Official Exam Results & Ticket Delivered via Mail
+                            </p>
+                            <p className="text-blue-800">
+                                Your exam score breakdown and official digital Statement of Attainment ticket have been dispatched directly to your registered email address.
+                            </p>
                         </div>
 
                         <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 text-xs text-amber-950 text-left space-y-1">

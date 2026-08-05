@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { BookOpen, CheckCircle2, PlayCircle, Lock, Calendar, FileText, ArrowRight, ShieldCheck, ChevronRight, Award } from 'lucide-react';
+import { BookOpen, CheckCircle2, PlayCircle, Lock, Calendar, FileText, ArrowRight, ShieldCheck, ChevronRight, Award, Download } from 'lucide-react';
 import { apiClient } from '../../../lib/axios';
 
 export default function CoursePlayerPage({ params }: { params: { id: string } }) {
@@ -197,6 +197,34 @@ export default function CoursePlayerPage({ params }: { params: { id: string } })
                             ) : (
                                 <p className="text-xs text-zinc-500 py-4 text-center">No modules configured yet.</p>
                             )}
+                        </div>
+                    </div>
+
+                    {/* Downloadable Course Materials */}
+                    <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 space-y-3">
+                        <span className="text-xs font-bold uppercase text-zinc-400 block">Course Materials & Downloads</span>
+                        <div className="space-y-2">
+                            <button
+                                onClick={() => alert('Downloading official Learner Study Guide (PDF)...')}
+                                className="w-full flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 hover:border-[#FFC700] transition-all text-xs font-bold text-zinc-800 dark:text-zinc-200 group"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <FileText className="h-4 w-4 text-[#FFC700]" />
+                                    <span>Learner Study Guide & Manual</span>
+                                </div>
+                                <Download className="h-4 w-4 text-zinc-400 group-hover:text-black dark:group-hover:text-white" />
+                            </button>
+
+                            <button
+                                onClick={() => alert('Downloading Pre-Start Safety Checklist (PDF)...')}
+                                className="w-full flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 hover:border-[#FFC700] transition-all text-xs font-bold text-zinc-800 dark:text-zinc-200 group"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                                    <span>Pre-Start Inspection Reference</span>
+                                </div>
+                                <Download className="h-4 w-4 text-zinc-400 group-hover:text-black dark:group-hover:text-white" />
+                            </button>
                         </div>
                     </div>
                 </div>
