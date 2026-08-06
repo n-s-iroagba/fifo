@@ -10,7 +10,6 @@ const token_1 = require("../utils/token");
 const constants_1 = require("../constants");
 const email_1 = require("../utils/email");
 const crypto_1 = __importDefault(require("crypto"));
-const path_1 = __importDefault(require("path"));
 class AuthService {
     // Maps to STK-APP-AUTH-004, SCR-PUB-REGISTER-001
     async register(userData) {
@@ -30,8 +29,10 @@ class AuthService {
             countryOfResidence: userData.countryOfResidence,
         });
         console.log(verificationToken);
-        // Send Verification Email
-        const verificationUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+        let verificationUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+        if (userData.redirectUrl) {
+            verificationUrl += `&returnTo=${encodeURIComponent(userData.redirectUrl)}`;
+        }
         const content = `
             <p>Welcome to BlueCollar. We require a high-priority identity verification to activate your professional node.</p>
             <div class="cta-block">
@@ -79,20 +80,109 @@ class AuthService {
             verificationToken: null
         });
         // Send Welcome Email after verification
-        const welcomeSubject = 'Welcome to BlueCollar - Activate Your Node';
+        const welcomeSubject = 'Welcome to BlueCollar - Account Verified';
         const welcomeContent = `
-            <p>Your professional node has been successfully verified. To fully activate your profile and become visible to our elite partner network, you must complete your biodata and upload your CV.</p>
-            <p><strong>Strict Adherence Required:</strong> We require all applicants to follow our standardized CV template. This ensures algorithmic compatibility and professional clarity.</p>
+            <p>Your account has been successfully verified. Welcome to the BlueCollar Recruitment Platform!</p>
+            <p>To successfully secure your next FIFO role, please follow these steps to complete your application process:</p>
+            <ol style="margin-bottom: 20px;">
+                <li style="margin-bottom: 10px;"><strong>Complete Your Profile:</strong> Navigate to your dashboard and upload your CV. You <strong>MUST</strong> use the attached ATS-Compliant CV Template to ensure our systems can accurately process your qualifications.</li>
+                <li style="margin-bottom: 10px;"><strong>Browse Available Jobs:</strong> Explore our active FIFO job listings tailored to your profession.</li>
+                <li style="margin-bottom: 10px;"><strong>Submit Your Application:</strong> During the application process, you will be asked to declare your current certifications (Tickets). If you are missing any required tickets, you can request <strong>Ticket Sponsorship</strong> directly within the application flow.</li>
+            </ol>
             <div class="cta-block">
-                <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/profile" class="button">Complete Your Profile</a>
+                <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/profile" class="button">Complete Your Profile Now</a>
             </div>
-            <p style="margin-top: 20px;">Attached to this email is the <strong>Universal Applicant CV Template</strong>. Please ensure your upload matches this structure exactly. Discrepancies will trigger a profile audit.</p>
-            <p><strong>Note on Apex Network:</strong> High-impact talent may be eligible for the Apex Network. Members receive priority placement, asymmetric market intelligence, and access to unlisted shadow roles. You will be notified if your audit suggests Apex eligibility.</p>
+            <p style="margin-top: 20px;">We look forward to helping you advance your career.</p>
         `;
         await (0, email_1.sendAuthEmail)(user.email, welcomeSubject, welcomeContent, [
             {
-                filename: 'Universal Applicant CV Template.docx',
-                path: path_1.default.join(__dirname, '../../../Universal Applicant CV Template.docx')
+                filename: 'Universal_Applicant_CV_Template.txt',
+                content: `BILLY MEGA BERLIN
+Phone: +61-417593439 | Email: Billymega26@gmail.com
+
+================================================================================
+PROFILE
+================================================================================
+Dedicated and hardworking professional with strong integrity and a proven ability to exceed expectations. Highly adaptable and communicative, with a proactive mindset and strong commitment to delivering quality results. A valuable team player in any organization or work environment.
+
+================================================================================
+SKILLS & PERSONALITY
+================================================================================
+• Strategic Planning
+• Problem Solving
+• Tool Setup and Cleanup
+• Creative Thinking
+• Hard Work
+• Initiative and knowing priorities
+• Power Tools Operation
+• Hand Tools Proficiency
+• Fast Learner and Fast Adaptation
+• Safety Procedures Compliance
+• Manual Handling
+• Operate Machine
+• Inventory Management
+
+================================================================================
+WORK EXPERIENCE
+================================================================================
+Baiada Poultry                                                Aug 2025 - Present
+Cleaner Factory Machine
+References: Didik (Leader) +614399283454
+  • Cleaner (Cleaning the factory and Machine)
+    - Cleaning hanging room, hanging machine and conveyor belt, vacuum packing machine, and marinate machine.
+    - Chemical handling and working with PPE (Topax686, Chlorine, Sanitize)
+    - Safety and hygiene
+
+Howe Farm Enterprises (Heavy Labour)                           Jan 2025 - Sept 2025
+Banana Farm Shed & Paddock
+References: Jerome (Manager) +61413856221 | Yansiy (Supervisor) +61422187016
+  • Unloading, operate hydraulic hang machine to hang the bunch, after open bag and put chain
+  • Dehanding the bunch, cutting all banana from running hook into a hand of bananas.
+  • Clustering hand of bananas, cutting in running belt from a hand of bananas into a small cut and also grading at the same time.
+  • Stacking the box of bananas, with 4 different box with 14-15kg for small box and 17-18kg for big box, put the lids before and also filling the boxes, big plastic, small plastic, paper and lids for the packers.
+  • Boxes, operate Visy Box machine to make box from cut board.
+  • Recycle, operate recycle machine to make a big box of plastic recycle.
+  • Dieseling the trees of bananas after they harvest it.
+  • Dileaving the leaves, cutting the broken Leaves
+  • Drive Tractor with the trailer before do unloading
+  • Humping the banana around 40 - 80kg/bunch and put in trailer
+  • Cleaning Shed and all the machine with chemical handling
+
+PT. Intersoft Solutions (iSeller)                             Apr 2021 - Nov 2024
+Pre - Sales officer and Lead of Pre-Sales (Product Specialist)
+References: Imam (Head of Pre-Sales) +6282129244224 | Moses (Head of Enterprise) +6281210719909
+  • Pitching Enterprise client.
+  • Lead the project.
+  • Giving efficient flow for back system.
+  • Make PRD and lead programmer also Product Owner Team base on client requirements.
+  • Connecting API to third party (WMS, ERP, In house client system, etc).
+
+PT. Albarsha Group Persada                                    Feb 2018 - Apr 2021
+Entertainment Providers (Event Organizer and Event Production)
+References: Aldira Akbar (CEO) +6287763764359 | Nm. Arief (Manager) +628111198919
+  • Trade Assistant Rigging (Setup Stage and Event)
+    - Assisting with tools and equipment
+    - Help tradies do their job
+    - Site preparation and clean up
+    - Equipment maintenance
+  • General Labourer (Setup Stage and Event)
+    - Pallet Jack Operation
+    - Loading & Unloading Deliveries
+    - Lifting weights stuff for installment
+    - Waste Removal & Site Cleanup
+
+================================================================================
+EDUCATION
+================================================================================
+• Bina Nusantara University (Binus) - School of Computer Science
+
+================================================================================
+TICKET (CERTIFICATIONS & LICENSES)
+================================================================================
+• White Card - CPCWHS1001
+• Driving License Australia - Class C 'Manual'
+• HLTAID009, HLTAID010, HLTAID011
+ps: Another ticket would be taken immediately if it's necessary as a requirement, thank you.`
             }
         ]).catch(err => console.error('[AuthService] Welcome email failed:', err));
     }
@@ -134,14 +224,17 @@ class AuthService {
             resetPasswordExpires: null
         });
     }
-    async resendVerification(email) {
+    async resendVerification(email, redirectUrl) {
         const user = await UserRepository_1.userRepository.findByEmail(email);
         if (!user || user.isVerified) {
             return; // Don't leak or send to verified users
         }
         const verificationToken = crypto_1.default.randomBytes(32).toString('hex');
         await UserRepository_1.userRepository.update(user.id, { verificationToken });
-        const verificationUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+        let verificationUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+        if (redirectUrl) {
+            verificationUrl += `&returnTo=${encodeURIComponent(redirectUrl)}`;
+        }
         const content = `
             <p>A new verification pulse has been dispatched. Please activate your professional identity using the secure link below.</p>
             <div class="cta-block">

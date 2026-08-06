@@ -83,8 +83,8 @@ class AuthController {
     }
     async resendVerification(req, res) {
         try {
-            const { email } = req.body;
-            await AuthService_1.authService.resendVerification(email);
+            const { email, redirectUrl } = req.body;
+            await AuthService_1.authService.resendVerification(email, redirectUrl);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({
                 message: 'Verification link resent successfully.'
             });

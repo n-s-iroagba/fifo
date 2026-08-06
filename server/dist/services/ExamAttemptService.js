@@ -94,7 +94,7 @@ class ExamAttemptService {
         });
         if (ticket) {
             const { ticketService } = require('./TicketService');
-            await ticketService.recordExamOutcome(ticket.id, isPass, attempt.attemptNumber);
+            await ticketService.recordExamOutcome(ticket.id, isPass, attempt.attemptNumber, calculatedScore);
         }
         return {
             attempt,

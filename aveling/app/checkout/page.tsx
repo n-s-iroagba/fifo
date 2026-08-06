@@ -40,7 +40,7 @@ function CheckoutContent() {
         const fetchBankDetails = async () => {
             try {
                 // Fetch the platform-wide bank account configured by admins
-                const bankRes = await apiClient.get('/admin/platform-bank');
+                const bankRes = await apiClient.get('/platform-bank');
                 if (bankRes.data?.data) {
                     setBankDetails(bankRes.data.data);
                 } else {
@@ -91,6 +91,7 @@ function CheckoutContent() {
             await apiClient.post(`/tickets/${ticketId}/submit-receipt`, {
                 receiptReference: receiptRef || `REF-${candidateNumber}-${Date.now()}`,
                 receiptUrl: dummyReceiptUrl,
+                useWallet, // STEP-1.1.17 Wallet Payment Logic
             });
         } catch (err: any) {
             console.error('Failed to submit receipt:', err);
@@ -168,106 +169,109 @@ function CheckoutContent() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-                    {/* STEP-1.1.7: Bank Account Payment Details — fetched live */}
-                    <div className="lg:col-span-7 space-y-6">
-                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-4">
-                            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
-                                <h2 className="text-sm font-extrabold uppercase tracking-wider text-zinc-900 dark:text-white flex items-center gap-2">
-                                    <Building2 className="h-5 w-5 text-[#FFC700]" />
-                                    Bank Account Payment Details
-                                </h2>
-                                <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded">
-                                    DIRECT DEPOSIT
-                                </span>
+                        {/* STEP-1.1.7: Bank Account Payment Details — fetched live */}
+                        {payableAmount > 0 && (
+                            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-4">
+                                <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+                                    <h2 className="text-sm font-extrabold uppercase tracking-wider text-zinc-900 dark:text-white flex items-center gap-2">
+                                        <Building2 className="h-5 w-5 text-[#FFC700]" />
+                                        Bank Account Payment Details
+                                    </h2>
+                                    <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded">
+                                        DIRECT DEPOSIT
+                                    </span>
+                                </div>
+
+                                <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                                    Transfer the exact payable amount using the details below. Use your unique payment reference so we can auto-match your payment.
+                                </p>
+
+                                {bankLoading ? (
+                                    <div className="flex items-center gap-2 text-xs text-zinc-500 py-4">
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        Loading bank details...
+                                    </div>
+                                ) : bankDetails && (
+                                    <div className="space-y-3 bg-zinc-50 dark:bg-zinc-950 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-mono">
+                                        <div className="flex justify-between items-center py-1.5 border-b border-zinc-200/60 dark:border-zinc-800">
+                                            <span className="text-zinc-500 font-sans font-bold">Bank Name:</span>
+                                            <span className="font-extrabold text-zinc-900 dark:text-white">{bankDetails.bankName}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1.5 border-b border-zinc-200/60 dark:border-zinc-800">
+                                            <span className="text-zinc-500 font-sans font-bold">BSB:</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-black text-[#FFC700] text-sm">{bankDetails.bsb}</span>
+                                                <button onClick={() => handleCopy(bankDetails.bsb, 'bsb')} className="text-zinc-400 hover:text-zinc-900 dark:hover:text-white">
+                                                    <Copy className="h-3.5 w-3.5" />
+                                                </button>
+                                                {copiedField === 'bsb' && <span className="text-emerald-600 text-[10px] font-bold">Copied!</span>}
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1.5 border-b border-zinc-200/60 dark:border-zinc-800">
+                                            <span className="text-zinc-500 font-sans font-bold">Account Number:</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-black text-[#FFC700] text-sm">{bankDetails.accountNumber}</span>
+                                                <button onClick={() => handleCopy(bankDetails.accountNumber, 'account')} className="text-zinc-400 hover:text-zinc-900 dark:hover:text-white">
+                                                    <Copy className="h-3.5 w-3.5" />
+                                                </button>
+                                                {copiedField === 'account' && <span className="text-emerald-600 text-[10px] font-bold">Copied!</span>}
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1.5 border-b border-zinc-200/60 dark:border-zinc-800">
+                                            <span className="text-zinc-500 font-sans font-bold">Account Name:</span>
+                                            <span className="font-bold text-zinc-900 dark:text-white">{bankDetails.accountName}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1.5 bg-amber-50 dark:bg-amber-950/60 px-3 rounded-lg border border-amber-300">
+                                            <span className="text-amber-900 dark:text-amber-200 font-sans font-extrabold">Payment Reference:</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-black text-amber-900 dark:text-amber-300 text-sm">AVL-REF-{candidateNumber}</span>
+                                                <button onClick={() => handleCopy(`AVL-REF-${candidateNumber}`, 'ref')} className="text-amber-700 hover:text-amber-900">
+                                                    <Copy className="h-3.5 w-3.5" />
+                                                </button>
+                                                {copiedField === 'ref' && <span className="text-emerald-600 text-[10px] font-bold">Copied!</span>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-
-                            <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                                Transfer the exact payable amount using the details below. Use your unique payment reference so we can auto-match your payment.
-                            </p>
-
-                            {bankLoading ? (
-                                <div className="flex items-center gap-2 text-xs text-zinc-500 py-4">
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Loading bank details...
-                                </div>
-                            ) : bankDetails && (
-                                <div className="space-y-3 bg-zinc-50 dark:bg-zinc-950 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-mono">
-                                    <div className="flex justify-between items-center py-1.5 border-b border-zinc-200/60 dark:border-zinc-800">
-                                        <span className="text-zinc-500 font-sans font-bold">Bank Name:</span>
-                                        <span className="font-extrabold text-zinc-900 dark:text-white">{bankDetails.bankName}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center py-1.5 border-b border-zinc-200/60 dark:border-zinc-800">
-                                        <span className="text-zinc-500 font-sans font-bold">BSB:</span>
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-black text-[#FFC700] text-sm">{bankDetails.bsb}</span>
-                                            <button onClick={() => handleCopy(bankDetails.bsb, 'bsb')} className="text-zinc-400 hover:text-zinc-900 dark:hover:text-white">
-                                                <Copy className="h-3.5 w-3.5" />
-                                            </button>
-                                            {copiedField === 'bsb' && <span className="text-emerald-600 text-[10px] font-bold">Copied!</span>}
-                                        </div>
-                                    </div>
-                                    <div className="flex justify-between items-center py-1.5 border-b border-zinc-200/60 dark:border-zinc-800">
-                                        <span className="text-zinc-500 font-sans font-bold">Account Number:</span>
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-black text-[#FFC700] text-sm">{bankDetails.accountNumber}</span>
-                                            <button onClick={() => handleCopy(bankDetails.accountNumber, 'account')} className="text-zinc-400 hover:text-zinc-900 dark:hover:text-white">
-                                                <Copy className="h-3.5 w-3.5" />
-                                            </button>
-                                            {copiedField === 'account' && <span className="text-emerald-600 text-[10px] font-bold">Copied!</span>}
-                                        </div>
-                                    </div>
-                                    <div className="flex justify-between items-center py-1.5 border-b border-zinc-200/60 dark:border-zinc-800">
-                                        <span className="text-zinc-500 font-sans font-bold">Account Name:</span>
-                                        <span className="font-bold text-zinc-900 dark:text-white">{bankDetails.accountName}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center py-1.5 bg-amber-50 dark:bg-amber-950/60 px-3 rounded-lg border border-amber-300">
-                                        <span className="text-amber-900 dark:text-amber-200 font-sans font-extrabold">Payment Reference:</span>
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-black text-amber-900 dark:text-amber-300 text-sm">AVL-REF-{candidateNumber}</span>
-                                            <button onClick={() => handleCopy(`AVL-REF-${candidateNumber}`, 'ref')} className="text-amber-700 hover:text-amber-900">
-                                                <Copy className="h-3.5 w-3.5" />
-                                            </button>
-                                            {copiedField === 'ref' && <span className="text-emerald-600 text-[10px] font-bold">Copied!</span>}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                        )}
 
                         {/* STEP-1.1.9 & 1.1.10: Upload Payment Receipt */}
                         <form onSubmit={handlePaymentReceiptSubmit} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-4">
                             <h2 className="text-sm font-extrabold uppercase tracking-wider text-zinc-900 dark:text-white flex items-center gap-2">
-                                <Upload className="h-5 w-5 text-[#FFC700]" />
-                                Upload Payment Receipt
+                                {payableAmount === 0 ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <Upload className="h-5 w-5 text-[#FFC700]" />}
+                                {payableAmount === 0 ? 'Full Payment Covered by Wallet' : 'Upload Payment Receipt'}
                             </h2>
 
-                            <div className="space-y-3">
-                                <div>
-                                    <label className="block text-xs font-extrabold text-zinc-700 dark:text-zinc-300 mb-1">
-                                        Bank Transfer Reference / Transaction ID:
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={receiptRef}
-                                        onChange={(e) => setReceiptRef(e.target.value)}
-                                        placeholder="e.g. N10928841-XYZ or Bank Reference Code"
-                                        className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 p-2.5 rounded-xl text-xs font-bold text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#FFC700]"
-                                        required
-                                    />
-                                </div>
+                            {payableAmount > 0 && (
+                                <div className="space-y-3">
+                                    <div>
+                                        <label className="block text-xs font-extrabold text-zinc-700 dark:text-zinc-300 mb-1">
+                                            Bank Transfer Reference / Transaction ID:
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={receiptRef}
+                                            onChange={(e) => setReceiptRef(e.target.value)}
+                                            placeholder="e.g. N10928841-XYZ or Bank Reference Code"
+                                            className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 p-2.5 rounded-xl text-xs font-bold text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#FFC700]"
+                                            required={payableAmount > 0}
+                                        />
+                                    </div>
 
-                                <div>
-                                    <label className="block text-xs font-extrabold text-zinc-700 dark:text-zinc-300 mb-1">
-                                        Attach Payment Receipt (Image or PDF):
-                                    </label>
-                                    <input
-                                        type="file"
-                                        accept="image/*,.pdf"
-                                        onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
-                                        className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 p-2 rounded-xl text-xs text-zinc-600 dark:text-zinc-400"
-                                    />
+                                    <div>
+                                        <label className="block text-xs font-extrabold text-zinc-700 dark:text-zinc-300 mb-1">
+                                            Attach Payment Receipt (Image or PDF):
+                                        </label>
+                                        <input
+                                            type="file"
+                                            accept="image/*,.pdf"
+                                            onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
+                                            className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 p-2 rounded-xl text-xs text-zinc-600 dark:text-zinc-400"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             <button
                                 type="submit"
@@ -275,7 +279,9 @@ function CheckoutContent() {
                                 className="w-full inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black font-extrabold text-xs py-3.5 rounded-xl hover:bg-yellow-400 transition-all uppercase tracking-wider shadow-md disabled:opacity-50"
                             >
                                 <CheckCircle2 className="h-4 w-4" />
-                                {submittingReceipt ? 'Uploading Receipt...' : 'I Have Made Payment — Submit Receipt'}
+                                {submittingReceipt 
+                                    ? (payableAmount === 0 ? 'Confirming...' : 'Uploading Receipt...') 
+                                    : (payableAmount === 0 ? 'Confirm Wallet Payment' : 'I Have Made Payment — Submit Receipt')}
                             </button>
                         </form>
                     </div>

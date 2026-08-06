@@ -593,26 +593,78 @@ export class TicketService {
         return { username, password: rawPassword, credentialsGenerated: true };
     }
 
-    // Candidate submits payment receipt
-    public async submitReceipt(ticketId: number, userId: number, data: { receiptReference?: string; receiptUrl?: string }) {
-        const ticket = await Ticket.findOne({ where: { id: ticketId, userId } });
+    // Candidate submits payment receipt (or pays via wallet)
+    public async submitReceipt(ticketId: number, userId: number, data: { receiptReference?: string; receiptUrl?: string; useWallet?: boolean }) {
+        const ticket = await Ticket.findOne({ where: { id: ticketId, userId }, include: [{ model: User }] });
         if (!ticket) throw new Error('TICKET_NOT_FOUND');
+        const user = (ticket as any).User as User;
+        if (!user) throw new Error('USER_NOT_FOUND');
 
-        await ticket.update({
-            paymentStatus: 'receipt_submitted',
-            receiptReference: data.receiptReference || null,
-            receiptUrl: data.receiptUrl || null,
-        });
+        let coursePrice = ticket.subsidisedPrice ?? ticket.purchasePrice ?? 0;
+        let isFullyCovered = false;
 
-        // Notify admins (fire-and-forget)
-        const { User: UserModel } = require('../models');
-        const admins = await UserModel.findAll({ where: { role: 'admin' } });
-        for (const admin of admins) {
+        if (data.useWallet && user.walletBalance && user.walletBalance > 0) {
+            if (user.walletBalance >= coursePrice) {
+                // Wallet fully covers the price
+                await user.update({ walletBalance: user.walletBalance - coursePrice });
+                isFullyCovered = true;
+            } else {
+                // Wallet partially covers the price
+                coursePrice = coursePrice - user.walletBalance; // Remaining balance to pay via bank
+                await user.update({ walletBalance: 0 });
+            }
+        }
+
+        if (isFullyCovered) {
+            // Auto-verify payment
+            await ticket.update({
+                paymentStatus: 'payment_verified',
+                courseAccessGranted: true,
+                receiptReference: 'WALLET_PAYMENT',
+            });
+
+            // Unlock course enrollment
+            if (ticket.courseId) {
+                const { Enrollment } = require('../models');
+                const existingEnrollment = await Enrollment.findOne({
+                    where: { userId: user.id, courseId: ticket.courseId }
+                });
+                if (existingEnrollment) {
+                    await existingEnrollment.update({ paymentStatus: 'Paid', status: 'Active' });
+                } else {
+                    await Enrollment.create({
+                        userId: user.id,
+                        courseId: ticket.courseId,
+                        paymentStatus: 'Paid',
+                        status: 'Active',
+                        amountPaid: ticket.subsidisedPrice ?? ticket.purchasePrice
+                    });
+                }
+            }
+
             await notificationService.sendNotification(
-                admin.id,
-                'Payment Receipt Submitted',
-                `Candidate has submitted a payment receipt for ${ticket.ticketType} (Ticket #${ticket.id}). Please verify and unlock course access.`
+                user.id,
+                'Payment Verified via Wallet',
+                `Your payment for ${ticket.ticketType} was fully covered by your wallet balance. Course unlocked!`
             );
+        } else {
+            // Standard bank receipt submission
+            await ticket.update({
+                paymentStatus: 'receipt_submitted',
+                receiptReference: data.receiptReference || null,
+                receiptUrl: data.receiptUrl || null,
+            });
+
+            // Notify admins
+            const { User: UserModel } = require('../models');
+            const admins = await UserModel.findAll({ where: { role: 'admin' } });
+            for (const admin of admins) {
+                await notificationService.sendNotification(
+                    admin.id,
+                    'Payment Receipt Submitted',
+                    `Candidate submitted a receipt for ${ticket.ticketType} (Ticket #${ticket.id}). Please verify.`
+                );
+            }
         }
 
         return ticket;

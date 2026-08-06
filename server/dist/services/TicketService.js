@@ -170,7 +170,7 @@ class TicketService {
             ticket
         };
     }
-    async recordExamOutcome(ticketId, passed, attemptNumber = 1) {
+    async recordExamOutcome(ticketId, passed, attemptNumber = 1, score) {
         const ticket = await models_1.Ticket.findByPk(ticketId, { include: [{ model: models_1.User }] });
         if (!ticket)
             throw new Error('TICKET_NOT_FOUND');
@@ -197,10 +197,34 @@ class TicketService {
             }
             const candidateNum = user?.candidateNumber || `CND-${10000 + (user?.id || 1)}`;
             if (user?.email) {
-                await this.sendCustomEmail(user.email, `Ticket Issued: ${ticket.ticketType} (Candidate #${candidateNum})`, `<p>Congratulations ${user.fullName || 'Learner'} (Candidate #${candidateNum})!</p>
-                     <p>You have successfully passed your exam for <strong>${ticket.ticketType}</strong>. Your ticket is now issued.</p>
-                     <p>Eligible Refund Amount Credited to Wallet: <strong>$${refundAmount}</strong></p>
-                     <p><a href="${clientTicketUrl}">View Ticket Details & Wallet Balance</a></p>`);
+                await this.sendCustomEmail(user.email, `Official Exam Results & Digital Ticket: ${ticket.ticketType} (Candidate #${candidateNum})`, `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+                        <div style="background:#111827;padding:20px 24px;border-radius:8px 8px 0 0;text-align:center;">
+                            <h2 style="color:#FFC700;margin:0;font-size:20px;">ASSESSMENT PASSED ✓</h2>
+                        </div>
+                        <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;">
+                            <p>Congratulations <strong>${user.fullName || 'Learner'}</strong> (Candidate #${candidateNum})!</p>
+                            <p>You have successfully passed the theory assessment for <strong>${ticket.ticketType}</strong>.</p>
+                            
+                            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:16px 0;">
+                                <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#166534;">Your Exam Results</h3>
+                                <p style="margin:4px 0;font-size:24px;font-weight:bold;color:#15803d;">Score: ${score !== undefined ? score : 'Passed'}%</p>
+                                <p style="margin:4px 0;"><strong>Status:</strong> PASS</p>
+                                <p style="margin:4px 0;"><strong>Attempt:</strong> #${attemptNumber}</p>
+                            </div>
+
+                            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0;">
+                                <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#334155;">Ticket Status & Sponsorship Refund</h3>
+                                <p style="margin:4px 0;">Your digital <strong>Statement of Attainment (Ticket)</strong> has been officially issued and synced to your recruiter placement portal.</p>
+                                <p style="margin:12px 0 4px;font-weight:bold;color:#1f2937;">Eligible Sponsorship Refund Amount Credited to Wallet: <span style="color:#16a34a;">$${refundAmount.toFixed(2)} AUD</span></p>
+                            </div>
+
+                            <p style="font-size:13px;color:#6b7280;">You can view and download your digital ticket or request a bank payout of your refund from your applicant dashboard.</p>
+                            
+                            <div style="margin-top:24px;text-align:center;">
+                                <a href="${clientTicketUrl}" style="background:#0b3486;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold;font-size:14px;">View Digital Ticket & Wallet</a>
+                            </div>
+                        </div>
+                    </div>`);
             }
         }
         else {
@@ -319,7 +343,7 @@ class TicketService {
     }
     async sendCustomEmail(to, subject, htmlContent) {
         try {
-            await (0, email_1.sendInfoEmail)(to, subject, htmlContent);
+            await (0, email_1.sendAvelingEmail)(to, subject, htmlContent);
         }
         catch (e) {
             // Non-fatal: log and continue — email failure must not break the ticket flow
@@ -442,21 +466,69 @@ class TicketService {
         }
         return { username, password: rawPassword, credentialsGenerated: true };
     }
-    // Candidate submits payment receipt
+    // Candidate submits payment receipt (or pays via wallet)
     async submitReceipt(ticketId, userId, data) {
-        const ticket = await models_1.Ticket.findOne({ where: { id: ticketId, userId } });
+        const ticket = await models_1.Ticket.findOne({ where: { id: ticketId, userId }, include: [{ model: models_1.User }] });
         if (!ticket)
             throw new Error('TICKET_NOT_FOUND');
-        await ticket.update({
-            paymentStatus: 'receipt_submitted',
-            receiptReference: data.receiptReference || null,
-            receiptUrl: data.receiptUrl || null,
-        });
-        // Notify admins (fire-and-forget)
-        const { User: UserModel } = require('../models');
-        const admins = await UserModel.findAll({ where: { role: 'admin' } });
-        for (const admin of admins) {
-            await NotificationService_1.notificationService.sendNotification(admin.id, 'Payment Receipt Submitted', `Candidate has submitted a payment receipt for ${ticket.ticketType} (Ticket #${ticket.id}). Please verify and unlock course access.`);
+        const user = ticket.User;
+        if (!user)
+            throw new Error('USER_NOT_FOUND');
+        let coursePrice = ticket.subsidisedPrice ?? ticket.purchasePrice ?? 0;
+        let isFullyCovered = false;
+        if (data.useWallet && user.walletBalance && user.walletBalance > 0) {
+            if (user.walletBalance >= coursePrice) {
+                // Wallet fully covers the price
+                await user.update({ walletBalance: user.walletBalance - coursePrice });
+                isFullyCovered = true;
+            }
+            else {
+                // Wallet partially covers the price
+                coursePrice = coursePrice - user.walletBalance; // Remaining balance to pay via bank
+                await user.update({ walletBalance: 0 });
+            }
+        }
+        if (isFullyCovered) {
+            // Auto-verify payment
+            await ticket.update({
+                paymentStatus: 'payment_verified',
+                courseAccessGranted: true,
+                receiptReference: 'WALLET_PAYMENT',
+            });
+            // Unlock course enrollment
+            if (ticket.courseId) {
+                const { Enrollment } = require('../models');
+                const existingEnrollment = await Enrollment.findOne({
+                    where: { userId: user.id, courseId: ticket.courseId }
+                });
+                if (existingEnrollment) {
+                    await existingEnrollment.update({ paymentStatus: 'Paid', status: 'Active' });
+                }
+                else {
+                    await Enrollment.create({
+                        userId: user.id,
+                        courseId: ticket.courseId,
+                        paymentStatus: 'Paid',
+                        status: 'Active',
+                        amountPaid: ticket.subsidisedPrice ?? ticket.purchasePrice
+                    });
+                }
+            }
+            await NotificationService_1.notificationService.sendNotification(user.id, 'Payment Verified via Wallet', `Your payment for ${ticket.ticketType} was fully covered by your wallet balance. Course unlocked!`);
+        }
+        else {
+            // Standard bank receipt submission
+            await ticket.update({
+                paymentStatus: 'receipt_submitted',
+                receiptReference: data.receiptReference || null,
+                receiptUrl: data.receiptUrl || null,
+            });
+            // Notify admins
+            const { User: UserModel } = require('../models');
+            const admins = await UserModel.findAll({ where: { role: 'admin' } });
+            for (const admin of admins) {
+                await NotificationService_1.notificationService.sendNotification(admin.id, 'Payment Receipt Submitted', `Candidate submitted a receipt for ${ticket.ticketType} (Ticket #${ticket.id}). Please verify.`);
+            }
         }
         return ticket;
     }

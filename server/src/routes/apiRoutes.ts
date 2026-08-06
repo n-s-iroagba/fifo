@@ -198,6 +198,9 @@ router.post('/admin/applications/:id/tickets', ...adminMW, ticketController.admi
 router.post('/admin/tickets/:id/generate-credentials', ...adminMW, ticketController.adminGenerateAvelingCredentials.bind(ticketController));
 router.post('/admin/tickets/:id/validate-payment', ...adminMW, ticketController.adminValidatePayment.bind(ticketController));
 router.post('/admin/tickets/:id/approve-exam', ...adminMW, ticketController.adminApproveExamResult.bind(ticketController));
+// Expose platform bank to public/applicants (for checkout on Aveling)
+router.get('/platform-bank', ticketController.getPlatformBank.bind(ticketController));
+
 router.get('/admin/platform-bank', ...adminMW, ticketController.getPlatformBank.bind(ticketController));
 router.put('/admin/platform-bank', ...adminMW, ticketController.updatePlatformBank.bind(ticketController));
 

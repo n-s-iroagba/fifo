@@ -267,6 +267,11 @@ function MailComposerContent() {
                                     title: 'Aveling Course Onboarding', 
                                     subject: 'Getting Started with Your Aveling Ticket Courses', 
                                     body: '<p>Dear Applicant,</p><p>Welcome to the Aveling Training Portal!</p><p>To get started with your certification courses, please follow these steps:</p><ol><li>Log in using your provided Aveling credentials.</li><li>Navigate to the "My Courses" section to view your assigned training.</li><li>Complete the theory modules and any associated assessments.</li><li>If applicable, book your practical assessment slot.</li></ol><p>Your Aveling Credentials:<br><strong>Username:</strong> [Insert Username]<br><strong>Password:</strong> [Insert Password]</p><p>If you encounter any issues, please reply to this email for support.</p><p>Yours sincerely,<br>Aveling LMS Support.</p>' 
+                                },
+                                {
+                                    title: 'Ticket Exam Passed',
+                                    subject: 'Congratulations! You Have Passed Your Ticket Exam',
+                                    body: '<p>Dear Applicant,</p><p>Congratulations! We are thrilled to inform you that you have successfully passed your recent ticket examination.</p><p>If your ticket was sponsored, the applicable refund has been automatically credited directly to your digital wallet.</p><p>You can now proceed to view your updated certification status and access your newly issued ticket from your dashboard.</p><p>Keep up the great work!</p><p>Yours sincerely,<br>Aveling LMS / Blue Collar Recruitment.</p>'
                                 }
                             ].map((tmpl, i) => (
                                 <button
