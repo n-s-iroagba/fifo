@@ -46,7 +46,7 @@ function RegisterContent() {
         resolver: zodResolver(registerSchema),
     });
 
-    const registerMutation = useApiMutation<RegisterForm, any>('post', '/auth/register', {
+    const registerMutation = useApiMutation<RegisterForm & { redirectUrl?: string }, any>('post', '/auth/register', {
         onSuccess: (data: any, variables) => {
             setRegisteredEmail(variables.email);
             setIsRegistered(true);
@@ -56,7 +56,7 @@ function RegisterContent() {
         }
     });
 
-    const resendMutation = useApiMutation<{ email: string }, any>('post', '/auth/resend-verification', {
+    const resendMutation = useApiMutation<{ email: string; redirectUrl?: string }, any>('post', '/auth/resend-verification', {
         onSuccess: () => {
             console.log('Verification link resent to ' + registeredEmail);
         },
@@ -67,13 +67,13 @@ function RegisterContent() {
 
     const handleResend = () => {
         if (registeredEmail) {
-            resendMutation.mutate({ email: registeredEmail });
+            resendMutation.mutate({ email: registeredEmail, redirectUrl: redirectParam || undefined });
         }
     };
 
     const onSubmit = (data: RegisterForm) => {
         setRegError(null);
-        registerMutation.mutate(data);
+        registerMutation.mutate({ ...data, redirectUrl: redirectParam || undefined });
     };
 
     return (

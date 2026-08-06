@@ -73,9 +73,33 @@ export default function JobDetailPage() {
     if (!job) return (
         <div className="bg-white min-h-screen flex flex-col font-sans">
             <PublicHeader />
-            <main className="flex-1 pt-32 pb-16 text-center px-6">
-                <h1 className="text-xl font-bold text-blue-900 mb-4">Job Not Found</h1>
-                <Link href="/jobs" className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:text-blue-900">Return to Listings</Link>
+            <main className="flex-1 pt-32 pb-16 text-center px-6 max-w-[600px] mx-auto w-full flex flex-col items-center justify-center space-y-8">
+                <div className="w-20 h-20 bg-blue-50 text-blue-900 rounded-3xl flex items-center justify-center mx-auto shadow-xl shadow-blue-900/5">
+                    <span className="material-symbols-outlined text-4xl">search_off</span>
+                </div>
+                <div className="space-y-4">
+                    <h1 className="text-3xl font-black text-blue-900 uppercase tracking-tight">Position Unavailable</h1>
+                    <p className="text-[12px] font-bold text-blue-500 uppercase tracking-widest leading-relaxed">
+                        This specific role is no longer active or could not be found. However, our requirements are constantly evolving.
+                    </p>
+                </div>
+                <div className="w-full space-y-4 pt-4 border-t border-blue-50">
+                    <button 
+                        onClick={() => {
+                            if (!user) {
+                                router.push(`/register?redirect=/expression-of-interest`);
+                            } else {
+                                router.push(`/expression-of-interest`);
+                            }
+                        }}
+                        className="w-full py-4 bg-blue-900 text-white rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-blue-900/10 hover:bg-blue-800 transition-all active:scale-[0.98]"
+                    >
+                        Register Expression of Interest
+                    </button>
+                    <Link href="/jobs" className="block w-full py-4 bg-white border-2 border-blue-100 text-blue-900 rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] hover:bg-blue-50 transition-all active:scale-[0.98]">
+                        Return to Listings
+                    </Link>
+                </div>
             </main>
             <PublicFooter />
         </div>

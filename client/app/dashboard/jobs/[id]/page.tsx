@@ -78,11 +78,18 @@ export default function JobDetailPage() {
     );
 
     if (!job) return (
-        <div className="py-20 text-center bg-red-50 rounded-[3rem] border border-red-100 mt-12">
-            <span className="material-symbols-outlined text-red-200 text-6xl mb-6">error</span>
-            <h2 className="text-xl font-bold text-red-900 uppercase tracking-widest">Listing Not Found</h2>
-            <p className="text-[10px] font-bold text-red-400 uppercase tracking-widest mt-2">The requested job listing does not exist in our active listings.</p>
-            <Link href="/dashboard/jobs" className="inline-block mt-8 text-[10px] font-black text-red-900 uppercase tracking-[0.3em] underline underline-offset-8">Return to Jobs</Link>
+        <div className="py-20 text-center bg-blue-50 rounded-[3rem] border border-blue-100 mt-12 flex flex-col items-center">
+            <span className="material-symbols-outlined text-blue-300 text-6xl mb-6">search_off</span>
+            <h2 className="text-xl font-bold text-blue-900 uppercase tracking-widest">Listing Unavailable</h2>
+            <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mt-2 mb-8 max-w-sm">
+                The requested job listing does not exist or is no longer active. However, our requirements are constantly evolving.
+            </p>
+            <Link href="/expression-of-interest" className="bg-blue-900 text-white px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all">
+                Register Expression of Interest
+            </Link>
+            <Link href="/dashboard/jobs" className="inline-block mt-6 text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] hover:text-blue-900 transition-all">
+                Return to Jobs
+            </Link>
         </div>
     );
 

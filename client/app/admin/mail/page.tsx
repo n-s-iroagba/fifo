@@ -243,9 +243,31 @@ function MailComposerContent() {
                         <h3 className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-4 pb-3 border-b border-blue-50">Quick Templates</h3>
                         <div className="space-y-2">
                             {[
-                                { title: 'Interview Invite', subject: 'Next Steps: Interview Scheduling', body: '<p>Dear Applicant,</p><p>We\'d love to schedule a time to speak with you regarding your application. Please follow the link below to select a time slot.</p>' },
-                                { title: 'Action Required', subject: 'Important: Action Required for Application', body: '<p>Dear Applicant,</p><p>We are reviewing your profile but need some additional information before proceeding. Please log in to complete the pending requirements.</p>' },
-                                { title: 'Payment Update', subject: 'Payment Verification Update', body: '<p>Dear Applicant,</p><p>Your recent payment proof submission has been reviewed. See your dashboard for the detailed status.</p>' }
+                                { 
+                                    title: 'Application Review Success', 
+                                    subject: 'Update: Application Successfully Reviewed', 
+                                    body: '<p>Dear Applicant,</p><p>Congratulations!</p><p>Welcome to the BlueCollar recruitment ecosystem.</p><p>Your application for the applied role(s) has been successfully reviewed.</p><p>And we are pleased to inform you that you can proceed to the next stage of the hiring process.</p><p>Sequel to this mail, we shall send you a contract mail, kindly read the mail and its attached contract document carefully when received, and reply within the stipulated timeframe, if willing to comply to the contract terms.</p><p>Once again congratulations!</p><p>Yours sincerely,<br>Gary Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>' 
+                                },
+                                { 
+                                    title: 'Contract Email', 
+                                    subject: 'Action Required: Your Employment Contract', 
+                                    body: '<p>Dear Applicant,</p><p>Following your successful application review, please find attached your employment contract.</p><p>Kindly read the attached contract document carefully, and reply to this email within the stipulated timeframe to confirm your acceptance of the contract terms.</p><p>We look forward to welcoming you aboard!</p><p>Yours sincerely,<br>Gary Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>' 
+                                },
+                                { 
+                                    title: 'Invite: Ticket Sponsorship', 
+                                    subject: 'Invitation to Apply for Ticket Sponsorship', 
+                                    body: '<p>Dear Applicant,</p><p>We noted from your profile that you are currently missing some required certifications (Tickets) for your applied role.</p><p>We are pleased to invite you to apply for our Ticket Sponsorship program. This program is designed to assist you in obtaining the necessary qualifications through our training partner.</p><p>Please log in to your dashboard to initiate your sponsorship application.</p><p>Yours sincerely,<br>Blue Collar Recruitment.</p>' 
+                                },
+                                { 
+                                    title: 'Sponsorship Approved', 
+                                    subject: 'Ticket Sponsorship Approved - Your Aveling Credentials', 
+                                    body: '<p>Dear Applicant,</p><p>Congratulations! Your Ticket Sponsorship application has been approved.</p><p>Below are your credentials to access the Aveling LMS portal to complete your required courses:</p><p><strong>Username:</strong> [Insert Username/Email]<br><strong>Password:</strong> [Insert Password]</p><p>Please log in as soon as possible to begin your certification journey.</p><p>Yours sincerely,<br>Blue Collar Recruitment.</p>' 
+                                },
+                                { 
+                                    title: 'Aveling Course Onboarding', 
+                                    subject: 'Getting Started with Your Aveling Ticket Courses', 
+                                    body: '<p>Dear Applicant,</p><p>Welcome to the Aveling Training Portal!</p><p>To get started with your certification courses, please follow these steps:</p><ol><li>Log in using your provided Aveling credentials.</li><li>Navigate to the "My Courses" section to view your assigned training.</li><li>Complete the theory modules and any associated assessments.</li><li>If applicable, book your practical assessment slot.</li></ol><p>Your Aveling Credentials:<br><strong>Username:</strong> [Insert Username]<br><strong>Password:</strong> [Insert Password]</p><p>If you encounter any issues, please reply to this email for support.</p><p>Yours sincerely,<br>Aveling LMS Support.</p>' 
+                                }
                             ].map((tmpl, i) => (
                                 <button
                                     key={i}

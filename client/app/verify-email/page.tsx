@@ -15,7 +15,7 @@ function VerifyEmailContent() {
     const [email, setEmail] = useState('');
     const [resendStatus, setResendStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-    const rawRedirect = searchParams.get('redirect');
+    const rawRedirect = searchParams.get('returnTo') || searchParams.get('redirect');
     const redirectParam = rawRedirect
         ? (rawRedirect.startsWith('/jobs/') ? rawRedirect.replace('/jobs/', '/dashboard/jobs/') : rawRedirect)
         : null;

@@ -8,6 +8,8 @@ import { useApiMutation, useApiQuery } from '@/lib/hooks';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+import { useAuth } from '@/contexts/AuthContext';
+
 const eoiSchema = z.object({
     roles: z.array(z.string()).min(1, 'Select at least one role'),
     skills: z.array(z.string()).min(1, 'Add at least one core skill'),
@@ -23,9 +25,20 @@ type EOIForm = z.infer<typeof eoiSchema>;
 
 export default function ExpressionOfInterestPage() {
     const router = useRouter();
+    const { user, isLoading: authLoading } = useAuth();
     const [success, setSuccess] = useState(false);
 
-    const { data: existingInterest, isLoading } = useApiQuery<any>(['interests', 'me'], '/interests/me');
+    useEffect(() => {
+        if (!authLoading && !user) {
+            router.push('/login?redirect=/expression-of-interest');
+        }
+    }, [user, authLoading, router]);
+
+    const { data: existingInterest, isLoading: isInterestLoading } = useApiQuery<any>(
+        ['interests', 'me'],
+        '/interests/me',
+        { enabled: !!user }
+    );
 
     const { register, control, handleSubmit, formState: { errors }, reset } = useForm<EOIForm>({
         resolver: zodResolver(eoiSchema),
@@ -75,12 +88,16 @@ export default function ExpressionOfInterestPage() {
         }
     };
 
-    if (isLoading) {
+    if (authLoading || isInterestLoading) {
         return (
             <div className="min-h-screen bg-white flex items-center justify-center">
                 <div className="w-12 h-12 border-4 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
+    }
+
+    if (!user) {
+        return null; // Will redirect via useEffect
     }
 
     if (success) {

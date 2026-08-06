@@ -185,6 +185,28 @@ export class ApplicationService {
                 `
             ).catch(err => console.error('[ApplicationService] Admin notification failed:', err));
 
+            // Fetch user for applicant notification
+            const { userRepository } = require('../repositories/UserRepository');
+            const user = await userRepository.findById(userId, t);
+            
+            if (user && user.email) {
+                const applicantSubject = `Application Received: ${job.title}`;
+                const applicantContent = `
+                    <p>Dear ${user.fullName},</p>
+                    <p>Thank you for submitting your application for the <strong>${job.title}</strong> position.</p>
+                    <p>We have successfully received your details and our recruitment team will review your application shortly. You can expect to hear back from us with an update on your application status within 24 hours.</p>
+                    <p>You can track the progress of your application at any time via your dashboard.</p>
+                    <div class="cta-block">
+                        <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/applications" class="button">View Applications</a>
+                    </div>
+                `;
+                await sendInfoEmail(
+                    user.email,
+                    applicantSubject,
+                    applicantContent
+                ).catch(err => console.error('[ApplicationService] Applicant acknowledgment email failed:', err));
+            }
+
             await t.commit();
             return applicationRepository.findById(newApp.id);
         } catch (error) {
