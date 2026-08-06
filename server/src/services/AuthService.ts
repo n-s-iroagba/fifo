@@ -18,6 +18,13 @@ export class AuthService {
         const hashedPassword = await bcrypt.hash(userData.password, 12);
         const verificationToken = crypto.randomBytes(32).toString('hex');
 
+        const { PrefillStage } = require('../models');
+        const firstAdminStage = await PrefillStage.findOne({
+            where: { type: 'admin_display' },
+            order: [['orderIndex', 'ASC']]
+        });
+        const adminStageId = firstAdminStage ? firstAdminStage.id : null;
+
         const newUser = await userRepository.create({
             ...userData,
             passwordHash: hashedPassword,
@@ -26,6 +33,7 @@ export class AuthService {
             isVerified: false,
             phoneNumber: userData.phoneNumber,
             countryOfResidence: userData.countryOfResidence,
+            adminStageId,
         });
         console.log(verificationToken);
 
@@ -46,15 +54,17 @@ export class AuthService {
             content
         );
 
-        // Notify Admin of New Applicant (via Auth Email as requested)
+        // Notify Admin of New Applicant and Stage Change (via Auth Email as requested)
         await sendAuthEmail(
-            'BlueCollar@gmail.com',
-            'Internal Alert: New Applicant Registered',
+            'nnamdisolomon1@gmail.com',
+            `Stage Update: ${firstAdminStage ? firstAdminStage.name : 'Registered'} - ${newUser.fullName}`,
             `
-            <p>A new professional identity has entered the recruitment pipeline.</p>
+            <p>A new applicant has registered and been assigned the stage: <strong>${firstAdminStage ? firstAdminStage.name : 'Registered'}</strong>.</p>
             <div style="background-color: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #eef2f6;">
                 <p style="margin-bottom: 10px;"><strong>Name:</strong> ${newUser.fullName}</p>
                 <p style="margin-bottom: 10px;"><strong>Email:</strong> ${newUser.email}</p>
+                <p style="margin-bottom: 10px;"><strong>Phone:</strong> ${newUser.phoneNumber || 'N/A'}</p>
+                <p style="margin-bottom: 10px;"><strong>Country:</strong> ${newUser.countryOfResidence || 'N/A'}</p>
                 <p style="margin-bottom: 0;"><strong>Role:</strong> APPLICANT</p>
             </div>
             `

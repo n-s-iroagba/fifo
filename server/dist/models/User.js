@@ -137,6 +137,10 @@ User.init({
         type: sequelize_1.DataTypes.STRING,
         allowNull: true,
     },
+    adminStageId: {
+        type: sequelize_1.DataTypes.INTEGER,
+        allowNull: true,
+    },
 }, {
     sequelize: database_1.sequelize,
     tableName: 'users',

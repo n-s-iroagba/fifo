@@ -33,6 +33,7 @@ export class User extends Model {
     declare accountName: string | null;
     declare avelingUsername: string | null;
     declare avelingPassword: string | null;
+    declare adminStageId: number | null;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 }
@@ -165,6 +166,10 @@ User.init({
     },
     avelingPassword: {
         type: DataTypes.STRING,
+        allowNull: true,
+    },
+    adminStageId: {
+        type: DataTypes.INTEGER,
         allowNull: true,
     },
 }, {

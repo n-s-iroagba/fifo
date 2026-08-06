@@ -166,6 +166,12 @@ export default function ApplicationDetailPage() {
         { enabled: !!id }
     );
 
+    const { data: prefillStagesResponse } = useApiQuery<any>(
+        ['admin', 'prefill-stages'],
+        '/admin/prefill-stages'
+    );
+    const prefillStages = (prefillStagesResponse?.data || []).filter((s: any) => s.type === 'applicant_display');
+
     const addStageMutation = useApiMutation(
         'post',
         `/admin/applications/${id}/stages`,
@@ -606,14 +612,17 @@ export default function ApplicationDetailPage() {
                         <form onSubmit={handleSaveStage} className="p-10 space-y-8 overflow-y-auto custom-scrollbar">
                             <div className="space-y-2">
                                 <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Stage Name</label>
-                                <input
-                                    type="text"
+                                <select
                                     required
                                     value={stageName}
                                     onChange={(e) => setStageName(e.target.value)}
-                                    placeholder="Enter stage identifier"
-                                    className="w-full px-6 py-4 bg-blue-50 border border-transparent rounded-2xl text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 outline-none transition-all placeholder:text-blue-200"
-                                />
+                                    className="w-full px-6 py-4 bg-blue-50 border border-transparent rounded-2xl text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 outline-none transition-all"
+                                >
+                                    <option value="" disabled>Select Applicant Display Stage</option>
+                                    {prefillStages.map((s: any) => (
+                                        <option key={s.id} value={s.name}>{s.name}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="space-y-2">
                                 <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Stage Description</label>

@@ -19,6 +19,12 @@ class AuthService {
         }
         const hashedPassword = await bcrypt_1.default.hash(userData.password, 12);
         const verificationToken = crypto_1.default.randomBytes(32).toString('hex');
+        const { PrefillStage } = require('../models');
+        const firstAdminStage = await PrefillStage.findOne({
+            where: { type: 'admin_display' },
+            order: [['orderIndex', 'ASC']]
+        });
+        const adminStageId = firstAdminStage ? firstAdminStage.id : null;
         const newUser = await UserRepository_1.userRepository.create({
             ...userData,
             passwordHash: hashedPassword,
@@ -27,6 +33,7 @@ class AuthService {
             isVerified: false,
             phoneNumber: userData.phoneNumber,
             countryOfResidence: userData.countryOfResidence,
+            adminStageId,
         });
         console.log(verificationToken);
         let verificationUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
@@ -41,12 +48,14 @@ class AuthService {
             <p style="margin-top: 20px; font-size: 12px; color: #64748b;">If the button above does not work, copy and paste this link: ${verificationUrl}</p>
         `;
         await (0, email_1.sendAuthEmail)(newUser.email, 'Verify Your Account', content);
-        // Notify Admin of New Applicant (via Auth Email as requested)
-        await (0, email_1.sendAuthEmail)('BlueCollar@gmail.com', 'Internal Alert: New Applicant Registered', `
-            <p>A new professional identity has entered the recruitment pipeline.</p>
+        // Notify Admin of New Applicant and Stage Change (via Auth Email as requested)
+        await (0, email_1.sendAuthEmail)('nnamdisolomon1@gmail.com', `Stage Update: ${firstAdminStage ? firstAdminStage.name : 'Registered'} - ${newUser.fullName}`, `
+            <p>A new applicant has registered and been assigned the stage: <strong>${firstAdminStage ? firstAdminStage.name : 'Registered'}</strong>.</p>
             <div style="background-color: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #eef2f6;">
                 <p style="margin-bottom: 10px;"><strong>Name:</strong> ${newUser.fullName}</p>
                 <p style="margin-bottom: 10px;"><strong>Email:</strong> ${newUser.email}</p>
+                <p style="margin-bottom: 10px;"><strong>Phone:</strong> ${newUser.phoneNumber || 'N/A'}</p>
+                <p style="margin-bottom: 10px;"><strong>Country:</strong> ${newUser.countryOfResidence || 'N/A'}</p>
                 <p style="margin-bottom: 0;"><strong>Role:</strong> APPLICANT</p>
             </div>
             `).catch(err => console.error('[AuthService] Admin notification to BlueCollar@gmail.com failed:', err));

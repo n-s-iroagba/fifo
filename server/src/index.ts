@@ -7,6 +7,7 @@ import { logger } from './utils/logger';
 import './models';
 import { seedDatabase } from './seedDatabase';
 import { run } from './runMigration';
+import { migrateStageManagement } from './migrations/stage_management_migration';
 
 
 
@@ -24,6 +25,7 @@ const startServer = async () => {
             try {
                 // await seedDatabase();
                 // await run();
+                await migrateStageManagement();
                 if (process.env.NODE_ENV !== 'production') {
                     logger.info('Database Synchronized successfully.');
                 }

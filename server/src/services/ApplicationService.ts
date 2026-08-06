@@ -132,10 +132,19 @@ export class ApplicationService {
                 currentStageId: null
             }, t);
 
-            // Create singular initial stage: Application Review in Progress
+            const { PrefillStage } = require('../models');
+            const firstApplicantStage = await PrefillStage.findOne({
+                where: { type: 'applicant_display' },
+                order: [['orderIndex', 'ASC']],
+                transaction: t
+            });
+
+            const initialStageName = firstApplicantStage ? firstApplicantStage.name : 'under review';
+            
+            // Create singular initial stage based on prefill
             const initialStage = await jobStageRepository.create({
                 applicationId: newApp.id,
-                name: 'Application Review in Progress',
+                name: initialStageName,
                 description: 'Your application has been received and is currently under review by our recruitment team.',
                 orderPosition: 1,
                 requiresPayment: false,

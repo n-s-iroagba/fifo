@@ -25,6 +25,8 @@ const ExamAttemptController_1 = require("../controllers/ExamAttemptController");
 const PracticalSessionController_1 = require("../controllers/PracticalSessionController");
 const CertificateController_1 = require("../controllers/CertificateController");
 const TicketController_1 = require("../controllers/TicketController");
+const PrefillStageController_1 = require("../controllers/PrefillStageController");
+const prefillStageController = new PrefillStageController_1.PrefillStageController();
 const upload = (0, multer_1.default)({
     storage: multer_1.default.memoryStorage(),
     limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit per file
@@ -159,6 +161,7 @@ router.post('/admin/users/:id/welcome-mail', ...adminMW, AdminController_1.admin
 router.post('/admin/users/:id/eoi-mail', ...adminMW, AdminController_1.adminController.sendEOIMail.bind(AdminController_1.adminController));
 router.put('/admin/users/:id/wallet', ...adminMW, AdminController_1.adminController.updateApplicantWallet.bind(AdminController_1.adminController));
 router.put('/admin/users/:id/aveling-credentials', ...adminMW, AdminController_1.adminController.updateAvelingCredentials.bind(AdminController_1.adminController));
+router.put('/admin/users/:id/admin-stage', ...adminMW, AdminController_1.adminController.updateApplicantAdminStage.bind(AdminController_1.adminController));
 router.put('/admin/applicants/:id/aveling-credentials', ...adminMW, AdminController_1.adminController.updateAvelingCredentials.bind(AdminController_1.adminController));
 // Candidate Portal Lookup & Payment Email Routes
 router.post('/candidate/lookup', rateLimiter_1.apiLimiter, TicketController_1.ticketController.candidateLookup.bind(TicketController_1.ticketController));
@@ -177,6 +180,12 @@ router.post('/admin/tickets/:id/approve-exam', ...adminMW, TicketController_1.ti
 router.get('/platform-bank', TicketController_1.ticketController.getPlatformBank.bind(TicketController_1.ticketController));
 router.get('/admin/platform-bank', ...adminMW, TicketController_1.ticketController.getPlatformBank.bind(TicketController_1.ticketController));
 router.put('/admin/platform-bank', ...adminMW, TicketController_1.ticketController.updatePlatformBank.bind(TicketController_1.ticketController));
+// Prefill Stages
+router.get('/admin/prefill-stages', ...adminMW, prefillStageController.getPrefillStages.bind(prefillStageController));
+router.post('/admin/prefill-stages', ...adminMW, prefillStageController.createPrefillStage.bind(prefillStageController));
+router.put('/admin/prefill-stages/:id', ...adminMW, prefillStageController.updatePrefillStage.bind(prefillStageController));
+router.delete('/admin/prefill-stages/:id', ...adminMW, prefillStageController.deletePrefillStage.bind(prefillStageController));
+router.post('/admin/prefill-stages/reorder', ...adminMW, prefillStageController.reorderPrefillStages.bind(prefillStageController));
 // Candidate receipt submission (authenticated applicant)
 router.post('/tickets/:id/submit-receipt', ...applicantMW, TicketController_1.ticketController.submitReceipt.bind(TicketController_1.ticketController));
 const InterestController_1 = require("../controllers/InterestController");

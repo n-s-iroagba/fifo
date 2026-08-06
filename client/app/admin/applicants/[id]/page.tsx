@@ -13,12 +13,20 @@ export default function AdminApplicantDetailPage() {
     const { id } = useParams();
     const { data: userData, isLoading, refetch: refetchUser } = useApiQuery<any>(['admin', 'applicants', id], `/admin/users/${id}`);
     const { data: appsData, isLoading: isAppsLoading, refetch: refetchApps } = useApiQuery<{ rows: Application[] }>(['admin', 'applicants', id, 'applications'], `/admin/applications?userId=${id}`);
+    
+    const { data: prefillStagesResponse } = useApiQuery<any>(
+        ['admin', 'prefill-stages'],
+        '/admin/prefill-stages'
+    );
+    const prefillStages = (prefillStagesResponse?.data || []).filter((s: any) => s.type === 'admin_display');
+
     const user = userData?.user;
     const applications = appsData?.rows || [];
     
     const [isEditingWallet, setIsEditingWallet] = useState(false);
     const [walletAmount, setWalletAmount] = useState('');
     const [isUpdatingWallet, setIsUpdatingWallet] = useState(false);
+    const [isUpdatingStage, setIsUpdatingStage] = useState(false);
 
     if (isLoading) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-blue-400">Loading Applicant Profile...</div>;
     if (!user) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-red-500">Applicant Record Not Found</div>;
@@ -47,6 +55,23 @@ export default function AdminApplicantDetailPage() {
             alert(e.response?.data?.error || 'Network error while updating wallet.');
         } finally {
             setIsUpdatingWallet(false);
+        }
+    };
+
+    const handleUpdateAdminStage = async (newStageId: string) => {
+        setIsUpdatingStage(true);
+        try {
+            const res = await api.put(`/admin/users/${id}/admin-stage`, { adminStageId: parseInt(newStageId, 10) });
+            if (res.status === 200) {
+                alert('Admin stage updated successfully. Notification sent.');
+                refetchUser();
+            } else {
+                alert('Failed to update stage.');
+            }
+        } catch (e: any) {
+            alert(e.response?.data?.error || 'Network error while updating stage.');
+        } finally {
+            setIsUpdatingStage(false);
         }
     };
 
@@ -115,7 +140,21 @@ export default function AdminApplicantDetailPage() {
                             {user.fullName.charAt(0)}
                         </div>
                         <h2 className="text-xl font-black uppercase tracking-tight text-blue-900 text-center">{user.fullName}</h2>
-                        <span className="mt-2 px-3 py-1 bg-blue-50 text-blue-400 rounded-lg text-[9px] font-black uppercase tracking-widest">APPLICANT STATUS: VERIFIED</span>
+                        
+                        <div className="mt-4 w-full flex flex-col items-center">
+                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-400 mb-2">Admin Display Stage</span>
+                            <select
+                                value={user.adminStageId || ''}
+                                onChange={(e) => handleUpdateAdminStage(e.target.value)}
+                                disabled={isUpdatingStage}
+                                className="w-full px-4 py-2 bg-blue-50 border border-transparent rounded-xl text-xs font-bold text-blue-900 focus:bg-white focus:border-blue-900 outline-none transition-all disabled:opacity-50 text-center uppercase tracking-widest"
+                            >
+                                <option value="" disabled>Select Stage</option>
+                                {prefillStages.map((s: any) => (
+                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                ))}
+                            </select>
+                        </div>
 
                         <div className="w-full mt-10 pt-10 border-t border-blue-50 grid grid-cols-1 gap-6">
                             <DataItem label="Email Address" value={user.email} />

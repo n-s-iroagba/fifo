@@ -9,6 +9,7 @@ const database_1 = require("./config/database");
 const logger_1 = require("./utils/logger");
 // Initializes Associations Mapping
 require("./models");
+const stage_management_migration_1 = require("./migrations/stage_management_migration");
 const PORT = process.env.PORT || 5000;
 const startServer = async () => {
     try {
@@ -19,6 +20,7 @@ const startServer = async () => {
             try {
                 // await seedDatabase();
                 // await run();
+                await (0, stage_management_migration_1.migrateStageManagement)();
                 if (process.env.NODE_ENV !== 'production') {
                     logger_1.logger.info('Database Synchronized successfully.');
                 }

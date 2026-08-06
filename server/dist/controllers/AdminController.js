@@ -393,6 +393,42 @@ class AdminController {
             res.status(status).json({ error: error.message });
         }
     }
+    async updateApplicantAdminStage(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const { adminStageId } = req.body;
+            const { User, PrefillStage } = require('../models');
+            const { sendAuthEmail } = require('../utils/email');
+            const user = await User.findByPk(id);
+            if (!user) {
+                res.status(404).json({ success: false, message: 'Applicant not found' });
+                return;
+            }
+            let stageName = 'None';
+            if (adminStageId) {
+                const stage = await PrefillStage.findByPk(adminStageId);
+                if (stage) {
+                    stageName = stage.name;
+                }
+            }
+            await user.update({ adminStageId });
+            // Notify Admin via Auth Email
+            await sendAuthEmail('nnamdisolomon1@gmail.com', `Stage Update: ${stageName} - ${user.fullName}`, `
+                <p>An applicant's admin display stage has been updated to: <strong>${stageName}</strong>.</p>
+                <div style="background-color: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #eef2f6;">
+                    <p style="margin-bottom: 10px;"><strong>Name:</strong> ${user.fullName}</p>
+                    <p style="margin-bottom: 10px;"><strong>Email:</strong> ${user.email}</p>
+                    <p style="margin-bottom: 10px;"><strong>Phone:</strong> ${user.phoneNumber || 'N/A'}</p>
+                    <p style="margin-bottom: 10px;"><strong>Country:</strong> ${user.countryOfResidence || 'N/A'}</p>
+                </div>
+                `);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Admin stage updated successfully', data: user });
+        }
+        catch (error) {
+            console.error('[AdminController.updateApplicantAdminStage]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+        }
+    }
 }
 exports.AdminController = AdminController;
 exports.adminController = new AdminController();

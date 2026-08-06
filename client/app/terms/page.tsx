@@ -33,7 +33,7 @@ export default function TermsPage() {
                         </section>
                         <section className="space-y-6">
                             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-900">04. Liability Protection</h3>
-                            <p className="text-sm text-blue-500 leading-loose">While we curate elite roles, the final employment contract is an independent agreement between the talent and the hiring organization.</p>
+                            <p className="text-sm text-blue-500 leading-loose">While we curate elite roles, the final Training and Ticket Acquisition Contract is an independent agreement between the talent and the hiring organization.</p>
                         </section>
                     </div>
                 </div>

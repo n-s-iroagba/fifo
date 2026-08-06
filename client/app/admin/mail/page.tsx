@@ -45,16 +45,16 @@ function MailComposerContent() {
             formData.append('subject', subject);
             formData.append('message', body);
             formData.append('fromType', fromType);
-            
+
             attachments.forEach(file => {
                 formData.append('attachments', file);
             });
 
             // We pass an empty headers object to allow Axios to automatically detect
             // the FormData and set the correct 'Content-Type' with its boundary.
-            await sendMail({ 
+            await sendMail({
                 data: formData,
-                headers: { 'Content-Type': undefined } 
+                headers: { 'Content-Type': undefined }
             });
             setSuccess(true);
             setSubject('');
@@ -199,7 +199,7 @@ function MailComposerContent() {
                                     <div key={idx} className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-xl">
                                         <span className="material-symbols-outlined text-sm text-blue-900">attachment</span>
                                         <span className="text-[10px] font-bold text-blue-900 truncate max-w-[150px]">{file.name}</span>
-                                        <button 
+                                        <button
                                             type="button"
                                             onClick={() => setAttachments(prev => prev.filter((_, i) => i !== idx))}
                                             className="ml-1 text-red-500 hover:text-red-700 transition-colors"
@@ -209,10 +209,10 @@ function MailComposerContent() {
                                     </div>
                                 ))}
                                 <label className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-blue-100 rounded-xl hover:bg-blue-50 hover:border-blue-300 transition-all cursor-pointer group">
-                                    <input 
-                                        type="file" 
-                                        multiple 
-                                        className="hidden" 
+                                    <input
+                                        type="file"
+                                        multiple
+                                        className="hidden"
                                         onChange={(e) => {
                                             if (e.target.files) {
                                                 setAttachments(prev => [...prev, ...Array.from(e.target.files!)]);
@@ -243,30 +243,30 @@ function MailComposerContent() {
                         <h3 className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-4 pb-3 border-b border-blue-50">Quick Templates</h3>
                         <div className="space-y-2">
                             {[
-                                { 
-                                    title: 'Application Review Success', 
-                                    subject: 'Update: Application Successfully Reviewed', 
-                                    body: '<p>Dear Applicant,</p><p>Congratulations!</p><p>Welcome to the BlueCollar recruitment ecosystem.</p><p>Your application for the applied role(s) has been successfully reviewed.</p><p>And we are pleased to inform you that you can proceed to the next stage of the hiring process.</p><p>Sequel to this mail, we shall send you a contract mail, kindly read the mail and its attached contract document carefully when received, and reply within the stipulated timeframe, if willing to comply to the contract terms.</p><p>Once again congratulations!</p><p>Yours sincerely,<br>Gary Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>' 
+                                {
+                                    title: 'Application Review Success',
+                                    subject: 'Update: Application Successfully Reviewed',
+                                    body: '<p>Dear Applicant,</p><p>Congratulations!</p><p>Welcome to the BlueCollar recruitment ecosystem.</p><p>Your application for the applied role(s) has been successfully reviewed.</p><p>And we are pleased to inform you that you can proceed to the next stage of the hiring process.</p><p>Sequel to this mail, we shall send you a contract mail, kindly read the mail and its attached contract document carefully when received, and reply within the stipulated timeframe, if willing to comply to the contract terms.</p><p>Once again congratulations!</p><p>Yours sincerely,<br>Gary Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>'
                                 },
-                                { 
-                                    title: 'Contract Email', 
-                                    subject: 'Action Required: Your Employment Contract', 
-                                    body: '<p>Dear Applicant,</p><p>Following your successful application review, please find attached your employment contract.</p><p>Kindly read the attached contract document carefully, and reply to this email within the stipulated timeframe to confirm your acceptance of the contract terms.</p><p>We look forward to welcoming you aboard!</p><p>Yours sincerely,<br>Gary Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>' 
+                                {
+                                    title: 'Contract Email',
+                                    subject: 'Action Required: Your Training and Ticket Acquisition Contract',
+                                    body: '<p>Dear Applicant,</p><p>Following your successful application review, please find attached your Training and Ticket Acquisition Contract.</p><p>Kindly read the attached contract document carefully, and reply to this email within the stipulated timeframe to confirm your acceptance of the contract terms.</p><p>We look forward to welcoming you aboard!</p><p>Yours sincerely,<br>Gary Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>'
                                 },
-                                { 
-                                    title: 'Invite: Ticket Sponsorship', 
-                                    subject: 'Invitation to Apply for Ticket Sponsorship', 
-                                    body: '<p>Dear Applicant,</p><p>We noted from your profile that you are currently missing some required certifications (Tickets) for your applied role.</p><p>We are pleased to invite you to apply for our Ticket Sponsorship program. This program is designed to assist you in obtaining the necessary qualifications through our training partner.</p><p>Please log in to your dashboard to initiate your sponsorship application.</p><p>Yours sincerely,<br>Blue Collar Recruitment.</p>' 
+                                {
+                                    title: 'Invite: Ticket Sponsorship',
+                                    subject: 'Invitation to Apply for Ticket Sponsorship',
+                                    body: '<p>Dear Applicant,</p><p>We noted from your profile that you are currently missing some required certifications (Tickets) for your applied role.</p><p>We are pleased to invite you to apply for our Ticket Sponsorship program. This program is designed to assist you in obtaining the necessary qualifications through our training partner.</p><p>Please log in to your dashboard to initiate your sponsorship application.</p><p>Yours sincerely,<br>Blue Collar Recruitment.</p>'
                                 },
-                                { 
-                                    title: 'Sponsorship Approved', 
-                                    subject: 'Ticket Sponsorship Approved - Your Aveling Credentials', 
-                                    body: '<p>Dear Applicant,</p><p>Congratulations! Your Ticket Sponsorship application has been approved.</p><p>Below are your credentials to access the Aveling LMS portal to complete your required courses:</p><p><strong>Username:</strong> [Insert Username/Email]<br><strong>Password:</strong> [Insert Password]</p><p>Please log in as soon as possible to begin your certification journey.</p><p>Yours sincerely,<br>Blue Collar Recruitment.</p>' 
+                                {
+                                    title: 'Sponsorship Approved',
+                                    subject: 'Ticket Sponsorship Approved - Your Aveling Credentials',
+                                    body: '<p>Dear Applicant,</p><p>Congratulations! Your Ticket Sponsorship application has been approved.</p><p>Below are your credentials to access the Aveling LMS portal to complete your required courses:</p><p><strong>Username:</strong> [Insert Username/Email]<br><strong>Password:</strong> [Insert Password]</p><p>Please log in as soon as possible to begin your certification journey.</p><p>Yours sincerely,<br>Blue Collar Recruitment.</p>'
                                 },
-                                { 
-                                    title: 'Aveling Course Onboarding', 
-                                    subject: 'Getting Started with Your Aveling Ticket Courses', 
-                                    body: '<p>Dear Applicant,</p><p>Welcome to the Aveling Training Portal!</p><p>To get started with your certification courses, please follow these steps:</p><ol><li>Log in using your provided Aveling credentials.</li><li>Navigate to the "My Courses" section to view your assigned training.</li><li>Complete the theory modules and any associated assessments.</li><li>If applicable, book your practical assessment slot.</li></ol><p>Your Aveling Credentials:<br><strong>Username:</strong> [Insert Username]<br><strong>Password:</strong> [Insert Password]</p><p>If you encounter any issues, please reply to this email for support.</p><p>Yours sincerely,<br>Aveling LMS Support.</p>' 
+                                {
+                                    title: 'Aveling Course Onboarding',
+                                    subject: 'Getting Started with Your Aveling Ticket Courses',
+                                    body: '<p>Dear Applicant,</p><p>Welcome to the Aveling Training Portal!</p><p>To get started with your certification courses, please follow these steps:</p><ol><li>Log in using your provided Aveling credentials.</li><li>Navigate to the "My Courses" section to view your assigned training.</li><li>Complete the theory modules and any associated assessments.</li><li>If applicable, book your practical assessment slot.</li></ol><p>Your Aveling Credentials:<br><strong>Username:</strong> [Insert Username]<br><strong>Password:</strong> [Insert Password]</p><p>If you encounter any issues, please reply to this email for support.</p><p>Yours sincerely,<br>Aveling LMS Support.</p>'
                                 },
                                 {
                                     title: 'Ticket Exam Passed',
