@@ -169,6 +169,7 @@ function CheckoutContent() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+                    <div className="lg:col-span-7 space-y-6">
                         {/* STEP-1.1.7: Bank Account Payment Details — fetched live */}
                         {payableAmount > 0 && (
                             <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-4">
@@ -279,8 +280,8 @@ function CheckoutContent() {
                                 className="w-full inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black font-extrabold text-xs py-3.5 rounded-xl hover:bg-yellow-400 transition-all uppercase tracking-wider shadow-md disabled:opacity-50"
                             >
                                 <CheckCircle2 className="h-4 w-4" />
-                                {submittingReceipt 
-                                    ? (payableAmount === 0 ? 'Confirming...' : 'Uploading Receipt...') 
+                                {submittingReceipt
+                                    ? (payableAmount === 0 ? 'Confirming...' : 'Uploading Receipt...')
                                     : (payableAmount === 0 ? 'Confirm Wallet Payment' : 'I Have Made Payment — Submit Receipt')}
                             </button>
                         </form>
