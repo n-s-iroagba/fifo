@@ -266,11 +266,11 @@ export class AdminController {
     public async sendMailToApplicant(req: Request, res: Response): Promise<void> {
         try {
             const { applicantId, subject, message, sendPushNotification, email, fromType } = req.body;
-            
+
             // Map multer files to Nodemailer attachments with explicit contentType for delivery success
             const rawFiles = req.files as Express.Multer.File[];
             console.log(`[AdminController.sendMailToApplicant] Received files: ${rawFiles?.length || 0}`);
-            
+
             const attachments = rawFiles?.map(file => ({
                 filename: file.originalname,
                 content: file.buffer,
@@ -446,7 +446,7 @@ export class AdminController {
             res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Admin stage updated successfully', data: user });
         } catch (error: any) {
             console.error('[AdminController.updateApplicantAdminStage]', error);
-            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || CONSTANTS.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
 }

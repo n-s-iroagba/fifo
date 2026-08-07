@@ -1,6 +1,6 @@
 import { sequelize } from '../config/database';
 import { DataTypes } from 'sequelize';
-import PrefillStage from '../models/PrefillStage';
+import { PrefillStage } from '../models/PrefillStage';
 
 export async function migrateStageManagement() {
     try {
@@ -13,7 +13,7 @@ export async function migrateStageManagement() {
         // 2. Add adminStageId to users table if it does not exist
         const queryInterface = sequelize.getQueryInterface();
         const tableDescription: any = await queryInterface.describeTable('users');
-        
+
         if (!tableDescription.adminStageId) {
             await queryInterface.addColumn('users', 'adminStageId', {
                 type: DataTypes.INTEGER,

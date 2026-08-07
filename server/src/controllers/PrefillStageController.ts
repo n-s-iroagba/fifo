@@ -40,7 +40,7 @@ export class PrefillStageController {
             const { id } = req.params;
             const { name, type } = req.body;
 
-            const stage = await PrefillStage.findByPk(id);
+            const stage = await PrefillStage.findByPk(id as string);
             if (!stage) {
                 res.status(404).json({ success: false, message: 'Stage not found' });
                 return;
@@ -57,7 +57,7 @@ export class PrefillStageController {
     public async deletePrefillStage(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params;
-            const stage = await PrefillStage.findByPk(id);
+            const stage = await PrefillStage.findByPk(id as string);
             if (!stage) {
                 res.status(404).json({ success: false, message: 'Stage not found' });
                 return;

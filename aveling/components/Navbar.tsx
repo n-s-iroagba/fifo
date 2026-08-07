@@ -36,7 +36,7 @@ export function Navbar() {
         { name: 'My Certifications', href: '/my-certifications', icon: Award },
         { name: 'Course Catalog', href: '/catalog', icon: BookOpen },
         { name: 'My Payments', href: '/payments', icon: CreditCard },
-        { name: 'Admin Control', href: '/admin/tickets', icon: Database },
+
     ];
 
     return (
@@ -59,11 +59,10 @@ export function Navbar() {
                                 <Link
                                     key={link.href}
                                     href={link.href}
-                                    className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-bold transition-all ${
-                                        isActive
+                                    className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-bold transition-all ${isActive
                                             ? 'bg-black text-white shadow-sm'
                                             : 'text-black hover:bg-black/10'
-                                    }`}
+                                        }`}
                                 >
                                     <Icon className="h-4 w-4" />
                                     {link.name}
@@ -75,16 +74,16 @@ export function Navbar() {
 
                 {/* Right Action Icons matching Attachment 1 */}
                 <div className="flex items-center gap-4">
-                    <Link 
-                        href="/catalog" 
+                    <Link
+                        href="/catalog"
                         className="p-2 text-black hover:bg-black/10 rounded-full transition-all"
                         title="Search Courses"
                     >
                         <Search className="h-5 w-5 stroke-[2.5]" />
                     </Link>
 
-                    <a 
-                        href="mailto:booking@swiftwings.online" 
+                    <a
+                        href="mailto:booking@swiftwings.online"
                         className="p-2 text-black hover:bg-black/10 rounded-full transition-all hidden sm:flex items-center gap-1.5 text-xs font-bold"
                         title="Contact Support"
                     >
@@ -138,9 +137,8 @@ export function Navbar() {
                                 key={link.href}
                                 href={link.href}
                                 onClick={() => setMobileMenuOpen(false)}
-                                className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold ${
-                                    isActive ? 'bg-black text-white' : 'text-black hover:bg-black/10'
-                                }`}
+                                className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold ${isActive ? 'bg-black text-white' : 'text-black hover:bg-black/10'
+                                    }`}
                             >
                                 <Icon className="h-4 w-4" />
                                 {link.name}

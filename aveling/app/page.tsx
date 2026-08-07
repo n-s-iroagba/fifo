@@ -4,16 +4,16 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { 
-    Search, 
-    Calendar, 
-    ChevronLeft, 
-    ChevronRight, 
-    BookOpen, 
-    Award, 
-    Users, 
-    Dna, 
-    ShieldCheck, 
+import {
+    Search,
+    Calendar,
+    ChevronLeft,
+    ChevronRight,
+    BookOpen,
+    Award,
+    Users,
+    Dna,
+    ShieldCheck,
     ArrowRight,
     MapPin,
     Phone,
@@ -150,7 +150,7 @@ export default function AvelingHomePage() {
                 const { token, user } = response.data.data;
                 localStorage.setItem('lms_token', token);
                 localStorage.setItem('lms_user', JSON.stringify(user));
-                
+
                 // Lookup candidate info for logged in user
                 await autoLookup(user.email || user.username || lmsUsername);
             } else {
@@ -181,10 +181,10 @@ export default function AvelingHomePage() {
             {/* ========================================================= */}
             <section className="relative w-full min-h-[540px] bg-zinc-900 overflow-hidden flex items-center py-12">
                 <div className="absolute inset-0 z-0 opacity-40">
-                    <Image 
-                        src="/images/hero.png" 
-                        alt="Aveling Corporate Training" 
-                        fill 
+                    <Image
+                        src="/images/hero.png"
+                        alt="Aveling Corporate Training"
+                        fill
                         className="object-cover object-center"
                         priority
                     />
@@ -210,14 +210,14 @@ export default function AvelingHomePage() {
                         </p>
 
                         <div className="pt-2 flex flex-wrap gap-4 items-center">
-                            <a 
-                                href="#applicant-lms-portal"
+                            <a
+                                href="/login"
                                 className="inline-flex items-center gap-2 bg-[#FFC700] text-black font-extrabold text-sm px-8 py-4 rounded-xl hover:bg-yellow-400 transition-all transform hover:-translate-y-0.5 shadow-lg shadow-yellow-500/20 uppercase tracking-wider"
                             >
                                 <User className="h-4 w-4 stroke-[3]" />
-                                Applicant Login & Tickets
+                                Applicant Login
                             </a>
-                            <Link 
+                            <Link
                                 href="/catalog"
                                 className="inline-flex items-center gap-2 bg-zinc-900 border-2 border-white text-white font-extrabold text-sm px-8 py-4 rounded-xl hover:bg-white hover:text-black transition-all transform hover:-translate-y-0.5 uppercase tracking-wider"
                             >
@@ -246,21 +246,19 @@ export default function AvelingHomePage() {
                             <div className="flex rounded-xl bg-zinc-100 dark:bg-zinc-800 p-1">
                                 <button
                                     onClick={() => setLoginTab('candidate_id')}
-                                    className={`flex-1 py-2 text-xs font-extrabold rounded-lg transition-all ${
-                                        loginTab === 'candidate_id'
+                                    className={`flex-1 py-2 text-xs font-extrabold rounded-lg transition-all ${loginTab === 'candidate_id'
                                             ? 'bg-black text-[#FFC700] shadow'
                                             : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900'
-                                    }`}
+                                        }`}
                                 >
                                     Candidate ID
                                 </button>
                                 <button
                                     onClick={() => setLoginTab('lms_creds')}
-                                    className={`flex-1 py-2 text-xs font-extrabold rounded-lg transition-all ${
-                                        loginTab === 'lms_creds'
+                                    className={`flex-1 py-2 text-xs font-extrabold rounded-lg transition-all ${loginTab === 'lms_creds'
                                             ? 'bg-black text-[#FFC700] shadow'
                                             : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900'
-                                    }`}
+                                        }`}
                                 >
                                     LMS Login
                                 </button>
@@ -549,11 +547,11 @@ export default function AvelingHomePage() {
                                 Search:
                             </label>
                             <div className="relative">
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Course name, code or keyword..." 
+                                    placeholder="Course name, code or keyword..."
                                     className="w-full bg-white text-zinc-900 px-4 py-3 rounded-md text-sm font-medium focus:ring-2 focus:ring-[#FFC700] outline-none"
                                 />
                             </div>
@@ -564,7 +562,7 @@ export default function AvelingHomePage() {
                             <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300">
                                 Start Date:
                             </label>
-                            <input 
+                            <input
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
@@ -577,7 +575,7 @@ export default function AvelingHomePage() {
                             <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300">
                                 End Date:
                             </label>
-                            <input 
+                            <input
                                 type="date"
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
@@ -590,7 +588,7 @@ export default function AvelingHomePage() {
                             <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300">
                                 Topic:
                             </label>
-                            <select 
+                            <select
                                 value={topic}
                                 onChange={(e) => setTopic(e.target.value)}
                                 className="w-full bg-white text-zinc-900 px-3 py-3 rounded-md text-sm font-bold focus:ring-2 focus:ring-[#FFC700] outline-none"
@@ -605,7 +603,7 @@ export default function AvelingHomePage() {
 
                         {/* Submit Search Button */}
                         <div className="lg:col-span-2">
-                            <button 
+                            <button
                                 type="submit"
                                 className="w-full bg-[#FFC700] text-black font-extrabold text-sm py-3.5 px-6 rounded-md hover:bg-yellow-400 transition-all uppercase tracking-wider shadow-md"
                             >
@@ -615,8 +613,8 @@ export default function AvelingHomePage() {
                     </form>
 
                     <div className="text-left pt-2">
-                        <Link 
-                            href="/catalog" 
+                        <Link
+                            href="/catalog"
                             className="inline-flex items-center gap-2 text-[#FFC700] hover:text-yellow-400 font-bold text-sm tracking-wide group transition-all"
                         >
                             <span>Advanced Search Options</span>
@@ -650,7 +648,7 @@ export default function AvelingHomePage() {
                         {/* Card 1: WHS */}
                         <div className="bg-white rounded-xl overflow-hidden border border-zinc-200 shadow-md flex flex-col hover:shadow-xl transition-all group">
                             <div className="relative h-56 w-full overflow-hidden bg-zinc-900">
-                                <Image 
+                                <Image
                                     src="/images/whs.png"
                                     alt="Work Health and Safety (WHS)"
                                     fill
@@ -667,7 +665,7 @@ export default function AvelingHomePage() {
                                     </p>
                                 </div>
                                 <div className="pt-2">
-                                    <Link 
+                                    <Link
                                         href="/catalog?category=whs"
                                         className="inline-block bg-[#FFC700] text-black font-extrabold text-xs px-6 py-3 rounded-md hover:bg-yellow-400 transition-all uppercase tracking-wider"
                                     >
@@ -680,7 +678,7 @@ export default function AvelingHomePage() {
                         {/* Card 2: Education & Training */}
                         <div className="bg-white rounded-xl overflow-hidden border border-zinc-200 shadow-md flex flex-col hover:shadow-xl transition-all group">
                             <div className="relative h-56 w-full overflow-hidden bg-zinc-900">
-                                <Image 
+                                <Image
                                     src="/images/hero.png"
                                     alt="Education and Training"
                                     fill
@@ -697,7 +695,7 @@ export default function AvelingHomePage() {
                                     </p>
                                 </div>
                                 <div className="pt-2">
-                                    <Link 
+                                    <Link
                                         href="/catalog?category=education"
                                         className="inline-block bg-[#FFC700] text-black font-extrabold text-xs px-6 py-3 rounded-md hover:bg-yellow-400 transition-all uppercase tracking-wider"
                                     >
@@ -710,7 +708,7 @@ export default function AvelingHomePage() {
                         {/* Card 3: Hospitality & Retail */}
                         <div className="bg-white rounded-xl overflow-hidden border border-zinc-200 shadow-md flex flex-col hover:shadow-xl transition-all group">
                             <div className="relative h-56 w-full overflow-hidden bg-zinc-900">
-                                <Image 
+                                <Image
                                     src="/images/whs.png"
                                     alt="Hospitality and Retail"
                                     fill
@@ -727,7 +725,7 @@ export default function AvelingHomePage() {
                                     </p>
                                 </div>
                                 <div className="pt-2">
-                                    <Link 
+                                    <Link
                                         href="/catalog?category=hospitality"
                                         className="inline-block bg-[#FFC700] text-black font-extrabold text-xs px-6 py-3 rounded-md hover:bg-yellow-400 transition-all uppercase tracking-wider"
                                     >
@@ -748,28 +746,28 @@ export default function AvelingHomePage() {
                     {/* Left 3-Image Collage Layout */}
                     <div className="lg:col-span-6 grid grid-cols-2 gap-4">
                         <div className="relative h-[380px] rounded-xl overflow-hidden shadow-lg border border-zinc-200">
-                            <Image 
-                                src="/images/whs.png" 
-                                alt="Electrical and Technical Inspection" 
-                                fill 
-                                className="object-cover" 
+                            <Image
+                                src="/images/whs.png"
+                                alt="Electrical and Technical Inspection"
+                                fill
+                                className="object-cover"
                             />
                         </div>
                         <div className="space-y-4 flex flex-col justify-between">
                             <div className="relative h-[180px] rounded-xl overflow-hidden shadow-lg border border-zinc-200">
-                                <Image 
-                                    src="/images/hero.png" 
-                                    alt="Corporate Workshop Presentation" 
-                                    fill 
-                                    className="object-cover" 
+                                <Image
+                                    src="/images/hero.png"
+                                    alt="Corporate Workshop Presentation"
+                                    fill
+                                    className="object-cover"
                                 />
                             </div>
                             <div className="relative h-[180px] rounded-xl overflow-hidden shadow-lg border border-zinc-200">
-                                <Image 
-                                    src="/images/whs.png" 
-                                    alt="Professional Learner Collaboration" 
-                                    fill 
-                                    className="object-cover" 
+                                <Image
+                                    src="/images/whs.png"
+                                    alt="Professional Learner Collaboration"
+                                    fill
+                                    className="object-cover"
                                 />
                             </div>
                         </div>
@@ -801,13 +799,13 @@ export default function AvelingHomePage() {
                         </div>
 
                         <div className="pt-4 flex flex-wrap gap-4">
-                            <Link 
+                            <Link
                                 href="/catalog"
                                 className="inline-block bg-[#FFC700] text-black font-extrabold text-xs px-8 py-3.5 rounded-md hover:bg-yellow-400 transition-all uppercase tracking-wider shadow-md"
                             >
                                 Find Out More
                             </Link>
-                            <Link 
+                            <Link
                                 href="/my-certifications"
                                 className="inline-block bg-white text-black border-2 border-black font-extrabold text-xs px-8 py-3.5 rounded-md hover:bg-black hover:text-white transition-all uppercase tracking-wider"
                             >
@@ -823,11 +821,11 @@ export default function AvelingHomePage() {
             {/* ========================================================= */}
             <section className="relative py-20 px-4 sm:px-6 lg:px-8 bg-zinc-900 text-white overflow-hidden">
                 <div className="absolute inset-0 z-0 opacity-30">
-                    <Image 
-                        src="/images/hero.png" 
-                        alt="Aveling Ethos" 
-                        fill 
-                        className="object-cover" 
+                    <Image
+                        src="/images/hero.png"
+                        alt="Aveling Ethos"
+                        fill
+                        className="object-cover"
                     />
                 </div>
                 <div className="absolute inset-0 bg-black/75 z-10" />
@@ -891,11 +889,11 @@ export default function AvelingHomePage() {
             <section className="py-20 px-4 sm:px-6 lg:px-8 bg-zinc-50">
                 <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                     <div className="lg:col-span-6 relative h-[420px] rounded-xl overflow-hidden shadow-xl border border-zinc-200">
-                        <Image 
-                            src="/images/hero.png" 
-                            alt="Classroom Education Offering" 
-                            fill 
-                            className="object-cover" 
+                        <Image
+                            src="/images/hero.png"
+                            alt="Classroom Education Offering"
+                            fill
+                            className="object-cover"
                         />
                     </div>
 

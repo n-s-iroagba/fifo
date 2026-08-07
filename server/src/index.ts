@@ -25,7 +25,7 @@ const startServer = async () => {
             try {
                 // await seedDatabase();
                 // await run();
-                await migrateStageManagement();
+                // await migrateStageManagement();
                 if (process.env.NODE_ENV !== 'production') {
                     logger.info('Database Synchronized successfully.');
                 }
