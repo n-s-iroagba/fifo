@@ -8,6 +8,7 @@ export default function UnverifiedPaymentsPage() {
     const queryClient = useQueryClient();
     const [selectedPayment, setSelectedPayment] = useState<any>(null);
     const [note, setNote] = useState('');
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     const { data: payments, isLoading } = useApiQuery<any>(
         ['admin', 'payments', 'unverified'],
@@ -19,10 +20,15 @@ export default function UnverifiedPaymentsPage() {
         : `/admin/payments/${selectedPayment?.id}/verify`;
 
     const verifyMutation = useApiMutation('post', verifyEndpoint, {
-        onSuccess: () => {
+        onSuccess: (res: any, variables: any) => {
+            const isApproved = variables?.isApproved !== false;
+            setSuccessMessage(isApproved ? 'Payment approved successfully! Candidate course access unlocked.' : 'Payment marked as disapproved.');
             queryClient.invalidateQueries({ queryKey: ['admin', 'payments', 'unverified'] });
-            setSelectedPayment(null);
-            setNote('');
+            setTimeout(() => {
+                setSelectedPayment(null);
+                setNote('');
+                setSuccessMessage(null);
+            }, 1200);
         }
     });
 
@@ -75,7 +81,7 @@ export default function UnverifiedPaymentsPage() {
                                             onClick={() => setSelectedPayment(pay)}
                                             className="bg-blue-900 text-white px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all shadow-lg shadow-blue-900/10 active:scale-95"
                                         >
-                                            Approve Payment
+                                            Review & Verify
                                         </button>
                                     </td>
                                 </tr>
@@ -106,41 +112,52 @@ export default function UnverifiedPaymentsPage() {
                         </div>
                         
                         <div className="p-8 space-y-8">
-                            <div className="p-6 bg-blue-50 rounded-2xl border border-blue-100">
-                                <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-4">Verification Artifact</p>
-                                <img 
-                                    src={selectedPayment.proofUrl} 
-                                    alt="Proof of Payment" 
-                                    className="w-full rounded-xl shadow-lg border border-white object-contain max-h-[300px]"
-                                />
-                            </div>
+                            {successMessage ? (
+                                <div className="p-6 bg-emerald-50 border border-emerald-200 rounded-2xl text-center animate-in fade-in duration-200">
+                                    <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <span className="material-symbols-outlined text-2xl">check</span>
+                                    </div>
+                                    <p className="text-sm font-bold text-emerald-900 uppercase tracking-tight">{successMessage}</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="p-6 bg-blue-50 rounded-2xl border border-blue-100">
+                                        <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-4">Verification Artifact</p>
+                                        <img 
+                                            src={selectedPayment.proofUrl} 
+                                            alt="Proof of Payment" 
+                                            className="w-full rounded-xl shadow-lg border border-white object-contain max-h-[300px]"
+                                        />
+                                    </div>
 
-                            <div className="space-y-4">
-                                <label className="text-[10px] font-black text-blue-400 uppercase tracking-widest px-1">Internal Note / Disapproval Reason</label>
-                                <textarea
-                                    value={note}
-                                    onChange={(e) => setNote(e.target.value)}
-                                    placeholder="Enter verification notes or disapproval details..."
-                                    className="w-full bg-blue-50 border border-blue-100 rounded-2xl p-5 text-sm font-medium text-blue-900 focus:bg-white outline-none focus:ring-4 focus:ring-blue-100 transition-all h-32 resize-none"
-                                />
-                            </div>
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black text-blue-400 uppercase tracking-widest px-1">Internal Note / Disapproval Reason</label>
+                                        <textarea
+                                            value={note}
+                                            onChange={(e) => setNote(e.target.value)}
+                                            placeholder="Enter verification notes or disapproval details..."
+                                            className="w-full bg-blue-50 border border-blue-100 rounded-2xl p-5 text-sm font-medium text-blue-900 focus:bg-white outline-none focus:ring-4 focus:ring-blue-100 transition-all h-32 resize-none"
+                                        />
+                                    </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <button
-                                    onClick={() => verifyMutation.mutate({ isApproved: false, note })}
-                                    disabled={verifyMutation.isPending}
-                                    className="py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-600 hover:bg-red-100 transition-all active:scale-95"
-                                >
-                                    {verifyMutation.isPending ? 'Processing...' : 'Disapprove Payment'}
-                                </button>
-                                <button
-                                    onClick={() => verifyMutation.mutate({ isApproved: true, note })}
-                                    disabled={verifyMutation.isPending}
-                                    className="py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest bg-blue-900 text-white shadow-xl shadow-blue-900/10 hover:bg-black transition-all active:scale-95"
-                                >
-                                    {verifyMutation.isPending ? 'Processing...' : 'Approve Payment'}
-                                </button>
-                            </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <button
+                                            onClick={() => verifyMutation.mutate({ isApproved: false, note })}
+                                            disabled={verifyMutation.isPending}
+                                            className="py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-600 hover:bg-red-100 transition-all active:scale-95 disabled:opacity-50"
+                                        >
+                                            {verifyMutation.isPending ? 'Processing...' : 'Disapprove Payment'}
+                                        </button>
+                                        <button
+                                            onClick={() => verifyMutation.mutate({ isApproved: true, note })}
+                                            disabled={verifyMutation.isPending}
+                                            className="py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest bg-blue-900 text-white shadow-xl shadow-blue-900/10 hover:bg-black transition-all active:scale-95 disabled:opacity-50"
+                                        >
+                                            {verifyMutation.isPending ? 'Processing...' : 'Approve Payment'}
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

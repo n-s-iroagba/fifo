@@ -54,7 +54,7 @@ export class TicketService {
 
     public async updateTicket(ticketId: number, userId: number, data: any) {
         const ticket = await this.getTicketById(ticketId, userId);
-        
+
         await ticket.update({
             status: data.status !== undefined ? data.status : ticket.status,
             ticketNumber: data.ticketNumber !== undefined ? data.ticketNumber : ticket.ticketNumber,
@@ -73,11 +73,11 @@ export class TicketService {
 
     public async applySponsorship(ticketId: number, userId: number, bankDetails: { bankName: string; accountNumber: string; accountName: string }) {
         const ticket = await this.getTicketById(ticketId, userId);
-        
+
         await ticket.update({
             ticketSponsorship: 'applied',
         });
-        
+
         const user = await User.findByPk(userId);
         if (user) {
             await user.update({
@@ -154,7 +154,7 @@ export class TicketService {
         // Always create in-app notification
         const user = (ticket as any).User;
         const message = `Your ticket (${ticket.ticketType}) status has been updated to: ${ticket.ticketSponsorship.replace(/_/g, ' ').toUpperCase()}.`;
-        
+
         if (user?.id) {
             await notificationService.sendNotification(
                 user.id,
@@ -359,7 +359,7 @@ export class TicketService {
     public async adminAddApplicationTicket(applicationId: number, data: any) {
         const application = await Application.findByPk(applicationId);
         if (!application) throw new Error('APPLICATION_NOT_FOUND');
-        
+
         const ticket = await Ticket.create({
             userId: application.userId,
             applicationId: applicationId,
@@ -372,7 +372,7 @@ export class TicketService {
             canApplySponsorship: data.canApplySponsorship || false,
             courseId: data.courseId || null,
         });
-        
+
         return ticket;
     }
 
@@ -391,7 +391,7 @@ export class TicketService {
 
         const candidateNum = user.candidateNumber;
         const checkoutUrl = `http://localhost:3002/checkout?ticketId=${ticket.id}&candidateNumber=${candidateNum}`;
-        
+
         const { BankAccount } = require('../models');
         const bank = await BankAccount.findOne({ where: { isActive: true } });
         const bankName = bank?.bankName || 'Commonwealth Bank Australia';
@@ -428,7 +428,7 @@ export class TicketService {
 
         const avelingPayUrl = `http://localhost:3002/checkout?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}`;
         const subject = `Ticket Sponsorship Update: ${ticket.ticketType}`;
-        
+
         let body = `<p>Hello ${user.fullName || 'Applicant'},</p>
                     <p>Your sponsorship for <strong>${ticket.ticketType}</strong> has been updated to <strong>${sponsorshipStatus.replace(/_/g, ' ').toUpperCase()}</strong>.</p>`;
 
@@ -594,27 +594,10 @@ export class TicketService {
     }
 
     // Candidate submits payment receipt (or pays via wallet)
-    public async submitReceipt(ticketId: number, userId?: number, data: { receiptReference?: string; receiptUrl?: string; useWallet?: boolean; candidateNumber?: string } = {}) {
-        let ticket: any = null;
-        if (ticketId && !isNaN(Number(ticketId))) {
-            ticket = await Ticket.findByPk(ticketId, { include: [{ model: User }] });
-        }
-        if (!ticket && data.candidateNumber) {
-            const user = await User.findOne({ where: { candidateNumber: data.candidateNumber } });
-            if (user) {
-                ticket = await Ticket.findOne({
-                    where: { userId: user.id },
-                    order: [['updatedAt', 'DESC']],
-                    include: [{ model: User }]
-                });
-            }
-        }
+    public async submitReceipt(ticketId: number, userId: number, data: { receiptReference?: string; receiptUrl?: string; useWallet?: boolean }) {
+        const ticket = await Ticket.findOne({ where: { id: ticketId, userId }, include: [{ model: User }] });
         if (!ticket) throw new Error('TICKET_NOT_FOUND');
-
-        let user = (ticket as any).User as User;
-        if (!user && ticket.userId) {
-            user = (await User.findByPk(ticket.userId)) as User;
-        }
+        const user = (ticket as any).User as User;
         if (!user) throw new Error('USER_NOT_FOUND');
 
         let coursePrice = ticket.subsidisedPrice ?? ticket.purchasePrice ?? 0;
@@ -622,22 +605,26 @@ export class TicketService {
 
         if (data.useWallet && user.walletBalance && user.walletBalance > 0) {
             if (user.walletBalance >= coursePrice) {
+                // Wallet fully covers the price
                 await user.update({ walletBalance: user.walletBalance - coursePrice });
                 isFullyCovered = true;
             } else {
-                coursePrice = coursePrice - user.walletBalance;
+                // Wallet partially covers the price
+                coursePrice = coursePrice - user.walletBalance; // Remaining balance to pay via bank
                 await user.update({ walletBalance: 0 });
             }
         }
 
         if (isFullyCovered) {
+            // Auto-verify payment
             await ticket.update({
                 paymentStatus: 'payment_verified',
                 courseAccessGranted: true,
                 receiptReference: 'WALLET_PAYMENT',
             });
 
-            if (ticket.courseId && user.id) {
+            // Unlock course enrollment
+            if (ticket.courseId) {
                 const { Enrollment } = require('../models');
                 const existingEnrollment = await Enrollment.findOne({
                     where: { userId: user.id, courseId: ticket.courseId }
@@ -655,30 +642,28 @@ export class TicketService {
                 }
             }
 
-            if (user.id) {
-                await notificationService.sendNotification(
-                    user.id,
-                    'Payment Verified via Wallet',
-                    `Your payment for ${ticket.ticketType} was fully covered by your wallet balance. Course unlocked!`
-                ).catch(err => console.error('[Notification Error]', err));
-            }
+            await notificationService.sendNotification(
+                user.id,
+                'Payment Verified via Wallet',
+                `Your payment for ${ticket.ticketType} was fully covered by your wallet balance. Course unlocked!`
+            );
         } else {
+            // Standard bank receipt submission
             await ticket.update({
                 paymentStatus: 'receipt_submitted',
                 receiptReference: data.receiptReference || null,
                 receiptUrl: data.receiptUrl || null,
             });
 
+            // Notify admins
             const { User: UserModel } = require('../models');
             const admins = await UserModel.findAll({ where: { role: 'admin' } });
             for (const admin of admins) {
-                if (admin.id) {
-                    await notificationService.sendNotification(
-                        admin.id,
-                        'Payment Receipt Submitted',
-                        `Candidate submitted a receipt for ${ticket.ticketType} (Ticket #${ticket.id}). Please verify.`
-                    ).catch(err => console.error('[Notification Error]', err));
-                }
+                await notificationService.sendNotification(
+                    admin.id,
+                    'Payment Receipt Submitted',
+                    `Candidate submitted a receipt for ${ticket.ticketType} (Ticket #${ticket.id}). Please verify.`
+                );
             }
         }
 
@@ -735,16 +720,16 @@ export class TicketService {
 
     // Platform bank account management
     public async getPlatformBankAccount() {
-        const { BankAccount } = require('../models');
-        const bank = await BankAccount.findOne({ where: { isActive: true } });
-        
-        if (!bank) return null;
-
+        const { PlatformSetting } = require('../models');
+        const keys = ['platform_bank_name', 'platform_bank_bsb', 'platform_bank_account_number', 'platform_bank_account_name'];
+        const settings = await PlatformSetting.findAll({ where: { key: keys } });
+        const result: any = {};
+        for (const s of settings) result[s.key] = s.value;
         return {
-            bankName: bank.bankName,
-            bsb: bank.routingCode,
-            accountNumber: bank.accountNumber,
-            accountName: bank.bankName, // Map bankName to accountName if none exists on the model
+            bankName: result.platform_bank_name || null,
+            bsb: result.platform_bank_bsb || null,
+            accountNumber: result.platform_bank_account_number || null,
+            accountName: result.platform_bank_account_name || null,
         };
     }
 
@@ -761,7 +746,6 @@ export class TicketService {
                 await PlatformSetting.upsert({ key, value });
             }
         }
-        return this.getPlatformBankAccount();
     }
 }
 
