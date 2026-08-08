@@ -191,14 +191,19 @@ export default function SponsoredCourseLookupPage() {
                                                 <span className="font-mono text-xs font-bold text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded">
                                                     TICKET ID: {tkt.id}
                                                 </span>
-                                                <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider ${tkt.ticketSponsorship === 'first_attempt_approved'
+                                                <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider ${tkt.ticketSponsorship?.includes('approved') || tkt.ticketSponsorship === 'ticket_issued'
                                                         ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300'
-                                                        : tkt.ticketSponsorship === 'ticket_issued'
-                                                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-300'
+                                                        : tkt.ticketSponsorship?.includes('rejected')
+                                                            ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-300'
                                                             : 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300 border border-amber-300'
                                                     }`}>
                                                     SPONSORSHIP STATE: {tkt.ticketSponsorship || tkt.status}
                                                 </span>
+                                                {(tkt.ticketSponsorship?.includes('first_attempt') || tkt.ticketSponsorship?.includes('second_attempt') || tkt.ticketSponsorship?.includes('third_attempt')) && (
+                                                    <span className="text-xs font-bold px-2.5 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                                        ATTEMPT: {tkt.ticketSponsorship.includes('first') ? '1' : tkt.ticketSponsorship.includes('second') ? '2' : '3'}
+                                                    </span>
+                                                )}
                                                 {tkt.Course?.format && (
                                                     <span className="text-xs font-bold px-2.5 py-0.5 rounded bg-zinc-800 text-white">
                                                         {tkt.Course.format} FORMAT
@@ -210,6 +215,11 @@ export default function SponsoredCourseLookupPage() {
                                                 <h3 className="text-lg font-extrabold text-zinc-900 dark:text-white">
                                                     {tkt.ticketType}
                                                 </h3>
+                                                {tkt.description && (
+                                                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1 mb-2">
+                                                        {tkt.description}
+                                                    </p>
+                                                )}
                                                 {tkt.Course && (
                                                     <p className="text-xs font-bold text-[#FFC700] mt-1">
                                                         Mapped Course: {tkt.Course.name} ({tkt.Course.code})
