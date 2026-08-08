@@ -1,4 +1,4 @@
-import { sequelize, User, BankAccount, JobCategory, JobListing, JobBenefit, JobCondition, CertificationType, Course, ExamConfig, ExamQuestion, PracticalCriterion } from './models';
+import { sequelize, User, BankAccount, JobCategory, JobListing, JobBenefit, JobCondition, CertificationType, Course, ExamConfig, ExamQuestion, PracticalCriterion, TicketCatalog } from './models';
 import { CONSTANTS } from './constants';
 import bcrypt from 'bcrypt';
 import { fifoJobs } from './data/fifoJobs';
@@ -206,6 +206,16 @@ export async function seedDatabase() {
                 }
             });
         }
+
+        // Create Ticket Catalog Entry
+        await TicketCatalog.findOrCreate({
+            where: { name: `${data.certificationName} (${course.code})` },
+            defaults: {
+                normalPrice: data.course.price,
+                sponsorshipPrice: data.course.price / 2,
+                description: `Australian Ticket for ${data.certificationName} (${course.code})`
+            }
+        });
     }
 
     console.log('Idempotent seeding completed successfully!');

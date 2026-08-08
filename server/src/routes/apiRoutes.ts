@@ -199,6 +199,7 @@ router.get('/admin/tickets', ...adminMW, ticketController.adminGetAllTickets.bin
 router.put('/admin/tickets/:id', ...adminMW, ticketController.adminUpdateTicket.bind(ticketController));
 router.delete('/admin/tickets/:id', ...adminMW, ticketController.adminDeleteTicket.bind(ticketController));
 router.post('/admin/tickets/bulk-seed', ...adminMW, ticketController.adminBulkSeedTickets.bind(ticketController));
+router.post('/admin/tickets/clone', ...adminMW, ticketController.cloneTicketForApplicant.bind(ticketController));
 router.post('/admin/tickets/:id/approve-receipt', ...adminMW, ticketController.adminApproveReceipt.bind(ticketController));
 router.post('/admin/applications/:id/tickets', ...adminMW, ticketController.adminAddApplicationTicket.bind(ticketController));
 router.post('/admin/tickets/:id/generate-credentials', ...adminMW, ticketController.adminGenerateAvelingCredentials.bind(ticketController));

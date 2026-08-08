@@ -376,6 +376,85 @@ export class TicketService {
         return ticket;
     }
 
+    public async cloneTicketForApplicant(data: {
+        targetUserId: number;
+        sourceTicketId?: number;
+        sourceCatalogId?: number;
+        applicationId?: number;
+        ticketType?: string;
+        description?: string;
+        customPurchasePrice?: number;
+        customRealPrice?: number;
+        customSubsidisedPrice?: number;
+        customCourseId?: string;
+        canApplySponsorship?: boolean;
+    }) {
+        const { User, TicketCatalog, Course } = require('../models');
+        const user = await User.findByPk(data.targetUserId);
+        if (!user) throw new Error('USER_NOT_FOUND');
+
+        let baseTicketType = data.ticketType || 'Work Safely at Heights (RIIWHS204E)';
+        let baseDescription = data.description || 'Assigned certification ticket course';
+        let defaultRealPrice = 280;
+        let defaultSubsidisedPrice = 140;
+        let defaultCourseId = data.customCourseId || null;
+
+        if (data.sourceTicketId) {
+            const sourceTicket = await Ticket.findByPk(data.sourceTicketId);
+            if (sourceTicket) {
+                baseTicketType = sourceTicket.ticketType;
+                baseDescription = sourceTicket.description || baseDescription;
+                defaultRealPrice = sourceTicket.realPrice ?? sourceTicket.purchasePrice ?? 280;
+                defaultSubsidisedPrice = sourceTicket.subsidisedPrice ?? (defaultRealPrice / 2);
+                defaultCourseId = defaultCourseId || sourceTicket.courseId;
+            }
+        } else if (data.sourceCatalogId) {
+            const catalog = await TicketCatalog.findByPk(data.sourceCatalogId);
+            if (catalog) {
+                baseTicketType = catalog.name;
+                baseDescription = catalog.description || baseDescription;
+                defaultRealPrice = catalog.normalPrice || 280;
+                defaultSubsidisedPrice = catalog.sponsorshipPrice || (defaultRealPrice / 2);
+            }
+        }
+
+        if (!defaultCourseId) {
+            const matchingCourse = await Course.findOne({
+                where: {
+                    [require('sequelize').Op.or]: [
+                        { code: 'RIIWHS204E' },
+                        { title: { [require('sequelize').Op.like]: `%${baseTicketType}%` } }
+                    ]
+                }
+            });
+            if (matchingCourse) {
+                defaultCourseId = matchingCourse.id;
+            }
+        }
+
+        const realPrice = data.customRealPrice ?? defaultRealPrice;
+        const subsidisedPrice = data.customSubsidisedPrice ?? defaultSubsidisedPrice;
+        const purchasePrice = data.customPurchasePrice ?? subsidisedPrice;
+
+        const clonedTicket = await Ticket.create({
+            userId: data.targetUserId,
+            applicationId: data.applicationId || null,
+            ticketType: baseTicketType,
+            description: baseDescription,
+            status: 'not_possessed',
+            ticketSponsorship: 'applied',
+            canApplySponsorship: data.canApplySponsorship ?? true,
+            realPrice: realPrice,
+            subsidisedPrice: subsidisedPrice,
+            purchasePrice: purchasePrice,
+            courseId: defaultCourseId,
+            paymentStatus: 'unpaid',
+            courseAccessGranted: false
+        });
+
+        return clonedTicket;
+    }
+
     public async sendCheckoutPaymentEmail(ticketId: number) {
         const ticket = await Ticket.findByPk(ticketId, { include: [{ model: User }] });
         if (!ticket) throw new Error('TICKET_NOT_FOUND');

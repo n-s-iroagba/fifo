@@ -1,12 +1,12 @@
 export const lmsSeedData = [
     {
         certificationName: 'Working at Heights',
-        description: 'Required for any role operating at heights above 2 meters.',
+        description: 'Required for any FIFO/mining role operating at heights under Australian WHS Regulations 2022.',
         course: {
             title: 'RIIWHS204E Work safely at heights',
-            description: 'This course provides the skills and knowledge required to work safely at heights in the resources and infrastructure industries.',
+            description: 'Nationally Recognised Unit of Competency RIIWHS204E Work safely at heights under AS/NZS 1891 and WHS Regulations 2022. Covers planning and preparing for working at heights, identifying hazards, selecting and inspecting fall arrest systems, installing anchor points, using ladders and elevated work platforms (EWPs), fitting full body harnesses, and executing emergency rescue response.',
             format: 'Mixed',
-            price: 250.00,
+            price: 280.00,
             duration: 8,
             capacity: 15,
             examConfig: {
@@ -15,25 +15,98 @@ export const lmsSeedData = [
             },
             questions: [
                 {
-                    questionText: 'What is the minimum height at which fall prevention measures are generally required?',
+                    questionText: 'Under Australian WHS Regulations 2022, when must fall prevention controls be implemented?',
                     questionType: 'mcq',
-                    options: ['1 meter', '2 meters', '3 meters', '4 meters'],
-                    correctOptionIndex: 1, // '2 meters'
+                    options: [
+                        'At any height where there is a risk of a fall causing injury (typically 2 meters or greater in construction/mining)',
+                        'Only when working above 5 meters',
+                        'Only when working on fragile roofing',
+                        'Only when working on scaffolding without guardrails'
+                    ],
+                    correctOptionIndex: 0,
+                    weight: 15
+                },
+                {
+                    questionText: 'According to the Safe Work Australia Code of Practice for Managing the Risk of Falls, what is the highest level of control for height risks?',
+                    questionType: 'mcq',
+                    options: [
+                        'Using a full body harness with shock-absorbing lanyard',
+                        'Carrying out work on the ground or on a solid construction (Elimination)',
+                        'Installing fall arrest safety nets below the work area',
+                        'Posting warning signs and barricades'
+                    ],
+                    correctOptionIndex: 1,
+                    weight: 15
+                },
+                {
+                    questionText: 'Under AS/NZS 1891.4, what is the minimum rated capacity required for a single-person permanent anchor point for fall arrest?',
+                    questionType: 'mcq',
+                    options: [
+                        '5 kN (approx. 500 kg)',
+                        '12 kN (approx. 1200 kg)',
+                        '15 kN (approx. 1500 kg static load)',
+                        '22 kN (approx. 2200 kg)'
+                    ],
+                    correctOptionIndex: 2,
+                    weight: 15
+                },
+                {
+                    questionText: 'Before each use, what tactile and visual inspection must be conducted on fall arrest harnesses and lanyards?',
+                    questionType: 'mcq',
+                    options: [
+                        'Inspect for cuts, fraying, chemical burns, pulling stitching, or deformed D-rings and snaphooks',
+                        'Wipe down with industrial degreaser',
+                        'Drop test it with a heavy sandbag',
+                        'No inspection required if inspected within the past 12 months'
+                    ],
+                    correctOptionIndex: 0,
+                    weight: 15
+                },
+                {
+                    questionText: 'Under AS/NZS 1891, what is the maximum permissible free fall distance when using a standard personal fall arrest lanyard?',
+                    questionType: 'mcq',
+                    options: [
+                        '1.0 meter',
+                        '2.0 meters',
+                        '3.5 meters',
+                        '5.0 meters'
+                    ],
+                    correctOptionIndex: 1,
                     weight: 10
                 },
                 {
-                    questionText: 'Before using a safety harness, you should always:',
+                    questionText: 'Why is it critical to rapidly rescue a suspended worker within 10 to 15 minutes of a fall arrest event?',
                     questionType: 'mcq',
-                    options: ['Inspect it for damage', 'Wash it in warm water', 'Leave it in direct sunlight', 'Adjust it loosely'],
-                    correctOptionIndex: 0, // 'Inspect it for damage'
-                    weight: 10
+                    options: [
+                        'To prevent suspension trauma (orthostatic intolerance) which can lead to unconsciousness or death from blood pooling',
+                        'Because shock absorbing lanyards snap after 15 minutes of suspension',
+                        'To avoid site penalty fines from WorkSafe',
+                        'Because full body harnesses stretch beyond recovery after 10 minutes'
+                    ],
+                    correctOptionIndex: 0,
+                    weight: 15
+                },
+                {
+                    questionText: 'When setting up a single extension ladder, what is the correct slope ratio under Australian Standards?',
+                    questionType: 'mcq',
+                    options: [
+                        '1:1 (45 degrees)',
+                        '4:1 (75 degrees - 1 meter out from the wall for every 4 meters of vertical rise)',
+                        '2:1 (60 degrees)',
+                        '8:1 (82 degrees)'
+                    ],
+                    correctOptionIndex: 1,
+                    weight: 15
                 }
             ],
             practicalCriteria: [
-                'Correctly selects and inspects fall arrest equipment',
-                'Properly fits and adjusts full-body harness',
-                'Demonstrates safe attachment to anchor points',
-                'Maintains 100% tie-off during transition'
+                'Conduct hazard identification and risk assessment (SWMS / JSA) for height tasks',
+                'Perform pre-use tactile and visual inspection of full body harness, lanyard, and energy absorber',
+                'Correctly fit, adjust, and perform 2-finger check on full body harness',
+                'Identify and verify rated anchor point (15kN) and attach lanyard safely',
+                'Demonstrate 100% tie-off technique using dual lanyards during lateral transition',
+                'Demonstrate correct deployment and operation of portable ladder with 3 points of contact',
+                'Demonstrate emergency rescue response and deployment of suspension trauma relief straps'
             ]
         }
     },

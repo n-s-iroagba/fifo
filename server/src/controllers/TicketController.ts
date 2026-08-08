@@ -390,6 +390,36 @@ export class TicketController {
             res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: bankDetails });
         } catch (error) { next(error); }
     }
+
+    public async cloneTicketForApplicant(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { targetUserId, sourceTicketId, sourceCatalogId, applicationId, ticketType, description, customPurchasePrice, customRealPrice, customSubsidisedPrice, customCourseId, canApplySponsorship } = req.body;
+            if (!targetUserId) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'targetUserId is required' });
+                return;
+            }
+            const ticket = await ticketService.cloneTicketForApplicant({
+                targetUserId,
+                sourceTicketId,
+                sourceCatalogId,
+                applicationId,
+                ticketType,
+                description,
+                customPurchasePrice,
+                customRealPrice,
+                customSubsidisedPrice,
+                customCourseId,
+                canApplySponsorship
+            });
+            res.status(CONSTANTS.HTTP_STATUS.CREATED).json({ success: true, data: ticket, message: 'Ticket cloned successfully for applicant with custom pricing' });
+        } catch (error: any) {
+            if (error.message === 'USER_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Applicant user not found' });
+                return;
+            }
+            next(error);
+        }
+    }
 }
 
 export const ticketController = new TicketController();
