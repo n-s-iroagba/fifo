@@ -251,7 +251,7 @@ export default function SponsoredCourseLookupPage() {
                                                     <span>Start Course</span>
                                                     <ArrowRight className="h-4 w-4 stroke-[3]" />
                                                 </button>
-                                            ) : (tkt.paymentStatus && tkt.paymentStatus !== 'unpaid' && tkt.paymentStatus !== 'failed') ? (
+                                            ) : (tkt.paymentStatus && tkt.paymentStatus !== 'unpaid') ? (
                                                 <button
                                                     disabled
                                                     className="w-full lg:w-auto inline-flex items-center justify-center gap-2 bg-amber-200 text-amber-800 font-extrabold text-xs px-8 py-4 rounded-xl uppercase tracking-wider shadow-inner cursor-not-allowed"

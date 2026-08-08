@@ -489,8 +489,7 @@ export default function AvelingHomePage() {
                                                                 href={`/courses/${tkt.assignedCourse?.id || ''}`}
                                                                 className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-emerald-600 text-white font-extrabold text-xs px-6 py-3 rounded-xl hover:bg-emerald-500 transition-all uppercase tracking-wider shadow-md"
                                                             >
-                                                                <BookOpen className="h-4 w-4" />
-                                                                <span>Take Course Modules</span>
+                                                                <span>Start Course</span>
                                                             </Link>
                                                             <Link
                                                                 href={`/courses/${tkt.assignedCourse?.id || ''}/exam?ticketId=${tkt.id}`}
@@ -500,6 +499,14 @@ export default function AvelingHomePage() {
                                                                 <span>Take Exam</span>
                                                             </Link>
                                                         </>
+                                                    ) : (tkt.paymentStatus && tkt.paymentStatus !== 'unpaid') ? (
+                                                        <button
+                                                            disabled
+                                                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-amber-200 text-amber-800 font-extrabold text-xs px-8 py-3.5 rounded-xl uppercase tracking-wider shadow-inner cursor-not-allowed"
+                                                        >
+                                                            <Lock className="h-4 w-4 stroke-[3]" />
+                                                            <span>Awaiting Approval</span>
+                                                        </button>
                                                     ) : (
                                                         <button
                                                             onClick={() => router.push(`/checkout?ticketId=${tkt.id}&candidateNumber=${profile.candidateNumber}&courseId=${tkt.assignedCourse?.id || ''}&price=${coursePrice}&wallet=${profile.walletBalance}`)}
