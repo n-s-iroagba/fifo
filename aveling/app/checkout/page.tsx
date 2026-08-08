@@ -40,10 +40,17 @@ function CheckoutContent() {
         const fetchBankDetails = async () => {
             try {
                 // Fetch the platform-wide bank account configured by admins
-                // Append cache buster to prevent 304 Not Modified on production
-                const bankRes = await apiClient.get(`/platform-bank?_t=${new Date().getTime()}`);
-                if (bankRes.data?.data && (bankRes.data.data.bankName || bankRes.data.data.bsb)) {
-                    setBankDetails(bankRes.data.data);
+                // Route to the new bank-accounts router and bypass caching
+                const bankRes = await apiClient.get(`/admin/bank-accounts?_t=${new Date().getTime()}`);
+                
+                if (bankRes.data?.rows?.length > 0) {
+                    const bank = bankRes.data.rows[0];
+                    setBankDetails({
+                        bankName: bank.bankName,
+                        bsb: bank.routingCode,
+                        accountNumber: bank.accountNumber,
+                        accountName: bank.bankName
+                    });
                 } else {
                     setBankDetails(null);
                 }

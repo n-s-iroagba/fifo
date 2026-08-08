@@ -568,17 +568,15 @@ class TicketService {
     }
     // Platform bank account management
     async getPlatformBankAccount() {
-        const { PlatformSetting } = require('../models');
-        const keys = ['platform_bank_name', 'platform_bank_bsb', 'platform_bank_account_number', 'platform_bank_account_name'];
-        const settings = await PlatformSetting.findAll({ where: { key: keys } });
-        const result = {};
-        for (const s of settings)
-            result[s.key] = s.value;
+        const { BankAccount } = require('../models');
+        const bank = await BankAccount.findOne({ where: { isActive: true } });
+        if (!bank)
+            return null;
         return {
-            bankName: result.platform_bank_name || null,
-            bsb: result.platform_bank_bsb || null,
-            accountNumber: result.platform_bank_account_number || null,
-            accountName: result.platform_bank_account_name || null,
+            bankName: bank.bankName,
+            bsb: bank.routingCode,
+            accountNumber: bank.accountNumber,
+            accountName: bank.bankName, // Map bankName to accountName if none exists on the model
         };
     }
     async updatePlatformBankAccount(data) {
