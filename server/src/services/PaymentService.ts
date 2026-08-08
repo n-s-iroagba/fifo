@@ -71,7 +71,7 @@ export class PaymentService {
         // Fetch unverified tickets
         const { Ticket, User, Application } = require('../models');
         const tickets = await Ticket.findAll({
-            where: { paymentStatus: 'receipt_submitted' },
+            where: { paymentStatus: 'unverified' },
             include: [{ model: User }, { model: Application, as: 'Application' }]
         });
 

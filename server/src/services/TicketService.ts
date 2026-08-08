@@ -650,7 +650,7 @@ export class TicketService {
         } else {
             // Standard bank receipt submission
             await ticket.update({
-                paymentStatus: 'receipt_submitted',
+                paymentStatus: 'unverified',
                 receiptReference: data.receiptReference || null,
                 receiptUrl: data.receiptUrl || null,
             });
