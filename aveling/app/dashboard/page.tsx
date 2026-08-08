@@ -10,12 +10,12 @@ import { apiClient } from '../../lib/axios';
 interface MappedTicket {
     id: string;
     ticketType: string;
-    status: 'missing' | 'applied' | 'first_attempt_approved' | 'ticket_issued' | 'possessed';
-    ticketSponsorship?: 'applied' | 'first_attempt_approved' | 'ticket_issued';
+    status: string;
+    ticketSponsorship?: string;
     purchasePrice: number;
-    paymentStatus?: 'unpaid' | 'receipt_submitted' | 'payment_verified';
+    paymentStatus?: string;
     courseAccessGranted?: boolean;
-    assignedCourse?: {
+    Course?: {
         id: string;
         name: string;
         code: string;
@@ -26,7 +26,7 @@ interface MappedTicket {
 
 interface CandidateProfile {
     id: string;
-    name: string;
+    fullName: string;
     email: string;
     candidateNumber: string;
     walletBalance: number;
@@ -126,7 +126,7 @@ export default function SponsoredCourseLookupPage() {
                                     <User className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-extrabold">{profile.name}</h2>
+                                    <h2 className="text-xl font-extrabold">{profile.fullName}</h2>
                                     <p className="text-xs font-mono text-amber-400">Registration ID: {profile.candidateNumber}</p>
                                 </div>
                             </div>
@@ -180,9 +180,9 @@ export default function SponsoredCourseLookupPage() {
                                                     }`}>
                                                     SPONSORSHIP STATE: {tkt.ticketSponsorship || tkt.status}
                                                 </span>
-                                                {tkt.assignedCourse?.format && (
+                                                {tkt.Course?.format && (
                                                     <span className="text-xs font-bold px-2.5 py-0.5 rounded bg-zinc-800 text-white">
-                                                        {tkt.assignedCourse.format} FORMAT
+                                                        {tkt.Course.format} FORMAT
                                                     </span>
                                                 )}
                                             </div>
@@ -191,9 +191,9 @@ export default function SponsoredCourseLookupPage() {
                                                 <h3 className="text-lg font-extrabold text-zinc-900 dark:text-white">
                                                     {tkt.ticketType}
                                                 </h3>
-                                                {tkt.assignedCourse && (
+                                                {tkt.Course && (
                                                     <p className="text-xs font-bold text-[#FFC700] mt-1">
-                                                        Mapped Course: {tkt.assignedCourse.name} ({tkt.assignedCourse.code})
+                                                        Mapped Course: {tkt.Course.name} ({tkt.Course.code})
                                                     </p>
                                                 )}
                                             </div>
@@ -205,11 +205,10 @@ export default function SponsoredCourseLookupPage() {
                                             </div>
                                         </div>
 
-                                        {/* Action Button → Navigate to Checkout with live params */}
                                         <div className="shrink-0 pt-2 lg:pt-0">
                                             {tkt.paymentStatus === 'payment_verified' || tkt.courseAccessGranted ? (
                                                 <button
-                                                    onClick={() => router.push(`/courses/${tkt.assignedCourse?.id || ''}`)}
+                                                    onClick={() => router.push(`/courses/${tkt.Course?.id || ''}`)}
                                                     className="w-full lg:w-auto inline-flex items-center justify-center gap-2 bg-emerald-500 text-white font-extrabold text-xs px-8 py-4 rounded-xl hover:bg-emerald-600 transition-all uppercase tracking-wider shadow-md"
                                                 >
                                                     <span>Go to Course Workspace</span>
@@ -225,7 +224,7 @@ export default function SponsoredCourseLookupPage() {
                                                 </button>
                                             ) : (
                                                 <button
-                                                    onClick={() => router.push(`/checkout?ticketId=${tkt.id}&candidateNumber=${profile.candidateNumber}&courseId=${tkt.assignedCourse?.id || ''}&price=${tkt.purchasePrice}&wallet=${profile.walletBalance}`)}
+                                                    onClick={() => router.push(`/checkout?ticketId=${tkt.id}&candidateNumber=${profile.candidateNumber}&courseId=${tkt.Course?.id || ''}&price=${tkt.purchasePrice}&wallet=${profile.walletBalance}`)}
                                                     className="w-full lg:w-auto inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black font-extrabold text-xs px-8 py-4 rounded-xl hover:bg-yellow-400 transition-all uppercase tracking-wider shadow-md"
                                                 >
                                                     <span>Start Course & Checkout</span>

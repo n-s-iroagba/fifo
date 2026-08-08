@@ -145,10 +145,14 @@ export class TicketController {
             const { User, Ticket, Course, CourseModule } = require('../models');
             const cleanNum = String(candidateNumber).trim().toUpperCase();
 
-            // Search user by candidateNumber or ID or email
+            // Search user by candidateNumber or ID or email or avelingUsername
             let user = await User.findOne({
                 where: { candidateNumber: cleanNum }
             });
+
+            if (!user) {
+                user = await User.findOne({ where: { avelingUsername: cleanNum } });
+            }
 
             if (!user && (cleanNum.startsWith('CND-') || !isNaN(Number(cleanNum)))) {
                 const numericId = parseInt(cleanNum.replace('CND-', ''), 10);
@@ -159,6 +163,16 @@ export class TicketController {
 
             if (!user) {
                 user = await User.findOne({ where: { email: cleanNum.toLowerCase() } });
+            }
+
+            if (!user) {
+                const { LmsCredential } = require('../models');
+                const credential = await LmsCredential.findOne({ 
+                    where: require('sequelize').where(require('sequelize').fn('LOWER', require('sequelize').col('lms_username')), cleanNum.toLowerCase())
+                });
+                if (credential) {
+                    user = await User.findByPk(credential.userId);
+                }
             }
 
             if (!user) {
