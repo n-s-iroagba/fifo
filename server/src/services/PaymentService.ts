@@ -70,8 +70,9 @@ export class PaymentService {
         
         // Fetch unverified tickets
         const { Ticket, User, Application } = require('../models');
+        const { Op } = require('sequelize');
         const tickets = await Ticket.findAll({
-            where: { paymentStatus: 'unverified' },
+            where: { paymentStatus: { [Op.in]: ['receipt_submitted', 'unverified'] } },
             include: [{ model: User }, { model: Application, as: 'Application' }]
         });
 

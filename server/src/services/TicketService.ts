@@ -664,7 +664,7 @@ export class TicketService {
             }
         } else {
             await ticket.update({
-                paymentStatus: 'unverified',
+                paymentStatus: 'receipt_submitted',
                 receiptReference: data.receiptReference || null,
                 receiptUrl: data.receiptUrl || null,
             });
