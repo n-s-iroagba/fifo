@@ -116,7 +116,7 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
         } catch { /* non-blocking */ }
         setRefundProcessing(false);
         setRefundDone(true);
-        setTimeout(() => router.push('/sponsored-course'), 2000);
+        setTimeout(() => router.push('/dashboard'), 2000);
     };
 
     return (
@@ -375,7 +375,7 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
                             </Link>
                         )}
                         <Link
-                            href="/sponsored-course"
+                            href="/dashboard"
                             className="inline-flex items-center justify-center gap-2 border border-zinc-300 bg-white px-6 py-3.5 text-xs font-bold text-zinc-700 rounded-xl hover:bg-zinc-50 transition-all"
                         >
                             Return to Candidate Portal

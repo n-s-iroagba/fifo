@@ -161,14 +161,14 @@ function CheckoutContent() {
 
                     <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
                         <button
-                            onClick={() => router.push(courseIdParam ? `/courses/${courseIdParam}` : '/sponsored-course')}
+                            onClick={() => router.push(courseIdParam ? `/courses/${courseIdParam}` : '/dashboard')}
                             className="inline-flex items-center gap-2 rounded-xl bg-[#FFC700] text-black px-6 py-3 text-xs font-black uppercase tracking-wider shadow-lg hover:bg-yellow-400 transition-all"
                         >
                             Go to Course Workspace
                             <ArrowRight className="h-4 w-4 stroke-[3]" />
                         </button>
                         <button
-                            onClick={() => router.push('/sponsored-course')}
+                            onClick={() => router.push('/dashboard')}
                             className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 bg-white px-5 py-3 text-xs font-bold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
                         >
                             Return to Candidate Portal
