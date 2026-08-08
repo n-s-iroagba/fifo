@@ -41,7 +41,7 @@ function CheckoutContent() {
             try {
                 // Fetch the platform-wide bank account configured by admins
                 // Route to the new bank-accounts router and bypass caching
-                const bankRes = await apiClient.get(`/admin/bank-accounts?_t=${new Date().getTime()}`);
+                const bankRes = await apiClient.get(`/bank-accounts?_t=${new Date().getTime()}`);
                 
                 if (bankRes.data?.rows?.length > 0) {
                     const bank = bankRes.data.rows[0];

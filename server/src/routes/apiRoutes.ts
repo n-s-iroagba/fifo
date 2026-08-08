@@ -147,6 +147,8 @@ router.delete('/admin/jobs/:id', ...adminMW, jobController.deleteJob.bind(jobCon
 // STK-ADM-BANK-001..004
 router.get('/admin/finance/configs', ...adminMW, adminController.getFinancialConfigs.bind(adminController));
 router.get('/admin/bank-accounts', ...adminMW, adminController.getAllBankAccounts.bind(adminController));
+// Public route for candidates to fetch bank details for checkout
+router.get('/bank-accounts', adminController.getAllBankAccounts.bind(adminController));
 router.get('/admin/bank-accounts/:id', ...adminMW, adminController.getBankAccountById.bind(adminController));
 
 router.get('/admin/finance/bank-accounts/by-amount', ...adminMW, adminController.getBankAccountsForAmount.bind(adminController));
