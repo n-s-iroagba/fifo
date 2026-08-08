@@ -456,24 +456,32 @@ export class TicketService {
         const user = (ticket as any).User;
 
         // Mark the ticket as receipt-verified (unlock course)
-        await ticket.update({ ticketSponsorship: ticket.ticketSponsorship }); // no status change needed — just unlock enrollment
+        await ticket.update({
+            paymentStatus: 'payment_verified',
+            courseAccessGranted: true
+        });
 
-        // Set the enrollment for this course as active/paid
+        // Set the enrollment for this course as active/paid if valid course exists
         if (ticket.courseId && user?.id) {
-            const { Enrollment } = require('../models');
-            const existingEnrollment = await Enrollment.findOne({
-                where: { userId: user.id, courseId: ticket.courseId }
-            });
-            if (existingEnrollment) {
-                await existingEnrollment.update({ paymentStatus: 'Paid', status: 'Active' });
-            } else {
-                await Enrollment.create({
-                    userId: user.id,
-                    courseId: ticket.courseId,
-                    paymentStatus: 'Paid',
-                    status: 'Active',
-                    amountPaid: ticket.purchasePrice
+            const { Enrollment, Course } = require('../models');
+            const validCourse = await Course.findByPk(ticket.courseId);
+            if (validCourse) {
+                const existingEnrollment = await Enrollment.findOne({
+                    where: { userId: user.id, courseId: ticket.courseId }
                 });
+                if (existingEnrollment) {
+                    await existingEnrollment.update({ paymentStatus: 'Paid', status: 'Active' });
+                } else {
+                    await Enrollment.create({
+                        userId: user.id,
+                        courseId: ticket.courseId,
+                        paymentStatus: 'Paid',
+                        status: 'Active',
+                        amountPaid: ticket.purchasePrice ?? 0
+                    });
+                }
+            } else {
+                console.warn(`[TicketService] Ticket #${ticket.id} references non-existent courseId ${ticket.courseId}. Skipping Enrollment creation.`);
             }
         }
 
@@ -623,22 +631,27 @@ export class TicketService {
                 receiptReference: 'WALLET_PAYMENT',
             });
 
-            // Unlock course enrollment
-            if (ticket.courseId) {
-                const { Enrollment } = require('../models');
-                const existingEnrollment = await Enrollment.findOne({
-                    where: { userId: user.id, courseId: ticket.courseId }
-                });
-                if (existingEnrollment) {
-                    await existingEnrollment.update({ paymentStatus: 'Paid', status: 'Active' });
-                } else {
-                    await Enrollment.create({
-                        userId: user.id,
-                        courseId: ticket.courseId,
-                        paymentStatus: 'Paid',
-                        status: 'Active',
-                        amountPaid: ticket.subsidisedPrice ?? ticket.purchasePrice
+            // Unlock course enrollment if valid course exists
+            if (ticket.courseId && user?.id) {
+                const { Enrollment, Course } = require('../models');
+                const validCourse = await Course.findByPk(ticket.courseId);
+                if (validCourse) {
+                    const existingEnrollment = await Enrollment.findOne({
+                        where: { userId: user.id, courseId: ticket.courseId }
                     });
+                    if (existingEnrollment) {
+                        await existingEnrollment.update({ paymentStatus: 'Paid', status: 'Active' });
+                    } else {
+                        await Enrollment.create({
+                            userId: user.id,
+                            courseId: ticket.courseId,
+                            paymentStatus: 'Paid',
+                            status: 'Active',
+                            amountPaid: ticket.subsidisedPrice ?? ticket.purchasePrice ?? 0
+                        });
+                    }
+                } else {
+                    console.warn(`[TicketService] Ticket #${ticket.id} references non-existent courseId ${ticket.courseId}. Skipping Enrollment creation.`);
                 }
             }
 
