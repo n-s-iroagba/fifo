@@ -10,7 +10,7 @@ export class ExamAttemptService {
         const questions = await ExamQuestion.findAll({ where: { courseId: attempt.courseId } });
         // Don't return correct answers to learner during test
         const safeQuestions = questions.map(q => {
-            const { correctOption, ...safeQ } = q.toJSON();
+            const { correctOptionIndex, correctAnswer, ...safeQ } = q.toJSON();
             return safeQ;
         });
         return {

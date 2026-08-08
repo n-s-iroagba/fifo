@@ -150,6 +150,7 @@ export async function seedDatabase() {
         const [certType] = await CertificationType.findOrCreate({
             where: { name: data.certificationName },
             defaults: {
+                code: data.certificationName.toUpperCase().replace(/\s+/g, '-'),
                 description: data.description,
                 validityMonths: 24,
                 requiresRefresher: true
@@ -160,6 +161,7 @@ export async function seedDatabase() {
         const [course] = await Course.findOrCreate({
             where: { title: data.course.title },
             defaults: {
+                code: data.course.title.split(' ')[0], // e.g. RIIWHS204E
                 description: data.course.description,
                 certificationTypeId: certType.id,
                 format: data.course.format as any,
@@ -188,8 +190,8 @@ export async function seedDatabase() {
                 defaults: {
                     questionType: q.questionType,
                     options: q.options,
-                    correctAnswer: q.correctAnswer,
-                    weighting: q.weighting
+                    correctOptionIndex: q.correctOptionIndex,
+                    weight: q.weight
                 }
             });
         }
@@ -199,6 +201,7 @@ export async function seedDatabase() {
             await PracticalCriterion.findOrCreate({
                 where: { courseId: course.id, description: crit },
                 defaults: {
+                    title: crit.split(' ').slice(0, 3).join(' '),
                     isMandatory: true
                 }
             });

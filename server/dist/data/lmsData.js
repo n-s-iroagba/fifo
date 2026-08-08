@@ -19,17 +19,17 @@ exports.lmsSeedData = [
             questions: [
                 {
                     questionText: 'What is the minimum height at which fall prevention measures are generally required?',
-                    questionType: 'multiple_choice',
-                    options: JSON.stringify(['1 meter', '2 meters', '3 meters', '4 meters']),
-                    correctAnswer: '2 meters',
-                    weighting: 1
+                    questionType: 'mcq',
+                    options: ['1 meter', '2 meters', '3 meters', '4 meters'],
+                    correctOptionIndex: 1, // '2 meters'
+                    weight: 10
                 },
                 {
                     questionText: 'Before using a safety harness, you should always:',
-                    questionType: 'multiple_choice',
-                    options: JSON.stringify(['Inspect it for damage', 'Wash it in warm water', 'Leave it in direct sunlight', 'Adjust it loosely']),
-                    correctAnswer: 'Inspect it for damage',
-                    weighting: 1
+                    questionType: 'mcq',
+                    options: ['Inspect it for damage', 'Wash it in warm water', 'Leave it in direct sunlight', 'Adjust it loosely'],
+                    correctOptionIndex: 0, // 'Inspect it for damage'
+                    weight: 10
                 }
             ],
             practicalCriteria: [
@@ -57,17 +57,17 @@ exports.lmsSeedData = [
             questions: [
                 {
                     questionText: 'Which of the following is considered a confined space?',
-                    questionType: 'multiple_choice',
-                    options: JSON.stringify(['An open-cut mine', 'A well-ventilated warehouse', 'A storage tank or silo', 'An office building']),
-                    correctAnswer: 'A storage tank or silo',
-                    weighting: 1
+                    questionType: 'mcq',
+                    options: ['An open-cut mine', 'A well-ventilated warehouse', 'A storage tank or silo', 'An office building'],
+                    correctOptionIndex: 2, // 'A storage tank or silo'
+                    weight: 10
                 },
                 {
                     questionText: 'Who must remain outside a confined space to monitor the workers inside?',
-                    questionType: 'multiple_choice',
-                    options: JSON.stringify(['The Site Manager', 'A Standby Person (Hole Watch)', 'The First Aid Officer', 'Nobody is required']),
-                    correctAnswer: 'A Standby Person (Hole Watch)',
-                    weighting: 1
+                    questionType: 'mcq',
+                    options: ['The Site Manager', 'A Standby Person (Hole Watch)', 'The First Aid Officer', 'Nobody is required'],
+                    correctOptionIndex: 1, // 'A Standby Person (Hole Watch)'
+                    weight: 10
                 }
             ],
             practicalCriteria: [
@@ -95,10 +95,10 @@ exports.lmsSeedData = [
             questions: [
                 {
                     questionText: 'What is the correct ratio of chest compressions to rescue breaths in CPR?',
-                    questionType: 'multiple_choice',
-                    options: JSON.stringify(['15:2', '30:2', '10:1', '5:1']),
-                    correctAnswer: '30:2',
-                    weighting: 1
+                    questionType: 'mcq',
+                    options: ['15:2', '30:2', '10:1', '5:1'],
+                    correctOptionIndex: 1, // '30:2'
+                    weight: 10
                 }
             ],
             practicalCriteria: []

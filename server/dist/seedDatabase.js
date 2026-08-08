@@ -171,8 +171,8 @@ async function seedDatabase() {
                 defaults: {
                     questionType: q.questionType,
                     options: q.options,
-                    correctAnswer: q.correctAnswer,
-                    weighting: q.weighting
+                    correctOptionIndex: q.correctOptionIndex,
+                    weight: q.weight
                 }
             });
         }
