@@ -8,20 +8,39 @@ import { Award, Search, User, CreditCard, ArrowRight, ShieldCheck, CheckCircle2,
 import { apiClient } from '../../lib/axios';
 
 interface MappedTicket {
-    id: string;
-    ticketType: string;
+    id: number | string;
+    userId: number | string;
+    applicationId: number | string;
     status: string;
-    ticketSponsorship?: string;
+    ticketNumber: string | null;
+    ticketType: string;
+    description: string | null;
     purchasePrice: number;
-    paymentStatus?: string;
-    courseAccessGranted?: boolean;
-    Course?: {
+    realPrice: number;
+    subsidisedPrice: number | null;
+    purchaseDate: string | null;
+    expiryDate: string | null;
+    proof: string | null;
+    proofThumbnail: string | null;
+    sponsorshipDeadline: string | null;
+    ticketSponsorship: string | null;
+    canApplySponsorship: boolean;
+    ticketSponsorshipRefundAmount: number | null;
+    refundStatus: string | null;
+    courseId: string | null;
+    receiptUrl: string | null;
+    receiptReference: string | null;
+    paymentStatus: string | null;
+    courseAccessGranted: boolean;
+    createdAt: string;
+    updatedAt: string;
+    Course: {
         id: string;
         name: string;
         code: string;
         format: 'THEORY' | 'PRACTICAL' | 'MIXED';
         price: number;
-    };
+    } | null;
 }
 
 interface CandidateProfile {
