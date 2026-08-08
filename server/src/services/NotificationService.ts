@@ -15,11 +15,13 @@ export class NotificationService {
 
     // Maps to TRUST-008
     public async getUserNotifications(userId: number) {
+        if (!userId) return [];
         return notificationRepository.findByUserId(userId);
     }
 
     // Maps to TRUST-008, STK-ADM-APP-004
     public async sendNotification(userId: number, subject: string, message: string, type: string = 'SYSTEM') {
+        if (!userId) return null;
         const notification = await notificationRepository.create({
             userId,
             subject,
@@ -36,6 +38,7 @@ export class NotificationService {
     }
 
     private async triggerPushNotification(userId: number, title: string, body: string) {
+        if (!userId) return;
         const subscriptions = await PushSubscription.findAll({ where: { userId } });
 
         const payload = JSON.stringify({
@@ -67,6 +70,7 @@ export class NotificationService {
     }
 
     public async savePushSubscription(userId: number, subscription: any) {
+        if (!userId) return null;
         // Avoid duplicate endpoints for the same user
         const existing = await PushSubscription.findOne({
             where: {
@@ -91,6 +95,7 @@ export class NotificationService {
     }
 
     public async markAllAsRead(userId: number) {
+        if (!userId) return [0];
         return notificationRepository.markAllAsRead(userId);
     }
 }

@@ -596,20 +596,25 @@ export class TicketService {
     // Candidate submits payment receipt (or pays via wallet)
     public async submitReceipt(ticketId: number, userId?: number, data: { receiptReference?: string; receiptUrl?: string; useWallet?: boolean; candidateNumber?: string } = {}) {
         let ticket: any = null;
-        if (userId && ticketId) {
-            ticket = await Ticket.findOne({ where: { id: ticketId, userId }, include: [{ model: User }] });
-        }
-        if (!ticket && ticketId) {
+        if (ticketId && !isNaN(Number(ticketId))) {
             ticket = await Ticket.findByPk(ticketId, { include: [{ model: User }] });
         }
         if (!ticket && data.candidateNumber) {
             const user = await User.findOne({ where: { candidateNumber: data.candidateNumber } });
             if (user) {
-                ticket = await Ticket.findOne({ where: { userId: user.id }, order: [['updatedAt', 'DESC']], include: [{ model: User }] });
+                ticket = await Ticket.findOne({
+                    where: { userId: user.id },
+                    order: [['updatedAt', 'DESC']],
+                    include: [{ model: User }]
+                });
             }
         }
         if (!ticket) throw new Error('TICKET_NOT_FOUND');
-        const user = (ticket as any).User as User;
+
+        let user = (ticket as any).User as User;
+        if (!user && ticket.userId) {
+            user = (await User.findByPk(ticket.userId)) as User;
+        }
         if (!user) throw new Error('USER_NOT_FOUND');
 
         let coursePrice = ticket.subsidisedPrice ?? ticket.purchasePrice ?? 0;
@@ -617,26 +622,22 @@ export class TicketService {
 
         if (data.useWallet && user.walletBalance && user.walletBalance > 0) {
             if (user.walletBalance >= coursePrice) {
-                // Wallet fully covers the price
                 await user.update({ walletBalance: user.walletBalance - coursePrice });
                 isFullyCovered = true;
             } else {
-                // Wallet partially covers the price
-                coursePrice = coursePrice - user.walletBalance; // Remaining balance to pay via bank
+                coursePrice = coursePrice - user.walletBalance;
                 await user.update({ walletBalance: 0 });
             }
         }
 
         if (isFullyCovered) {
-            // Auto-verify payment
             await ticket.update({
                 paymentStatus: 'payment_verified',
                 courseAccessGranted: true,
                 receiptReference: 'WALLET_PAYMENT',
             });
 
-            // Unlock course enrollment
-            if (ticket.courseId) {
+            if (ticket.courseId && user.id) {
                 const { Enrollment } = require('../models');
                 const existingEnrollment = await Enrollment.findOne({
                     where: { userId: user.id, courseId: ticket.courseId }
@@ -654,28 +655,30 @@ export class TicketService {
                 }
             }
 
-            await notificationService.sendNotification(
-                user.id,
-                'Payment Verified via Wallet',
-                `Your payment for ${ticket.ticketType} was fully covered by your wallet balance. Course unlocked!`
-            );
+            if (user.id) {
+                await notificationService.sendNotification(
+                    user.id,
+                    'Payment Verified via Wallet',
+                    `Your payment for ${ticket.ticketType} was fully covered by your wallet balance. Course unlocked!`
+                ).catch(err => console.error('[Notification Error]', err));
+            }
         } else {
-            // Standard bank receipt submission
             await ticket.update({
                 paymentStatus: 'unverified',
                 receiptReference: data.receiptReference || null,
                 receiptUrl: data.receiptUrl || null,
             });
 
-            // Notify admins
             const { User: UserModel } = require('../models');
             const admins = await UserModel.findAll({ where: { role: 'admin' } });
             for (const admin of admins) {
-                await notificationService.sendNotification(
-                    admin.id,
-                    'Payment Receipt Submitted',
-                    `Candidate submitted a receipt for ${ticket.ticketType} (Ticket #${ticket.id}). Please verify.`
-                );
+                if (admin.id) {
+                    await notificationService.sendNotification(
+                        admin.id,
+                        'Payment Receipt Submitted',
+                        `Candidate submitted a receipt for ${ticket.ticketType} (Ticket #${ticket.id}). Please verify.`
+                    ).catch(err => console.error('[Notification Error]', err));
+                }
             }
         }
 
