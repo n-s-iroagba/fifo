@@ -136,7 +136,7 @@ Ticket.init({
         allowNull: true,
     },
     receiptUrl: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true,
     },
     receiptReference: {

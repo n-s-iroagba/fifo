@@ -5,6 +5,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CreditCard, CheckCircle2, ArrowRight, Upload, Building2, Copy, Wallet, FileCheck, Loader2 } from 'lucide-react';
 import { apiClient } from '../../lib/axios';
+import { uploadFile } from '../../lib/utils';
 
 interface BankDetails {
     bankName: string;
@@ -87,15 +88,6 @@ function CheckoutContent() {
         setTimeout(() => setCopiedField(null), 2000);
     };
 
-    const convertFileToBase64 = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = (error) => reject(error);
-        });
-    };
-
     // STEP-1.1.9 & 1.1.10: Submit receipt
     const handlePaymentReceiptSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -104,9 +96,9 @@ function CheckoutContent() {
             let uploadedReceiptUrl = 'https://example.com/dummy-receipt.pdf';
             if (receiptFile) {
                 try {
-                    uploadedReceiptUrl = await convertFileToBase64(receiptFile);
+                    uploadedReceiptUrl = await uploadFile(receiptFile, 'image');
                 } catch (e) {
-                    console.warn("Base64 conversion failed, using fallback", e);
+                    console.warn("Cloudinary upload failed, using fallback", e);
                 }
             }
 
