@@ -336,7 +336,7 @@ export class TicketController {
     public async submitReceipt(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const ticketId = parseInt(req.params.id as string, 10);
-            const userId = (req as any).user!.id;
+            const userId = (req as any).user?.id;
             const ticket = await ticketService.submitReceipt(ticketId, userId, req.body);
             res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: ticket });
         } catch (error: any) {

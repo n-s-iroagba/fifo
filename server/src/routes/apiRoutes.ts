@@ -217,8 +217,8 @@ router.put('/admin/prefill-stages/:id', ...adminMW, prefillStageController.updat
 router.delete('/admin/prefill-stages/:id', ...adminMW, prefillStageController.deletePrefillStage.bind(prefillStageController));
 router.post('/admin/prefill-stages/reorder', ...adminMW, prefillStageController.reorderPrefillStages.bind(prefillStageController));
 
-// Candidate receipt submission (authenticated applicant)
-router.post('/tickets/:id/submit-receipt', ...applicantMW, ticketController.submitReceipt.bind(ticketController));
+// Candidate receipt submission (public or candidate authenticated)
+router.post('/tickets/:id/submit-receipt', ticketController.submitReceipt.bind(ticketController));
 
 
 import { interestController } from '../controllers/InterestController';

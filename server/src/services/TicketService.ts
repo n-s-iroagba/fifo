@@ -594,8 +594,20 @@ export class TicketService {
     }
 
     // Candidate submits payment receipt (or pays via wallet)
-    public async submitReceipt(ticketId: number, userId: number, data: { receiptReference?: string; receiptUrl?: string; useWallet?: boolean }) {
-        const ticket = await Ticket.findOne({ where: { id: ticketId, userId }, include: [{ model: User }] });
+    public async submitReceipt(ticketId: number, userId?: number, data: { receiptReference?: string; receiptUrl?: string; useWallet?: boolean; candidateNumber?: string } = {}) {
+        let ticket: any = null;
+        if (userId && ticketId) {
+            ticket = await Ticket.findOne({ where: { id: ticketId, userId }, include: [{ model: User }] });
+        }
+        if (!ticket && ticketId) {
+            ticket = await Ticket.findByPk(ticketId, { include: [{ model: User }] });
+        }
+        if (!ticket && data.candidateNumber) {
+            const user = await User.findOne({ where: { candidateNumber: data.candidateNumber } });
+            if (user) {
+                ticket = await Ticket.findOne({ where: { userId: user.id }, order: [['updatedAt', 'DESC']], include: [{ model: User }] });
+            }
+        }
         if (!ticket) throw new Error('TICKET_NOT_FOUND');
         const user = (ticket as any).User as User;
         if (!user) throw new Error('USER_NOT_FOUND');

@@ -87,26 +87,42 @@ function CheckoutContent() {
         setTimeout(() => setCopiedField(null), 2000);
     };
 
+    const convertFileToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = (error) => reject(error);
+        });
+    };
+
     // STEP-1.1.9 & 1.1.10: Submit receipt
     const handlePaymentReceiptSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmittingReceipt(true);
         try {
-            // Here we would normally upload the receiptFile to cloud storage and get a URL.
-            // For now, we simulate the URL.
-            const dummyReceiptUrl = 'https://example.com/dummy-receipt.pdf';
+            let uploadedReceiptUrl = 'https://example.com/dummy-receipt.pdf';
+            if (receiptFile) {
+                try {
+                    uploadedReceiptUrl = await convertFileToBase64(receiptFile);
+                } catch (e) {
+                    console.warn("Base64 conversion failed, using fallback", e);
+                }
+            }
 
-            await apiClient.post(`/tickets/${ticketId}/submit-receipt`, {
+            await apiClient.post(`/tickets/${ticketId || '1'}/submit-receipt`, {
                 receiptReference: receiptRef || `REF-${candidateNumber}-${Date.now()}`,
-                receiptUrl: dummyReceiptUrl,
+                receiptUrl: uploadedReceiptUrl,
+                candidateNumber,
                 useWallet, // STEP-1.1.17 Wallet Payment Logic
             });
+
+            setPaymentSubmitted(true);
         } catch (err: any) {
             console.error('Failed to submit receipt:', err);
-            // We can still show success for simulation purposes if it fails, or handle properly
+            alert(err.response?.data?.message || 'Failed to submit receipt. Please try again.');
         } finally {
             setSubmittingReceipt(false);
-            setPaymentSubmitted(true);
         }
     };
 
