@@ -162,7 +162,7 @@ export default function SponsoredCourseLookupPage() {
                                     Available Ticket Sponsorship Wallet Balance
                                 </span>
                                 <span className="text-2xl font-black text-[#FFC700]">
-                                    ${profile.walletBalance.toFixed(2)} AUD
+                                    ${Number(profile.walletBalance || 0).toFixed(2)} AUD
                                 </span>
                                 <span className="block text-[11px] text-emerald-400 font-semibold mt-0.5">
                                     ✓ Available for ticket sponsorship pay-ahead
@@ -218,7 +218,7 @@ export default function SponsoredCourseLookupPage() {
                                             </div>
 
                                             <div className="flex items-center gap-4 text-xs text-zinc-600 dark:text-zinc-400">
-                                                <span>Course Price: <strong className="text-zinc-900 dark:text-white">${tkt.purchasePrice.toFixed(2)}</strong></span>
+                                                <span>Course Price: <strong className="text-zinc-900 dark:text-white">${Number(tkt.purchasePrice || 0).toFixed(2)}</strong></span>
                                                 <span>•</span>
                                                 <span>100% Refundable on Completion</span>
                                             </div>
