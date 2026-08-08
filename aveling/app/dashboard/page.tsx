@@ -218,7 +218,15 @@ export default function SponsoredCourseLookupPage() {
                                             </div>
 
                                             <div className="flex items-center gap-4 text-xs text-zinc-600 dark:text-zinc-400">
-                                                <span>Course Price: <strong className="text-zinc-900 dark:text-white">${Number(tkt.purchasePrice || 0).toFixed(2)}</strong></span>
+                                                <span>
+                                                    Course Price:{' '}
+                                                    <span className="line-through text-zinc-400 dark:text-zinc-500 mr-2">
+                                                        ${Number(tkt.realPrice || 0).toFixed(2)}
+                                                    </span>
+                                                    <strong className="text-zinc-900 dark:text-white">
+                                                        ${Number(tkt.subsidisedPrice !== null ? tkt.subsidisedPrice : tkt.purchasePrice || 0).toFixed(2)}
+                                                    </strong>
+                                                </span>
                                                 <span>•</span>
                                                 <span>100% Refundable on Completion</span>
                                             </div>
@@ -243,7 +251,7 @@ export default function SponsoredCourseLookupPage() {
                                                 </button>
                                             ) : (
                                                 <button
-                                                    onClick={() => router.push(`/checkout?ticketId=${tkt.id}&candidateNumber=${profile.candidateNumber}&courseId=${tkt.Course?.id || ''}&price=${tkt.purchasePrice}&wallet=${profile.walletBalance}`)}
+                                                    onClick={() => router.push(`/checkout?ticketId=${tkt.id}&candidateNumber=${profile.candidateNumber}&courseId=${tkt.Course?.id || ''}&price=${tkt.subsidisedPrice !== null ? tkt.subsidisedPrice : tkt.purchasePrice}&wallet=${profile.walletBalance}`)}
                                                     className="w-full lg:w-auto inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black font-extrabold text-xs px-8 py-4 rounded-xl hover:bg-yellow-400 transition-all uppercase tracking-wider shadow-md"
                                                 >
                                                     <span>Start Course & Checkout</span>
