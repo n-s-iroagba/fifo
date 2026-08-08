@@ -66,7 +66,32 @@ export class PaymentService {
 
     // Maps to STK-ADM-PAY-004 — unverified (screenshot uploaded, not yet verified)
     public async getUnverifiedPayments(limit?: number, offset?: number) {
-        return paymentRepository.findAllAdmin({ status: CONSTANTS.PAYMENT_STATUSES.PENDING, limit, offset });
+        const payments = await paymentRepository.findAllAdmin({ status: CONSTANTS.PAYMENT_STATUSES.PENDING, limit, offset });
+        
+        // Fetch unverified tickets
+        const { Ticket, User, Application } = require('../models');
+        const tickets = await Ticket.findAll({
+            where: { paymentStatus: 'receipt_submitted' },
+            include: [{ model: User }, { model: Application, as: 'Application' }]
+        });
+
+        const mappedTickets = tickets.map((t: any) => ({
+            id: t.id,
+            isTicket: true,
+            amount: t.subsidisedPrice !== null ? t.subsidisedPrice : t.purchasePrice,
+            proofUrl: t.receiptUrl,
+            Application: {
+                User: t.User || {}
+            },
+            JobStage: {
+                name: `Aveling Course: ${t.ticketType}`
+            }
+        }));
+
+        return {
+            rows: [...payments.rows, ...mappedTickets],
+            count: payments.count + mappedTickets.length
+        };
     }
 
     // Maps to STK-ADM-PAY-001, STK-ADM-PAY-002

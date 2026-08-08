@@ -14,7 +14,11 @@ export default function UnverifiedPaymentsPage() {
         '/admin/payments/unverified'
     );
 
-    const verifyMutation = useApiMutation('post', `/admin/payments/${selectedPayment?.id}/verify`, {
+    const verifyEndpoint = selectedPayment?.isTicket 
+        ? `/admin/tickets/${selectedPayment?.id}/approve-receipt`
+        : `/admin/payments/${selectedPayment?.id}/verify`;
+
+    const verifyMutation = useApiMutation('post', verifyEndpoint, {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'payments', 'unverified'] });
             setSelectedPayment(null);
