@@ -248,7 +248,7 @@ export default function SponsoredCourseLookupPage() {
                                                     onClick={() => router.push(`/courses/${tkt.Course?.id || ''}`)}
                                                     className="w-full lg:w-auto inline-flex items-center justify-center gap-2 bg-emerald-500 text-white font-extrabold text-xs px-8 py-4 rounded-xl hover:bg-emerald-600 transition-all uppercase tracking-wider shadow-md"
                                                 >
-                                                    <span>Go to Course Workspace</span>
+                                                    <span>Start Course</span>
                                                     <ArrowRight className="h-4 w-4 stroke-[3]" />
                                                 </button>
                                             ) : (tkt.paymentStatus && tkt.paymentStatus !== 'unpaid' && tkt.paymentStatus !== 'failed') ? (
@@ -257,7 +257,7 @@ export default function SponsoredCourseLookupPage() {
                                                     className="w-full lg:w-auto inline-flex items-center justify-center gap-2 bg-amber-200 text-amber-800 font-extrabold text-xs px-8 py-4 rounded-xl uppercase tracking-wider shadow-inner cursor-not-allowed"
                                                 >
                                                     <Lock className="h-4 w-4 stroke-[3]" />
-                                                    <span>Awaiting Admin Verification</span>
+                                                    <span>Awaiting Approval</span>
                                                 </button>
                                             ) : (
                                                 <button
