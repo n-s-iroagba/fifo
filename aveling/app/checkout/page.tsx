@@ -40,8 +40,9 @@ function CheckoutContent() {
         const fetchBankDetails = async () => {
             try {
                 // Fetch the platform-wide bank account configured by admins
-                const bankRes = await apiClient.get('/platform-bank');
-                if (bankRes.data?.data) {
+                // Append cache buster to prevent 304 Not Modified on production
+                const bankRes = await apiClient.get(`/platform-bank?_t=${new Date().getTime()}`);
+                if (bankRes.data?.data && (bankRes.data.data.bankName || bankRes.data.data.bsb)) {
                     setBankDetails(bankRes.data.data);
                 } else {
                     setBankDetails(null);
