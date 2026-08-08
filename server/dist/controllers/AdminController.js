@@ -426,7 +426,7 @@ class AdminController {
         }
         catch (error) {
             console.error('[AdminController.updateApplicantAdminStage]', error);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
 }

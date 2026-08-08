@@ -35,36 +35,43 @@ interface CandidateProfile {
 
 export default function SponsoredCourseLookupPage() {
     const router = useRouter();
-    const [candidateInput, setCandidateInput] = useState('CND-10001');
-    const [loading, setLoading] = useState(false);
+    const [candidateInput, setCandidateInput] = useState('');
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [profile, setProfile] = useState<CandidateProfile | null>(null);
 
-    const handleLookup = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!candidateInput.trim()) return;
-        setLoading(true);
-        setError(null);
-
-        try {
-            const res = await apiClient.post('/candidate/lookup', {
-                candidateNumber: candidateInput.trim(),
-                email: candidateInput.trim()
-            });
-
-            if (res.data && res.data.success) {
-                setProfile(res.data.data);
-            } else {
-                setError(res.data?.message || 'Candidate record not found.');
+    React.useEffect(() => {
+        const fetchProfile = async () => {
+            const userStr = localStorage.getItem('lms_user');
+            if (!userStr) {
+                router.push('/login');
+                return;
             }
-        } catch (err: any) {
-            console.error('Failed to lookup candidate:', err);
-            setError(err.response?.data?.message || 'Failed to lookup candidate record.');
-            setProfile(null);
-        } finally {
-            setLoading(false);
-        }
-    };
+            const user = JSON.parse(userStr);
+            const lookupValue = user.lmsUsername;
+            
+            try {
+                const res = await apiClient.post('/candidate/lookup', {
+                    candidateNumber: lookupValue,
+                    email: lookupValue
+                });
+
+                if (res.data && res.data.success) {
+                    setProfile(res.data.data);
+                } else {
+                    setError(res.data?.message || 'Candidate record not found.');
+                }
+            } catch (err: any) {
+                console.error('Failed to lookup candidate:', err);
+                setError(err.response?.data?.message || 'Failed to fetch your dashboard profile.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProfile();
+    }, [router]);
+
 
     return (
         <div className="max-w-5xl mx-auto py-10 px-4 sm:px-6 lg:px-8 space-y-8">
@@ -75,48 +82,38 @@ export default function SponsoredCourseLookupPage() {
                     Aveling FIFO Ticket Sponsorship Portal
                 </div>
                 <h1 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
-                    Enter Candidate Number
+                    Candidate Dashboard
                 </h1>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                    Lookup your recruiter-assigned ticket sponsorships, view wallet refund balances, and start your certified compliance courses.
+                    View your recruiter-assigned ticket sponsorships, check your wallet refund balance, and access your required compliance courses.
                 </p>
             </div>
 
-            {/* Candidate Lookup Form (1.1.2 & 1.1.3) */}
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-md space-y-4">
-                <form onSubmit={handleLookup} className="flex flex-col sm:flex-row gap-4 items-end">
-                    <div className="flex-1 space-y-2">
-                        <label className="block text-xs font-extrabold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
-                            Candidate Number or Email Address:
-                        </label>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                value={candidateInput}
-                                onChange={(e) => setCandidateInput(e.target.value)}
-                                placeholder="e.g. CND-10001 or alex@example.com"
-                                className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 px-4 py-3 rounded-xl text-sm font-bold text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#FFC700]"
-                                required
-                            />
-                            <Search className="absolute right-3.5 top-3.5 h-5 w-5 text-zinc-400" />
-                        </div>
+            {/* Candidate Lookup Form (Hidden for Auth Users) */}
+            {error && (
+                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-md space-y-4">
+                    <div className="flex flex-col items-center gap-4 py-6">
+                        <AlertCircle className="h-12 w-12 text-rose-500" />
+                        <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Profile Not Found</h3>
+                        <p className="text-sm text-zinc-600 dark:text-zinc-400 text-center max-w-md">
+                            {error}
+                        </p>
+                        <button
+                            onClick={() => router.push('/login')}
+                            className="mt-4 bg-[#FFC700] text-black font-extrabold text-sm px-8 py-3 rounded-xl hover:bg-yellow-400"
+                        >
+                            Return to Login
+                        </button>
                     </div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="bg-[#FFC700] text-black font-extrabold text-sm px-8 py-3.5 rounded-xl hover:bg-yellow-400 transition-all uppercase tracking-wider shadow-md shrink-0 disabled:opacity-50"
-                    >
-                        {loading ? 'Searching...' : 'Submit & Find Tickets'}
-                    </button>
-                </form>
+                </div>
+            )}
 
-                {error && (
-                    <div className="flex items-center gap-2 p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs font-bold">
-                        <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
-                        <span>{error}</span>
-                    </div>
-                )}
-            </div>
+            {loading && !error && (
+                <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-zinc-200 border-t-[#FFC700]"></div>
+                    <p className="text-sm font-bold text-zinc-500 animate-pulse">Loading your training profile...</p>
+                </div>
+            )}
 
             {/* Candidate Details & Assigned Tickets View (1.1.4, 1.1.5, 1.1.17, 1.1.18) */}
             {profile && (

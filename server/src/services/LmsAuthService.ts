@@ -83,7 +83,7 @@ export class LmsAuthService {
 
         // 2. Search LmsCredential by lmsUsername
         let credential = await LmsCredential.findOne({
-            where: sequelize.where(sequelize.fn('LOWER', sequelize.col('lmsUsername')), cleanUsername.toLowerCase()),
+            where: sequelize.where(sequelize.fn('LOWER', sequelize.col('lms_username')), cleanUsername.toLowerCase()),
             include: [{ model: User }]
         });
 
