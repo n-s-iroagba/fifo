@@ -7,6 +7,8 @@ export class CourseModule extends Model {
   public title!: string;
   public contentType!: 'VIDEO' | 'DOCUMENT' | 'TEXT';
   public contentUrl!: string;
+  public content!: string | null;
+  public durationMinutes!: number;
   public sequenceOrder!: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -35,6 +37,15 @@ CourseModule.init({
   contentUrl: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  content: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  durationMinutes: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 30
   },
   sequenceOrder: {
     type: DataTypes.INTEGER,

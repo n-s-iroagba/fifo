@@ -16,6 +16,24 @@ export async function seedDatabase() {
         }
     }
 
+    // Safely add content and durationMinutes to course_modules
+    try {
+        await sequelize.query("ALTER TABLE course_modules ADD COLUMN content TEXT DEFAULT NULL;");
+        console.log("Safely patched course_modules table with content.");
+    } catch (e: any) {
+        if (e.original && e.original.code !== 'ER_DUP_FIELDNAME') {
+            console.log("Notice: content column might already exist or could not be added:", e.message);
+        }
+    }
+    try {
+        await sequelize.query("ALTER TABLE course_modules ADD COLUMN duration_minutes INTEGER DEFAULT 30;");
+        console.log("Safely patched course_modules table with durationMinutes.");
+    } catch (e: any) {
+        if (e.original && e.original.code !== 'ER_DUP_FIELDNAME') {
+            console.log("Notice: duration_minutes column might already exist or could not be added:", e.message);
+        }
+    }
+
     // Safely add visaSponsorshipStatus to Application without triggering FK re-checks
     try {
         await sequelize.query("ALTER TABLE applications ADD COLUMN visaSponsorshipStatus ENUM('Pending', 'Approved', 'Rejected') DEFAULT NULL;");
@@ -82,7 +100,7 @@ export async function seedDatabase() {
         // Create Course Modules
         if (data.course.modules) {
             for (const m of data.course.modules) {
-                await CourseModule.findOrCreate({
+                const [mod] = await CourseModule.findOrCreate({
                     where: { courseId: course.id, title: m.title },
                     defaults: {
                         durationMinutes: m.durationMinutes,
@@ -91,6 +109,15 @@ export async function seedDatabase() {
                         contentType: m.contentType || 'TEXT',
                         contentUrl: m.contentUrl || 'local-content'
                     }
+                });
+                
+                // Enforce update for newly added schema fields
+                await mod.update({
+                    content: m.content,
+                    durationMinutes: m.durationMinutes,
+                    contentType: m.contentType || 'TEXT',
+                    contentUrl: m.contentUrl || 'local-content',
+                    sequenceOrder: m.sequenceOrder
                 });
             }
         }
