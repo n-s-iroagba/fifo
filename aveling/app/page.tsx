@@ -39,7 +39,7 @@ interface MappedTicket {
     purchasePrice: number;
     paymentStatus?: 'unpaid' | 'receipt_submitted' | 'payment_verified';
     courseAccessGranted?: boolean;
-    assignedCourse?: {
+    Course?: {
         id: string;
         name: string;
         code: string;
@@ -124,8 +124,8 @@ export default function AvelingHomePage() {
             });
 
             if (response.data?.success) {
-                const { token, user } = response.data.data;
-                localStorage.setItem('lms_token', token);
+                const { accessToken, user } = response.data.data;
+                localStorage.setItem('lms_token', accessToken);
                 localStorage.setItem('lms_user', JSON.stringify(user));
                 router.push('/dashboard')
 
@@ -352,9 +352,9 @@ export default function AvelingHomePage() {
                                                         <span className="text-xs font-bold px-3 py-0.5 rounded-full uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                                                             STATUS: {tkt.ticketSponsorship || tkt.status}
                                                         </span>
-                                                        {tkt.assignedCourse?.format && (
+                                                        {tkt.Course?.format && (
                                                             <span className="text-xs font-bold px-2 py-0.5 rounded bg-zinc-800 text-white">
-                                                                {tkt.assignedCourse.format} FORMAT
+                                                                {tkt.Course.format} FORMAT
                                                             </span>
                                                         )}
                                                     </div>
@@ -362,9 +362,9 @@ export default function AvelingHomePage() {
                                                     <h4 className="text-lg font-extrabold text-zinc-900 dark:text-white">
                                                         {tkt.ticketType}
                                                     </h4>
-                                                    {tkt.assignedCourse && (
+                                                    {tkt.Course && (
                                                         <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
-                                                            Mapped Course: {tkt.assignedCourse.name} ({tkt.assignedCourse.code})
+                                                            Mapped Course: {tkt.Course.name} ({tkt.Course.code})
                                                         </p>
                                                     )}
                                                 </div>
@@ -413,13 +413,13 @@ export default function AvelingHomePage() {
                                                     {isAccessGranted ? (
                                                         <>
                                                             <Link
-                                                                href={`/courses/${tkt.assignedCourse?.id || ''}`}
+                                                                href={`/courses/${tkt.Course?.id || tkt.courseId || ''}`}
                                                                 className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-emerald-600 text-white font-extrabold text-xs px-6 py-3 rounded-xl hover:bg-emerald-500 transition-all uppercase tracking-wider shadow-md"
                                                             >
                                                                 <span>Start Course</span>
                                                             </Link>
                                                             <Link
-                                                                href={`/courses/${tkt.assignedCourse?.id || ''}/exam?ticketId=${tkt.id}`}
+                                                                href={`/courses/${tkt.Course?.id || tkt.courseId || ''}/exam?ticketId=${tkt.id}`}
                                                                 className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black font-extrabold text-xs px-6 py-3 rounded-xl hover:bg-yellow-400 transition-all uppercase tracking-wider shadow-md"
                                                             >
                                                                 <Award className="h-4 w-4" />
@@ -436,7 +436,7 @@ export default function AvelingHomePage() {
                                                         </button>
                                                     ) : (
                                                         <button
-                                                            onClick={() => router.push(`/checkout?ticketId=${tkt.id}&candidateNumber=${profile.candidateNumber}&courseId=${tkt.assignedCourse?.id || ''}&price=${coursePrice}&wallet=${profile.walletBalance}`)}
+                                                            onClick={() => router.push(`/checkout?ticketId=${tkt.id}&candidateNumber=${profile.candidateNumber}&courseId=${tkt.Course?.id || tkt.courseId || ''}&price=${coursePrice}&wallet=${profile.walletBalance}`)}
                                                             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black font-extrabold text-xs px-8 py-3.5 rounded-xl hover:bg-yellow-400 transition-all uppercase tracking-wider shadow-md"
                                                         >
                                                             <CreditCard className="h-4 w-4" />
