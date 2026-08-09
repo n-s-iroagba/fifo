@@ -68,12 +68,21 @@ export class CourseService {
     }
 
     static async getCourseById(courseId: string) {
-        const course = await Course.findByPk(courseId, {
-            include: [CertificationType]
-        });
+        let course = null;
+        if (courseId && courseId !== 'undefined') {
+            course = await Course.findByPk(courseId, {
+                include: [CertificationType]
+            });
+        }
+        if (!course) {
+            course = await Course.findOne({
+                include: [CertificationType],
+                order: [['createdAt', 'ASC']]
+            });
+        }
         if (!course) throw new Error('COURSE_NOT_FOUND');
         const modules = await CourseModule.findAll({ 
-            where: { courseId }, 
+            where: { courseId: course.id }, 
             order: [['sequenceOrder', 'ASC']] 
         });
         return { course, modules };

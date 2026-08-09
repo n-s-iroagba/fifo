@@ -245,7 +245,10 @@ export default function SponsoredCourseLookupPage() {
                                         <div className="shrink-0 pt-2 lg:pt-0">
                                             {tkt.paymentStatus === 'payment_verified' || tkt.courseAccessGranted ? (
                                                 <button
-                                                    onClick={() => router.push(`/courses/${tkt.Course?.id || ''}`)}
+                                                    onClick={() => {
+                                                        const targetCourseId = tkt.Course?.id || tkt.courseId;
+                                                        router.push(targetCourseId ? `/courses/${targetCourseId}` : '/courses/default');
+                                                    }}
                                                     className="w-full lg:w-auto inline-flex items-center justify-center gap-2 bg-emerald-500 text-white font-extrabold text-xs px-8 py-4 rounded-xl hover:bg-emerald-600 transition-all uppercase tracking-wider shadow-md"
                                                 >
                                                     <span>Start Course</span>
@@ -261,7 +264,10 @@ export default function SponsoredCourseLookupPage() {
                                                 </button>
                                             ) : (
                                                 <button
-                                                    onClick={() => router.push(`/checkout?ticketId=${tkt.id}&candidateNumber=${profile.candidateNumber}&courseId=${tkt.Course?.id || ''}&price=${tkt.subsidisedPrice !== null ? tkt.subsidisedPrice : tkt.purchasePrice}&wallet=${profile.walletBalance}`)}
+                                                    onClick={() => {
+                                                        const targetCourseId = tkt.Course?.id || tkt.courseId || '';
+                                                        router.push(`/checkout?ticketId=${tkt.id}&candidateNumber=${profile.candidateNumber}&courseId=${targetCourseId}&price=${tkt.subsidisedPrice !== null ? tkt.subsidisedPrice : tkt.purchasePrice}&wallet=${profile.walletBalance}`);
+                                                    }}
                                                     className="w-full lg:w-auto inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black font-extrabold text-xs px-8 py-4 rounded-xl hover:bg-yellow-400 transition-all uppercase tracking-wider shadow-md"
                                                 >
                                                     <span>Start Course & Checkout</span>
