@@ -136,7 +136,7 @@ export class LmsAuthService {
 
         // Generate JWT
         const accessToken = jwt.sign(
-            { id: user.id, role: 'LEARNER', lmsUsername: activeUsername },
+            { id: user.id, role: CONSTANTS.ROLES.APPLICANT, lmsUsername: activeUsername },
             process.env.JWT_SECRET || 'secret',
             { expiresIn: (process.env.JWT_EXPIRES_IN || '15m') as any }
         );
@@ -147,7 +147,7 @@ export class LmsAuthService {
                 id: user.id,
                 name: user.fullName,
                 lmsUsername: activeUsername,
-                role: 'LEARNER'
+                role: CONSTANTS.ROLES.APPLICANT
             }
         };
     }

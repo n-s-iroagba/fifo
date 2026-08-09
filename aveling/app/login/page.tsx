@@ -24,8 +24,8 @@ export default function LmsLogin() {
             });
 
             if (response.data?.success) {
-                const { token, user } = response.data.data;
-                localStorage.setItem('lms_token', token);
+                const { accessToken, user } = response.data.data;
+                localStorage.setItem('lms_token', accessToken);
                 localStorage.setItem('lms_user', JSON.stringify(user));
                 
                 // Redirect to LMS dashboard or catalog (STEP-008)
