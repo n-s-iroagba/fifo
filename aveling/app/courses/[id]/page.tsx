@@ -9,7 +9,7 @@ import { apiClient } from '../../../lib/axios';
 
 export default function CoursePlayerPage({ params }: { params: { id: string } }) {
     const router = useRouter();
-    const [activeModule, setActiveModule] = useState(0);
+
     const [completedModules, setCompletedModules] = useState<number[]>([0, 1]);
 
     const [courseData, setCourseData] = useState<any>(null);
@@ -48,13 +48,6 @@ export default function CoursePlayerPage({ params }: { params: { id: string } })
         fetchCourse();
     }, [params.id]);
 
-    const toggleComplete = (idx: number) => {
-        if (completedModules.includes(idx)) {
-            setCompletedModules(completedModules.filter(i => i !== idx));
-        } else {
-            setCompletedModules([...completedModules, idx]);
-        }
-    };
 
     const progressPct = courseData?.modules?.length ? Math.round((completedModules.length / courseData.modules.length) * 100) : 0;
     const isTheoryComplete = progressPct === 100 && courseData?.modules?.length > 0;
@@ -106,16 +99,33 @@ export default function CoursePlayerPage({ params }: { params: { id: string } })
                 <span className="text-xs font-bold uppercase text-zinc-400 block">Course Materials & Official Exam</span>
 
                 <div className="space-y-3">
-                    <button
-                        onClick={() => alert('Downloading official Learner Study Guide (PDF)...')}
-                        className="w-full flex items-center justify-between p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 hover:border-[#FFC700] transition-all text-xs font-bold text-zinc-800 dark:text-zinc-200 group"
-                    >
-                        <div className="flex items-center gap-3">
-                            <FileText className="h-5 w-5 text-[#FFC700]" />
-                            <span>Learner Study Guide & Manual</span>
+                    {courseData.modules && courseData.modules.length > 0 ? (
+                        courseData.modules.map((mod: any, idx: number) => (
+                            <button
+                                key={mod.id || idx}
+                                onClick={() => alert(`Opening ${mod.title}...\n\nContent: ${mod.description || 'Loading module content...'}`)}
+                                className="w-full flex flex-col items-start justify-between p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 hover:border-[#FFC700] transition-all text-left group"
+                            >
+                                <div className="w-full flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-3">
+                                        <BookOpen className="h-5 w-5 text-[#FFC700]" />
+                                        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{mod.title}</span>
+                                    </div>
+                                    <Download className="h-4 w-4 text-zinc-400 group-hover:text-black dark:group-hover:text-white" />
+                                </div>
+                                <div className="text-[11px] text-zinc-500 dark:text-zinc-400 pl-8 line-clamp-2">
+                                    {mod.description}
+                                </div>
+                                <div className="text-[10px] font-mono text-zinc-400 pl-8 mt-2">
+                                    Duration: {mod.duration}
+                                </div>
+                            </button>
+                        ))
+                    ) : (
+                        <div className="p-4 text-center text-xs text-zinc-500 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
+                            No modules assigned to this course yet.
                         </div>
-                        <Download className="h-4 w-4 text-zinc-400 group-hover:text-black dark:group-hover:text-white" />
-                    </button>
+                    )}
 
                     <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800">
                         <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
