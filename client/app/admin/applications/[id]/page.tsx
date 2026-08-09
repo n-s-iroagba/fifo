@@ -79,21 +79,26 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
             setSubsidisedPrice(cat.sponsorshipPrice != null ? cat.sponsorshipPrice.toString() : '');
             setCanApply(true);
             
-            // Auto-match courseId
-            const matched = courses.find((cr: any) =>
-                cr.code === 'RIIWHS204E' ||
-                cr.title?.toLowerCase().includes(cat.name.toLowerCase()) ||
-                cat.name?.toLowerCase().includes(cr.title?.toLowerCase())
-            );
-            if (matched) {
-                setCourseId(matched.id);
+            // Auto-match courseId by unit code or title keyword
+            const catNameLower = cat.name.toLowerCase();
+            const matchedCourse = courses.find((cr: any) => {
+                const cTitle = (cr.title || '').toLowerCase();
+                const cCode = (cr.code || '').toLowerCase();
+                return (
+                    (cCode && catNameLower.includes(cCode)) ||
+                    (cTitle && catNameLower.includes(cTitle)) ||
+                    (cTitle && cTitle.split(' ').some((w: string) => w.length > 3 && catNameLower.includes(w)))
+                );
+            });
+            if (matchedCourse) {
+                setCourseId(matchedCourse.id);
             }
         }
     };
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!ticketType.trim()) { setErrMsg('Ticket type is required.'); return; }
+        if (!ticketType.trim()) { setErrMsg('Please select a ticket requirement from the catalog.'); return; }
         setSaving(true); setErrMsg(null);
         try {
             const payload = {
@@ -128,6 +133,9 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
         finally { setDeleting(null); }
     };
 
+    const selectedCatalog = catalogs.find((c: any) => c.id.toString() === catalogId);
+    const selectedCourse = courses.find((c: any) => c.id === courseId);
+
     return (
         <div className="bg-white p-8 rounded-[2.5rem] border border-blue-100 shadow-2xl shadow-blue-900/5">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-blue-50">
@@ -144,12 +152,13 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
                 <div className="py-10 text-center">
                     <span className="material-symbols-outlined text-3xl text-blue-200 mb-2 block">confirmation_number</span>
                     <p className="text-[9px] font-black text-blue-300 uppercase tracking-[0.3em]">No ticket requirements assigned</p>
-                    <button onClick={openAdd} className="mt-4 text-[10px] font-bold text-blue-600 hover:underline">+ Add first requirement</button>
+                    <button onClick={openAdd} className="mt-4 text-[10px] font-bold text-blue-600 hover:underline">+ Add catalog requirement</button>
                 </div>
             ) : (
                 <div className="space-y-3">
                     {tickets.map(t => {
                         const s = SPONS_MAP[t.ticketSponsorship] ?? SPONS_MAP.no_application;
+                        const linkedCourse = courses.find((c: any) => c.id === t.courseId);
                         return (
                             <div key={t.id} className="flex items-start justify-between gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                 <div className="flex-1 min-w-0">
@@ -157,14 +166,26 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
                                         <p className="text-xs font-black text-blue-900">{t.ticketType}</p>
                                         <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${s.cls}`}>{s.label}</span>
                                         <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${t.status === 'possessed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>{t.status === 'possessed' ? 'Possessed' : 'Not Possessed'}</span>
-                                        {t.canApplySponsorship && <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-violet-50 text-violet-700 border border-violet-200">Can Apply</span>}
+                                        {t.canApplySponsorship && <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-violet-50 text-violet-700 border border-violet-200">Sponsorship Eligible</span>}
                                     </div>
-                                    {t.description && <p className="text-[10px] text-slate-500">{t.description}</p>}
-                                    <div className="flex items-center gap-3 mt-1 flex-wrap text-[10px]">
+                                    {t.description && <p className="text-[10px] text-slate-500 mb-1">{t.description}</p>}
+                                    <div className="flex items-center gap-4 mt-1 flex-wrap text-[10px]">
                                         {(t.subsidisedPrice != null || t.realPrice != null) && (
-                                            <span className="font-bold text-blue-900">${t.subsidisedPrice ?? t.realPrice}{t.subsidisedPrice != null && t.realPrice != null && t.realPrice > t.subsidisedPrice && <span className="line-through text-slate-400 ml-1">${t.realPrice}</span>}</span>
+                                            <span className="font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                                                Price: ${t.subsidisedPrice ?? t.realPrice}
+                                                {t.subsidisedPrice != null && t.realPrice != null && t.realPrice > t.subsidisedPrice && (
+                                                    <span className="line-through text-slate-400 ml-1 font-normal">${t.realPrice}</span>
+                                                )}
+                                            </span>
                                         )}
-                                        {t.courseId && <span className="text-slate-400">Course ID: {t.courseId}</span>}
+                                        {linkedCourse ? (
+                                            <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 flex items-center gap-1">
+                                                <span className="material-symbols-outlined text-[12px]">menu_book</span>
+                                                Course: {linkedCourse.code ? `[${linkedCourse.code}] ` : ''}{linkedCourse.title}
+                                            </span>
+                                        ) : t.courseId ? (
+                                            <span className="text-slate-400">Course ID: {t.courseId}</span>
+                                        ) : null}
                                     </div>
                                 </div>
                                 <div className="flex flex-col gap-1.5 flex-shrink-0">
@@ -178,43 +199,59 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
             )}
             {showAdd && (
                 <div className="fixed inset-0 z-50 bg-blue-950/40 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-blue-100 max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between mb-6">
+                    <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl border border-blue-100 max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between mb-6 pb-3 border-b border-blue-50">
                             <div>
-                                <span className="text-[9px] font-black uppercase tracking-widest text-blue-400 block mb-1">{editTicket ? 'Edit' : 'Clone & Assign'} Ticket Requirement</span>
-                                <h2 className="text-lg font-bold text-blue-900">{editTicket?.ticketType || 'Requirement Form'}</h2>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-blue-400 block mb-0.5">{editTicket ? 'Edit' : 'Clone Catalog Item'} Ticket Requirement</span>
+                                <h2 className="text-lg font-bold text-blue-900">{editTicket?.ticketType || 'Select Ticket from Catalog'}</h2>
                             </div>
                             <button onClick={() => { setShowAdd(false); setEditTicket(null); }} className="text-slate-400 hover:text-slate-600"><span className="material-symbols-outlined">close</span></button>
                         </div>
                         {errMsg && <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-[10px] font-bold uppercase tracking-widest">{errMsg}</div>}
                         
-                        <form onSubmit={handleSave} className="space-y-4">
-                            {!editTicket && catalogs.length > 0 && (
-                                <div className="p-4 bg-blue-50/70 border border-blue-200/80 rounded-2xl space-y-2">
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-blue-900">
-                                        Clone Catalog Ticket Template
+                        <form onSubmit={handleSave} className="space-y-5">
+                            {!editTicket && (
+                                <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50/50 border border-blue-200 rounded-2xl space-y-3 shadow-inner">
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-blue-900 flex items-center gap-1.5">
+                                        <span className="material-symbols-outlined text-base text-blue-700">style</span>
+                                        Catalogue Ticket Item *
                                     </label>
                                     <select
                                         value={catalogId}
                                         onChange={(e) => handleSelectCatalogTemplate(e.target.value)}
-                                        className="w-full bg-white border border-blue-200 rounded-xl p-3 text-xs text-blue-900 font-bold outline-none shadow-sm focus:ring-2 focus:ring-blue-500"
+                                        className="w-full bg-white border border-blue-300 rounded-xl p-3 text-xs text-blue-900 font-bold outline-none shadow-sm focus:ring-2 focus:ring-blue-600"
+                                        required
                                     >
-                                        <option value="">-- Pick a Catalog Ticket to Clone --</option>
+                                        <option value="">-- Choose Catalogue Ticket to Clone --</option>
                                         {catalogs.map((cat: any) => (
                                             <option key={cat.id} value={cat.id}>
-                                                {cat.name} (${cat.sponsorshipPrice ?? cat.normalPrice} default)
+                                                {cat.name} — Normal: ${cat.normalPrice || 0} | Subsidised: ${cat.sponsorshipPrice || 0}
                                             </option>
                                         ))}
                                     </select>
-                                    <p className="text-[9px] text-blue-700 font-semibold leading-relaxed">
-                                        Cloning auto-populates course linkage & default pricing. You can customize prices below for this applicant.
+                                    <p className="text-[9px] text-blue-800 font-semibold leading-relaxed">
+                                        Selecting an item clones its title, description, pricing, and links its standardized exam & course materials automatically.
                                     </p>
+                                </div>
+                            )}
+
+                            {(selectedCatalog || ticketType) && (
+                                <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-center justify-between text-[10px]">
+                                    <div className="flex items-center gap-2 text-emerald-900 font-bold">
+                                        <span className="material-symbols-outlined text-base text-emerald-600">verified</span>
+                                        <span>Active Template: <strong>{ticketType}</strong></span>
+                                    </div>
+                                    {selectedCourse && (
+                                        <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-black text-[9px]">
+                                            Course: {selectedCourse.code || selectedCourse.title}
+                                        </span>
+                                    )}
                                 </div>
                             )}
 
                             <div>
                                 <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Ticket / Certification Title *</label>
-                                <input type="text" value={ticketType} onChange={e => setTicketType(e.target.value)} placeholder="e.g. Work Safely at Heights (RIIWHS204E)" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-medium" />
+                                <input type="text" value={ticketType} onChange={e => setTicketType(e.target.value)} placeholder="e.g. White Card (CPCWHS1001)" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-medium" />
                             </div>
                             
                             <div>
@@ -225,16 +262,16 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Real Price ($)</label>
-                                    <input type="number" step="0.01" value={realPrice} onChange={e => setRealPrice(e.target.value)} placeholder="500.00" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-bold" />
+                                    <input type="number" step="0.01" value={realPrice} onChange={e => setRealPrice(e.target.value)} placeholder="120.00" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-bold" />
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Subsidised Price ($)</label>
-                                    <input type="number" step="0.01" value={subsidisedPrice} onChange={e => setSubsidisedPrice(e.target.value)} placeholder="250.00" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-bold text-emerald-700" />
+                                    <input type="number" step="0.01" value={subsidisedPrice} onChange={e => setSubsidisedPrice(e.target.value)} placeholder="60.00" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-bold text-emerald-700" />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Linked Course (Exam & Materials)</label>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Linked Course (Auto-Attached Exam & Materials)</label>
                                 <select
                                     value={courseId}
                                     onChange={e => setCourseId(e.target.value)}
@@ -248,11 +285,11 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
                                     ))}
                                 </select>
                                 <p className="text-[9px] text-slate-400 mt-1">
-                                    Ensures all applicants write the standardized exam regardless of individual cost.
+                                    Ensures all applicants write the exact same standardized exam regardless of pricing.
                                 </p>
                             </div>
 
-                            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-xl border border-blue-100">
+                            <div className="flex items-center justify-between p-3.5 bg-blue-50 rounded-xl border border-blue-100">
                                 <div>
                                     <p className="text-xs font-bold text-blue-900">Allow Sponsorship Applications</p>
                                     <p className="text-[10px] text-slate-500">Applicant can apply for sponsorship for this ticket.</p>
@@ -271,6 +308,137 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
                             </div>
                         </form>
                     </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function ApplicantExamScoresTable({
+    tickets = [],
+    examAttempts = [],
+    courses = []
+}: {
+    tickets: TicketReq[];
+    examAttempts: any[];
+    courses: any[];
+}) {
+    return (
+        <div className="bg-white p-8 rounded-[2.5rem] border border-blue-100 shadow-2xl shadow-blue-900/5 mt-8">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-blue-50">
+                <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-blue-900">quiz</span>
+                    <div>
+                        <h3 className="text-[10px] font-black text-blue-900 uppercase tracking-[0.2em]">
+                            Applicant Exam Scores & Performance
+                        </h3>
+                        <p className="text-[9px] font-bold text-blue-400 uppercase mt-0.5">
+                            Standardized LMS exam performance tracked per required ticket
+                        </p>
+                    </div>
+                </div>
+                <span className="bg-blue-100 text-blue-800 text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+                    {tickets.length} Required {tickets.length === 1 ? 'Ticket' : 'Tickets'}
+                </span>
+            </div>
+
+            {tickets.length === 0 ? (
+                <div className="py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                    <span className="material-symbols-outlined text-2xl text-slate-300 mb-1 block">assignment_late</span>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                        No ticket requirements assigned to track exam scores
+                    </p>
+                </div>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="border-b border-blue-50 text-[8px] font-black uppercase tracking-widest text-blue-400">
+                                <th className="py-3 px-4">Ticket Requirement</th>
+                                <th className="py-3 px-4">Linked Course / Unit</th>
+                                <th className="py-3 px-4 text-center">Attempts</th>
+                                <th className="py-3 px-4 text-center">Highest Score</th>
+                                <th className="py-3 px-4 text-right">Exam Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 text-xs">
+                            {tickets.map(t => {
+                                const linkedCourse = courses.find((c: any) => c.id === t.courseId) ||
+                                    courses.find((c: any) => {
+                                        const cTitle = (c.title || '').toLowerCase();
+                                        const tType = t.ticketType.toLowerCase();
+                                        return cTitle && tType.includes(cTitle);
+                                    });
+                                
+                                const attemptsForCourse = examAttempts.filter((a: any) =>
+                                    t.courseId ? a.courseId === t.courseId : (linkedCourse ? a.courseId === linkedCourse.id : false)
+                                );
+                                
+                                const bestAttempt = attemptsForCourse.reduce((highest: any, curr: any) => {
+                                    if (!highest || curr.score > highest.score) return curr;
+                                    return highest;
+                                }, null);
+
+                                return (
+                                    <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
+                                        <td className="py-4 px-4 font-black text-blue-900">
+                                            {t.ticketType}
+                                            {t.description && (
+                                                <p className="text-[9px] font-normal text-slate-400 line-clamp-1">{t.description}</p>
+                                            )}
+                                        </td>
+                                        <td className="py-4 px-4">
+                                            {linkedCourse ? (
+                                                <div>
+                                                    <span className="font-bold text-blue-800 text-[11px]">
+                                                        {linkedCourse.code ? `[${linkedCourse.code}] ` : ''}{linkedCourse.title}
+                                                    </span>
+                                                    <p className="text-[9px] text-slate-400">Format: {linkedCourse.format || 'Mixed'}</p>
+                                                </div>
+                                            ) : (
+                                                <span className="text-[10px] italic text-slate-400">No linked course</span>
+                                            )}
+                                        </td>
+                                        <td className="py-4 px-4 text-center font-bold text-slate-700">
+                                            {attemptsForCourse.length > 0 ? (
+                                                <span className="px-2.5 py-1 rounded-full bg-slate-100 text-[9px] font-black text-slate-700">
+                                                    {attemptsForCourse.length} {attemptsForCourse.length === 1 ? 'attempt' : 'attempts'}
+                                                </span>
+                                            ) : (
+                                                <span className="text-[9px] text-slate-400 font-semibold">0</span>
+                                            )}
+                                        </td>
+                                        <td className="py-4 px-4 text-center font-black">
+                                            {bestAttempt ? (
+                                                <span className={bestAttempt.isPass ? 'text-emerald-600 text-sm' : 'text-red-500 text-sm'}>
+                                                    {bestAttempt.score}%
+                                                </span>
+                                            ) : (
+                                                <span className="text-[10px] text-slate-400 font-normal">--</span>
+                                            )}
+                                        </td>
+                                        <td className="py-4 px-4 text-right">
+                                            {bestAttempt ? (
+                                                bestAttempt.isPass ? (
+                                                    <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+                                                        <span className="material-symbols-outlined text-[12px]">check_circle</span> PASSED
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-red-50 text-red-700 border border-red-200 inline-flex items-center gap-1">
+                                                        <span className="material-symbols-outlined text-[12px]">cancel</span> FAILED
+                                                    </span>
+                                                )
+                                            ) : (
+                                                <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-slate-100 text-slate-500 border border-slate-200 inline-flex items-center gap-1">
+                                                    <span className="material-symbols-outlined text-[12px]">hourglass_empty</span> PENDING
+                                                </span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
                 </div>
             )}
         </div>
@@ -305,6 +473,12 @@ export default function ApplicationDetailPage() {
         '/admin/prefill-stages'
     );
     const prefillStages = (prefillStagesResponse?.data || []).filter((s: any) => s.type === 'applicant_display');
+
+    const { data: coursesResponse } = useApiQuery<any>(
+        ['admin', 'courses'],
+        '/courses'
+    );
+    const coursesList = coursesResponse?.data || [];
 
     const addStageMutation = useApiMutation(
         'post',
@@ -623,6 +797,13 @@ export default function ApplicationDetailPage() {
 
                     {/* ── Ticket Requirements ── */}
                     <TicketRequirementsPanel applicationId={id as string} tickets={application?.Tickets || []} refetch={refetch} />
+
+                    {/* ── Applicant Exam Performance & Scores Table ── */}
+                    <ApplicantExamScoresTable
+                        tickets={application?.Tickets || []}
+                        examAttempts={application?.ExamAttempts || []}
+                        courses={coursesList}
+                    />
                 </div>
 
                 {/* Applicant Overview Sidebar */}

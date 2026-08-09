@@ -381,16 +381,19 @@ export class TicketService {
 
         // Auto-link matching course if courseId is not set
         if (!courseId && ticketType) {
-            const matchingCourse = await Course.findOne({
-                where: {
-                    [require('sequelize').Op.or]: [
-                        { code: 'RIIWHS204E' },
-                        { title: { [require('sequelize').Op.like]: `%${ticketType}%` } }
-                    ]
-                }
+            const allCourses = await Course.findAll();
+            const lowerType = ticketType.toLowerCase();
+            const matched = allCourses.find((c: any) => {
+                const cTitle = (c.title || '').toLowerCase();
+                const cCode = (c.code || '').toLowerCase();
+                return (
+                    (cCode && lowerType.includes(cCode)) ||
+                    (cTitle && lowerType.includes(cTitle)) ||
+                    (cTitle && cTitle.split(' ').some((word: string) => word.length > 3 && lowerType.includes(word)))
+                );
             });
-            if (matchingCourse) {
-                courseId = matchingCourse.id;
+            if (matched) {
+                courseId = matched.id;
             }
         }
 
