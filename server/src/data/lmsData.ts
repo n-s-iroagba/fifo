@@ -9,6 +9,32 @@ export const lmsSeedData = [
             price: 280.00,
             duration: 8,
             capacity: 15,
+            modules: [
+                {
+                    title: 'Module 1: Safety Fundamentals & WHS Compliance',
+                    durationMinutes: 15,
+                    sequenceOrder: 1,
+                    contentType: 'TEXT',
+                    contentUrl: 'local-content',
+                    content: 'Understand legislative requirements, hazard identification, and risk assessment protocols on FIFO mine sites. You will learn how to read a Safe Work Method Statement (SWMS) and ensure your work area complies with AS/NZS 1891 standards.',
+                },
+                {
+                    title: 'Module 2: Equipment Pre-Inspection & PPE',
+                    durationMinutes: 20,
+                    sequenceOrder: 2,
+                    contentType: 'TEXT',
+                    contentUrl: 'local-content',
+                    content: 'Learn step-by-step procedures for conducting pre-start equipment checks and harness fitting. This includes checking for frays, inspecting D-rings, and verifying the compliance tags on your shock-absorbing lanyards before stepping foot on site.',
+                },
+                {
+                    title: 'Module 3: Operational Procedures & Rescue',
+                    durationMinutes: 25,
+                    sequenceOrder: 3,
+                    contentType: 'TEXT',
+                    contentUrl: 'local-content',
+                    content: 'Master safe operation procedures, fall arrest system anchorage, and site emergency evacuation protocols. Crucially, you will understand the timeline required to prevent suspension trauma and the steps to initiate a rapid rescue.',
+                }
+            ],
             examConfig: {
                 passThreshold: 80,
                 maxAttempts: 3

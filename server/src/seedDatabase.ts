@@ -1,4 +1,4 @@
-import { sequelize, User, BankAccount, JobCategory, JobListing, JobBenefit, JobCondition, CertificationType, Course, ExamConfig, ExamQuestion, PracticalCriterion, TicketCatalog } from './models';
+import { sequelize, User, BankAccount, JobCategory, JobListing, JobBenefit, JobCondition, CertificationType, Course, CourseModule, ExamConfig, ExamQuestion, PracticalCriterion, TicketCatalog } from './models';
 import { CONSTANTS } from './constants';
 import bcrypt from 'bcrypt';
 import { fifoJobs } from './data/fifoJobs';
@@ -78,6 +78,22 @@ export async function seedDatabase() {
                 isPublished: true
             }
         });
+
+        // Create Course Modules
+        if (data.course.modules) {
+            for (const m of data.course.modules) {
+                await CourseModule.findOrCreate({
+                    where: { courseId: course.id, title: m.title },
+                    defaults: {
+                        durationMinutes: m.durationMinutes,
+                        sequenceOrder: m.sequenceOrder,
+                        content: m.content,
+                        contentType: m.contentType || 'TEXT',
+                        contentUrl: m.contentUrl || 'local-content'
+                    }
+                });
+            }
+        }
 
         // Create Exam Config
         const [examConfig] = await ExamConfig.findOrCreate({
