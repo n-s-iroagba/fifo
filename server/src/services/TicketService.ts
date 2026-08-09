@@ -360,17 +360,52 @@ export class TicketService {
         const application = await Application.findByPk(applicationId);
         if (!application) throw new Error('APPLICATION_NOT_FOUND');
 
+        const { TicketCatalog, Course } = require('../models');
+
+        let ticketType = data.ticketType;
+        let description = data.description || null;
+        let realPrice = data.realPrice ?? null;
+        let subsidisedPrice = data.subsidisedPrice ?? null;
+        let courseId = data.courseId || null;
+
+        // If cloning from a catalog template
+        if (data.catalogId) {
+            const catalog = await TicketCatalog.findByPk(data.catalogId);
+            if (catalog) {
+                ticketType = ticketType || catalog.name;
+                description = description || catalog.description;
+                if (realPrice === null) realPrice = catalog.normalPrice;
+                if (subsidisedPrice === null) subsidisedPrice = catalog.sponsorshipPrice;
+            }
+        }
+
+        // Auto-link matching course if courseId is not set
+        if (!courseId && ticketType) {
+            const matchingCourse = await Course.findOne({
+                where: {
+                    [require('sequelize').Op.or]: [
+                        { code: 'RIIWHS204E' },
+                        { title: { [require('sequelize').Op.like]: `%${ticketType}%` } }
+                    ]
+                }
+            });
+            if (matchingCourse) {
+                courseId = matchingCourse.id;
+            }
+        }
+
         const ticket = await Ticket.create({
             userId: application.userId,
             applicationId: applicationId,
-            ticketType: data.ticketType,
+            ticketType: ticketType || 'Certification Ticket Requirement',
             status: 'not_possessed',
             ticketSponsorship: 'no_application',
-            description: data.description || null,
-            realPrice: data.realPrice || null,
-            subsidisedPrice: data.subsidisedPrice || null,
-            canApplySponsorship: data.canApplySponsorship || false,
-            courseId: data.courseId || null,
+            description: description,
+            realPrice: realPrice,
+            subsidisedPrice: subsidisedPrice,
+            purchasePrice: subsidisedPrice ?? realPrice ?? 0,
+            canApplySponsorship: data.canApplySponsorship ?? true,
+            courseId: courseId,
         });
 
         return ticket;

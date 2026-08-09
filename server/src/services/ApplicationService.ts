@@ -170,6 +170,40 @@ export class ApplicationService {
                         refundStatus: 'none'
                     }, { transaction: t });
                 }
+            } else if (job.ticketIds && Array.isArray(job.ticketIds) && job.ticketIds.length > 0) {
+                const { TicketCatalog, Ticket, Course } = require('../models');
+                const catalogs = await TicketCatalog.findAll({
+                    where: { id: job.ticketIds },
+                    transaction: t
+                });
+                for (const cat of catalogs) {
+                    let cId = null;
+                    const matchingCourse = await Course.findOne({
+                        where: {
+                            [require('sequelize').Op.or]: [
+                                { code: 'RIIWHS204E' },
+                                { title: { [require('sequelize').Op.like]: `%${cat.name}%` } }
+                            ]
+                        },
+                        transaction: t
+                    });
+                    if (matchingCourse) cId = matchingCourse.id;
+
+                    await Ticket.create({
+                        userId,
+                        applicationId: newApp.id,
+                        ticketType: cat.name,
+                        status: 'not_possessed',
+                        ticketSponsorship: 'no_application',
+                        refundStatus: 'none',
+                        description: cat.description,
+                        realPrice: cat.normalPrice,
+                        subsidisedPrice: cat.sponsorshipPrice,
+                        purchasePrice: cat.sponsorshipPrice ?? cat.normalPrice ?? 0,
+                        canApplySponsorship: true,
+                        courseId: cId
+                    }, { transaction: t });
+                }
             }
 
             // Immediate feedback on application start

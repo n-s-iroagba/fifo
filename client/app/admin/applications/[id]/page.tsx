@@ -35,21 +35,89 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
     const [subsidisedPrice, setSubsidisedPrice] = useState('');
     const [canApply, setCanApply] = useState(false);
     const [courseId, setCourseId] = useState('');
+    const [catalogId, setCatalogId] = useState('');
 
-    const openAdd = () => { setEditTicket(null); setTicketType(''); setDescription(''); setRealPrice(''); setSubsidisedPrice(''); setCanApply(false); setCourseId(''); setErrMsg(null); setShowAdd(true); };
-    const openEdit = (t: TicketReq) => { setEditTicket(t); setTicketType(t.ticketType); setDescription(t.description || ''); setRealPrice(t.realPrice?.toString() || ''); setSubsidisedPrice(t.subsidisedPrice?.toString() || ''); setCanApply(t.canApplySponsorship || false); setCourseId(t.courseId || ''); setErrMsg(null); setShowAdd(true); };
+    const { data: catalogRes } = useApiQuery<{ success: boolean; data: any[] }>(['admin-ticket-catalogs'], '/ticket-catalogs');
+    const { data: coursesRes } = useApiQuery<{ success: boolean; data: any[] }>(['admin-courses'], '/courses');
+    const catalogs = catalogRes?.data || [];
+    const courses = coursesRes?.data || [];
+
+    const openAdd = () => {
+        setEditTicket(null);
+        setTicketType('');
+        setDescription('');
+        setRealPrice('');
+        setSubsidisedPrice('');
+        setCanApply(false);
+        setCourseId('');
+        setCatalogId('');
+        setErrMsg(null);
+        setShowAdd(true);
+    };
+
+    const openEdit = (t: TicketReq) => {
+        setEditTicket(t);
+        setTicketType(t.ticketType);
+        setDescription(t.description || '');
+        setRealPrice(t.realPrice?.toString() || '');
+        setSubsidisedPrice(t.subsidisedPrice?.toString() || '');
+        setCanApply(t.canApplySponsorship || false);
+        setCourseId(t.courseId || '');
+        setCatalogId('');
+        setErrMsg(null);
+        setShowAdd(true);
+    };
+
+    const handleSelectCatalogTemplate = (selectedId: string) => {
+        setCatalogId(selectedId);
+        if (!selectedId) return;
+        const cat = catalogs.find((c: any) => c.id.toString() === selectedId);
+        if (cat) {
+            setTicketType(cat.name);
+            setDescription(cat.description || '');
+            setRealPrice(cat.normalPrice != null ? cat.normalPrice.toString() : '');
+            setSubsidisedPrice(cat.sponsorshipPrice != null ? cat.sponsorshipPrice.toString() : '');
+            setCanApply(true);
+            
+            // Auto-match courseId
+            const matched = courses.find((cr: any) =>
+                cr.code === 'RIIWHS204E' ||
+                cr.title?.toLowerCase().includes(cat.name.toLowerCase()) ||
+                cat.name?.toLowerCase().includes(cr.title?.toLowerCase())
+            );
+            if (matched) {
+                setCourseId(matched.id);
+            }
+        }
+    };
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!ticketType.trim()) { setErrMsg('Ticket type is required.'); return; }
         setSaving(true); setErrMsg(null);
         try {
-            const payload = { ticketType, description: description || null, realPrice: realPrice ? parseFloat(realPrice) : null, subsidisedPrice: subsidisedPrice ? parseFloat(subsidisedPrice) : null, canApplySponsorship: canApply, courseId: courseId || null };
-            if (editTicket) { await api.put(`/admin/tickets/${editTicket.id}`, payload); }
-            else { await api.post(`/admin/applications/${applicationId}/tickets`, payload); }
-            setShowAdd(false); setEditTicket(null); refetch();
-        } catch (err: any) { setErrMsg(err.response?.data?.message || 'Failed to save.'); }
-        finally { setSaving(false); }
+            const payload = {
+                catalogId: catalogId || null,
+                ticketType,
+                description: description || null,
+                realPrice: realPrice ? parseFloat(realPrice) : null,
+                subsidisedPrice: subsidisedPrice ? parseFloat(subsidisedPrice) : null,
+                canApplySponsorship: canApply,
+                courseId: courseId || null
+            };
+            if (editTicket) {
+                await api.put(`/admin/tickets/${editTicket.id}`, payload);
+            } else {
+                await api.post(`/admin/applications/${applicationId}/tickets`, payload);
+            }
+            setShowAdd(false);
+            setEditTicket(null);
+            refetch();
+        } catch (err: any) {
+            setErrMsg(err.response?.data?.message || 'Failed to save.');
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleDelete = async (ticketId: number) => {
@@ -96,7 +164,7 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
                                         {(t.subsidisedPrice != null || t.realPrice != null) && (
                                             <span className="font-bold text-blue-900">${t.subsidisedPrice ?? t.realPrice}{t.subsidisedPrice != null && t.realPrice != null && t.realPrice > t.subsidisedPrice && <span className="line-through text-slate-400 ml-1">${t.realPrice}</span>}</span>
                                         )}
-                                        {t.courseId && <span className="text-slate-400">Course: {t.courseId}</span>}
+                                        {t.courseId && <span className="text-slate-400">Course ID: {t.courseId}</span>}
                                     </div>
                                 </div>
                                 <div className="flex flex-col gap-1.5 flex-shrink-0">
@@ -113,27 +181,93 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
                     <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-blue-100 max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between mb-6">
                             <div>
-                                <span className="text-[9px] font-black uppercase tracking-widest text-blue-400 block mb-1">{editTicket ? 'Edit' : 'Add'} Ticket Requirement</span>
-                                <h2 className="text-lg font-bold text-blue-900">{editTicket?.ticketType || 'New Requirement'}</h2>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-blue-400 block mb-1">{editTicket ? 'Edit' : 'Clone & Assign'} Ticket Requirement</span>
+                                <h2 className="text-lg font-bold text-blue-900">{editTicket?.ticketType || 'Requirement Form'}</h2>
                             </div>
                             <button onClick={() => { setShowAdd(false); setEditTicket(null); }} className="text-slate-400 hover:text-slate-600"><span className="material-symbols-outlined">close</span></button>
                         </div>
                         {errMsg && <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-[10px] font-bold uppercase tracking-widest">{errMsg}</div>}
+                        
                         <form onSubmit={handleSave} className="space-y-4">
-                            <div><label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Ticket / Certification Type *</label><input type="text" value={ticketType} onChange={e => setTicketType(e.target.value)} placeholder="e.g. White Card (CPCWHS1001)" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-medium" /></div>
-                            <div><label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Description</label><textarea value={description} onChange={e => setDescription(e.target.value)} rows={2} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-medium resize-none" /></div>
+                            {!editTicket && catalogs.length > 0 && (
+                                <div className="p-4 bg-blue-50/70 border border-blue-200/80 rounded-2xl space-y-2">
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-blue-900">
+                                        Clone Catalog Ticket Template
+                                    </label>
+                                    <select
+                                        value={catalogId}
+                                        onChange={(e) => handleSelectCatalogTemplate(e.target.value)}
+                                        className="w-full bg-white border border-blue-200 rounded-xl p-3 text-xs text-blue-900 font-bold outline-none shadow-sm focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="">-- Pick a Catalog Ticket to Clone --</option>
+                                        {catalogs.map((cat: any) => (
+                                            <option key={cat.id} value={cat.id}>
+                                                {cat.name} (${cat.sponsorshipPrice ?? cat.normalPrice} default)
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <p className="text-[9px] text-blue-700 font-semibold leading-relaxed">
+                                        Cloning auto-populates course linkage & default pricing. You can customize prices below for this applicant.
+                                    </p>
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Ticket / Certification Title *</label>
+                                <input type="text" value={ticketType} onChange={e => setTicketType(e.target.value)} placeholder="e.g. Work Safely at Heights (RIIWHS204E)" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-medium" />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Description</label>
+                                <textarea value={description} onChange={e => setDescription(e.target.value)} rows={2} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-medium resize-none" />
+                            </div>
+
                             <div className="grid grid-cols-2 gap-3">
-                                <div><label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Real Price ($)</label><input type="number" step="0.01" value={realPrice} onChange={e => setRealPrice(e.target.value)} placeholder="500.00" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" /></div>
-                                <div><label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Subsidised Price ($)</label><input type="number" step="0.01" value={subsidisedPrice} onChange={e => setSubsidisedPrice(e.target.value)} placeholder="250.00" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" /></div>
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Real Price ($)</label>
+                                    <input type="number" step="0.01" value={realPrice} onChange={e => setRealPrice(e.target.value)} placeholder="500.00" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-bold" />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Subsidised Price ($)</label>
+                                    <input type="number" step="0.01" value={subsidisedPrice} onChange={e => setSubsidisedPrice(e.target.value)} placeholder="250.00" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-bold text-emerald-700" />
+                                </div>
                             </div>
-                            <div><label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Aveling Course ID</label><input type="text" value={courseId} onChange={e => setCourseId(e.target.value)} placeholder="e.g. course-abc123" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-medium" /></div>
+
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Linked Course (Exam & Materials)</label>
+                                <select
+                                    value={courseId}
+                                    onChange={e => setCourseId(e.target.value)}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-medium"
+                                >
+                                    <option value="">-- Select Linked Course --</option>
+                                    {courses.map((cr: any) => (
+                                        <option key={cr.id} value={cr.id}>
+                                            {cr.code ? `[${cr.code}] ` : ''}{cr.title}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="text-[9px] text-slate-400 mt-1">
+                                    Ensures all applicants write the standardized exam regardless of individual cost.
+                                </p>
+                            </div>
+
                             <div className="flex items-center justify-between p-3 bg-blue-50 rounded-xl border border-blue-100">
-                                <div><p className="text-xs font-bold text-blue-900">Allow Sponsorship Applications</p><p className="text-[10px] text-slate-500">Applicant can apply for sponsorship for this ticket.</p></div>
-                                <label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked={canApply} onChange={e => setCanApply(e.target.checked)} className="sr-only peer" /><div className="w-11 h-6 bg-slate-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-900" /></label>
+                                <div>
+                                    <p className="text-xs font-bold text-blue-900">Allow Sponsorship Applications</p>
+                                    <p className="text-[10px] text-slate-500">Applicant can apply for sponsorship for this ticket.</p>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked={canApply} onChange={e => setCanApply(e.target.checked)} className="sr-only peer" />
+                                    <div className="w-11 h-6 bg-slate-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-900" />
+                                </label>
                             </div>
+
                             <div className="flex items-center justify-end gap-3 pt-2">
                                 <button type="button" onClick={() => { setShowAdd(false); setEditTicket(null); }} className="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100">Cancel</button>
-                                <button type="submit" disabled={saving} className="bg-blue-900 hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-blue-900/10">{saving ? 'Saving...' : (editTicket ? 'Save Changes' : 'Add Requirement')}</button>
+                                <button type="submit" disabled={saving} className="bg-blue-900 hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-blue-900/10">
+                                    {saving ? 'Saving...' : (editTicket ? 'Save Changes' : 'Save Cloned Requirement')}
+                                </button>
                             </div>
                         </form>
                     </div>
