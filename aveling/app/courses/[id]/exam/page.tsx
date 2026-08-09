@@ -88,7 +88,7 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
             const passed = result?.isPass;
             const score = result?.score || 0;
             const refund = passed ? (attemptParam >= 2 ? 560 : 280) : 0;
-            
+
             setScorePct(score);
             setRefundAmount(refund);
 
@@ -150,7 +150,7 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
                         <p className="font-bold">Assessment Structure:</p>
                         <ul className="list-disc list-inside space-y-1 text-amber-800 dark:text-amber-300">
                             <li>Includes <strong>MCQ</strong>, <strong>Input Answer</strong>, and <strong>Essay Response</strong> question types.</li>
-                            <li>Passing score: <strong>75% minimum</strong> required.</li>
+
                             <li>Submission sets status to <strong>Review-Awaiting</strong> while being graded.</li>
                             <li>On passing, your ticket is issued and a refund is credited to your wallet.</li>
                         </ul>
@@ -174,9 +174,7 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
                         <span className="text-xs font-extrabold uppercase tracking-wider text-zinc-500">
                             Question {currentIdx + 1} of {questions.length} • {questions[currentIdx]?.questionType}
                         </span>
-                        <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-                            Pass: 75%
-                        </span>
+
                     </div>
 
                     <h2 className="text-base font-extrabold text-zinc-900 dark:text-white">
@@ -191,15 +189,13 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
                                     <button
                                         key={optIdx}
                                         onClick={() => handleSelectOption(questions[currentIdx].id, optIdx)}
-                                        className={`w-full flex items-center rounded-xl border p-4 text-left text-xs font-bold transition-all ${
-                                            selected
-                                                ? 'border-[#FFC700] bg-amber-50 ring-2 ring-[#FFC700]/30 dark:bg-amber-950/60'
-                                                : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950'
-                                        }`}
+                                        className={`w-full flex items-center rounded-xl border p-4 text-left text-xs font-bold transition-all ${selected
+                                            ? 'border-[#FFC700] bg-amber-50 ring-2 ring-[#FFC700]/30 dark:bg-amber-950/60'
+                                            : 'border-zinc-200 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950'
+                                            }`}
                                     >
-                                        <span className={`mr-3 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-black ${
-                                            selected ? 'bg-[#FFC700] border-black text-black' : 'border-zinc-300 text-zinc-500'
-                                        }`}>
+                                        <span className={`mr-3 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-black ${selected ? 'bg-[#FFC700] border-black text-black' : 'border-zinc-300 text-zinc-500'
+                                            }`}>
                                             {String.fromCharCode(65 + optIdx)}
                                         </span>
                                         {opt}
