@@ -4,13 +4,6 @@ exports.PracticalCriterion = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 class PracticalCriterion extends sequelize_1.Model {
-    id;
-    courseId;
-    title;
-    description;
-    isMandatory;
-    createdAt;
-    updatedAt;
 }
 exports.PracticalCriterion = PracticalCriterion;
 PracticalCriterion.init({

@@ -136,6 +136,21 @@ class ApplicationRepository {
                 app.setDataValue('JobStages', [defaultStage.toJSON()]);
                 app.setDataValue('currentStageId', defaultStage.id);
             }
+            // Attach applicant's exam attempts with course information
+            try {
+                const { ExamAttempt, Course } = require('../models');
+                const attempts = await ExamAttempt.findAll({
+                    where: { userId: app.userId },
+                    include: [{ model: Course }],
+                    order: [['createdAt', 'DESC']],
+                    transaction
+                });
+                app.setDataValue('ExamAttempts', attempts.map((a) => a.toJSON()));
+            }
+            catch (err) {
+                console.error('[ApplicationRepository] Error fetching exam attempts:', err);
+                app.setDataValue('ExamAttempts', []);
+            }
         }
         return app;
     }

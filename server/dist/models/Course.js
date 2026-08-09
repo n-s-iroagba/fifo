@@ -4,17 +4,6 @@ exports.Course = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 class Course extends sequelize_1.Model {
-    id;
-    title;
-    code;
-    description;
-    format;
-    certificationTypeId;
-    price;
-    capacity;
-    isPublished;
-    createdAt;
-    updatedAt;
 }
 exports.Course = Course;
 Course.init({

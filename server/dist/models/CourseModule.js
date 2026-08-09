@@ -4,14 +4,6 @@ exports.CourseModule = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 class CourseModule extends sequelize_1.Model {
-    id;
-    courseId;
-    title;
-    contentType;
-    contentUrl;
-    sequenceOrder;
-    createdAt;
-    updatedAt;
 }
 exports.CourseModule = CourseModule;
 CourseModule.init({
@@ -37,6 +29,15 @@ CourseModule.init({
     contentUrl: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: false
+    },
+    content: {
+        type: sequelize_1.DataTypes.TEXT,
+        allowNull: true
+    },
+    durationMinutes: {
+        type: sequelize_1.DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 30
     },
     sequenceOrder: {
         type: sequelize_1.DataTypes.INTEGER,

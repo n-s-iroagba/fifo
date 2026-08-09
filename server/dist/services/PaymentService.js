@@ -57,7 +57,30 @@ class PaymentService {
     }
     // Maps to STK-ADM-PAY-004 — unverified (screenshot uploaded, not yet verified)
     async getUnverifiedPayments(limit, offset) {
-        return PaymentRepository_1.paymentRepository.findAllAdmin({ status: constants_1.CONSTANTS.PAYMENT_STATUSES.PENDING, limit, offset });
+        const payments = await PaymentRepository_1.paymentRepository.findAllAdmin({ status: constants_1.CONSTANTS.PAYMENT_STATUSES.PENDING, limit, offset });
+        // Fetch unverified tickets
+        const { Ticket, User, Application } = require('../models');
+        const { Op } = require('sequelize');
+        const tickets = await Ticket.findAll({
+            where: { paymentStatus: { [Op.in]: ['receipt_submitted', 'unverified'] } },
+            include: [{ model: User }, { model: Application, as: 'Application' }]
+        });
+        const mappedTickets = tickets.map((t) => ({
+            id: t.id,
+            isTicket: true,
+            amount: t.subsidisedPrice !== null ? t.subsidisedPrice : t.purchasePrice,
+            proofUrl: t.receiptUrl,
+            Application: {
+                User: t.User || {}
+            },
+            JobStage: {
+                name: `Aveling Course: ${t.ticketType}`
+            }
+        }));
+        return {
+            rows: [...payments.rows, ...mappedTickets],
+            count: payments.count + mappedTickets.length
+        };
     }
     // Maps to STK-ADM-PAY-001, STK-ADM-PAY-002
     async verifyPayment(paymentId, adminId, isApproved, note) {

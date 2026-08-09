@@ -4,13 +4,6 @@ exports.CourseSubsidy = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 class CourseSubsidy extends sequelize_1.Model {
-    id;
-    userId;
-    courseId;
-    amount;
-    isNotified;
-    createdAt;
-    updatedAt;
 }
 exports.CourseSubsidy = CourseSubsidy;
 CourseSubsidy.init({

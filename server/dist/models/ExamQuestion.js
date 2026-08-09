@@ -4,16 +4,6 @@ exports.ExamQuestion = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 class ExamQuestion extends sequelize_1.Model {
-    id;
-    courseId;
-    questionText;
-    questionType;
-    options;
-    correctOptionIndex;
-    correctAnswer;
-    weight;
-    createdAt;
-    updatedAt;
 }
 exports.ExamQuestion = ExamQuestion;
 ExamQuestion.init({

@@ -61,13 +61,22 @@ class CourseService {
         });
     }
     static async getCourseById(courseId) {
-        const course = await Course_1.Course.findByPk(courseId, {
-            include: [CertificationType_1.CertificationType]
-        });
+        let course = null;
+        if (courseId && courseId !== 'undefined') {
+            course = await Course_1.Course.findByPk(courseId, {
+                include: [CertificationType_1.CertificationType]
+            });
+        }
+        if (!course) {
+            course = await Course_1.Course.findOne({
+                include: [CertificationType_1.CertificationType],
+                order: [['createdAt', 'ASC']]
+            });
+        }
         if (!course)
             throw new Error('COURSE_NOT_FOUND');
         const modules = await CourseModule_1.CourseModule.findAll({
-            where: { courseId },
+            where: { courseId: course.id },
             order: [['sequenceOrder', 'ASC']]
         });
         return { course, modules };

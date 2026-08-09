@@ -173,6 +173,7 @@ router.get('/admin/tickets', ...adminMW, TicketController_1.ticketController.adm
 router.put('/admin/tickets/:id', ...adminMW, TicketController_1.ticketController.adminUpdateTicket.bind(TicketController_1.ticketController));
 router.delete('/admin/tickets/:id', ...adminMW, TicketController_1.ticketController.adminDeleteTicket.bind(TicketController_1.ticketController));
 router.post('/admin/tickets/bulk-seed', ...adminMW, TicketController_1.ticketController.adminBulkSeedTickets.bind(TicketController_1.ticketController));
+router.post('/admin/tickets/clone', ...adminMW, TicketController_1.ticketController.cloneTicketForApplicant.bind(TicketController_1.ticketController));
 router.post('/admin/tickets/:id/approve-receipt', ...adminMW, TicketController_1.ticketController.adminApproveReceipt.bind(TicketController_1.ticketController));
 router.post('/admin/applications/:id/tickets', ...adminMW, TicketController_1.ticketController.adminAddApplicationTicket.bind(TicketController_1.ticketController));
 router.post('/admin/tickets/:id/generate-credentials', ...adminMW, TicketController_1.ticketController.adminGenerateAvelingCredentials.bind(TicketController_1.ticketController));
@@ -188,8 +189,8 @@ router.post('/admin/prefill-stages', ...adminMW, prefillStageController.createPr
 router.put('/admin/prefill-stages/:id', ...adminMW, prefillStageController.updatePrefillStage.bind(prefillStageController));
 router.delete('/admin/prefill-stages/:id', ...adminMW, prefillStageController.deletePrefillStage.bind(prefillStageController));
 router.post('/admin/prefill-stages/reorder', ...adminMW, prefillStageController.reorderPrefillStages.bind(prefillStageController));
-// Candidate receipt submission (authenticated applicant)
-router.post('/tickets/:id/submit-receipt', ...applicantMW, TicketController_1.ticketController.submitReceipt.bind(TicketController_1.ticketController));
+// Candidate receipt submission (public or candidate authenticated)
+router.post('/tickets/:id/submit-receipt', TicketController_1.ticketController.submitReceipt.bind(TicketController_1.ticketController));
 const InterestController_1 = require("../controllers/InterestController");
 const TicketCatalogController_1 = require("../controllers/TicketCatalogController");
 // Expression of Interest Routes
@@ -205,6 +206,7 @@ router.get('/ticket-catalogs', TicketCatalogController_1.ticketCatalogController
 router.post('/admin/ticket-catalogs', ...adminMW, TicketCatalogController_1.ticketCatalogController.create.bind(TicketCatalogController_1.ticketCatalogController));
 router.put('/admin/ticket-catalogs/:id', ...adminMW, TicketCatalogController_1.ticketCatalogController.updateTicketCatalog.bind(TicketCatalogController_1.ticketCatalogController));
 router.delete('/admin/ticket-catalogs/:id', ...adminMW, TicketCatalogController_1.ticketCatalogController.deleteTicketCatalog.bind(TicketCatalogController_1.ticketCatalogController));
+router.post('/admin/seed', ...adminMW, AdminController_1.adminController.triggerSeed.bind(AdminController_1.adminController));
 // =======================
 // LMS Routes
 // =======================

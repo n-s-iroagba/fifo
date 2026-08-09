@@ -4,13 +4,6 @@ exports.Certificate = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 class Certificate extends sequelize_1.Model {
-    id;
-    userId;
-    certificationTypeId;
-    issueDate;
-    expiryDate;
-    createdAt;
-    updatedAt;
 }
 exports.Certificate = Certificate;
 Certificate.init({

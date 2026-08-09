@@ -4,13 +4,6 @@ exports.PracticalBooking = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 class PracticalBooking extends sequelize_1.Model {
-    id;
-    sessionId;
-    userId;
-    attendanceStatus;
-    passStatus;
-    createdAt;
-    updatedAt;
 }
 exports.PracticalBooking = PracticalBooking;
 PracticalBooking.init({

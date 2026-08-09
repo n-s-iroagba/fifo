@@ -4,13 +4,6 @@ exports.CertificationGap = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 class CertificationGap extends sequelize_1.Model {
-    id;
-    userId;
-    certificationTypeId;
-    status;
-    assignedByAdminId;
-    createdAt;
-    updatedAt;
 }
 exports.CertificationGap = CertificationGap;
 CertificationGap.init({

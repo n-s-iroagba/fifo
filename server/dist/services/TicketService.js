@@ -272,19 +272,115 @@ class TicketService {
         const application = await models_1.Application.findByPk(applicationId);
         if (!application)
             throw new Error('APPLICATION_NOT_FOUND');
+        const { TicketCatalog, Course } = require('../models');
+        let ticketType = data.ticketType;
+        let description = data.description || null;
+        let realPrice = data.realPrice ?? null;
+        let subsidisedPrice = data.subsidisedPrice ?? null;
+        let courseId = data.courseId || null;
+        // If cloning from a catalog template
+        if (data.catalogId) {
+            const catalog = await TicketCatalog.findByPk(data.catalogId);
+            if (catalog) {
+                ticketType = ticketType || catalog.name;
+                description = description || catalog.description;
+                if (realPrice === null)
+                    realPrice = catalog.normalPrice;
+                if (subsidisedPrice === null)
+                    subsidisedPrice = catalog.sponsorshipPrice;
+            }
+        }
+        // Auto-link matching course if courseId is not set
+        if (!courseId && ticketType) {
+            const allCourses = await Course.findAll();
+            const lowerType = ticketType.toLowerCase();
+            const matched = allCourses.find((c) => {
+                const cTitle = (c.title || '').toLowerCase();
+                const cCode = (c.code || '').toLowerCase();
+                return ((cCode && lowerType.includes(cCode)) ||
+                    (cTitle && lowerType.includes(cTitle)) ||
+                    (cTitle && cTitle.split(' ').some((word) => word.length > 3 && lowerType.includes(word))));
+            });
+            if (matched) {
+                courseId = matched.id;
+            }
+        }
         const ticket = await models_1.Ticket.create({
             userId: application.userId,
             applicationId: applicationId,
-            ticketType: data.ticketType,
+            ticketType: ticketType || 'Certification Ticket Requirement',
             status: 'not_possessed',
             ticketSponsorship: 'no_application',
-            description: data.description || null,
-            realPrice: data.realPrice || null,
-            subsidisedPrice: data.subsidisedPrice || null,
-            canApplySponsorship: data.canApplySponsorship || false,
-            courseId: data.courseId || null,
+            description: description,
+            realPrice: realPrice,
+            subsidisedPrice: subsidisedPrice,
+            purchasePrice: subsidisedPrice ?? realPrice ?? 0,
+            canApplySponsorship: data.canApplySponsorship ?? true,
+            courseId: courseId,
         });
         return ticket;
+    }
+    async cloneTicketForApplicant(data) {
+        const { User, TicketCatalog, Course } = require('../models');
+        const user = await User.findByPk(data.targetUserId);
+        if (!user)
+            throw new Error('USER_NOT_FOUND');
+        let baseTicketType = data.ticketType || 'Work Safely at Heights (RIIWHS204E)';
+        let baseDescription = data.description || 'Assigned certification ticket course';
+        let defaultRealPrice = 280;
+        let defaultSubsidisedPrice = 140;
+        let defaultCourseId = data.customCourseId || null;
+        if (data.sourceTicketId) {
+            const sourceTicket = await models_1.Ticket.findByPk(data.sourceTicketId);
+            if (sourceTicket) {
+                baseTicketType = sourceTicket.ticketType;
+                baseDescription = sourceTicket.description || baseDescription;
+                defaultRealPrice = sourceTicket.realPrice ?? sourceTicket.purchasePrice ?? 280;
+                defaultSubsidisedPrice = sourceTicket.subsidisedPrice ?? (defaultRealPrice / 2);
+                defaultCourseId = defaultCourseId || sourceTicket.courseId;
+            }
+        }
+        else if (data.sourceCatalogId) {
+            const catalog = await TicketCatalog.findByPk(data.sourceCatalogId);
+            if (catalog) {
+                baseTicketType = catalog.name;
+                baseDescription = catalog.description || baseDescription;
+                defaultRealPrice = catalog.normalPrice || 280;
+                defaultSubsidisedPrice = catalog.sponsorshipPrice || (defaultRealPrice / 2);
+            }
+        }
+        if (!defaultCourseId) {
+            const matchingCourse = await Course.findOne({
+                where: {
+                    [require('sequelize').Op.or]: [
+                        { code: 'RIIWHS204E' },
+                        { title: { [require('sequelize').Op.like]: `%${baseTicketType}%` } }
+                    ]
+                }
+            });
+            if (matchingCourse) {
+                defaultCourseId = matchingCourse.id;
+            }
+        }
+        const realPrice = data.customRealPrice ?? defaultRealPrice;
+        const subsidisedPrice = data.customSubsidisedPrice ?? defaultSubsidisedPrice;
+        const purchasePrice = data.customPurchasePrice ?? subsidisedPrice;
+        const clonedTicket = await models_1.Ticket.create({
+            userId: data.targetUserId,
+            applicationId: data.applicationId || null,
+            ticketType: baseTicketType,
+            description: baseDescription,
+            status: 'not_possessed',
+            ticketSponsorship: 'applied',
+            canApplySponsorship: data.canApplySponsorship ?? true,
+            realPrice: realPrice,
+            subsidisedPrice: subsidisedPrice,
+            purchasePrice: purchasePrice,
+            courseId: defaultCourseId,
+            paymentStatus: 'unpaid',
+            courseAccessGranted: false
+        });
+        return clonedTicket;
     }
     async sendCheckoutPaymentEmail(ticketId) {
         const ticket = await models_1.Ticket.findByPk(ticketId, { include: [{ model: models_1.User }] });
@@ -357,24 +453,33 @@ class TicketService {
             throw new Error('TICKET_NOT_FOUND');
         const user = ticket.User;
         // Mark the ticket as receipt-verified (unlock course)
-        await ticket.update({ ticketSponsorship: ticket.ticketSponsorship }); // no status change needed — just unlock enrollment
-        // Set the enrollment for this course as active/paid
+        await ticket.update({
+            paymentStatus: 'payment_verified',
+            courseAccessGranted: true
+        });
+        // Set the enrollment for this course as active/paid if valid course exists
         if (ticket.courseId && user?.id) {
-            const { Enrollment } = require('../models');
-            const existingEnrollment = await Enrollment.findOne({
-                where: { userId: user.id, courseId: ticket.courseId }
-            });
-            if (existingEnrollment) {
-                await existingEnrollment.update({ paymentStatus: 'Paid', status: 'Active' });
+            const { Enrollment, Course } = require('../models');
+            const validCourse = await Course.findByPk(ticket.courseId);
+            if (validCourse) {
+                const existingEnrollment = await Enrollment.findOne({
+                    where: { userId: user.id, courseId: ticket.courseId }
+                });
+                if (existingEnrollment) {
+                    await existingEnrollment.update({ paymentStatus: 'Paid', status: 'Active' });
+                }
+                else {
+                    await Enrollment.create({
+                        userId: user.id,
+                        courseId: ticket.courseId,
+                        paymentStatus: 'Paid',
+                        status: 'Active',
+                        amountPaid: ticket.purchasePrice ?? 0
+                    });
+                }
             }
             else {
-                await Enrollment.create({
-                    userId: user.id,
-                    courseId: ticket.courseId,
-                    paymentStatus: 'Paid',
-                    status: 'Active',
-                    amountPaid: ticket.purchasePrice
-                });
+                console.warn(`[TicketService] Ticket #${ticket.id} references non-existent courseId ${ticket.courseId}. Skipping Enrollment creation.`);
             }
         }
         // Notify learner that course is unlocked
@@ -468,7 +573,12 @@ class TicketService {
     }
     // Candidate submits payment receipt (or pays via wallet)
     async submitReceipt(ticketId, userId, data) {
-        const ticket = await models_1.Ticket.findOne({ where: { id: ticketId, userId }, include: [{ model: models_1.User }] });
+        const effectiveUserId = userId || data?.userId;
+        const whereClause = { id: ticketId };
+        if (effectiveUserId) {
+            whereClause.userId = effectiveUserId;
+        }
+        const ticket = await models_1.Ticket.findOne({ where: whereClause, include: [{ model: models_1.User }] });
         if (!ticket)
             throw new Error('TICKET_NOT_FOUND');
         const user = ticket.User;
@@ -476,7 +586,7 @@ class TicketService {
             throw new Error('USER_NOT_FOUND');
         let coursePrice = ticket.subsidisedPrice ?? ticket.purchasePrice ?? 0;
         let isFullyCovered = false;
-        if (data.useWallet && user.walletBalance && user.walletBalance > 0) {
+        if (data?.useWallet && user.walletBalance && user.walletBalance > 0) {
             if (user.walletBalance >= coursePrice) {
                 // Wallet fully covers the price
                 await user.update({ walletBalance: user.walletBalance - coursePrice });
@@ -495,23 +605,29 @@ class TicketService {
                 courseAccessGranted: true,
                 receiptReference: 'WALLET_PAYMENT',
             });
-            // Unlock course enrollment
-            if (ticket.courseId) {
-                const { Enrollment } = require('../models');
-                const existingEnrollment = await Enrollment.findOne({
-                    where: { userId: user.id, courseId: ticket.courseId }
-                });
-                if (existingEnrollment) {
-                    await existingEnrollment.update({ paymentStatus: 'Paid', status: 'Active' });
+            // Unlock course enrollment if valid course exists
+            if (ticket.courseId && user?.id) {
+                const { Enrollment, Course } = require('../models');
+                const validCourse = await Course.findByPk(ticket.courseId);
+                if (validCourse) {
+                    const existingEnrollment = await Enrollment.findOne({
+                        where: { userId: user.id, courseId: ticket.courseId }
+                    });
+                    if (existingEnrollment) {
+                        await existingEnrollment.update({ paymentStatus: 'Paid', status: 'Active' });
+                    }
+                    else {
+                        await Enrollment.create({
+                            userId: user.id,
+                            courseId: ticket.courseId,
+                            paymentStatus: 'Paid',
+                            status: 'Active',
+                            amountPaid: ticket.subsidisedPrice ?? ticket.purchasePrice ?? 0
+                        });
+                    }
                 }
                 else {
-                    await Enrollment.create({
-                        userId: user.id,
-                        courseId: ticket.courseId,
-                        paymentStatus: 'Paid',
-                        status: 'Active',
-                        amountPaid: ticket.subsidisedPrice ?? ticket.purchasePrice
-                    });
+                    console.warn(`[TicketService] Ticket #${ticket.id} references non-existent courseId ${ticket.courseId}. Skipping Enrollment creation.`);
                 }
             }
             await NotificationService_1.notificationService.sendNotification(user.id, 'Payment Verified via Wallet', `Your payment for ${ticket.ticketType} was fully covered by your wallet balance. Course unlocked!`);
@@ -520,8 +636,8 @@ class TicketService {
             // Standard bank receipt submission
             await ticket.update({
                 paymentStatus: 'receipt_submitted',
-                receiptReference: data.receiptReference || null,
-                receiptUrl: data.receiptUrl || null,
+                receiptReference: data?.receiptReference || null,
+                receiptUrl: data?.receiptUrl || null,
             });
             // Notify admins
             const { User: UserModel } = require('../models');
@@ -568,15 +684,17 @@ class TicketService {
     }
     // Platform bank account management
     async getPlatformBankAccount() {
-        const { BankAccount } = require('../models');
-        const bank = await BankAccount.findOne({ where: { isActive: true } });
-        if (!bank)
-            return null;
+        const { PlatformSetting } = require('../models');
+        const keys = ['platform_bank_name', 'platform_bank_bsb', 'platform_bank_account_number', 'platform_bank_account_name'];
+        const settings = await PlatformSetting.findAll({ where: { key: keys } });
+        const result = {};
+        for (const s of settings)
+            result[s.key] = s.value;
         return {
-            bankName: bank.bankName,
-            bsb: bank.routingCode,
-            accountNumber: bank.accountNumber,
-            accountName: bank.bankName, // Map bankName to accountName if none exists on the model
+            bankName: result.platform_bank_name || null,
+            bsb: result.platform_bank_bsb || null,
+            accountNumber: result.platform_bank_account_number || null,
+            accountName: result.platform_bank_account_name || null,
         };
     }
     async updatePlatformBankAccount(data) {
@@ -592,7 +710,6 @@ class TicketService {
                 await PlatformSetting.upsert({ key, value });
             }
         }
-        return this.getPlatformBankAccount();
     }
 }
 exports.TicketService = TicketService;

@@ -14,6 +14,25 @@ async function seedDatabase() {
             await models_1.sequelize.models[modelName].sync();
         }
     }
+    // Safely add content and durationMinutes to course_modules
+    try {
+        await models_1.sequelize.query("ALTER TABLE course_modules ADD COLUMN content TEXT DEFAULT NULL;");
+        console.log("Safely patched course_modules table with content.");
+    }
+    catch (e) {
+        if (e.original && e.original.code !== 'ER_DUP_FIELDNAME') {
+            console.log("Notice: content column might already exist or could not be added:", e.message);
+        }
+    }
+    try {
+        await models_1.sequelize.query("ALTER TABLE course_modules ADD COLUMN duration_minutes INTEGER DEFAULT 30;");
+        console.log("Safely patched course_modules table with durationMinutes.");
+    }
+    catch (e) {
+        if (e.original && e.original.code !== 'ER_DUP_FIELDNAME') {
+            console.log("Notice: duration_minutes column might already exist or could not be added:", e.message);
+        }
+    }
     // Safely add visaSponsorshipStatus to Application without triggering FK re-checks
     try {
         await models_1.sequelize.query("ALTER TABLE applications ADD COLUMN visaSponsorshipStatus ENUM('Pending', 'Approved', 'Rejected') DEFAULT NULL;");
@@ -46,6 +65,98 @@ async function seedDatabase() {
         }
     }
     await models_1.sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+    console.log('Seeding LMS Data (Courses, Exams, Criteria, Ticket Catalogs)...');
+    for (const data of lmsData_1.lmsSeedData) {
+        // Create Certification Type
+        const [certType] = await models_1.CertificationType.findOrCreate({
+            where: { name: data.certificationName },
+            defaults: {
+                code: data.certificationName.toUpperCase().replace(/\s+/g, '-'),
+                description: data.description,
+                validityMonths: 24,
+                requiresRefresher: true
+            }
+        });
+        // Create Course
+        const [course] = await models_1.Course.findOrCreate({
+            where: { title: data.course.title },
+            defaults: {
+                code: data.course.title.split(' ')[0], // e.g. RIIWHS204E
+                description: data.course.description,
+                certificationTypeId: certType.id,
+                format: data.course.format,
+                price: data.course.price,
+                durationHours: data.course.duration,
+                capacity: data.course.capacity,
+                isPublished: true
+            }
+        });
+        // Create Course Modules
+        if (data.course.modules) {
+            for (const m of data.course.modules) {
+                const [mod] = await models_1.CourseModule.findOrCreate({
+                    where: { courseId: course.id, title: m.title },
+                    defaults: {
+                        durationMinutes: m.durationMinutes,
+                        sequenceOrder: m.sequenceOrder,
+                        content: m.content,
+                        contentType: m.contentType || 'TEXT',
+                        contentUrl: m.contentUrl || 'local-content'
+                    }
+                });
+                // Enforce update for newly added schema fields
+                await mod.update({
+                    content: m.content,
+                    durationMinutes: m.durationMinutes,
+                    contentType: m.contentType || 'TEXT',
+                    contentUrl: m.contentUrl || 'local-content',
+                    sequenceOrder: m.sequenceOrder
+                });
+            }
+        }
+        // Create Exam Config
+        const [examConfig] = await models_1.ExamConfig.findOrCreate({
+            where: { courseId: course.id },
+            defaults: {
+                passThreshold: data.course.examConfig.passThreshold,
+                maxAttempts: data.course.examConfig.maxAttempts,
+                timeLimitMinutes: 60,
+                randomizeQuestions: true
+            }
+        });
+        // Create Exam Questions
+        for (const q of data.course.questions) {
+            await models_1.ExamQuestion.findOrCreate({
+                where: { courseId: course.id, questionText: q.questionText },
+                defaults: {
+                    questionType: q.questionType,
+                    options: q.options,
+                    correctOptionIndex: q.correctOptionIndex,
+                    weight: q.weight
+                }
+            });
+        }
+        // Create Practical Criteria
+        for (const crit of data.course.practicalCriteria) {
+            await models_1.PracticalCriterion.findOrCreate({
+                where: { courseId: course.id, description: crit },
+                defaults: {
+                    title: crit.split(' ').slice(0, 3).join(' '),
+                    isMandatory: true
+                }
+            });
+        }
+        // Create Ticket Catalog Entry
+        const catalogName = `${data.certificationName} (${course.code})`;
+        await models_1.TicketCatalog.findOrCreate({
+            where: { name: catalogName },
+            defaults: {
+                normalPrice: data.course.price,
+                sponsorshipPrice: data.course.price / 2,
+                description: `Australian Ticket for ${data.certificationName} (${course.code})`
+            }
+        });
+    }
     // 4. Seed Categories
     const categoryMap = {};
     const sectors = [
@@ -128,62 +239,6 @@ async function seedDatabase() {
                 }
             });
             await job.addJobCondition(condition);
-        }
-    }
-    console.log('Seeding LMS Data (Courses, Exams, Criteria)...');
-    for (const data of lmsData_1.lmsSeedData) {
-        // Create Certification Type
-        const [certType] = await models_1.CertificationType.findOrCreate({
-            where: { name: data.certificationName },
-            defaults: {
-                description: data.description,
-                validityMonths: 24,
-                requiresRefresher: true
-            }
-        });
-        // Create Course
-        const [course] = await models_1.Course.findOrCreate({
-            where: { title: data.course.title },
-            defaults: {
-                description: data.course.description,
-                certificationTypeId: certType.id,
-                format: data.course.format,
-                price: data.course.price,
-                durationHours: data.course.duration,
-                capacity: data.course.capacity,
-                isPublished: true
-            }
-        });
-        // Create Exam Config
-        const [examConfig] = await models_1.ExamConfig.findOrCreate({
-            where: { courseId: course.id },
-            defaults: {
-                passThreshold: data.course.examConfig.passThreshold,
-                maxAttempts: data.course.examConfig.maxAttempts,
-                timeLimitMinutes: 60,
-                randomizeQuestions: true
-            }
-        });
-        // Create Exam Questions
-        for (const q of data.course.questions) {
-            await models_1.ExamQuestion.findOrCreate({
-                where: { courseId: course.id, questionText: q.questionText },
-                defaults: {
-                    questionType: q.questionType,
-                    options: q.options,
-                    correctOptionIndex: q.correctOptionIndex,
-                    weight: q.weight
-                }
-            });
-        }
-        // Create Practical Criteria
-        for (const crit of data.course.practicalCriteria) {
-            await models_1.PracticalCriterion.findOrCreate({
-                where: { courseId: course.id, description: crit },
-                defaults: {
-                    isMandatory: true
-                }
-            });
         }
     }
     console.log('Idempotent seeding completed successfully!');

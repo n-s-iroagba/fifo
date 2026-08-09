@@ -11,6 +11,7 @@ const database_1 = require("../config/database");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const uuid_1 = require("uuid");
+const constants_1 = require("../constants");
 class LmsAuthService {
     static async getLmsCredentialsStatus(applicantId) {
         const user = await User_1.User.findByPk(applicantId);
@@ -126,14 +127,14 @@ class LmsAuthService {
         }
         const activeUsername = user.avelingUsername || credential?.lmsUsername || user.candidateNumber || user.email;
         // Generate JWT
-        const accessToken = jsonwebtoken_1.default.sign({ id: user.id, role: 'LEARNER', lmsUsername: activeUsername }, process.env.JWT_SECRET || 'secret', { expiresIn: (process.env.JWT_EXPIRES_IN || '15m') });
+        const accessToken = jsonwebtoken_1.default.sign({ id: user.id, role: constants_1.CONSTANTS.ROLES.APPLICANT, lmsUsername: activeUsername }, process.env.JWT_SECRET || 'secret', { expiresIn: (process.env.JWT_EXPIRES_IN || '15m') });
         return {
             accessToken,
             user: {
                 id: user.id,
                 name: user.fullName,
                 lmsUsername: activeUsername,
-                role: 'LEARNER'
+                role: constants_1.CONSTANTS.ROLES.APPLICANT
             }
         };
     }

@@ -3,10 +3,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ticketCatalogController = exports.TicketCatalogController = void 0;
 const models_1 = require("../models");
 const constants_1 = require("../constants");
+const lmsData_1 = require("../data/lmsData");
 class TicketCatalogController {
     async getAll(req, res, next) {
         try {
-            const catalogs = await models_1.TicketCatalog.findAll({ order: [['name', 'ASC']] });
+            let catalogs = await models_1.TicketCatalog.findAll({ order: [['name', 'ASC']] });
+            if (!catalogs || catalogs.length === 0) {
+                for (const data of lmsData_1.lmsSeedData) {
+                    const code = data.course.title.split(' ')[0];
+                    const name = `${data.certificationName} (${code})`;
+                    await models_1.TicketCatalog.findOrCreate({
+                        where: { name },
+                        defaults: {
+                            normalPrice: data.course.price,
+                            sponsorshipPrice: data.course.price / 2,
+                            description: `Australian Ticket for ${data.certificationName} (${code})`
+                        }
+                    });
+                }
+                catalogs = await models_1.TicketCatalog.findAll({ order: [['name', 'ASC']] });
+            }
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: catalogs });
         }
         catch (error) {

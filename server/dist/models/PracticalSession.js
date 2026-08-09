@@ -4,14 +4,6 @@ exports.PracticalSession = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 class PracticalSession extends sequelize_1.Model {
-    id;
-    courseId;
-    instructorId;
-    startTime;
-    endTime;
-    capacity;
-    createdAt;
-    updatedAt;
 }
 exports.PracticalSession = PracticalSession;
 PracticalSession.init({

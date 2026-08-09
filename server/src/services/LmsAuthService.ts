@@ -5,6 +5,7 @@ import { sequelize } from '../config/database';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
+import { CONSTANTS } from '../constants';
 
 export class LmsAuthService {
     static async getLmsCredentialsStatus(applicantId: string | number) {

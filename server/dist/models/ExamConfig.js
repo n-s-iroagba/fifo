@@ -4,11 +4,6 @@ exports.ExamConfig = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 class ExamConfig extends sequelize_1.Model {
-    courseId;
-    passThreshold;
-    timeLimitMinutes;
-    createdAt;
-    updatedAt;
 }
 exports.ExamConfig = ExamConfig;
 ExamConfig.init({

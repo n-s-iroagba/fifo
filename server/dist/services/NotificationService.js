@@ -15,10 +15,14 @@ class NotificationService {
     }
     // Maps to TRUST-008
     async getUserNotifications(userId) {
+        if (!userId)
+            return [];
         return NotificationRepository_1.notificationRepository.findByUserId(userId);
     }
     // Maps to TRUST-008, STK-ADM-APP-004
     async sendNotification(userId, subject, message, type = 'SYSTEM') {
+        if (!userId)
+            return null;
         const notification = await NotificationRepository_1.notificationRepository.create({
             userId,
             subject,
@@ -30,6 +34,8 @@ class NotificationService {
         return notification;
     }
     async triggerPushNotification(userId, title, body) {
+        if (!userId)
+            return;
         const subscriptions = await models_1.PushSubscription.findAll({ where: { userId } });
         const payload = JSON.stringify({
             title,
@@ -58,6 +64,8 @@ class NotificationService {
         }));
     }
     async savePushSubscription(userId, subscription) {
+        if (!userId)
+            return null;
         // Avoid duplicate endpoints for the same user
         const existing = await models_1.PushSubscription.findOne({
             where: {
@@ -79,6 +87,8 @@ class NotificationService {
         return models_1.Notification.findByPk(id);
     }
     async markAllAsRead(userId) {
+        if (!userId)
+            return [0];
         return NotificationRepository_1.notificationRepository.markAllAsRead(userId);
     }
 }

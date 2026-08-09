@@ -4,13 +4,6 @@ exports.LmsCredential = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 class LmsCredential extends sequelize_1.Model {
-    id;
-    userId;
-    lmsUsername;
-    passwordHash;
-    isActive;
-    createdAt;
-    updatedAt;
 }
 exports.LmsCredential = LmsCredential;
 LmsCredential.init({

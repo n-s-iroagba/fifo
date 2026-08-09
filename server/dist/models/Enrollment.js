@@ -4,14 +4,6 @@ exports.Enrollment = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 class Enrollment extends sequelize_1.Model {
-    id;
-    userId;
-    courseId;
-    status;
-    paymentStatus;
-    theoryProgress;
-    createdAt;
-    updatedAt;
 }
 exports.Enrollment = Enrollment;
 Enrollment.init({

@@ -337,7 +337,7 @@ class TicketController {
     async submitReceipt(req, res, next) {
         try {
             const ticketId = parseInt(req.params.id, 10);
-            const userId = req.user.id;
+            const userId = req.user?.id || (req.body?.userId ? parseInt(req.body.userId, 10) : undefined);
             const ticket = await TicketService_1.ticketService.submitReceipt(ticketId, userId, req.body);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: ticket });
         }
@@ -393,6 +393,36 @@ class TicketController {
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: bankDetails });
         }
         catch (error) {
+            next(error);
+        }
+    }
+    async cloneTicketForApplicant(req, res, next) {
+        try {
+            const { targetUserId, sourceTicketId, sourceCatalogId, applicationId, ticketType, description, customPurchasePrice, customRealPrice, customSubsidisedPrice, customCourseId, canApplySponsorship } = req.body;
+            if (!targetUserId) {
+                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'targetUserId is required' });
+                return;
+            }
+            const ticket = await TicketService_1.ticketService.cloneTicketForApplicant({
+                targetUserId,
+                sourceTicketId,
+                sourceCatalogId,
+                applicationId,
+                ticketType,
+                description,
+                customPurchasePrice,
+                customRealPrice,
+                customSubsidisedPrice,
+                customCourseId,
+                canApplySponsorship
+            });
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json({ success: true, data: ticket, message: 'Ticket cloned successfully for applicant with custom pricing' });
+        }
+        catch (error) {
+            if (error.message === 'USER_NOT_FOUND') {
+                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Applicant user not found' });
+                return;
+            }
             next(error);
         }
     }

@@ -4,14 +4,6 @@ exports.ExamAttempt = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 class ExamAttempt extends sequelize_1.Model {
-    id;
-    userId;
-    courseId;
-    score;
-    isPass;
-    attemptNumber;
-    createdAt;
-    updatedAt;
 }
 exports.ExamAttempt = ExamAttempt;
 ExamAttempt.init({
