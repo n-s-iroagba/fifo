@@ -130,7 +130,7 @@ function ExamPortalContent() {
         <div className="mx-auto max-w-3xl space-y-6 py-6 px-4">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-xs font-bold text-zinc-500">
-                <Link href={`/courses/${params.id}`} className="hover:text-zinc-900 dark:hover:text-white">Course Player</Link>
+                <Link href={`/courses/${id}`} className="hover:text-zinc-900 dark:hover:text-white">Course Player</Link>
                 <ChevronRight className="h-3 w-3" />
                 <span>Theory Assessment</span>
             </div>

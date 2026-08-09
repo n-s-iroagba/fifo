@@ -49,7 +49,7 @@ export default function CoursePlayerPage() {
         };
 
         fetchCourse();
-    }, [params.id]);
+    }, [id]);
 
 
     const progressPct = courseData?.modules?.length ? Math.round((completedModules.length / courseData.modules.length) * 100) : 0;
@@ -123,13 +123,13 @@ export default function CoursePlayerPage() {
                                         Duration: {mod.duration}
                                     </div>
                                 </button>
-                                
+
                                 {/* Real Implementation: Expanded Module Content Reader */}
                                 {selectedModule === idx && (
                                     <div className="ml-4 pl-4 border-l-2 border-[#FFC700] py-3 pr-3 text-xs leading-relaxed text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 rounded-r-xl shadow-sm">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="font-bold text-zinc-900 dark:text-white">Module Content Reader</span>
-                                            <button 
+                                            <button
                                                 onClick={() => {
                                                     const blob = new Blob([mod.description], { type: 'text/plain' });
                                                     const url = URL.createObjectURL(blob);
