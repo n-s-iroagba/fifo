@@ -3,7 +3,7 @@
 // STEP-1.1.19, STEP-1.1.20, STEP-1.1.21, STEP-1.1.23, STEP-1.1.24
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import { Award, CheckCircle2, XCircle, ShieldCheck, ChevronRight, ArrowRight, Wallet, RotateCcw, Banknote, Mail } from 'lucide-react';
 import { apiClient } from '../../../../lib/axios';
 
@@ -18,9 +18,11 @@ interface ExamQuestion {
 
 type ExamPhase = 'instructions' | 'active' | 'review_awaiting' | 'passed' | 'failed' | 'refund_choice';
 
-function ExamPortalContent({ params }: { params: { id: string } }) {
+function ExamPortalContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const routeParams = useParams();
+    const id = routeParams.id as string;
     const ticketId = searchParams.get('ticketId') || '';
     const attemptParam = parseInt(searchParams.get('attempt') || '1', 10);
 
@@ -40,7 +42,7 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
     const startAssessment = async () => {
         setStarting(true);
         try {
-            const res = await apiClient.post('/exams/attempts/start', { courseId: params.id });
+            const res = await apiClient.post('/exams/attempts/start', { courseId: id });
             const attempt = res.data?.data;
             if (attempt?.id) {
                 setAttemptId(attempt.id);
@@ -388,10 +390,10 @@ function ExamPortalContent({ params }: { params: { id: string } }) {
     );
 }
 
-export default function ExamPortalPage({ params }: { params: { id: string } }) {
+export default function ExamPortalPage() {
     return (
         <Suspense fallback={<div className="p-12 text-center text-xs font-bold text-amber-600">Loading Exam Portal...</div>}>
-            <ExamPortalContent params={params} />
+            <ExamPortalContent />
         </Suspense>
     );
 }

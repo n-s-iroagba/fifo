@@ -3,12 +3,14 @@
 // STEP-017, STEP-018
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { BookOpen, CheckCircle2, PlayCircle, Lock, Calendar, FileText, ArrowRight, ShieldCheck, ChevronRight, Award, Download } from 'lucide-react';
 import { apiClient } from '../../../lib/axios';
 
-export default function CoursePlayerPage({ params }: { params: { id: string } }) {
+export default function CoursePlayerPage() {
     const router = useRouter();
+    const routeParams = useParams();
+    const id = routeParams.id as string;
 
     const [completedModules, setCompletedModules] = useState<number[]>([0, 1]);
     const [selectedModule, setSelectedModule] = useState<number | null>(null);
@@ -20,7 +22,7 @@ export default function CoursePlayerPage({ params }: { params: { id: string } })
     useEffect(() => {
         const fetchCourse = async () => {
             try {
-                const res = await apiClient.get(`/courses/${params.id}`);
+                const res = await apiClient.get(`/courses/${id}`);
                 const data = res.data?.data;
                 if (data?.course) {
                     setCourseData({
