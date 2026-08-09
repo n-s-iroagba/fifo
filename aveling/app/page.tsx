@@ -67,8 +67,8 @@ export default function AvelingHomePage() {
     const [topic, setTopic] = useState('Any Topic');
 
     // LMS Candidate Login & Portal state
-    const [loginTab, setLoginTab] = useState<'candidate_id' | 'lms_creds'>('candidate_id');
-    const [candidateInput, setCandidateInput] = useState('CND-10001');
+
+
     const [lmsUsername, setLmsUsername] = useState('');
     const [lmsPassword, setLmsPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -82,7 +82,7 @@ export default function AvelingHomePage() {
             try {
                 const parsed = JSON.parse(storedUser);
                 if (parsed.email || parsed.candidateNumber) {
-                    setCandidateInput(parsed.candidateNumber || parsed.email);
+
                     autoLookup(parsed.candidateNumber || parsed.email);
                 }
             } catch (e) {
@@ -109,30 +109,7 @@ export default function AvelingHomePage() {
         }
     };
 
-    const handleCandidateLookup = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!candidateInput.trim()) return;
-        setLoading(true);
-        setError(null);
 
-        try {
-            const res = await apiClient.post('/candidate/lookup', {
-                candidateNumber: candidateInput.trim(),
-                email: candidateInput.trim()
-            });
-
-            if (res.data && res.data.success) {
-                setProfile(res.data.data);
-            } else {
-                setError(res.data?.message || 'Candidate record not found. Check your Candidate ID.');
-            }
-        } catch (err: any) {
-            console.error('Failed candidate lookup:', err);
-            setError(err.response?.data?.message || 'Candidate lookup failed. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleLmsLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -150,9 +127,9 @@ export default function AvelingHomePage() {
                 const { token, user } = response.data.data;
                 localStorage.setItem('lms_token', token);
                 localStorage.setItem('lms_user', JSON.stringify(user));
+                router.push('/dashboard')
 
-                // Lookup candidate info for logged in user
-                await autoLookup(user.email || user.username || lmsUsername);
+
             } else {
                 setError(response.data?.message || 'Invalid LMS credentials.');
             }
@@ -242,60 +219,10 @@ export default function AvelingHomePage() {
                                 </span>
                             </div>
 
-                            {/* Tab Selection */}
-                            <div className="flex rounded-xl bg-zinc-100 dark:bg-zinc-800 p-1">
-                                <button
-                                    onClick={() => setLoginTab('candidate_id')}
-                                    className={`flex-1 py-2 text-xs font-extrabold rounded-lg transition-all ${loginTab === 'candidate_id'
-                                            ? 'bg-black text-[#FFC700] shadow'
-                                            : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900'
-                                        }`}
-                                >
-                                    Candidate ID
-                                </button>
-                                <button
-                                    onClick={() => setLoginTab('lms_creds')}
-                                    className={`flex-1 py-2 text-xs font-extrabold rounded-lg transition-all ${loginTab === 'lms_creds'
-                                            ? 'bg-black text-[#FFC700] shadow'
-                                            : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900'
-                                        }`}
-                                >
-                                    LMS Login
-                                </button>
-                            </div>
 
-                            {/* Form 1: Candidate ID Lookup */}
-                            {loginTab === 'candidate_id' && (
-                                <form onSubmit={handleCandidateLookup} className="space-y-3">
-                                    <div>
-                                        <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 mb-1">
-                                            Candidate Number or Email:
-                                        </label>
-                                        <div className="relative">
-                                            <input
-                                                type="text"
-                                                value={candidateInput}
-                                                onChange={(e) => setCandidateInput(e.target.value)}
-                                                placeholder="e.g. CND-10001 or email@example.com"
-                                                className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 px-3.5 py-2.5 rounded-xl text-xs font-bold text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[#FFC700]"
-                                                required
-                                            />
-                                            <Search className="absolute right-3 top-2.5 h-4 w-4 text-zinc-400" />
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="w-full bg-[#FFC700] text-black font-extrabold text-xs py-3 rounded-xl hover:bg-yellow-400 transition-all uppercase tracking-wider shadow-md disabled:opacity-50"
-                                    >
-                                        {loading ? 'Searching Record...' : 'View Assigned Courses & Tickets'}
-                                    </button>
-                                </form>
-                            )}
 
                             {/* Form 2: Full LMS Login */}
-                            {loginTab === 'lms_creds' && (
+                            {(
                                 <form onSubmit={handleLmsLogin} className="space-y-3">
                                     <div>
                                         <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 mb-1">
