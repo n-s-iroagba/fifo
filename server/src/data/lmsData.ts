@@ -173,5 +173,113 @@ export const lmsSeedData = [
             ],
             practicalCriteria: []
         }
+    },
+    {
+        certificationName: 'White Card',
+        description: 'Mandatory General Construction Induction certification required before entering any Australian construction or FIFO resource work site under WHS Regulations 2022.',
+        course: {
+            title: 'CPCWHS1001 Prepare to work safely in the construction industry',
+            description: 'Nationally Recognised Unit of Competency CPCWHS1001 Prepare to work safely in the construction industry (General Construction Induction Card / White Card). Covers health and safety legislative requirements, basic risk management principles, duty of care under WHS Act 2011, hazard identification, Safe Work Method Statements (SWMS), incident reporting, safety sign comprehension, personal protective equipment (PPE) selection and inspection, and emergency evacuation procedures.',
+            format: 'Mixed',
+            price: 120.00,
+            duration: 6,
+            capacity: 25,
+            examConfig: {
+                passThreshold: 100,
+                maxAttempts: 5
+            },
+            questions: [
+                {
+                    questionText: 'Under the Work Health and Safety (WHS) Act 2011, who has the primary duty of care to ensure, so far as is reasonably practicable, the health and safety of workers?',
+                    questionType: 'mcq',
+                    options: [
+                        'The Person Conducting a Business or Undertaking (PCBU / Employer)',
+                        'The local police department',
+                        'Individual sub-contractors on an individual basis only',
+                        'The safety equipment supplier'
+                    ],
+                    correctOptionIndex: 0,
+                    weight: 15
+                },
+                {
+                    questionText: 'What document MUST be prepared before performing any high-risk construction work (e.g., risk of fall >2m, demolition, trenching)?',
+                    questionType: 'mcq',
+                    options: [
+                        'Safe Work Method Statement (SWMS)',
+                        'Standard Operating Invoice',
+                        'Annual Tax Declaration',
+                        'Purchase Order Clearance'
+                    ],
+                    correctOptionIndex: 0,
+                    weight: 15
+                },
+                {
+                    questionText: 'Which level of the Hierarchy of Risk Control is considered the MOST effective way to protect workers?',
+                    questionType: 'mcq',
+                    options: [
+                        'Elimination (completely removing the hazard)',
+                        'Personal Protective Equipment (PPE)',
+                        'Administrative controls (warning signs)',
+                        'Engineering controls (guard rails)'
+                    ],
+                    correctOptionIndex: 0,
+                    weight: 15
+                },
+                {
+                    questionText: 'What color and shape signifies a DANGER sign on an Australian construction site (e.g. Danger High Voltage)?',
+                    questionType: 'mcq',
+                    options: [
+                        'Red oval inside a black rectangle with the word DANGER in white text',
+                        'Green circle with white lettering',
+                        'Blue triangle with black border',
+                        'Yellow square with black dots'
+                    ],
+                    correctOptionIndex: 0,
+                    weight: 10
+                },
+                {
+                    questionText: 'If a worker discovers damaged or faulty personal protective equipment (e.g. cracked hard hat or torn harness), what is the correct action under WHS regulations?',
+                    questionType: 'mcq',
+                    options: [
+                        'Immediately tag it out of service, report it to the site supervisor, and replace it',
+                        'Continue using it until the end of the shift',
+                        'Pass it on to a junior co-worker',
+                        'Tape it up with duct tape and keep working'
+                    ],
+                    correctOptionIndex: 0,
+                    weight: 15
+                },
+                {
+                    questionText: 'Which four pieces of Personal Protective Equipment (PPE) are mandatory basic requirements on almost all Australian construction sites?',
+                    questionType: 'mcq',
+                    options: [
+                        'Hard hat, High-visibility vest/shirt, Steel-cap boots, Eye protection (Safety glasses)',
+                        'Sun hat, Flip flops, T-shirt, Shorts',
+                        'Leather apron, Welding mask, Rubber boots, Gloves',
+                        'Dust mask, Ear muffs, Rain jacket, Sandals'
+                    ],
+                    correctOptionIndex: 0,
+                    weight: 15
+                },
+                {
+                    questionText: 'What must a worker do IMMEDIATELY if an uncontrolled emergency or fire occurs on site?',
+                    questionType: 'mcq',
+                    options: [
+                        'Raise the alarm, notify supervisor, evacuate via safe routes to designated emergency assembly point',
+                        'Finish current task before leaving',
+                        'Call site HR department to request leave',
+                        'Hide in the nearest portaloo'
+                    ],
+                    correctOptionIndex: 0,
+                    weight: 15
+                }
+            ],
+            practicalCriteria: [
+                'Demonstrate correct fitting and pre-use inspection of 4 mandatory PPE items (Hard hat, High-Vis, Safety Glasses, Hearing Protection)',
+                'Identify 3 site hazard signs (Danger, Mandatory, Emergency Warning) and explain required actions',
+                'Demonstrate verbal hazard notification and completion of a site Incident/Hazard Report form',
+                'Demonstrate emergency evacuation path identification and assembly point procedure'
+            ]
+        }
     }
 ];
