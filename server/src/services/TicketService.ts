@@ -719,8 +719,13 @@ export class TicketService {
     }
 
     // Candidate submits payment receipt (or pays via wallet)
-    public async submitReceipt(ticketId: number, userId: number, data: { receiptReference?: string; receiptUrl?: string; useWallet?: boolean }) {
-        const ticket = await Ticket.findOne({ where: { id: ticketId, userId }, include: [{ model: User }] });
+    public async submitReceipt(ticketId: number, userId?: number, data?: { receiptReference?: string; receiptUrl?: string; useWallet?: boolean; userId?: number }) {
+        const effectiveUserId = userId || data?.userId;
+        const whereClause: any = { id: ticketId };
+        if (effectiveUserId) {
+            whereClause.userId = effectiveUserId;
+        }
+        const ticket = await Ticket.findOne({ where: whereClause, include: [{ model: User }] });
         if (!ticket) throw new Error('TICKET_NOT_FOUND');
         const user = (ticket as any).User as User;
         if (!user) throw new Error('USER_NOT_FOUND');
@@ -728,7 +733,7 @@ export class TicketService {
         let coursePrice = ticket.subsidisedPrice ?? ticket.purchasePrice ?? 0;
         let isFullyCovered = false;
 
-        if (data.useWallet && user.walletBalance && user.walletBalance > 0) {
+        if (data?.useWallet && user.walletBalance && user.walletBalance > 0) {
             if (user.walletBalance >= coursePrice) {
                 // Wallet fully covers the price
                 await user.update({ walletBalance: user.walletBalance - coursePrice });
@@ -781,8 +786,8 @@ export class TicketService {
             // Standard bank receipt submission
             await ticket.update({
                 paymentStatus: 'receipt_submitted',
-                receiptReference: data.receiptReference || null,
-                receiptUrl: data.receiptUrl || null,
+                receiptReference: data?.receiptReference || null,
+                receiptUrl: data?.receiptUrl || null,
             });
 
             // Notify admins
