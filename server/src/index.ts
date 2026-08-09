@@ -23,9 +23,11 @@ const startServer = async () => {
 
             // Run heavy seeding and migrations in the background so Fly.io health checks don't timeout
             try {
-                // await seedDatabase();
-                // await run();
-                // await migrateStageManagement();
+                seedDatabase().then(() => {
+                    logger.info('Database seeded successfully in background.');
+                }).catch(err => {
+                    logger.error('Background database seeding error:', err);
+                });
                 if (process.env.NODE_ENV !== 'production') {
                     logger.info('Database Synchronized successfully.');
                 }

@@ -449,6 +449,21 @@ export class AdminController {
             res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
+
+    public async triggerSeed(req: Request, res: Response): Promise<void> {
+        try {
+            const { seedDatabase } = require('../seedDatabase');
+            seedDatabase().then(() => {
+                console.log('[AdminController.triggerSeed] Database seeding completed successfully via API trigger.');
+            }).catch((err: any) => {
+                console.error('[AdminController.triggerSeed] Seeding error:', err);
+            });
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Database seeding initiated in background.' });
+        } catch (error: any) {
+            console.error('[AdminController.triggerSeed]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
 }
 
 export const adminController = new AdminController();

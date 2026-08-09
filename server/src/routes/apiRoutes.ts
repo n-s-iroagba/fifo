@@ -239,6 +239,7 @@ router.get('/ticket-catalogs', ticketCatalogController.getAll.bind(ticketCatalog
 router.post('/admin/ticket-catalogs', ...adminMW, ticketCatalogController.create.bind(ticketCatalogController));
 router.put('/admin/ticket-catalogs/:id', ...adminMW, ticketCatalogController.updateTicketCatalog.bind(ticketCatalogController));
 router.delete('/admin/ticket-catalogs/:id', ...adminMW, ticketCatalogController.deleteTicketCatalog.bind(ticketCatalogController));
+router.post('/admin/seed', ...adminMW, adminController.triggerSeed.bind(adminController));
 
 // =======================
 // LMS Routes
