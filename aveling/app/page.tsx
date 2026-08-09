@@ -413,13 +413,13 @@ export default function AvelingHomePage() {
                                                     {isAccessGranted ? (
                                                         <>
                                                             <Link
-                                                                href={`/courses/${tkt.Course?.id || tkt.courseId || ''}`}
+                                                                href={`/courses/${tkt.Course?.id || ''}`}
                                                                 className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-emerald-600 text-white font-extrabold text-xs px-6 py-3 rounded-xl hover:bg-emerald-500 transition-all uppercase tracking-wider shadow-md"
                                                             >
                                                                 <span>Start Course</span>
                                                             </Link>
                                                             <Link
-                                                                href={`/courses/${tkt.Course?.id || tkt.courseId || ''}/exam?ticketId=${tkt.id}`}
+                                                                href={`/courses/${tkt.Course?.id || ''}/exam?ticketId=${tkt.id}`}
                                                                 className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black font-extrabold text-xs px-6 py-3 rounded-xl hover:bg-yellow-400 transition-all uppercase tracking-wider shadow-md"
                                                             >
                                                                 <Award className="h-4 w-4" />
@@ -436,7 +436,7 @@ export default function AvelingHomePage() {
                                                         </button>
                                                     ) : (
                                                         <button
-                                                            onClick={() => router.push(`/checkout?ticketId=${tkt.id}&candidateNumber=${profile.candidateNumber}&courseId=${tkt.Course?.id || tkt.courseId || ''}&price=${coursePrice}&wallet=${profile.walletBalance}`)}
+                                                            onClick={() => router.push(`/checkout?ticketId=${tkt.id}&candidateNumber=${profile.candidateNumber}&courseId=${tkt.Course?.id || ''}&price=${coursePrice}&wallet=${profile.walletBalance}`)}
                                                             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black font-extrabold text-xs px-8 py-3.5 rounded-xl hover:bg-yellow-400 transition-all uppercase tracking-wider shadow-md"
                                                         >
                                                             <CreditCard className="h-4 w-4" />
