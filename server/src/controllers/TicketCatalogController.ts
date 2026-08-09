@@ -2,10 +2,27 @@ import { Request, Response, NextFunction } from 'express';
 import { TicketCatalog } from '../models';
 import { CONSTANTS } from '../constants';
 
+import { lmsSeedData } from '../data/lmsData';
+
 export class TicketCatalogController {
     public async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const catalogs = await TicketCatalog.findAll({ order: [['name', 'ASC']] });
+            let catalogs = await TicketCatalog.findAll({ order: [['name', 'ASC']] });
+            if (!catalogs || catalogs.length === 0) {
+                for (const data of lmsSeedData) {
+                    const code = data.course.title.split(' ')[0];
+                    const name = `${data.certificationName} (${code})`;
+                    await TicketCatalog.findOrCreate({
+                        where: { name },
+                        defaults: {
+                            normalPrice: data.course.price,
+                            sponsorshipPrice: data.course.price / 2,
+                            description: `Australian Ticket for ${data.certificationName} (${code})`
+                        }
+                    });
+                }
+                catalogs = await TicketCatalog.findAll({ order: [['name', 'ASC']] });
+            }
             res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: catalogs });
         } catch (error) { next(error); }
     }

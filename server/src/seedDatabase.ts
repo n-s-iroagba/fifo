@@ -50,8 +50,81 @@ export async function seedDatabase() {
 
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
 
+    console.log('Seeding LMS Data (Courses, Exams, Criteria, Ticket Catalogs)...');
 
+    for (const data of lmsSeedData) {
+        // Create Certification Type
+        const [certType] = await CertificationType.findOrCreate({
+            where: { name: data.certificationName },
+            defaults: {
+                code: data.certificationName.toUpperCase().replace(/\s+/g, '-'),
+                description: data.description,
+                validityMonths: 24,
+                requiresRefresher: true
+            }
+        });
 
+        // Create Course
+        const [course] = await Course.findOrCreate({
+            where: { title: data.course.title },
+            defaults: {
+                code: data.course.title.split(' ')[0], // e.g. RIIWHS204E
+                description: data.course.description,
+                certificationTypeId: certType.id,
+                format: data.course.format as any,
+                price: data.course.price,
+                durationHours: data.course.duration,
+                capacity: data.course.capacity,
+                isPublished: true
+            }
+        });
+
+        // Create Exam Config
+        const [examConfig] = await ExamConfig.findOrCreate({
+            where: { courseId: course.id },
+            defaults: {
+                passThreshold: data.course.examConfig.passThreshold,
+                maxAttempts: data.course.examConfig.maxAttempts,
+                timeLimitMinutes: 60,
+                randomizeQuestions: true
+            }
+        });
+
+        // Create Exam Questions
+        for (const q of data.course.questions) {
+            await ExamQuestion.findOrCreate({
+                where: { courseId: course.id, questionText: q.questionText },
+                defaults: {
+                    questionType: q.questionType,
+                    options: q.options,
+                    correctOptionIndex: q.correctOptionIndex,
+                    weight: q.weight
+                }
+            });
+        }
+
+        // Create Practical Criteria
+        for (const crit of data.course.practicalCriteria) {
+            await PracticalCriterion.findOrCreate({
+                where: { courseId: course.id, description: crit },
+                defaults: {
+                    title: crit.split(' ').slice(0, 3).join(' '),
+                    isMandatory: true
+                }
+            });
+        }
+
+        // Create Ticket Catalog Entry
+        const catalogName = `${data.certificationName} (${course.code})`;
+        await TicketCatalog.findOrCreate({
+            where: { name: catalogName },
+            defaults: {
+                normalPrice: data.course.price,
+                sponsorshipPrice: data.course.price / 2,
+                description: `Australian Ticket for ${data.certificationName} (${course.code})`
+            }
+        });
+    }
 
     // 4. Seed Categories
     const categoryMap: Record<string, any> = {};
@@ -141,81 +214,6 @@ export async function seedDatabase() {
             });
             await (job as any).addJobCondition(condition);
         }
-    }
-
-    console.log('Seeding LMS Data (Courses, Exams, Criteria)...');
-
-    for (const data of lmsSeedData) {
-        // Create Certification Type
-        const [certType] = await CertificationType.findOrCreate({
-            where: { name: data.certificationName },
-            defaults: {
-                code: data.certificationName.toUpperCase().replace(/\s+/g, '-'),
-                description: data.description,
-                validityMonths: 24,
-                requiresRefresher: true
-            }
-        });
-
-        // Create Course
-        const [course] = await Course.findOrCreate({
-            where: { title: data.course.title },
-            defaults: {
-                code: data.course.title.split(' ')[0], // e.g. RIIWHS204E
-                description: data.course.description,
-                certificationTypeId: certType.id,
-                format: data.course.format as any,
-                price: data.course.price,
-                durationHours: data.course.duration,
-                capacity: data.course.capacity,
-                isPublished: true
-            }
-        });
-
-        // Create Exam Config
-        const [examConfig] = await ExamConfig.findOrCreate({
-            where: { courseId: course.id },
-            defaults: {
-                passThreshold: data.course.examConfig.passThreshold,
-                maxAttempts: data.course.examConfig.maxAttempts,
-                timeLimitMinutes: 60,
-                randomizeQuestions: true
-            }
-        });
-
-        // Create Exam Questions
-        for (const q of data.course.questions) {
-            await ExamQuestion.findOrCreate({
-                where: { courseId: course.id, questionText: q.questionText },
-                defaults: {
-                    questionType: q.questionType,
-                    options: q.options,
-                    correctOptionIndex: q.correctOptionIndex,
-                    weight: q.weight
-                }
-            });
-        }
-
-        // Create Practical Criteria
-        for (const crit of data.course.practicalCriteria) {
-            await PracticalCriterion.findOrCreate({
-                where: { courseId: course.id, description: crit },
-                defaults: {
-                    title: crit.split(' ').slice(0, 3).join(' '),
-                    isMandatory: true
-                }
-            });
-        }
-
-        // Create Ticket Catalog Entry
-        await TicketCatalog.findOrCreate({
-            where: { name: `${data.certificationName} (${course.code})` },
-            defaults: {
-                normalPrice: data.course.price,
-                sponsorshipPrice: data.course.price / 2,
-                description: `Australian Ticket for ${data.certificationName} (${course.code})`
-            }
-        });
     }
 
     console.log('Idempotent seeding completed successfully!');
