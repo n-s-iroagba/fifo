@@ -3,12 +3,14 @@
 // STEP-019, STEP-020
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Calendar, MapPin, Users, CheckCircle2, Lock, ShieldCheck, ArrowRight, Clock, ChevronRight } from 'lucide-react';
 import { apiClient } from '../../../../lib/axios';
 
-export default function PracticalSchedulingPage({ params }: { params: { id: string } }) {
+export default function PracticalSchedulingPage() {
     const router = useRouter();
+    const routeParams = useParams();
+    const id = routeParams.id as string;
     const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
     const [bookingSuccess, setBookingSuccess] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -21,7 +23,7 @@ export default function PracticalSchedulingPage({ params }: { params: { id: stri
         const fetchPrerequisitesAndSlots = async () => {
             try {
                 // Check theory gate
-                const checkRes = await apiClient.get(`/practical-sessions/prerequisite-check/${params.id}`);
+                const checkRes = await apiClient.get(`/practical-sessions/prerequisite-check/${id}`);
                 setIsTheoryComplete(checkRes.data?.data?.cleared || false);
 
                 // Fetch real slots
@@ -37,7 +39,7 @@ export default function PracticalSchedulingPage({ params }: { params: { id: stri
         };
 
         fetchPrerequisitesAndSlots();
-    }, [params.id]);
+    }, [id]);
 
     const handleConfirmBooking = async () => {
         if (!selectedSlot) return;
@@ -45,7 +47,7 @@ export default function PracticalSchedulingPage({ params }: { params: { id: stri
         try {
             await apiClient.post('/practical-sessions/bookings', {
                 sessionId: selectedSlot,
-                courseId: params.id
+                courseId: id
             });
             setBookingSuccess(true);
         } catch (e) {
@@ -62,7 +64,7 @@ export default function PracticalSchedulingPage({ params }: { params: { id: stri
         <div className="mx-auto max-w-4xl space-y-6 py-4">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500">
-                <Link href={`/courses/${params.id}`} className="hover:text-zinc-900 dark:hover:text-white">Course Player</Link>
+                <Link href={`/courses/${id}`} className="hover:text-zinc-900 dark:hover:text-white">Course Player</Link>
                 <ChevronRight className="h-3 w-3" />
                 <span>Practical Training Booking</span>
             </div>
@@ -91,7 +93,7 @@ export default function PracticalSchedulingPage({ params }: { params: { id: stri
                         </p>
                     </div>
                     <Link
-                        href={`/courses/${params.id}`}
+                        href={`/courses/${id}`}
                         className="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-amber-500"
                     >
                         Resume Theory Modules
