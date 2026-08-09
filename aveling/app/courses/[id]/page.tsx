@@ -11,6 +11,7 @@ export default function CoursePlayerPage({ params }: { params: { id: string } })
     const router = useRouter();
 
     const [completedModules, setCompletedModules] = useState<number[]>([0, 1]);
+    const [selectedModule, setSelectedModule] = useState<number | null>(null);
 
     const [courseData, setCourseData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -101,25 +102,50 @@ export default function CoursePlayerPage({ params }: { params: { id: string } })
                 <div className="space-y-3">
                     {courseData.modules && courseData.modules.length > 0 ? (
                         courseData.modules.map((mod: any, idx: number) => (
-                            <button
-                                key={mod.id || idx}
-                                onClick={() => alert(`Opening ${mod.title}...\n\nContent: ${mod.description || 'Loading module content...'}`)}
-                                className="w-full flex flex-col items-start justify-between p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 hover:border-[#FFC700] transition-all text-left group"
-                            >
-                                <div className="w-full flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-3">
-                                        <BookOpen className="h-5 w-5 text-[#FFC700]" />
-                                        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{mod.title}</span>
+                            <div key={mod.id || idx} className="space-y-2">
+                                <button
+                                    onClick={() => setSelectedModule(selectedModule === idx ? null : idx)}
+                                    className={`w-full flex flex-col items-start justify-between p-3.5 rounded-xl border transition-all text-left group ${selectedModule === idx ? 'bg-amber-50 border-amber-300 dark:bg-amber-950/40 dark:border-amber-800' : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 hover:border-[#FFC700]'}`}
+                                >
+                                    <div className="w-full flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-3">
+                                            <BookOpen className={`h-5 w-5 ${selectedModule === idx ? 'text-amber-600' : 'text-[#FFC700]'}`} />
+                                            <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{mod.title}</span>
+                                        </div>
+                                        <Download className="h-4 w-4 text-zinc-400 group-hover:text-black dark:group-hover:text-white" />
                                     </div>
-                                    <Download className="h-4 w-4 text-zinc-400 group-hover:text-black dark:group-hover:text-white" />
-                                </div>
-                                <div className="text-[11px] text-zinc-500 dark:text-zinc-400 pl-8 line-clamp-2">
-                                    {mod.description}
-                                </div>
-                                <div className="text-[10px] font-mono text-zinc-400 pl-8 mt-2">
-                                    Duration: {mod.duration}
-                                </div>
-                            </button>
+                                    <div className="text-[11px] text-zinc-500 dark:text-zinc-400 pl-8 line-clamp-2">
+                                        {mod.description}
+                                    </div>
+                                    <div className="text-[10px] font-mono text-zinc-400 pl-8 mt-2">
+                                        Duration: {mod.duration}
+                                    </div>
+                                </button>
+                                
+                                {/* Real Implementation: Expanded Module Content Reader */}
+                                {selectedModule === idx && (
+                                    <div className="ml-4 pl-4 border-l-2 border-[#FFC700] py-3 pr-3 text-xs leading-relaxed text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 rounded-r-xl shadow-sm">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="font-bold text-zinc-900 dark:text-white">Module Content Reader</span>
+                                            <button 
+                                                onClick={() => {
+                                                    const blob = new Blob([mod.description], { type: 'text/plain' });
+                                                    const url = URL.createObjectURL(blob);
+                                                    const a = document.createElement('a');
+                                                    a.href = url;
+                                                    a.download = `${mod.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
+                                                    a.click();
+                                                    URL.revokeObjectURL(url);
+                                                }}
+                                                className="text-[10px] font-bold text-[#FFC700] hover:underline"
+                                            >
+                                                Download as TXT
+                                            </button>
+                                        </div>
+                                        {mod.description}
+                                    </div>
+                                )}
+                            </div>
                         ))
                     ) : (
                         <div className="p-4 text-center text-xs text-zinc-500 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
