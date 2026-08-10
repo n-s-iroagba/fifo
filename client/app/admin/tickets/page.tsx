@@ -5,7 +5,7 @@ import { useApiQuery } from '@/lib/hooks';
 import api from '@/lib/api';
 import Link from 'next/link';
 import { LmsAccessPanel } from '@/components/admin/LmsAccessPanel';
-import { ExamReviewPanel } from '../../../components/admin/ExamReviewPanel';
+import { ExamReviewPanel } from '@/components/admin/ExamReviewPanel';
 
 interface Ticket {
     id: number;
