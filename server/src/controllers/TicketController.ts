@@ -449,6 +449,130 @@ export class TicketController {
             next(error);
         }
     }
+
+    // Clause 7.4: Itemised wallet statement for a candidate (admin view)
+    public async getCandidateWalletStatement(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = parseInt(req.params.userId as string, 10);
+            if (!userId || isNaN(userId)) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
+                return;
+            }
+            const statement = await ticketService.getCandidateWalletStatement(userId);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: statement });
+        } catch (error: any) {
+            if (error.message === 'USER_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Candidate not found.' });
+                return;
+            }
+            next(error);
+        }
+    }
+
+    // Clause 9.2: Admin remediation options after second_attempt_failed
+    public async adminRemediateSecondFail(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const ticketId = parseInt(req.params.id as string, 10);
+            const { action, notes } = req.body;
+            if (!['paid_third_attempt', 'role_reassignment', 'terminate'].includes(action)) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({
+                    code: 400,
+                    message: 'action must be one of: paid_third_attempt, role_reassignment, terminate'
+                });
+                return;
+            }
+            const ticket = await ticketService.adminRemediateSecondFail(ticketId, action, notes);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: ticket });
+        } catch (error: any) {
+            if (error.message === 'TICKET_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Ticket not found.' });
+                return;
+            }
+            if (error.message === 'TICKET_NOT_IN_SECOND_FAIL_STATE') {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({
+                    code: 400,
+                    message: 'Ticket is not in second_attempt_failed state. Remediation only applies after both attempts are exhausted.'
+                });
+                return;
+            }
+            next(error);
+        }
+    }
+
+    // Schedule 1 / Clause 5.1: Admin verifies A$500 initial deposit
+    public async adminVerifyDeposit(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = parseInt(req.params.userId as string, 10);
+            const { receiptReference } = req.body;
+            if (!userId || isNaN(userId)) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
+                return;
+            }
+            const result = await ticketService.adminVerifyDeposit(userId, receiptReference);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: `Deposit verified. ${result.ticketsUnlocked.length} ticket(s) unlocked.` });
+        } catch (error: any) {
+            if (error.message === 'USER_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Candidate not found.' });
+                return;
+            }
+            next(error);
+        }
+    }
+
+    // Schedule 1 / Clause 5.1: Admin verifies full programme balance
+    public async adminVerifyFullBalance(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = parseInt(req.params.userId as string, 10);
+            const { receiptReference } = req.body;
+            if (!userId || isNaN(userId)) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
+                return;
+            }
+            const result = await ticketService.adminVerifyFullBalance(userId, receiptReference);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: `Full balance verified. ${result.ticketsUnlocked.length} ticket(s) unlocked.` });
+        } catch (error: any) {
+            if (error.message === 'USER_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Candidate not found.' });
+                return;
+            }
+            next(error);
+        }
+    }
+
+    // Schedule 1 / Clause 5.1: Admin view of a candidate's payment milestone status
+    public async getPaymentMilestoneStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = parseInt(req.params.userId as string, 10);
+            if (!userId || isNaN(userId)) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
+                return;
+            }
+            const status = await ticketService.getPaymentMilestoneStatus(userId);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: status });
+        } catch (error: any) {
+            if (error.message === 'USER_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Candidate not found.' });
+                return;
+            }
+            next(error);
+        }
+    }
+
+    // Schedule 1 / Clause 5.1: Applicant views their own payment milestone status
+    public async getOwnPaymentMilestoneStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                res.status(401).json({ code: 401, message: 'Unauthorized.' });
+                return;
+            }
+            const status = await ticketService.getPaymentMilestoneStatus(userId);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: status });
+        } catch (error: any) {
+            next(error);
+        }
+    }
 }
 
 export const ticketController = new TicketController();
+

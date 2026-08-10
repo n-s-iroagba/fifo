@@ -23,8 +23,10 @@ export class ExamAttemptController {
             const data = await ExamAttemptService.startAttempt(userId, req.body.courseId);
             res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data });
         } catch (error: any) {
-            if (error.message === 'RETAKE_LIMIT_EXCEEDED') return res.status(403).json({ code: 403, message: 'Retake limit exceeded.' });
-            if (error.message === 'PAYMENT_REQUIRED') return res.status(402).json({ code: 402, message: 'Course payment required to start exam.' });
+            if (error.message === 'RETAKE_LIMIT_EXCEEDED') return res.status(403).json({ code: 403, message: 'Retake limit exceeded. A maximum of 2 attempts are permitted under the Sponsorship Agreement.' });
+            if (error.message === 'PAYMENT_REQUIRED') return res.status(402).json({ code: 402, error: 'PAYMENT_REQUIRED', message: 'Course payment required to start exam.' });
+            if (error.message === 'DEPOSIT_REQUIRED') return res.status(402).json({ code: 402, error: 'DEPOSIT_REQUIRED', message: 'Your A$500 initial commitment deposit must be verified before accessing the first training module. Please submit your deposit receipt.' });
+            if (error.message === 'FULL_BALANCE_REQUIRED') return res.status(402).json({ code: 402, error: 'FULL_BALANCE_REQUIRED', message: 'Your full programme balance must be paid before accessing Training Module 4 and beyond. Please submit your balance receipt.' });
             next(error);
         }
     }

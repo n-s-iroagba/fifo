@@ -33,7 +33,23 @@ export class ExamAttemptService {
             throw new Error('PAYMENT_REQUIRED');
         }
 
+        // Payment Milestone Gate (Schedule 1 / Clause 5.1)
+        // Must pass before any exam can be started — regardless of per-ticket payment status.
+        if (ticket) {
+            const { ticketService } = require('./TicketService');
+            const gateResult = await ticketService.checkPaymentMilestoneGate(userId, ticket.id);
+            if (gateResult === 'DEPOSIT_REQUIRED') {
+                throw new Error('DEPOSIT_REQUIRED');
+            }
+            if (gateResult === 'FULL_BALANCE_REQUIRED') {
+                throw new Error('FULL_BALANCE_REQUIRED');
+            }
+        }
+
         const prevAttempts = await ExamAttempt.count({ where: { userId, courseId } });
+        if (prevAttempts >= 2) {
+            throw new Error('RETAKE_LIMIT_EXCEEDED');
+        }
         const config = await ExamConfig.findOne({ where: { courseId } });
 
         const attempt = await ExamAttempt.create({
@@ -46,6 +62,7 @@ export class ExamAttemptService {
 
         return attempt;
     }
+
 
     static async saveAnswers(attemptId: string, answers: any) {
         const attempt = await ExamAttempt.findByPk(attemptId);

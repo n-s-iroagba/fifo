@@ -225,6 +225,46 @@ export default function AdminTicketsPage() {
         }
     };
 
+    // Clause 9.2: Remediation options after second_attempt_failed
+    const [remediationAction, setRemediationAction] = useState<'paid_third_attempt' | 'role_reassignment' | 'terminate'>('paid_third_attempt');
+    const [remediationNotes, setRemediationNotes] = useState('');
+    const [remediationLoading, setRemediationLoading] = useState(false);
+
+    const handleRemediateSecondFail = async () => {
+        if (!selectedTicket) return;
+        if (!confirm(`Apply Clause 9.2 remediation action "${remediationAction}" to ${selectedTicket.User?.fullName || 'this candidate'}?`)) return;
+        setRemediationLoading(true);
+        setError(null);
+        try {
+            await api.post(`/admin/tickets/${selectedTicket.id}/remediate-second-fail`, {
+                action: remediationAction,
+                notes: remediationNotes,
+            });
+            setMessage(`Clause 9.2 remediation applied: ${remediationAction}. Candidate notified.`);
+            setTimeout(() => { setSelectedTicket(null); refetch(); }, 1500);
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Remediation failed.');
+        } finally {
+            setRemediationLoading(false);
+        }
+    };
+
+    // Clause 7.4: View candidate wallet statement
+    const [walletStatement, setWalletStatement] = useState<any>(null);
+    const [walletStatementLoading, setWalletStatementLoading] = useState(false);
+
+    const handleViewWalletStatement = async (userId: number) => {
+        setWalletStatementLoading(true);
+        try {
+            const res = await api.get(`/admin/users/${userId}/wallet-statement`);
+            setWalletStatement(res.data?.data || null);
+        } catch (err: any) {
+            alert(err.response?.data?.message || 'Failed to load wallet statement.');
+        } finally {
+            setWalletStatementLoading(false);
+        }
+    };
+
 
     if (isLoading) return (
         <div className="p-12 text-center">
@@ -427,8 +467,87 @@ export default function AdminTicketsPage() {
                                             <div className="w-11 h-6 bg-slate-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-900" />
                                         </label>
                                     </div>
+
+                                    {/* Clause 7.4: Wallet Statement Button */}
+                                    {selectedTicket.User?.id && (
+                                        <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-0.5">Clause 7.4 — Wallet Statement</p>
+                                                    <p className="text-[10px] text-slate-600">View itemised candidate wallet ledger</p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    disabled={walletStatementLoading}
+                                                    onClick={() => handleViewWalletStatement(selectedTicket.User!.id)}
+                                                    className="bg-slate-200 hover:bg-slate-300 text-slate-800 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all disabled:opacity-50"
+                                                >
+                                                    {walletStatementLoading ? '...' : 'View Ledger'}
+                                                </button>
+                                            </div>
+                                            {walletStatement && walletStatement.candidateId === selectedTicket.User?.id && (
+                                                <div className="mt-4 space-y-2">
+                                                    <div className="flex justify-between text-[10px] font-bold text-blue-900 border-b border-slate-200 pb-2">
+                                                        <span>{walletStatement.fullName} ({walletStatement.candidateNumber})</span>
+                                                        <span className="text-emerald-700">Balance: ${walletStatement.currentWalletBalance?.toFixed(2)} AUD</span>
+                                                    </div>
+                                                    <p className="text-[9px] text-red-600">Max Liability Cap (Clause 5.2): A${walletStatement.maximumCandidateLiability?.toFixed(2)}</p>
+                                                    {walletStatement.entries?.map((entry: any, i: number) => (
+                                                        <div key={i} className="flex justify-between text-[10px] py-1 border-b border-slate-100">
+                                                            <span className="text-slate-600">{entry.event} — {entry.ticketType}</span>
+                                                            <span className={entry.amount < 0 ? 'text-red-600 font-bold' : 'text-emerald-700 font-bold'}>
+                                                                {entry.amount < 0 ? '-' : '+'}${Math.abs(entry.amount).toFixed(2)}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Clause 9.2: Academic Default Remediation Panel */}
+                                    {selectedTicket.ticketSponsorship === 'second_attempt_failed' && (
+                                        <div className="p-4 bg-red-50 border-2 border-red-300 rounded-2xl space-y-3">
+                                            <div>
+                                                <p className="text-[9px] font-black uppercase tracking-widest text-red-700 mb-1">⚠ Clause 9.2 — Academic Default Remediation</p>
+                                                <p className="text-[10px] text-red-800">Both assessment attempts exhausted. Select a remediation action under the Sponsorship Agreement.</p>
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-bold uppercase tracking-widest text-red-800 mb-2">Remediation Action</label>
+                                                <select
+                                                    value={remediationAction}
+                                                    onChange={e => setRemediationAction(e.target.value as any)}
+                                                    className="w-full bg-white border border-red-300 rounded-xl p-3 text-xs text-red-900 font-medium"
+                                                >
+                                                    <option value="paid_third_attempt">Clause 9.2(a) — Authorise 3rd Attempt at Candidate Cost</option>
+                                                    <option value="role_reassignment">Clause 9.2(b) — Reassign to Alternative Occupational Stream</option>
+                                                    <option value="terminate">Clause 9.2(c) — Dissolve Agreement (Wallet Credits Remain Protected)</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-bold uppercase tracking-widest text-red-800 mb-2">Admin Notes (audit trail)</label>
+                                                <textarea
+                                                    value={remediationNotes}
+                                                    onChange={e => setRemediationNotes(e.target.value)}
+                                                    rows={2}
+                                                    placeholder="Reason for remediation decision…"
+                                                    className="w-full bg-white border border-red-200 rounded-xl p-3 text-xs text-slate-800 resize-none"
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                disabled={remediationLoading}
+                                                onClick={handleRemediateSecondFail}
+                                                className="w-full bg-red-700 hover:bg-red-800 text-white px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50"
+                                            >
+                                                {remediationLoading ? 'Applying…' : 'Apply Remediation & Notify Candidate'}
+                                            </button>
+                                        </div>
+                                    )}
                                 </>
                             )}
+
+
 
                             {/* Pricing Tab */}
                             {activeTab === 'pricing' && (

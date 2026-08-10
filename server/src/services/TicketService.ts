@@ -2,6 +2,16 @@ import { Ticket, User, Application } from '../models';
 import { notificationService } from './NotificationService';
 import { sendAvelingEmail } from '../utils/email';
 
+/** Schedule 1 / Clause 5.1 — Payment Milestone & Liability Constants */
+const DEPOSIT_AMOUNT = 500;                    // A$500 initial commitment deposit
+const DEPOSIT_UNLOCKS_UP_TO = 3;               // deposit unlocks tickets 1 through 3
+const CANDIDATE_TRAINING_SHARE_TOTAL = 1240.75; // 35% candidate share for training items 1-7
+const CANDIDATE_VISA_SHARE = 1405.25;          // 35% candidate share for Subclass 482 Visa VAC
+const CANDIDATE_LICENSING_SHARE = 185.50;      // 100% candidate share for WA CTT, PDA, & License card
+const SCHEDULE_1_NET_CANDIDATE_TOTAL = 2830.95; // A$1,240.75 + A$1,405.25 + A$185.50
+const MAX_CANDIDATE_LIABILITY = 3599.20;       // Clause 5.2 upper contractual liability ceiling cap
+
+
 export class TicketService {
     public async getUserTickets(userId: number) {
         return await Ticket.findAll({
@@ -10,6 +20,202 @@ export class TicketService {
             order: [['createdAt', 'DESC']]
         });
     }
+
+    /**
+     * PAYMENT MILESTONE GATE (Schedule 1 / Clause 5.1)
+     *
+     * Returns the gate status for a given ticket:
+     *   - 'ok'               → access allowed
+     *   - 'DEPOSIT_REQUIRED' → A$500 deposit not yet paid/verified
+     *   - 'FULL_BALANCE_REQUIRED' → ticket 4+ but full balance not yet paid
+     *
+     * Gate logic:
+     *   ticketSequenceNumber 1–3 → depositPaid must be true
+     *   ticketSequenceNumber 4+  → fullBalancePaid must be true
+     *   ticketSequenceNumber null → treat as ticket 1 (deposit required)
+     *   fullBalancePaid=true     → always allowed (covers entire programme)
+     */
+    public async checkPaymentMilestoneGate(userId: number, ticketId: number): Promise<'ok' | 'DEPOSIT_REQUIRED' | 'FULL_BALANCE_REQUIRED'> {
+        const user = await User.findByPk(userId);
+        if (!user) throw new Error('USER_NOT_FOUND');
+
+        // Full balance paid → unrestricted access to all tickets
+        if (user.fullBalancePaid) return 'ok';
+
+        const ticket = await Ticket.findByPk(ticketId);
+        if (!ticket) throw new Error('TICKET_NOT_FOUND');
+
+        const seq = ticket.ticketSequenceNumber ?? 1;
+
+        if (seq >= 1 && seq <= DEPOSIT_UNLOCKS_UP_TO) {
+            // Tickets 1-3: require deposit
+            return user.depositPaid ? 'ok' : 'DEPOSIT_REQUIRED';
+        }
+
+        // Ticket 4+: require full balance
+        return 'FULL_BALANCE_REQUIRED';
+    }
+
+    /**
+     * Admin verifies the A$500 initial deposit receipt.
+     * Sets depositPaid=true, notifies candidate, unlocks Tickets 1-3.
+     */
+    public async adminVerifyDeposit(userId: number, receiptReference?: string) {
+        const user = await User.findByPk(userId);
+        if (!user) throw new Error('USER_NOT_FOUND');
+
+        await user.update({
+            depositPaid: true,
+            depositPaidAt: new Date(),
+        });
+
+        // Unlock all sequence 1-3 tickets for this user that have payment_verified blocked
+        const earlyTickets = await Ticket.findAll({
+            where: { userId, paymentStatus: 'receipt_submitted' },
+        });
+
+        const unlocked: number[] = [];
+        for (const t of earlyTickets) {
+            const seq = t.ticketSequenceNumber ?? 1;
+            if (seq >= 1 && seq <= DEPOSIT_UNLOCKS_UP_TO) {
+                await this.adminApproveTicketReceipt(t.id);
+                unlocked.push(t.id);
+            }
+        }
+
+        await notificationService.sendNotification(
+            userId,
+            '✅ Initial Deposit Confirmed — Courses 1–3 Unlocked',
+            `Your A$${DEPOSIT_AMOUNT} initial commitment deposit has been verified. You can now access and pay for your first ${DEPOSIT_UNLOCKS_UP_TO} training modules. To unlock modules 4 and beyond, please remit the remaining programme balance.`
+        );
+
+        if (user.email) {
+            await this.sendCustomEmail(
+                user.email,
+                'Deposit Confirmed — Aveling LMS Courses 1–3 Unlocked',
+                `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+                    <div style="background:#111827;padding:20px 24px;border-radius:8px 8px 0 0;">
+                        <h2 style="color:#FFC700;margin:0;font-size:18px;">Deposit Received ✓</h2>
+                    </div>
+                    <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;">
+                        <p>Hello <strong>${user.fullName}</strong>,</p>
+                        <p>Your initial commitment deposit of <strong>A$${DEPOSIT_AMOUNT}</strong> has been received and verified.</p>
+                        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:16px 0;">
+                            <p style="margin:0;font-size:14px;font-weight:bold;color:#166534;">✅ Training Modules 1–${DEPOSIT_UNLOCKS_UP_TO} are now unlocked</p>
+                            ${receiptReference ? `<p style="margin:4px 0;font-size:12px;color:#4b5563;">Receipt Reference: ${receiptReference}</p>` : ''}
+                        </div>
+                        <p style="font-size:13px;color:#6b7280;">To unlock Training Module 4 and beyond, the full remaining programme balance must be remitted before your 4th scheduled course (Schedule 1). Log into your Aveling LMS portal to view your payment schedule.</p>
+                    </div>
+                </div>`
+            );
+        }
+
+        return { depositVerified: true, ticketsUnlocked: unlocked };
+    }
+
+    /**
+     * Admin verifies the full programme balance receipt.
+     * Sets fullBalancePaid=true, unlocks ALL remaining tickets for this user.
+     */
+    public async adminVerifyFullBalance(userId: number, receiptReference?: string) {
+        const user = await User.findByPk(userId);
+        if (!user) throw new Error('USER_NOT_FOUND');
+
+        await user.update({
+            depositPaid: true,          // Implied: if paying full balance, deposit is also covered
+            depositPaidAt: user.depositPaidAt || new Date(),
+            fullBalancePaid: true,
+        });
+
+        // Unlock ALL pending tickets for this user
+        const pendingTickets = await Ticket.findAll({
+            where: { userId, paymentStatus: 'receipt_submitted' },
+        });
+
+        const unlocked: number[] = [];
+        for (const t of pendingTickets) {
+            await this.adminApproveTicketReceipt(t.id);
+            unlocked.push(t.id);
+        }
+
+        await notificationService.sendNotification(
+            userId,
+            '✅ Full Programme Balance Confirmed — All Modules Unlocked',
+            `Your full programme balance payment has been verified. All training modules across your entire sponsorship programme are now accessible. Your candidate wallet will receive the full 100% re-credit upon passing each module.`
+        );
+
+        if (user.email) {
+            await this.sendCustomEmail(
+                user.email,
+                'Full Balance Confirmed — All Aveling LMS Modules Unlocked',
+                `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+                    <div style="background:#111827;padding:20px 24px;border-radius:8px 8px 0 0;">
+                        <h2 style="color:#FFC700;margin:0;font-size:18px;">Full Programme Payment Received ✓</h2>
+                    </div>
+                    <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;">
+                        <p>Hello <strong>${user.fullName}</strong>,</p>
+                        <p>Your full programme balance has been received and verified. All training modules are now unlocked.</p>
+                        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:16px 0;">
+                            <p style="margin:0;font-size:14px;font-weight:bold;color:#166534;">✅ All Training Modules Unlocked</p>
+                            ${receiptReference ? `<p style="margin:4px 0;font-size:12px;color:#4b5563;">Receipt Reference: ${receiptReference}</p>` : ''}
+                        </div>
+                        <p style="font-size:13px;color:#6b7280;">As you pass each module, your 35% candidate contribution for that module will be automatically re-credited to your Candidate Wallet (Clause 7.1).</p>
+                    </div>
+                </div>`
+            );
+        }
+
+        return { fullBalanceVerified: true, ticketsUnlocked: unlocked };
+    }
+
+    /**
+     * Returns the payment milestone status for an applicant.
+     * Used by both the client portal and the admin panel.
+     */
+    public async getPaymentMilestoneStatus(userId: number) {
+        const user = await User.findByPk(userId);
+        if (!user) throw new Error('USER_NOT_FOUND');
+
+        const allTickets = await Ticket.findAll({
+            where: { userId },
+            order: [['ticketSequenceNumber', 'ASC'], ['createdAt', 'ASC']],
+        });
+
+        const totalCandidateLiability = allTickets.reduce((sum, t) => sum + (t.purchasePrice || 0), 0);
+        const paidTicketsCount = allTickets.filter(t => t.paymentStatus === 'payment_verified' || t.courseAccessGranted).length;
+
+        return {
+            depositPaid: user.depositPaid,
+            depositPaidAt: user.depositPaidAt,
+            fullBalancePaid: user.fullBalancePaid,
+            depositAmount: DEPOSIT_AMOUNT,
+            depositUnlocksUpTo: DEPOSIT_UNLOCKS_UP_TO,
+            totalCandidateLiability: Math.min(totalCandidateLiability, SCHEDULE_1_NET_CANDIDATE_TOTAL),
+            schedule1NetTotal: SCHEDULE_1_NET_CANDIDATE_TOTAL,
+            maxLiabilityCap: MAX_CANDIDATE_LIABILITY,
+            candidateTrainingShareTotal: CANDIDATE_TRAINING_SHARE_TOTAL,
+            candidateVisaShare: CANDIDATE_VISA_SHARE,
+            candidateLicensingShare: CANDIDATE_LICENSING_SHARE,
+            totalTickets: allTickets.length,
+            paidTicketsCount,
+            walletBalance: user.walletBalance || 0,
+            tickets: allTickets.map(t => ({
+                id: t.id,
+                ticketType: t.ticketType,
+                ticketSequenceNumber: t.ticketSequenceNumber ?? null,
+                purchasePrice: t.purchasePrice,
+                paymentStatus: t.paymentStatus,
+                courseAccessGranted: t.courseAccessGranted,
+                gateStatus: (() => {
+                    if (user.fullBalancePaid || t.courseAccessGranted) return 'unlocked';
+                    const seq = t.ticketSequenceNumber ?? 1;
+                    if (seq <= DEPOSIT_UNLOCKS_UP_TO) return user.depositPaid ? 'deposit_ok' : 'deposit_required';
+                    return 'full_balance_required';
+                })(),
+            })),
+        };
+    }
+
 
     public async getTicketById(ticketId: number, userId?: number) {
         const whereClause: any = { id: ticketId };
@@ -103,12 +309,12 @@ export class TicketService {
             throw new Error('Only tickets with a failed first attempt can request a retake.');
         }
 
-        const threeDaysFromNow = new Date();
-        threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+        const twoDaysFromNow = new Date();
+        twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
 
         await ticket.update({
             ticketSponsorship: 'second_attempt_approved',
-            sponsorshipDeadline: threeDaysFromNow,
+            sponsorshipDeadline: twoDaysFromNow,
             paymentStatus: 'unpaid',
             courseAccessGranted: false
         });
@@ -151,9 +357,10 @@ export class TicketService {
             (newStatus === 'first_attempt_approved' || newStatus === 'second_attempt_approved') &&
             oldStatus !== newStatus
         ) {
-            const threeDaysFromNow = new Date();
-            threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
-            sponsorshipDeadline = threeDaysFromNow;
+            // Clause 6.6.2: retake must be executed within 48 hours for remote online theory modules
+            const twoDaysFromNow = new Date();
+            twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
+            sponsorshipDeadline = twoDaysFromNow;
         } else if (data.sponsorshipDeadline) {
             sponsorshipDeadline = new Date(data.sponsorshipDeadline);
         }
@@ -262,8 +469,8 @@ export class TicketService {
         const clientTicketUrl = `http://localhost:3000/dashboard/tickets/${ticket.id}`;
 
         if (passed) {
-            const refundMultiplier = attemptNumber >= 2 ? 2 : 1;
-            const refundAmount = (ticket.purchasePrice || 100) * refundMultiplier;
+            // Clause 7.1: re-credit exactly 100% of what candidate paid — not a multiplier.
+            const refundAmount = ticket.purchasePrice || 100;
 
             await ticket.update({
                 ticketSponsorship: 'ticket_issued',
@@ -288,8 +495,24 @@ export class TicketService {
                 await notificationService.sendNotification(
                     user.id,
                     'Congratulations! Ticket Issued & Refund Credited',
-                    `You passed your exam for ${ticket.ticketType}! Your ticket has been issued and your refund of $${refundAmount} has been credited to your wallet.`
+                    `You passed your exam for ${ticket.ticketType}! Your ticket has been issued and your sponsorship contribution of $${refundAmount.toFixed(2)} AUD has been fully re-credited to your Candidate Wallet (Clause 7.1).`
                 );
+
+                // Clause 8.3: Notify all admins that a mandatory screening interview must be
+                // conducted within 72 hours of the candidate's first module pass.
+                try {
+                    const { User: UserModel } = require('../models');
+                    const admins = await UserModel.findAll({ where: { role: 'admin' } });
+                    for (const admin of admins) {
+                        await notificationService.sendNotification(
+                            admin.id,
+                            `⚠️ 72-Hour Interview Required: ${user.fullName || 'Candidate'}`,
+                            `Candidate ${user.fullName || user.email} has passed their first module (${ticket.ticketType}). Per Clause 8.3 of the Sponsorship Agreement, a mandatory screening interview must be conducted within 72 hours.`
+                        );
+                    }
+                } catch (e) {
+                    console.warn('[TicketService] Admin interview alert failed (non-fatal):', e);
+                }
             }
 
             const candidateNum = user?.candidateNumber || `CND-${10000 + (user?.id || 1)}`;
@@ -343,13 +566,46 @@ export class TicketService {
             }
 
             if (user?.email) {
-                await this.sendCustomEmail(
-                    user.email,
-                    `Exam Result Update: ${ticket.ticketType}`,
-                    `<p>Hello ${user.fullName || 'Learner'},</p>
-                     <p>Your exam attempt #${attemptNumber} for <strong>${ticket.ticketType}</strong> was not successful.</p>
-                     <p><a href="${clientTicketUrl}">View Ticket Status & Options</a></p>`
-                );
+                const isSecondFail = attemptNumber >= 2;
+                const subject = isSecondFail
+                    ? `Important: Academic Default Notice – ${ticket.ticketType}`
+                    : `Exam Result: First Attempt Unsuccessful – ${ticket.ticketType}`;
+
+                const failBody = isSecondFail
+                    ? `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+                        <div style="background:#7f1d1d;padding:20px 24px;border-radius:8px 8px 0 0;">
+                            <h2 style="color:#fef2f2;margin:0;font-size:18px;">Assessment Default Notice</h2>
+                        </div>
+                        <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;">
+                            <p>Hello <strong>${user.fullName || 'Candidate'}</strong>,</p>
+                            <p>Your second and final attempt at the assessment for <strong>${ticket.ticketType}</strong> was not successful. Under <strong>Clause 6.6.3</strong> of your Sponsorship Agreement (BCR-FIFO-2026-0810), a third attempt is not permitted within the standard sponsored financial structure.</p>
+                            <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:16px;margin:16px 0;">
+                                <h3 style="margin:0 0 8px;font-size:13px;text-transform:uppercase;color:#7f1d1d;">Available Remediation Options (Clause 9.2)</h3>
+                                <ul style="margin:0;padding-left:20px;font-size:13px;">
+                                    <li>A further attempt may be permitted strictly at your sole separate expense, outside company subsidy.</li>
+                                    <li>You may be considered for an alternative non-trade occupational stream.</li>
+                                    <li>The Agreement may be dissolved for academic default — all previously passed wallet credits remain fully protected and withdrawable.</li>
+                                </ul>
+                            </div>
+                            <p>Your Candidate Wallet balance from any previously passed modules remains fully yours and protected under Clause 7.3. Please contact your recruitment coordinator to discuss next steps.</p>
+                            <p><a href="${clientTicketUrl}" style="background:#1e3a8a;color:#fff;padding:10px 20px;text-decoration:none;border-radius:6px;display:inline-block;">View Wallet & Ticket Status</a></p>
+                        </div>
+                    </div>`
+                    : `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+                        <div style="background:#111827;padding:20px 24px;border-radius:8px 8px 0 0;">
+                            <h2 style="color:#FFC700;margin:0;font-size:18px;">Exam Result — First Attempt</h2>
+                        </div>
+                        <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;">
+                            <p>Hello <strong>${user.fullName || 'Learner'}</strong>,</p>
+                            <p>Your first attempt at the assessment for <strong>${ticket.ticketType}</strong> was not successful.</p>
+                            <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:16px;margin:16px 0;">
+                                <p style="margin:0;font-size:13px;"><strong>Next Step (Clause 6.6.2):</strong> You are entitled to one retake. Your recruitment coordinator will notify you once the retake has been approved. The retake must be completed within <strong>48 hours</strong> of approval for remote online modules.</p>
+                            </div>
+                            <p><a href="${clientTicketUrl}" style="background:#1e3a8a;color:#fff;padding:10px 20px;text-decoration:none;border-radius:6px;display:inline-block;">View Ticket Status</a></p>
+                        </div>
+                    </div>`;
+
+                await this.sendCustomEmail(user.email, subject, failBody);
             }
         }
 
@@ -460,7 +716,7 @@ export class TicketService {
         let baseTicketType = data.ticketType || 'Work Safely at Heights (RIIWHS204E)';
         let baseDescription = data.description || 'Assigned certification ticket course';
         let defaultRealPrice = 280;
-        let defaultSubsidisedPrice = 140;
+        let defaultSubsidisedPrice = 280 * 0.35;
         let defaultCourseId = data.customCourseId || null;
 
         if (data.sourceTicketId) {
@@ -469,7 +725,7 @@ export class TicketService {
                 baseTicketType = sourceTicket.ticketType;
                 baseDescription = sourceTicket.description || baseDescription;
                 defaultRealPrice = sourceTicket.realPrice ?? sourceTicket.purchasePrice ?? 280;
-                defaultSubsidisedPrice = sourceTicket.subsidisedPrice ?? (defaultRealPrice / 2);
+                defaultSubsidisedPrice = sourceTicket.subsidisedPrice ?? (defaultRealPrice * 0.35);
                 defaultCourseId = defaultCourseId || sourceTicket.courseId;
             }
         } else if (data.sourceCatalogId) {
@@ -478,7 +734,7 @@ export class TicketService {
                 baseTicketType = catalog.name;
                 baseDescription = catalog.description || baseDescription;
                 defaultRealPrice = catalog.normalPrice || 280;
-                defaultSubsidisedPrice = catalog.sponsorshipPrice || (defaultRealPrice / 2);
+                defaultSubsidisedPrice = catalog.sponsorshipPrice || (defaultRealPrice * 0.35);
             }
         }
 
@@ -550,15 +806,18 @@ export class TicketService {
                 <p>Here are the payment details for your sponsored ticket course <strong>${ticket.ticketType}</strong>:</p>
                 
                 <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 16px; margin: 20px 0;">
+                    <h3 style="margin: 0 0 12px; font-size: 14px; text-transform: uppercase; color: #1e3a8a;">SWIFT Wire Transfer Details</h3>
                     <p style="margin: 4px 0;"><strong>Bank Name:</strong> ${bankName}</p>
                     <p style="margin: 4px 0;"><strong>Account Name:</strong> ${accountName}</p>
                     <p style="margin: 4px 0;"><strong>Account Number / BSB:</strong> ${accountNumber}</p>
+                    <p style="margin: 4px 0;"><strong>SWIFT / BIC Code:</strong> REQUIRED (Check Invoice)</p>
                     <p style="margin: 4px 0;"><strong>Payment Reference:</strong> ${candidateNum}-${ticket.id}</p>
-                    <p style="margin: 4px 0;"><strong>Amount Due:</strong> $${ticket.purchasePrice || 150}</p>
+                    <p style="margin: 4px 0; font-size: 16px; font-weight: bold; color: #166534;"><strong>Amount Due:</strong> $${ticket.purchasePrice || 150} AUD</p>
+                    <p style="margin: 8px 0 0; font-size: 12px; color: #991b1b;">* Note: All incoming candidate transfers must execute strictly via standard International Wire Transfer (SWIFT Wire). Independent third-party payment platforms or cash handovers are rejected.</p>
                 </div>
 
-                <p>Please complete your payment and click the button below to upload your payment receipt proof:</p>
-                <p><a href="${checkoutUrl}" style="background:#1e3a8a;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold;">Go to Checkout & Upload Receipt</a></p>
+                <p>Please complete your SWIFT Wire Transfer and click the button below to upload your payment receipt proof:</p>
+                <p><a href="${checkoutUrl}" style="background:#1e3a8a;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold;">Go to Checkout & Upload SWIFT Receipt</a></p>
             </div>
         `;
 
@@ -748,14 +1007,16 @@ export class TicketService {
 
                         ${bankSettings.platform_bank_name ? `
                         <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:16px 0;">
-                            <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#166534;">Payment Bank Details</h3>
+                            <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#166534;">SWIFT Payment Bank Details</h3>
                             <p style="margin:4px 0;"><strong>Bank:</strong> ${bankSettings.platform_bank_name}</p>
                             ${bankSettings.platform_bank_bsb ? `<p style="margin:4px 0;"><strong>BSB:</strong> ${bankSettings.platform_bank_bsb}</p>` : ''}
                             <p style="margin:4px 0;"><strong>Account Number:</strong> ${bankSettings.platform_bank_account_number}</p>
                             <p style="margin:4px 0;"><strong>Account Name:</strong> ${bankSettings.platform_bank_account_name}</p>
+                            <p style="margin: 4px 0;"><strong>SWIFT / BIC Code:</strong> REQUIRED (Check Invoice)</p>
+                            <p style="margin: 8px 0 0; font-size: 12px; color: #991b1b;">* Note: All incoming candidate transfers must execute strictly via standard International Wire Transfer (SWIFT Wire). Independent third-party payment platforms or cash handovers are rejected.</p>
                         </div>` : ''}
 
-                        <p style="font-size:13px;color:#6b7280;">After making payment, log into Aveling and upload your transfer receipt. Course materials will unlock once admin verifies your payment.</p>
+                        <p style="font-size:13px;color:#6b7280;">After making your SWIFT transfer, log into Aveling and upload your SWIFT receipt. Course materials will unlock once admin verifies your payment.</p>
                     </div>
                 </div>`
             );
@@ -927,6 +1188,112 @@ export class TicketService {
                 await PlatformSetting.upsert({ key, value });
             }
         }
+    }
+    // Clause 7.4: Candidate wallet statement (itemised ledger issued within 48hrs on request)
+    public async getCandidateWalletStatement(userId: number) {
+        const { User: UserModel } = require('../models');
+        const user = await UserModel.findByPk(userId);
+        if (!user) throw new Error('USER_NOT_FOUND');
+
+        // Get all tickets for this candidate
+        const tickets = await Ticket.findAll({ where: { userId } });
+
+        const entries: Array<{ ticketType: string; event: string; amount: number; date: string; }> = [];
+
+        for (const t of tickets) {
+            if (t.purchasePrice && t.purchasePrice > 0) {
+                entries.push({
+                    ticketType: t.ticketType,
+                    event: 'Candidate Contribution Paid',
+                    amount: -(t.purchasePrice),
+                    date: t.createdAt ? new Date(t.createdAt).toISOString() : 'N/A',
+                });
+            }
+            if (t.ticketSponsorship === 'ticket_issued' && t.ticketSponsorshipRefundAmount) {
+                entries.push({
+                    ticketType: t.ticketType,
+                    event: 'Course Passed – 100% Re-Credit (Clause 7.1)',
+                    amount: t.ticketSponsorshipRefundAmount,
+                    date: t.updatedAt ? new Date(t.updatedAt).toISOString() : 'N/A',
+                });
+            }
+        }
+
+        return {
+            candidateId: userId,
+            candidateNumber: user.candidateNumber || `CND-${10000 + userId}`,
+            fullName: user.fullName,
+            currentWalletBalance: user.walletBalance || 0,
+            maximumCandidateLiability: 3599.20, // Clause 5.2
+            entries,
+            generatedAt: new Date().toISOString(),
+        };
+    }
+
+    // Clause 9.2: Admin remediation after second_attempt_failed
+    // Options: (a) paid_third_attempt | (b) role_reassignment | (c) terminate
+    public async adminRemediateSecondFail(
+        ticketId: number,
+        action: 'paid_third_attempt' | 'role_reassignment' | 'terminate',
+        notes?: string
+    ) {
+        const ticket = await Ticket.findByPk(ticketId, { include: [{ model: User }] });
+        if (!ticket) throw new Error('TICKET_NOT_FOUND');
+
+        if (ticket.ticketSponsorship !== 'second_attempt_failed') {
+            throw new Error('TICKET_NOT_IN_SECOND_FAIL_STATE');
+        }
+
+        const user = (ticket as any).User;
+        const clientTicketUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/tickets/${ticket.id}`;
+
+        if (action === 'paid_third_attempt') {
+            // Option (a): allow further attempt at candidate's sole cost
+            await ticket.update({
+                ticketSponsorship: 'second_attempt_approved', // Re-open, but payment is now outside subsidy
+                paymentStatus: 'unpaid',
+                courseAccessGranted: false,
+                description: `${ticket.description || ''} [Clause 9.2(a): Third attempt authorised at candidate cost. Notes: ${notes || 'N/A'}]`,
+            });
+
+            if (user?.id) {
+                await notificationService.sendNotification(
+                    user.id,
+                    'Remediation: Third Attempt Authorised (Candidate Cost)',
+                    `Per Clause 9.2(a), a further attempt has been authorised for ${ticket.ticketType} strictly at your personal expense, outside company subsidy. Please make payment to proceed.`
+                );
+            }
+        } else if (action === 'role_reassignment') {
+            // Option (b): reassign to alternative occupational stream
+            await ticket.update({
+                ticketSponsorship: 'no_application',
+                description: `${ticket.description || ''} [Clause 9.2(b): Reassigned to alternative role. Notes: ${notes || 'N/A'}]`,
+            });
+
+            if (user?.id) {
+                await notificationService.sendNotification(
+                    user.id,
+                    'Placement Update: Alternative Role Consideration',
+                    `Following your assessment results for ${ticket.ticketType}, our team will consider you for an alternative non-trade occupational stream better suited to your current capabilities (Clause 9.2(b)).`
+                );
+            }
+        } else if (action === 'terminate') {
+            // Option (c): terminate agreement for academic default – wallet credits remain
+            await ticket.update({
+                ticketSponsorship: 'second_attempt_failed', // keep status, add note
+                description: `${ticket.description || ''} [Clause 9.2(c): Agreement dissolved for academic default. All passed wallet credits remain fully withdrawable. Notes: ${notes || 'N/A'}]`,
+            });
+
+            if (user?.id) {
+                await notificationService.sendNotification(
+                    user.id,
+                    'Agreement Dissolved – Wallet Credits Protected',
+                    `Your Sponsorship Agreement has been dissolved for academic default following the second assessment failure for ${ticket.ticketType} (Clause 9.2(c)). Your Candidate Wallet balance from all previously passed modules remains fully yours and withdrawable.`
+                );
+            }
+        }
+
+        return ticket;
     }
 }
 

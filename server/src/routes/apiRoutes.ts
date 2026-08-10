@@ -207,6 +207,21 @@ router.post('/admin/tickets/:id/generate-credentials', ...adminMW, ticketControl
 router.post('/admin/tickets/:id/validate-payment', ...adminMW, ticketController.adminValidatePayment.bind(ticketController));
 router.post('/admin/tickets/:id/approve-exam', ...adminMW, ticketController.adminApproveExamResult.bind(ticketController));
 router.get('/admin/tickets/:id/exams', ...adminMW, ticketController.getExamAttempts.bind(ticketController));
+// Clause 7.4: Wallet statement (admin view) — itemised ledger on demand
+router.get('/admin/users/:userId/wallet-statement', ...adminMW, ticketController.getCandidateWalletStatement.bind(ticketController));
+// Clause 9.2: Admin remediation options after second_attempt_failed
+router.post('/admin/tickets/:id/remediate-second-fail', ...adminMW, ticketController.adminRemediateSecondFail.bind(ticketController));
+
+// Schedule 1 / Clause 5.1: Payment Milestone Gate
+// Admin verifies A$500 deposit → unlocks Tickets 1-3
+router.post('/admin/users/:userId/verify-deposit', ...adminMW, ticketController.adminVerifyDeposit.bind(ticketController));
+// Admin verifies full balance → unlocks all tickets
+router.post('/admin/users/:userId/verify-full-balance', ...adminMW, ticketController.adminVerifyFullBalance.bind(ticketController));
+// Admin / applicant views milestone status
+router.get('/admin/users/:userId/payment-milestone', ...adminMW, ticketController.getPaymentMilestoneStatus.bind(ticketController));
+// Applicant self-service: view their own payment milestone status
+router.get('/payment-milestone', ...applicantMW, ticketController.getOwnPaymentMilestoneStatus.bind(ticketController));
+
 // Expose platform bank to public/applicants (for checkout on Aveling)
 router.get('/platform-bank', ticketController.getPlatformBank.bind(ticketController));
 

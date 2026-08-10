@@ -33,6 +33,8 @@ export class Ticket extends Model {
     declare receiptReference: string | null;
     declare paymentStatus: 'unpaid' | 'receipt_submitted' | 'payment_verified';
     declare courseAccessGranted: boolean;
+    // Ordinal position of this ticket in applicant's sponsorship programme (1-based)
+    declare ticketSequenceNumber: number | null;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 
@@ -152,6 +154,11 @@ Ticket.init({
         type: DataTypes.BOOLEAN,
         defaultValue: false,
         allowNull: false,
+    },
+    // 1-based ordinal within the applicant's full programme (set by admin when assigning)
+    ticketSequenceNumber: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
     },
 }, {
     sequelize,

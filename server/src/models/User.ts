@@ -34,6 +34,10 @@ export class User extends Model {
     declare avelingUsername: string | null;
     declare avelingPassword: string | null;
     declare adminStageId: number | null;
+    // Payment milestone fields (Schedule 1 / Clause 5.1)
+    declare depositPaid: boolean;
+    declare depositPaidAt: Date | null;
+    declare fullBalancePaid: boolean;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 }
@@ -171,6 +175,21 @@ User.init({
     adminStageId: {
         type: DataTypes.INTEGER,
         allowNull: true,
+    },
+    // Payment milestone gate (A$500 deposit → tickets 1-3; full balance → ticket 4+)
+    depositPaid: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    depositPaidAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
+    fullBalancePaid: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
     },
 }, {
     sequelize,
