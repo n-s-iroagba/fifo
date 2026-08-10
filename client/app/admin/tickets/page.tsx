@@ -5,7 +5,7 @@ import { useApiQuery } from '@/lib/hooks';
 import api from '@/lib/api';
 import Link from 'next/link';
 import { LmsAccessPanel } from '@/components/admin/LmsAccessPanel';
-import { ExamReviewPanel } from '@/components/ExamReviewPanel';
+import { ExamReviewPanel } from '../../../components/admin/ExamReviewPanel';
 
 interface Ticket {
     id: number;
@@ -516,8 +516,8 @@ export default function AdminTicketsPage() {
                                         <div className="flex items-center justify-between">
                                             <h3 className="text-[10px] font-black uppercase tracking-widest text-blue-900">Payment & Course Access</h3>
                                             <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${selectedTicket.paymentStatus === 'payment_verified' ? 'bg-emerald-100 text-emerald-700' :
-                                                    selectedTicket.paymentStatus === 'receipt_submitted' ? 'bg-amber-100 text-amber-700' :
-                                                        'bg-slate-200 text-slate-600'
+                                                selectedTicket.paymentStatus === 'receipt_submitted' ? 'bg-amber-100 text-amber-700' :
+                                                    'bg-slate-200 text-slate-600'
                                                 }`}>
                                                 {selectedTicket.paymentStatus?.replace('_', ' ') || 'Unpaid'}
                                             </span>
