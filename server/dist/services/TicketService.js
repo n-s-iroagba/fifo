@@ -77,6 +77,22 @@ class TicketService {
         await NotificationService_1.notificationService.sendNotification(userId, 'Sponsorship Application Received', `Your sponsorship request for ${ticket.ticketType} is now being processed by administration.`);
         return ticket;
     }
+    async requestRetake(ticketId, userId) {
+        const ticket = await this.getTicketById(ticketId, userId);
+        if (ticket.ticketSponsorship !== 'first_attempt_failed') {
+            throw new Error('Only tickets with a failed first attempt can request a retake.');
+        }
+        const threeDaysFromNow = new Date();
+        threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+        await ticket.update({
+            ticketSponsorship: 'second_attempt_approved',
+            sponsorshipDeadline: threeDaysFromNow,
+            paymentStatus: 'unpaid',
+            courseAccessGranted: false
+        });
+        await NotificationService_1.notificationService.sendNotification(userId, 'Retake Approved', `Your retake for ${ticket.ticketType} has been approved. Please complete the payment on Aveling LMS to unlock your second attempt.`);
+        return ticket;
+    }
     async adminGetAllTickets(filters) {
         const whereClause = {};
         if (filters?.sponsorshipStatus) {

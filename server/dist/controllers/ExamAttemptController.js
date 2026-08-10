@@ -28,6 +28,8 @@ class ExamAttemptController {
         catch (error) {
             if (error.message === 'RETAKE_LIMIT_EXCEEDED')
                 return res.status(403).json({ code: 403, message: 'Retake limit exceeded.' });
+            if (error.message === 'PAYMENT_REQUIRED')
+                return res.status(402).json({ code: 402, message: 'Course payment required to start exam.' });
             next(error);
         }
     }

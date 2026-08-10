@@ -74,6 +74,21 @@ export class TicketController {
         }
     }
 
+    public async requestRetake(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = (req as any).user.id;
+            const ticketId = parseInt(req.params.id as string, 10);
+            const result = await ticketService.requestRetake(ticketId, userId);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result });
+        } catch (error: any) {
+            if (error.message === 'TICKET_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Ticket not found.' });
+                return;
+            }
+            res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: error.message });
+        }
+    }
+
     public async processRefundChoice(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const userId = (req as any).user.id;

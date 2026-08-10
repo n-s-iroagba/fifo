@@ -78,6 +78,7 @@ router.get('/tickets/:id', ...applicantMW, TicketController_1.ticketController.g
 router.post('/tickets', ...applicantMW, TicketController_1.ticketController.createTicket.bind(TicketController_1.ticketController));
 router.put('/tickets/:id', ...applicantMW, TicketController_1.ticketController.updateTicket.bind(TicketController_1.ticketController));
 router.post('/tickets/:id/apply-sponsorship', ...applicantMW, TicketController_1.ticketController.applySponsorship.bind(TicketController_1.ticketController));
+router.post('/tickets/:id/request-retake', ...applicantMW, TicketController_1.ticketController.requestRetake.bind(TicketController_1.ticketController));
 router.post('/tickets/:id/refund-choice', ...applicantMW, TicketController_1.ticketController.processRefundChoice.bind(TicketController_1.ticketController));
 router.post('/tickets/:id/pay-aveling', ...applicantMW, TicketController_1.ticketController.payTicketOnAveling.bind(TicketController_1.ticketController));
 router.post('/tickets/:id/exam-outcome', ...applicantMW, TicketController_1.ticketController.recordExamOutcome.bind(TicketController_1.ticketController));

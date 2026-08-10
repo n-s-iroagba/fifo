@@ -92,6 +92,8 @@ export default function TicketDetailPage() {
     const [applying, setApplying] = useState(false);
     const [refundProcessing, setRefundProcessing] = useState(false);
     const [refundMessage, setRefundMessage] = useState<string | null>(null);
+    const [requestingRetake, setRequestingRetake] = useState(false);
+    const [retakeError, setRetakeError] = useState<string | null>(null);
 
     // Prefill bank account details when user or ticket User data loads
     useEffect(() => {
@@ -144,6 +146,19 @@ export default function TicketDetailPage() {
             setRefundMessage(err.response?.data?.message || 'Failed to process refund action.');
         } finally {
             setRefundProcessing(false);
+        }
+    };
+
+    const handleRequestRetake = async () => {
+        setRetakeError(null);
+        setRequestingRetake(true);
+        try {
+            await api.post(`/tickets/${ticketId}/request-retake`);
+            refetch();
+        } catch (err: any) {
+            setRetakeError(err.response?.data?.message || 'Failed to request retake.');
+        } finally {
+            setRequestingRetake(false);
         }
     };
 
@@ -280,6 +295,30 @@ export default function TicketDetailPage() {
                             </button>
                         </div>
                     )}
+                </section>
+            )}
+
+            {/* Action Banner when First Attempt Failed */}
+            {ticket.ticketSponsorship === 'first_attempt_failed' && (
+                <section className="mb-8 p-8 bg-amber-900 text-white rounded-3xl shadow-xl shadow-amber-900/10 border border-amber-800 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-1">
+                        <span className="text-[10px] font-bold text-amber-300 uppercase tracking-widest block">Exam Failed</span>
+                        <h2 className="text-xl font-bold text-white">Unlock Second Attempt</h2>
+                        <p className="text-xs text-amber-200">
+                            Your first attempt was unsuccessful. You can request a retake which requires a new payment.
+                        </p>
+                        {retakeError && (
+                            <p className="text-xs font-bold text-red-300 mt-2">{retakeError}</p>
+                        )}
+                    </div>
+                    <button
+                        onClick={handleRequestRetake}
+                        disabled={requestingRetake}
+                        className="bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-amber-950 px-6 py-3.5 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg transition-all shrink-0"
+                    >
+                        <span>{requestingRetake ? 'Processing...' : 'Apply for Retake'}</span>
+                        <span className="material-symbols-outlined text-base">refresh</span>
+                    </button>
                 </section>
             )}
 

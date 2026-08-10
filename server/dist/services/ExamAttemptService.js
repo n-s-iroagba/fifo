@@ -21,6 +21,16 @@ class ExamAttemptService {
         };
     }
     static async startAttempt(userId, courseId) {
+        const { Ticket, Enrollment } = require('../models');
+        // Check if the user has access
+        const ticket = await Ticket.findOne({ where: { userId, courseId } });
+        const enrollment = await Enrollment.findOne({ where: { userId, courseId } });
+        if (ticket && ticket.courseAccessGranted === false) {
+            throw new Error('PAYMENT_REQUIRED');
+        }
+        if (!ticket && enrollment && enrollment.paymentStatus !== 'Paid') {
+            throw new Error('PAYMENT_REQUIRED');
+        }
         const prevAttempts = await ExamAttempt_1.ExamAttempt.count({ where: { userId, courseId } });
         const config = await ExamConfig_1.ExamConfig.findOne({ where: { courseId } });
         const attempt = await ExamAttempt_1.ExamAttempt.create({
