@@ -59,7 +59,9 @@ function ExamPortalContent() {
             }
         } catch (err: any) {
             console.error("Failed to start assessment:", err);
-            alert(err.response?.data?.message || "Failed to start assessment");
+            if (err.response?.status !== 401) {
+                alert(err.response?.data?.error || err.response?.data?.message || "Failed to start assessment");
+            }
             setStarting(false);
         }
     };
