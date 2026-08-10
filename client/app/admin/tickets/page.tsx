@@ -5,6 +5,7 @@ import { useApiQuery } from '@/lib/hooks';
 import api from '@/lib/api';
 import Link from 'next/link';
 import { LmsAccessPanel } from '@/components/admin/LmsAccessPanel';
+import { ExamReviewPanel } from '@/components/ExamReviewPanel';
 
 interface Ticket {
     id: number;
@@ -31,7 +32,7 @@ interface Ticket {
     updatedAt?: string;
 }
 
-type ModalTab = 'status' | 'pricing' | 'config' | 'aveling';
+type ModalTab = 'status' | 'pricing' | 'config' | 'aveling' | 'exams';
 
 const SPONSORSHIP_STATUS_LABELS: Record<string, string> = {
     no_application: 'No Application',
@@ -299,9 +300,8 @@ export default function AdminTicketsPage() {
                                             {t.description && <p className="text-[10px] text-slate-400 truncate max-w-[160px]">{t.description}</p>}
                                         </td>
                                         <td className="p-4">
-                                            <span className={`px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest border ${
-                                                t.status === 'possessed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-50 text-slate-600 border-slate-200'
-                                            }`}>
+                                            <span className={`px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest border ${t.status === 'possessed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-50 text-slate-600 border-slate-200'
+                                                }`}>
                                                 {t.status === 'possessed' ? 'Possessed' : 'Not Possessed'}
                                             </span>
                                         </td>
@@ -362,16 +362,15 @@ export default function AdminTicketsPage() {
 
                         {/* Tabs */}
                         <div className="flex bg-slate-100 rounded-xl p-1 mb-6 gap-1 overflow-x-auto">
-                            {(['status', 'pricing', 'config', 'aveling'] as ModalTab[]).map(tab => (
+                            {(['status', 'pricing', 'config', 'aveling', 'exams'] as ModalTab[]).map(tab => (
                                 <button
                                     key={tab}
                                     type="button"
                                     onClick={() => setActiveTab(tab)}
-                                    className={`flex-1 min-w-[80px] py-2 px-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                                        activeTab === tab ? 'bg-white text-blue-900 shadow-sm' : 'text-slate-500 hover:text-blue-900'
-                                    }`}
+                                    className={`flex-1 min-w-[80px] py-2 px-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white text-blue-900 shadow-sm' : 'text-slate-500 hover:text-blue-900'
+                                        }`}
                                 >
-                                    {tab === 'status' ? 'Status' : tab === 'pricing' ? 'Pricing' : tab === 'config' ? 'Configuration' : 'Aveling LMS'}
+                                    {tab === 'status' ? 'Status' : tab === 'pricing' ? 'Pricing' : tab === 'config' ? 'Configuration' : tab === 'aveling' ? 'Aveling LMS' : 'Exams'}
                                 </button>
                             ))}
                         </div>
@@ -516,15 +515,14 @@ export default function AdminTicketsPage() {
                                     <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
                                         <div className="flex items-center justify-between">
                                             <h3 className="text-[10px] font-black uppercase tracking-widest text-blue-900">Payment & Course Access</h3>
-                                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${
-                                                selectedTicket.paymentStatus === 'payment_verified' ? 'bg-emerald-100 text-emerald-700' :
-                                                selectedTicket.paymentStatus === 'receipt_submitted' ? 'bg-amber-100 text-amber-700' :
-                                                'bg-slate-200 text-slate-600'
-                                            }`}>
+                                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${selectedTicket.paymentStatus === 'payment_verified' ? 'bg-emerald-100 text-emerald-700' :
+                                                    selectedTicket.paymentStatus === 'receipt_submitted' ? 'bg-amber-100 text-amber-700' :
+                                                        'bg-slate-200 text-slate-600'
+                                                }`}>
                                                 {selectedTicket.paymentStatus?.replace('_', ' ') || 'Unpaid'}
                                             </span>
                                         </div>
-                                        
+
                                         {selectedTicket.receiptUrl && (
                                             <div className="p-3 bg-white border border-slate-200 rounded-lg">
                                                 <span className="block text-[9px] font-bold uppercase text-slate-400 mb-1">Receipt Uploaded</span>
@@ -546,6 +544,11 @@ export default function AdminTicketsPage() {
                                         <p className="text-[10px] text-slate-400 text-center">Unlocking the course will notify the candidate to begin learning on Aveling.</p>
                                     </div>
                                 </div>
+                            )}
+
+                            {/* Exams Tab */}
+                            {activeTab === 'exams' && (
+                                <ExamReviewPanel ticketId={String(selectedTicket.id)} />
                             )}
 
                             <div className="flex items-center justify-between pt-4 border-t border-slate-100">

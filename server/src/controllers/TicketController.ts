@@ -377,6 +377,20 @@ export class TicketController {
         }
     }
 
+    public async getExamAttempts(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const ticketId = parseInt(req.params.id as string, 10);
+            const attempts = await ticketService.getExamAttemptsForTicket(ticketId);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: attempts });
+        } catch (error: any) {
+            if (error.message === 'TICKET_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Ticket not found.' });
+                return;
+            }
+            next(error);
+        }
+    }
+
     public async getPlatformBank(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const bankDetails = await ticketService.getPlatformBankAccount();

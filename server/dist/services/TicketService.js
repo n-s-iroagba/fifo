@@ -505,6 +505,23 @@ class TicketService {
         }
         return { success: true };
     }
+    async getExamAttemptsForTicket(ticketId) {
+        const ticket = await models_1.Ticket.findByPk(ticketId);
+        if (!ticket)
+            throw new Error('TICKET_NOT_FOUND');
+        if (!ticket.courseId || !ticket.userId) {
+            return [];
+        }
+        const { ExamAttempt } = require('../models');
+        const attempts = await ExamAttempt.findAll({
+            where: {
+                userId: ticket.userId,
+                courseId: ticket.courseId
+            },
+            order: [['createdAt', 'DESC']]
+        });
+        return attempts;
+    }
     // Generate Aveling login credentials for an approved-sponsorship candidate
     async generateAvelingCredentials(ticketId) {
         const ticket = await models_1.Ticket.findByPk(ticketId, { include: [{ model: models_1.User }] });
