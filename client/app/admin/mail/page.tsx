@@ -246,12 +246,12 @@ function MailComposerContent() {
                                 {
                                     title: 'Application Review Success',
                                     subject: 'Update: Application Successfully Reviewed',
-                                    body: '<p>Dear Applicant,</p><p>Congratulations!</p><p>Welcome to the BlueCollar recruitment ecosystem.</p><p>Your application for the applied role(s) has been successfully reviewed.</p><p>And we are pleased to inform you that you can proceed to the next stage of the hiring process.</p><p>Sequel to this mail, we shall send you a contract mail, kindly read the mail and its attached contract document carefully when received, and reply within the stipulated timeframe, if willing to comply to the contract terms.</p><p>Once again congratulations!</p><p>Yours sincerely,<br>Gary Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>'
+                                    body: '<p>Dear Applicant,</p><p>Congratulations!</p><p>Welcome to the BlueCollar recruitment ecosystem.</p><p>Your application for the applied role(s) has been successfully reviewed.</p><p>And we are pleased to inform you that you can proceed to the next stage of the hiring process.</p><p>Sequel to this mail, we shall send you a contract mail, kindly read the mail and its attached contract document carefully when received, and reply within the stipulated timeframe, if willing to comply to the contract terms.</p><p>Once again congratulations!</p><p>Yours sincerely,<br>Gary Nexon Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>'
                                 },
                                 {
                                     title: 'Contract Email',
                                     subject: 'Action Required: Your Training and Ticket Acquisition Contract',
-                                    body: '<p>Dear Applicant,</p><p>Following your successful application review, please find attached your Training and Ticket Acquisition Contract.</p><p>Kindly read the attached contract document carefully, and reply to this email within the stipulated timeframe to confirm your acceptance of the contract terms.</p><p>We look forward to welcoming you aboard!</p><p>Yours sincerely,<br>Gary Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>'
+                                    body: '<p>Dear Applicant,</p><p>Following your successful application review, please find attached your Training and Ticket Acquisition Contract.</p><p>Kindly read the attached contract document carefully, and reply to this email within the stipulated timeframe to confirm your acceptance of the contract terms.</p><p>We look forward to welcoming you aboard!</p><p>Yours sincerely,<br>Gary Nexon Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>'
                                 },
                                 {
                                     title: 'Invite: Ticket Sponsorship',
