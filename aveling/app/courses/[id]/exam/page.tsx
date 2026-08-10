@@ -84,32 +84,12 @@ function ExamPortalContent() {
             } catch { /* non-blocking */ }
         }
 
-        setPhase('review_awaiting');
-
         try {
-            const res = await apiClient.post(`/exams/attempts/${attemptId}/submit`, { answers });
-            const result = res.data?.data;
-            const passed = result?.isPass;
-            const score = result?.score || 0;
-            const refund = passed ? (attemptParam >= 2 ? 560 : 280) : 0;
-
-            setScorePct(score);
-            setRefundAmount(refund);
-
-            // STEP-1.1.21: Only mark ticket_issued if passed
-            if (ticketId) {
-                try {
-                    await apiClient.post(`/tickets/${ticketId}/exam-outcome`, {
-                        passed,
-                        attemptNumber: attemptParam
-                    });
-                } catch { /* non-blocking */ }
-            }
-
-            setPhase(passed ? 'passed' : 'failed');
+            await apiClient.post(`/exams/attempts/${attemptId}/submit`, { answers });
+            setPhase('review_awaiting');
         } catch (err) {
             console.error("Failed to submit exam:", err);
-            setPhase('failed');
+            alert("Failed to submit exam. Please try again.");
         } finally {
             setSubmitting(false);
         }
@@ -262,12 +242,18 @@ function ExamPortalContent() {
             {/* PHASE: Review-Awaiting (STEP-1.1.20) */}
             {phase === 'review_awaiting' && (
                 <div className="rounded-2xl border border-amber-300 bg-white p-8 shadow-xl dark:border-amber-900 dark:bg-zinc-900 text-center space-y-6">
-                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-amber-700 animate-pulse">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-amber-700">
                         <Award className="h-10 w-10" />
                     </div>
                     <div>
                         <h2 className="text-2xl font-black text-zinc-900 dark:text-white">Submission Under Review</h2>
-                        <p className="text-xs text-zinc-500 mt-2">Your exam has been submitted and is now in <strong>Review-Awaiting</strong> status while being graded...</p>
+                        <p className="text-xs text-zinc-500 mt-2">Your exam has been submitted and is now in <strong>Review-Awaiting</strong> status.</p>
+                        <p className="text-xs text-zinc-500 mt-2">You will receive an email notification once your exam has been graded by an admin.</p>
+                    </div>
+                    <div className="pt-4">
+                        <Link href="/dashboard" className="inline-flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-zinc-200 dark:hover:bg-zinc-700">
+                            Return to Dashboard
+                        </Link>
                     </div>
                 </div>
             )}
