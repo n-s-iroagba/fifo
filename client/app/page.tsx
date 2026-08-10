@@ -10,55 +10,42 @@ import { JobListing } from '@/types/models';
 
 const TESTIMONIALS = [
   {
-    name: "Elena R.",
-    role: "Senior DevOps Engineer",
-    text: "BlueCollar streamlined my transition to a global tech hub. The curation is unmatched and the process is seamless.",
-    location: "Berlin, DE",
+    name: "Mike R.",
+    role: "Offshore Rigger",
+    text: "Blue Collar Recruitment understood the offshore requirements perfectly and got me on the rig in record time.",
+    location: "Western Australia",
     image: "/images/testimonials/elena.png"
   },
   {
-    name: "Marcus T.",
-    role: "Product Design Lead",
-    text: "Minimalist, efficient, and professional. The best platform I've used for high-impact roles. Truly a premium experience.",
-    location: "San Francisco, USA",
+    name: "Sarah M.",
+    role: "HSE Advisor",
+    text: "The certification verification process gave my employer confidence. Highly recommend for any serious mining professional.",
+    location: "Queensland, AU",
     image: "/images/testimonials/marcus.png"
   },
   {
-    name: "Sofia K.",
-    role: "FinTech Consultant",
-    text: "The verification process gave me confidence in my new placement. Highly recommend for any serious professional.",
-    location: "London, UK",
-    image: "/images/testimonials/sofia.png"
-  },
-  {
     name: "David W.",
-    role: "Head of Operations",
-    text: "Simple but powerful. They nderstand the needs of executive talent and provide exceptional service levels.",
-    location: "Sydney, AU",
+    role: "Heavy Diesel Mechanic",
+    text: "Finding reliable FIFO work was stressful until I joined. Their process is straightforward and genuine.",
+    location: "South Australia",
     image: "/images/testimonials/david.png"
   },
   {
     name: "Aisha M.",
-    role: "Full Stack Developer",
-    text: "From application to offer in just 14 days. This platform is a game-changer for international careers.",
-    location: "Dubai, UAE",
+    role: "Site Supervisor",
+    text: "From application to offer in just 14 days. This platform is a game-changer for site careers.",
+    location: "Northern Territory",
     image: "/images/testimonials/aisha.png"
   }
 ];
 
-const PARTNERS = [
-  { name: "Microsoft", industry: "Tech", icon: "window" },
-  { name: "BP Global", industry: "Energy", icon: "emergency" },
-  { name: "Shell Africa", industry: "Energy", icon: "database" },
-  { name: "Chevron", industry: "Energy", icon: "featured_play_list" },
-  { name: "TotalEnergies", industry: "Energy", icon: "circle" },
-  { name: "ExxonMobil", industry: "Energy", icon: "change_history" },
-  { name: "Saudi Aramco", industry: "Energy", icon: "hexagon" },
-  { name: "Equinor", industry: "Energy", icon: "filter_tilt_shift" },
-  { name: "Schlumberger", industry: "Services", icon: "architecture" },
-  { name: "Halliburton", industry: "Services", icon: "settings_input_component" },
-  { name: "Petronas", industry: "Energy", icon: "shield" },
-  { name: "Eni S.p.A.", industry: "Energy", icon: "token" }
+const SECTORS = [
+  { name: "Mining", icon: "landscape" },
+  { name: "Offshore", icon: "water" },
+  { name: "Construction", icon: "construction" },
+  { name: "Energy", icon: "bolt" },
+  { name: "Engineering", icon: "engineering" },
+  { name: "Logistics", icon: "local_shipping" },
 ];
 
 const GALLERY_IMAGES = [
@@ -87,7 +74,7 @@ export default function HomePage() {
   );
 
   const jobList = jobs?.rows || [];
-  const doubledPartners = useMemo(() => PARTNERS.concat(PARTNERS), []);
+  const doubledSectors = useMemo(() => SECTORS.concat(SECTORS), []);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -112,13 +99,13 @@ export default function HomePage() {
         {/* Simplified Hero */}
         <div className="max-w-[900px] mx-auto text-center mb-16 lg:mb-24 px-6">
           <div className="inline-block px-4 py-1.5 bg-blue-50 border border-blue-100 rounded-full text-[8px] md:text-[9px] font-bold text-blue-400 uppercase tracking-[0.2em] mb-8 animate-fade-in">
-            Global Placement Infrastructure
+            Reliable Workforce Solutions
           </div>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-8 text-blue-900 leading-[1.1] lg:px-0 px-4">
-            Curated Career <br /><span className="text-blue-400 italic">Excellence.</span>
+            Your Next FIFO <br /><span className="text-blue-400 italic">Role Awaits.</span>
           </h1>
           <p className="text-blue-500 text-base md:text-lg lg:text-xl font-medium max-w-[600px] mx-auto leading-relaxed">
-            A minimalist approach to career advancement. We connect high-impact professionals with vetted global roles.
+            We connect qualified professionals with vetted roles in mining, offshore, and construction across Australia and globally.
           </p>
         </div>
 
@@ -147,21 +134,20 @@ export default function HomePage() {
         {/* Trusted By Section */}
         <section className="mb-32 overflow-hidden border-y border-blue-50 py-12 lg:py-16">
           <div className="max-w-[1280px] mx-auto px-8 mb-10 text-center">
-            <span className="text-[10px] font-black text-blue-300 uppercase tracking-[0.4em]">Integrated with Global Infrastructure</span>
+            <span className="text-[10px] font-black text-blue-300 uppercase tracking-[0.4em]">Serving Major Industry Sectors</span>
           </div>
           <div className="flex whitespace-nowrap overflow-hidden">
             <div className="flex gap-20 md:gap-32 animate-marquee items-center min-w-full justify-around opacity-60 hover:opacity-100 transition-all duration-700 grayscale hover:grayscale-0">
-              {doubledPartners.map((partner, i) => (
+              {doubledSectors.map((sector, i) => (
                 <div key={i} className="flex flex-col items-center gap-2 group">
                   <div className="flex items-center gap-4">
                     <span className="material-symbols-outlined text-3xl md:text-4xl text-blue-900 transition-transform group-hover:scale-110 group-hover:text-blue-600">
-                      {partner.icon}
+                      {sector.icon}
                     </span>
                     <span className="text-xl md:text-3xl font-black italic uppercase tracking-tighter text-blue-900 transition-all group-hover:italic group-hover:tracking-tight">
-                      {partner.name}
+                      {sector.name}
                     </span>
                   </div>
-                  <span className="text-[8px] font-black text-blue-300 uppercase tracking-[0.4em] group-hover:text-blue-900 transition-colors ml-12">{partner.industry}</span>
                 </div>
               ))}
             </div>
@@ -260,7 +246,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Global Presence Section */}
+        {/* Global Presence Section & Trust Registration */}
         <section className="bg-blue-900 py-32 mb-40 text-white overflow-hidden relative rounded-[4rem] mx-6">
           <div className="absolute inset-0 opacity-10 pointer-events-none">
             <div className="absolute top-10 left-10 w-64 h-64 bg-white rounded-full mix-blend-overlay filter blur-3xl"></div>
@@ -270,26 +256,47 @@ export default function HomePage() {
           <div className="max-w-[1280px] mx-auto px-8 relative z-10">
             <div className="flex flex-col lg:flex-row items-center gap-20">
               <div className="flex-1 text-center lg:text-left">
-                <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em] block mb-6">Global Hubs</span>
+                <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em] block mb-6">Registered Business</span>
                 <h2 className="text-4xl lg:text-6xl font-black italic tracking-tighter mb-8 leading-none">
-                  A Unified Network of <br />Elite Talent.
+                  A Verified Australian <br />Labour Hire Provider.
                 </h2>
                 <p className="text-blue-400 text-lg font-medium leading-relaxed max-w-[500px] mx-auto lg:mx-0">
-                  Our physical presence in key economic zones ensures localized expertise and cultural alignment for every placement.
+                  Blue Collar Recruitment Pty Limited is an established industry partner with a proven track record of safe, compliant, and reliable placements.
                 </p>
               </div>
 
-              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-8 w-full">
+              <div className="flex-1 w-full">
                 <div className="p-10 bg-white/5 backdrop-blur-md rounded-[3rem] border border-white/10 group hover:bg-white/10 transition-all">
-                  <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-10 block">Region 01</span>
-                  <h4 className="text-2xl font-black mb-4 italic uppercase tracking-tighter">Australia</h4>
-                  <p className="text-xs text-blue-400 leading-relaxed font-bold uppercase tracking-widest">100 Mount St, North Sydney NSW 2060</p>
-                </div>
-
-                <div className="p-10 bg-white/5 backdrop-blur-md rounded-[3rem] border border-white/10 group hover:bg-white/10 transition-all">
-                  <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-10 block">Region 02</span>
-                  <h4 className="text-2xl font-black mb-4 italic uppercase tracking-tighter">United States</h4>
-                  <p className="text-xs text-blue-400 leading-relaxed font-bold uppercase tracking-widest">500 Seventh Avenue, New York, NY 10018</p>
+                  <div className="flex items-center gap-3 mb-8">
+                    <span className="material-symbols-outlined text-blue-400 text-3xl">verified</span>
+                    <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Business.gov.au Verified</span>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest block mb-1">Trading Name</span>
+                      <h4 className="text-xl font-black italic uppercase tracking-tighter text-white">Blue Collar Recruitment Pty Limited</h4>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest block mb-1">ABN</span>
+                        <p className="text-sm text-blue-300 font-bold tracking-widest">67 105 263 152</p>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest block mb-1">Status</span>
+                        <p className="text-sm text-emerald-400 font-bold tracking-widest uppercase">Active</p>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest block mb-1">Registered Since</span>
+                        <p className="text-sm text-blue-300 font-bold tracking-widest">25 June 2003</p>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest block mb-1">Location</span>
+                        <p className="text-sm text-blue-300 font-bold tracking-widest">Sydney (2000), NSW</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -362,10 +369,10 @@ export default function HomePage() {
             <div className="w-20 h-20 bg-white rounded-3xl shadow-xl shadow-blue-900/5 flex items-center justify-center mb-10">
               <span className="material-symbols-outlined text-4xl text-blue-900">verified_user</span>
             </div>
-            <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-blue-900 mb-8 uppercase italic tracking-tighter">Ready for the Next Protocol?</h2>
-            <p className="text-blue-500 text-lg mb-12 max-w-sm mx-auto font-medium leading-relaxed">Join the registry and unlock access to hand-curated global opportunities.</p>
+            <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-blue-900 mb-8 uppercase italic tracking-tighter">Ready to Get Started?</h2>
+            <p className="text-blue-500 text-lg mb-12 max-w-sm mx-auto font-medium leading-relaxed">Join the registry and unlock access to reliable FIFO and mining opportunities.</p>
             <Link href={CONSTANTS.ROUTES.REGISTER} className="bg-blue-900 text-white px-10 md:px-14 py-4 md:py-5 rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-[0.3em] shadow-2xl shadow-blue-900/20 hover:bg-black transition-all hover:scale-[1.02] active:scale-95">
-              Begin Enrollment
+              Create Profile
             </Link>
           </div>
         </section>
