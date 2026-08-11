@@ -25,19 +25,19 @@ const CURRENCIES: Record<string, { name: string; symbol: string; rateToAud: numb
 
 const MODE_LABELS: Record<string, { title: string; badge: string; color: string }> = {
     deposit: { title: 'Initial Commitment Deposit', badge: 'A$500 DEPOSIT', color: 'bg-blue-900 text-white' },
-    full:    { title: 'Full Programme Balance',      badge: 'FULL BALANCE',  color: 'bg-emerald-800 text-white' },
-    ticket:  { title: 'Course Module Payment',       badge: 'MODULE FEE',    color: 'bg-amber-600 text-black' },
+    full: { title: 'Full Programme Balance', badge: 'FULL BALANCE', color: 'bg-emerald-800 text-white' },
+    ticket: { title: 'Course Module Payment', badge: 'MODULE FEE', color: 'bg-amber-600 text-black' },
 };
 
 function CheckoutContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const ticketId       = searchParams.get('ticketId') || '';
+    const ticketId = searchParams.get('ticketId') || '';
     const candidateNumber = searchParams.get('candidateNumber') || 'CND-10001';
-    const courseIdParam  = searchParams.get('courseId') || '';
-    const walletParam    = parseFloat(searchParams.get('wallet') || '0');
-    const rawPrice       = parseFloat(searchParams.get('price') || '0');
-    const paymentMode    = (searchParams.get('mode') || 'ticket') as 'deposit' | 'full' | 'ticket';
+    const courseIdParam = searchParams.get('courseId') || '';
+    const walletParam = parseFloat(searchParams.get('wallet') || '0');
+    const rawPrice = parseFloat(searchParams.get('price') || '0');
+    const paymentMode = (searchParams.get('mode') || 'ticket') as 'deposit' | 'full' | 'ticket';
 
     const DEPOSIT_AMOUNT = 500;
     const coursePrice = paymentMode === 'deposit' ? DEPOSIT_AMOUNT : (rawPrice || 280);
@@ -96,7 +96,7 @@ function CheckoutContent() {
                 const b = rows[0];
                 setBankDetails({ bankName: b.bankName, bsb: b.routingCode, accountNumber: b.accountNumber, accountName: b.bankName });
             }
-        }).catch(() => {}).finally(() => setBankLoading(false));
+        }).catch(() => { }).finally(() => setBankLoading(false));
     }, []);
 
     useEffect(() => {
@@ -121,7 +121,7 @@ function CheckoutContent() {
         try {
             let uploadedReceiptUrl = '';
             if (receiptFile) {
-                try { uploadedReceiptUrl = await uploadFile(receiptFile, 'image'); } catch {}
+                try { uploadedReceiptUrl = await uploadFile(receiptFile, 'image'); } catch { }
             }
 
             await apiClient.post(`/tickets/${ticketId || '1'}/submit-receipt`, {
@@ -146,8 +146,8 @@ function CheckoutContent() {
     const pendingLabel = paymentMode === 'deposit'
         ? 'Your A$500 deposit receipt is pending admin verification. Once confirmed, Training Modules 1–3 will unlock automatically.'
         : paymentMode === 'full'
-        ? 'Your full programme balance receipt is pending admin verification. Once confirmed, all training modules will unlock.'
-        : 'Once admin verifies your receipt, your course module will unlock automatically.';
+            ? 'Your full programme balance receipt is pending admin verification. Once confirmed, all training modules will unlock.'
+            : 'Once admin verifies your receipt, your course module will unlock automatically.';
 
     return (
         <div className="mx-auto max-w-4xl space-y-8 py-6 px-4">
@@ -233,68 +233,24 @@ function CheckoutContent() {
             ) : (
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
                     <div className="lg:col-span-7 space-y-6">
-                        {/* Bank Account Details */}
+                        {/* Official Invoice Dispatch Notice */}
                         {payableAmount > 0 && (
-                            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-4">
+                            <div className="bg-white dark:bg-zinc-900 border border-blue-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-4">
                                 <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
                                     <h2 className="text-sm font-extrabold uppercase tracking-wider text-zinc-900 dark:text-white flex items-center gap-2">
-                                        <Building2 className="h-5 w-5 text-[#FFC700]" /> Bank Account Payment Details
+                                        <Building2 className="h-5 w-5 text-[#FFC700]" /> Invoices &amp; SWIFT Remittance Instructions
                                     </h2>
-                                    <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded">SWIFT WIRE ONLY</span>
+                                    <span className="text-[10px] font-mono font-bold bg-blue-100 text-blue-900 px-2 py-0.5 rounded">SENT VIA EMAIL</span>
                                 </div>
-                                <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                                    The receiving bank account is designated in <strong>Australian Dollars (AUD)</strong>. Wire transfers must execute strictly via <strong>SWIFT International Wire</strong>.
-                                </p>
-                                {bankLoading ? (
-                                    <div className="flex items-center gap-2 text-xs text-zinc-500 py-4">
-                                        <Loader2 className="h-4 w-4 animate-spin" /> Loading bank details...
+                                <div className="space-y-3 bg-blue-50/70 dark:bg-zinc-950 p-4 rounded-xl border border-blue-100 dark:border-zinc-800 text-xs">
+                                    <p className="text-blue-950 dark:text-zinc-300 leading-relaxed">
+                                        Official corporate invoices and assigned bank remittance account details are dispatched directly to your registered candidate email address.
+                                    </p>
+                                    <div className="flex items-center gap-2 text-blue-900 dark:text-blue-200 font-bold bg-white dark:bg-zinc-900 p-3 rounded-lg border border-blue-200 dark:border-zinc-800">
+                                        <CheckCircle2 className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                                        Please inspect your email inbox for your assigned SWIFT remittance invoice, then submit your transaction reference code and receipt proof below.
                                     </div>
-                                ) : bankDetails ? (
-                                    <div className="space-y-3 bg-zinc-50 dark:bg-zinc-950 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-mono">
-                                        {[
-                                            { label: 'Bank Name', value: bankDetails.bankName, field: '' },
-                                            { label: 'BSB', value: bankDetails.bsb, field: 'bsb' },
-                                            { label: 'Account Number', value: bankDetails.accountNumber, field: 'account' },
-                                            { label: 'Account Name', value: bankDetails.accountName, field: '' },
-                                        ].map(({ label, value, field }) => (
-                                            <div key={label} className="flex justify-between items-center py-1.5 border-b border-zinc-200/60 dark:border-zinc-800">
-                                                <span className="text-zinc-500 font-sans font-bold">{label}:</span>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-extrabold text-zinc-900 dark:text-white">{value}</span>
-                                                    {field && (
-                                                        <>
-                                                            <button onClick={() => handleCopy(value, field)} className="text-zinc-400 hover:text-zinc-900">
-                                                                <Copy className="h-3.5 w-3.5" />
-                                                            </button>
-                                                            {copiedField === field && <span className="text-emerald-600 text-[10px] font-bold">Copied!</span>}
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
-                                        <div className="flex justify-between items-center py-1.5 border-b border-zinc-200/60 dark:border-zinc-800">
-                                            <span className="text-zinc-500 font-sans font-bold">SWIFT / BIC Code:</span>
-                                            <span className="font-bold text-[#FFC700]">REQUIRED (Check Invoice)</span>
-                                        </div>
-                                        <div className="flex justify-between items-center py-1.5 bg-amber-50 dark:bg-amber-950/60 px-3 rounded-lg border border-amber-300">
-                                            <span className="text-amber-900 font-sans font-extrabold">Payment Reference:</span>
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-black text-amber-900 text-sm">
-                                                    {paymentMode === 'deposit' ? `DEP-${candidateNumber}` : paymentMode === 'full' ? `FULL-${candidateNumber}` : `AVL-REF-${candidateNumber}`}
-                                                </span>
-                                                <button onClick={() => handleCopy(`${paymentMode === 'deposit' ? 'DEP' : paymentMode === 'full' ? 'FULL' : 'AVL-REF'}-${candidateNumber}`, 'ref')} className="text-amber-700 hover:text-amber-900">
-                                                    <Copy className="h-3.5 w-3.5" />
-                                                </button>
-                                                {copiedField === 'ref' && <span className="text-emerald-600 text-[10px] font-bold">Copied!</span>}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-4">
-                                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                                        Bank details not configured yet. Contact your recruitment coordinator.
-                                    </div>
-                                )}
+                                </div>
                             </div>
                         )}
 
@@ -340,13 +296,12 @@ function CheckoutContent() {
                                 <CheckCircle2 className="h-4 w-4" />
                                 {submittingReceipt
                                     ? 'Uploading Receipt...'
-                                    : payableAmount === 0
-                                    ? 'Confirm Wallet Payment'
+
                                     : paymentMode === 'deposit'
-                                    ? 'Submit A$500 Deposit Receipt'
-                                    : paymentMode === 'full'
-                                    ? 'Submit Full Balance Receipt'
-                                    : 'I Have Made Payment — Submit Receipt'}
+                                        ? 'Submit A$500 Deposit Receipt'
+                                        : paymentMode === 'full'
+                                            ? 'Submit Full Balance Receipt'
+                                            : 'I Have Made Payment — Submit Receipt'}
                             </button>
                         </form>
                     </div>
@@ -376,35 +331,14 @@ function CheckoutContent() {
                                 </div>
                             </div>
 
-                            {/* Wallet Toggle */}
-                            {walletBalance > 0 && (
-                                <div className="bg-amber-50 border border-amber-300 dark:bg-amber-950/60 dark:border-amber-900 rounded-xl p-4 space-y-2">
-                                    <div className="flex items-start gap-3">
-                                        <input type="checkbox" id="walletOpt" checked={useWallet} onChange={e => setUseWallet(e.target.checked)} className="mt-1 h-4 w-4 accent-[#FFC700] rounded cursor-pointer" />
-                                        <label htmlFor="walletOpt" className="text-xs cursor-pointer select-none">
-                                            <span className="font-black text-amber-950 dark:text-amber-200 flex items-center gap-1">
-                                                <Wallet className="h-3.5 w-3.5 text-[#FFC700]" />
-                                                Apply Wallet Balance (−A${walletBalance.toFixed(2)})
-                                            </span>
-                                            <span className="block text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
-                                                Use your course completion refund toward this payment.
-                                            </span>
-                                        </label>
-                                    </div>
-                                </div>
-                            )}
+
 
                             <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4 space-y-2 text-xs">
                                 <div className="flex justify-between text-zinc-500">
                                     <span>Subtotal:</span>
                                     <span>A${coursePrice.toFixed(2)}</span>
                                 </div>
-                                {useWallet && (
-                                    <div className="flex justify-between text-emerald-600 font-extrabold">
-                                        <span>Wallet Applied:</span>
-                                        <span>−A${walletBalance.toFixed(2)}</span>
-                                    </div>
-                                )}
+
                                 <div className="flex justify-between text-sm font-black pt-2 border-t border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white">
                                     <span>Total Payable (Receiving Bank):</span>
                                     <span className="text-[#FFC700] text-base">A${payableAmount.toFixed(2)} AUD</span>
@@ -461,30 +395,7 @@ function CheckoutContent() {
                                 </div>
                             </div>
 
-                            {/* Schedule 1 Financial Matrix Breakdown */}
-                            <div className="rounded-xl border border-zinc-200 bg-zinc-50 dark:bg-zinc-800/80 p-3.5 text-[10px] text-zinc-600 dark:text-zinc-400 space-y-1.5">
-                                <div className="flex justify-between items-center font-black uppercase text-zinc-900 dark:text-white border-b border-zinc-200 dark:border-zinc-700 pb-1.5">
-                                    <span>Schedule 1 Financial Matrix</span>
-                                    <span className="text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded border border-emerald-300">Net Total: A$2,830.95</span>
-                                </div>
-                                <div className="space-y-1 pt-1 font-mono">
-                                    <div className="flex justify-between">
-                                        <span>Training (7 Modules) Candidate 35% Share:</span>
-                                        <span className="font-bold text-zinc-800 dark:text-zinc-200">A$1,240.75</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>Subclass 482 Visa VAC Candidate 35% Share:</span>
-                                        <span className="font-bold text-zinc-800 dark:text-zinc-200">A$1,405.25</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>WA Driving &amp; Licensing Candidate 100%:</span>
-                                        <span className="font-bold text-zinc-800 dark:text-zinc-200">A$185.50</span>
-                                    </div>
-                                </div>
-                                <p className="text-[9.5px] text-red-600 dark:text-red-400 font-bold pt-1 border-t border-zinc-200 dark:border-zinc-700 font-sans">
-                                    Clause 5.2 Upper Liability Ceiling: A$3,599.20 (Note: Under Clause 7.1, 100% of candidate training contributions are re-credited to your Candidate Wallet upon passing each module).
-                                </p>
-                            </div>
+
                         </div>
                     </div>
                 </div>

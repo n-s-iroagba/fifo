@@ -23,6 +23,17 @@ const SPONS_MAP: Record<string, { label: string; cls: string }> = {
     no_application: { label: 'No Sponsorship', cls: 'bg-slate-50 text-slate-600 border-slate-200' },
 };
 
+interface BatchItem {
+    id: string;
+    catalogId?: string;
+    ticketType: string;
+    description: string;
+    realPrice: string;
+    subsidisedPrice: string;
+    canApplySponsorship: boolean;
+    courseId: string;
+}
+
 function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicationId: string; tickets: TicketReq[]; refetch: () => void; }) {
     const [showAdd, setShowAdd] = useState(false);
     const [editTicket, setEditTicket] = useState<TicketReq | null>(null);
@@ -36,6 +47,12 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
     const [canApply, setCanApply] = useState(false);
     const [courseId, setCourseId] = useState('');
     const [catalogId, setCatalogId] = useState('');
+
+    // Batch ticket requirement creation state
+    const [showBatchAdd, setShowBatchAdd] = useState(false);
+    const [batchItems, setBatchItems] = useState<BatchItem[]>([]);
+    const [batchSaving, setBatchSaving] = useState(false);
+    const [batchErrMsg, setBatchErrMsg] = useState<string | null>(null);
 
     const { data: catalogRes } = useApiQuery<{ success: boolean; data: any[] }>(['admin-ticket-catalogs'], '/ticket-catalogs');
     const { data: coursesRes } = useApiQuery<{ success: boolean; data: any[] }>(['admin-courses'], '/courses');
@@ -66,6 +83,115 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
         setCatalogId('');
         setErrMsg(null);
         setShowAdd(true);
+    };
+
+    const createBatchItemFromCatalog = (cat: any): BatchItem => {
+        const catNameLower = (cat.name || '').toLowerCase();
+        const matchedCourse = courses.find((cr: any) => {
+            const cTitle = (cr.title || '').toLowerCase();
+            const cCode = (cr.code || '').toLowerCase();
+            return (
+                (cCode && catNameLower.includes(cCode)) ||
+                (cTitle && catNameLower.includes(cTitle)) ||
+                (cTitle && cTitle.split(' ').some((w: string) => w.length > 3 && catNameLower.includes(w)))
+            );
+        });
+
+        return {
+            id: Math.random().toString(36).substring(2, 9),
+            catalogId: cat.id.toString(),
+            ticketType: cat.name,
+            description: cat.description || '',
+            realPrice: cat.normalPrice != null ? cat.normalPrice.toString() : '',
+            subsidisedPrice: cat.sponsorshipPrice != null ? cat.sponsorshipPrice.toString() : '',
+            canApplySponsorship: true,
+            courseId: matchedCourse ? matchedCourse.id : ''
+        };
+    };
+
+    const openBatchAdd = () => {
+        setBatchItems([]);
+        setBatchErrMsg(null);
+        setShowBatchAdd(true);
+    };
+
+    const handlePopulateAllCatalogues = () => {
+        if (!catalogs || catalogs.length === 0) return;
+        const items = catalogs.map((cat: any) => createBatchItemFromCatalog(cat));
+        setBatchItems(items);
+    };
+
+    const handleAddCatalogItemToBatch = (catId: string) => {
+        if (!catId) return;
+        const cat = catalogs.find((c: any) => c.id.toString() === catId);
+        if (cat) {
+            setBatchItems(prev => [...prev, createBatchItemFromCatalog(cat)]);
+        }
+    };
+
+    const handleRowCatalogChange = (rowId: string, catId: string) => {
+        if (!catId) return;
+        const cat = catalogs.find((c: any) => c.id.toString() === catId);
+        if (cat) {
+            const newItem = createBatchItemFromCatalog(cat);
+            setBatchItems(prev => prev.map(item => item.id === rowId ? { ...newItem, id: rowId } : item));
+        }
+    };
+
+    const handleAddBlankRow = () => {
+        setBatchItems(prev => [...prev, {
+            id: Math.random().toString(36).substring(2, 9),
+            ticketType: '',
+            description: '',
+            realPrice: '',
+            subsidisedPrice: '',
+            canApplySponsorship: true,
+            courseId: ''
+        }]);
+    };
+
+    const handleUpdateBatchField = (id: string, field: keyof BatchItem, val: any) => {
+        setBatchItems(prev => prev.map(item => item.id === id ? { ...item, [field]: val } : item));
+    };
+
+    const handleRemoveBatchItem = (id: string) => {
+        setBatchItems(prev => prev.filter(item => item.id !== id));
+    };
+
+    const handleSaveBatch = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (batchItems.length === 0) {
+            setBatchErrMsg('Please select or add at least one ticket requirement to the batch.');
+            return;
+        }
+        for (let i = 0; i < batchItems.length; i++) {
+            if (!batchItems[i].ticketType.trim()) {
+                setBatchErrMsg(`Requirement #${i + 1} is missing a ticket title.`);
+                return;
+            }
+        }
+        setBatchSaving(true);
+        setBatchErrMsg(null);
+        try {
+            const payload = batchItems.map(item => ({
+                catalogId: item.catalogId || null,
+                ticketType: item.ticketType,
+                description: item.description || null,
+                realPrice: item.realPrice ? parseFloat(item.realPrice) : null,
+                subsidisedPrice: item.subsidisedPrice ? parseFloat(subsidisedPrice) : null,
+                canApplySponsorship: item.canApplySponsorship,
+                courseId: item.courseId || null
+            }));
+
+            await api.post(`/admin/applications/${applicationId}/tickets/batch`, { tickets: payload });
+            setShowBatchAdd(false);
+            setBatchItems([]);
+            refetch();
+        } catch (err: any) {
+            setBatchErrMsg(err.response?.data?.message || 'Failed to save batch requirements.');
+        } finally {
+            setBatchSaving(false);
+        }
     };
 
     const handleSelectCatalogTemplate = (selectedId: string) => {
@@ -138,21 +264,33 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
 
     return (
         <div className="bg-white p-8 rounded-[2.5rem] border border-blue-100 shadow-2xl shadow-blue-900/5">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-blue-50">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-blue-50 flex-wrap gap-3">
                 <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-blue-900">confirmation_number</span>
                     <h3 className="text-[10px] font-black text-blue-900 uppercase tracking-[0.2em]">Ticket Requirements</h3>
                     <span className="bg-blue-100 text-blue-800 text-[9px] font-black px-2 py-0.5 rounded-full">{tickets.length}</span>
                 </div>
-                <button onClick={openAdd} className="bg-blue-900 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all flex items-center gap-1.5 shadow-lg shadow-blue-900/10">
-                    <span className="material-symbols-outlined text-sm">add</span> Add Requirement
-                </button>
+                <div className="flex items-center gap-2">
+                    <button onClick={openBatchAdd} className="bg-indigo-900 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all flex items-center gap-1.5 shadow-lg shadow-indigo-900/10">
+                        <span className="material-symbols-outlined text-sm">library_add</span> Batch Add Catalogue
+                    </button>
+                    <button onClick={openAdd} className="bg-blue-900 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all flex items-center gap-1.5 shadow-lg shadow-blue-900/10">
+                        <span className="material-symbols-outlined text-sm">add</span> Single Requirement
+                    </button>
+                </div>
             </div>
             {tickets.length === 0 ? (
                 <div className="py-10 text-center">
                     <span className="material-symbols-outlined text-3xl text-blue-200 mb-2 block">confirmation_number</span>
-                    <p className="text-[9px] font-black text-blue-300 uppercase tracking-[0.3em]">No ticket requirements assigned</p>
-                    <button onClick={openAdd} className="mt-4 text-[10px] font-bold text-blue-600 hover:underline">+ Add catalog requirement</button>
+                    <p className="text-[9px] font-black text-blue-300 uppercase tracking-[0.3em] mb-3">No ticket requirements assigned</p>
+                    <div className="flex items-center justify-center gap-3">
+                        <button onClick={openBatchAdd} className="text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-xl hover:bg-indigo-100 transition-all flex items-center gap-1">
+                            <span className="material-symbols-outlined text-sm">auto_awesome</span> Populate Batch from Catalogue
+                        </button>
+                        <button onClick={openAdd} className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-4 py-2 rounded-xl hover:bg-blue-100 transition-all flex items-center gap-1">
+                            + Add Single Requirement
+                        </button>
+                    </div>
                 </div>
             ) : (
                 <div className="space-y-3">
@@ -307,6 +445,255 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Batch Creation Modal */}
+            {showBatchAdd && (
+                <div className="fixed inset-0 z-50 bg-blue-950/50 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl p-8 max-w-4xl w-full shadow-2xl border border-blue-100 max-h-[92vh] flex flex-col">
+                        <div className="flex items-center justify-between pb-4 border-b border-blue-50 flex-shrink-0">
+                            <div>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-indigo-500 block mb-0.5">Catalogue Batch Creation</span>
+                                <h2 className="text-xl font-bold text-blue-900">Batch Create Ticket Requirements</h2>
+                                <p className="text-xs text-slate-500 mt-0.5">Selecting catalogue tickets populates form fields automatically for each item in the batch.</p>
+                            </div>
+                            <button onClick={() => setShowBatchAdd(false)} className="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-100 transition-all">
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+
+                        {/* Top Action Controls */}
+                        <div className="py-4 border-b border-blue-50 flex items-center justify-between flex-wrap gap-3 flex-shrink-0 bg-indigo-50/50 -mx-8 px-8 my-2">
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={handlePopulateAllCatalogues}
+                                    className="bg-indigo-900 hover:bg-black text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-md shadow-indigo-900/20"
+                                >
+                                    <span className="material-symbols-outlined text-sm text-indigo-300">auto_awesome</span>
+                                    Populate All Catalogue Tickets ({catalogs.length})
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleAddBlankRow}
+                                    className="bg-white border border-indigo-200 text-indigo-900 hover:bg-indigo-50 px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5"
+                                >
+                                    <span className="material-symbols-outlined text-sm">add</span>
+                                    Add Blank Item
+                                </button>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Add catalogue item:</span>
+                                <select
+                                    onChange={(e) => {
+                                        handleAddCatalogItemToBatch(e.target.value);
+                                        e.target.value = '';
+                                    }}
+                                    className="bg-white border border-indigo-300 rounded-xl px-3 py-2 text-xs text-blue-900 font-bold outline-none shadow-sm focus:ring-2 focus:ring-indigo-600"
+                                >
+                                    <option value="">+ Select Ticket Catalogue Item...</option>
+                                    {catalogs.map((cat: any) => (
+                                        <option key={cat.id} value={cat.id}>
+                                            {cat.name} (${cat.sponsorshipPrice || cat.normalPrice || 0})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        {batchErrMsg && (
+                            <div className="my-3 p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-[10px] font-bold uppercase tracking-widest flex-shrink-0">
+                                {batchErrMsg}
+                            </div>
+                        )}
+
+                        {/* Batch Form Items List */}
+                        <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-1">
+                            {batchItems.length === 0 ? (
+                                <div className="py-16 text-center border-2 border-dashed border-indigo-100 rounded-3xl bg-indigo-50/20">
+                                    <span className="material-symbols-outlined text-4xl text-indigo-300 mb-2 block">library_add</span>
+                                    <p className="text-xs font-bold text-indigo-900 mb-1">No ticket requirements added to this batch yet.</p>
+                                    <p className="text-[10px] text-slate-400 max-w-md mx-auto mb-4">Click "Populate All Catalogue Tickets" to load all standardized FIFO ticket templates at once, or choose individual templates from the catalogue dropdown above.</p>
+                                    <button
+                                        type="button"
+                                        onClick={handlePopulateAllCatalogues}
+                                        className="bg-indigo-900 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all inline-flex items-center gap-2"
+                                    >
+                                        <span className="material-symbols-outlined text-sm text-indigo-300">auto_awesome</span>
+                                        Populate All ({catalogs.length}) Catalogue Tickets
+                                    </button>
+                                </div>
+                            ) : (
+                                batchItems.map((item, idx) => {
+                                    const linkedCourse = courses.find((c: any) => c.id === item.courseId);
+                                    return (
+                                        <div key={item.id} className="p-5 bg-gradient-to-br from-slate-50 to-indigo-50/30 rounded-2xl border border-indigo-100 shadow-sm relative group">
+                                            <div className="flex items-center justify-between mb-4 pb-3 border-b border-indigo-100/60">
+                                                <div className="flex items-center gap-3 flex-wrap">
+                                                    <span className="w-6 h-6 rounded-full bg-indigo-900 text-white text-[10px] font-black flex items-center justify-center">
+                                                        {idx + 1}
+                                                    </span>
+                                                    <span className="text-xs font-black text-blue-900">
+                                                        {item.ticketType || 'New Ticket Requirement'}
+                                                    </span>
+                                                    {item.catalogId && (
+                                                        <span className="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 text-[8px] font-black uppercase tracking-widest flex items-center gap-1">
+                                                            <span className="material-symbols-outlined text-[10px]">verified</span> Catalogue Template
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex items-center gap-3">
+                                                    {/* Catalogue Template Switcher for this row */}
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="text-[9px] font-bold text-slate-400 uppercase">Template:</span>
+                                                        <select
+                                                            value={item.catalogId || ''}
+                                                            onChange={(e) => handleRowCatalogChange(item.id, e.target.value)}
+                                                            className="bg-white border border-indigo-200 rounded-lg text-[10px] font-bold text-blue-900 py-1 px-2 outline-none"
+                                                        >
+                                                            <option value="">-- Custom --</option>
+                                                            {catalogs.map((cat: any) => (
+                                                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveBatchItem(item.id)}
+                                                        className="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-all"
+                                                        title="Remove from batch"
+                                                    >
+                                                        <span className="material-symbols-outlined text-base">delete</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <div className="lg:col-span-2">
+                                                    <label className="block text-[9px] font-black uppercase tracking-widest text-blue-900 mb-1">Ticket / Certification Title *</label>
+                                                    <input
+                                                        type="text"
+                                                        value={item.ticketType}
+                                                        onChange={(e) => handleUpdateBatchField(item.id, 'ticketType', e.target.value)}
+                                                        placeholder="e.g. EEHA Certification"
+                                                        className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-blue-900 font-bold focus:border-indigo-600 outline-none"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-[9px] font-black uppercase tracking-widest text-blue-900 mb-1">Linked LMS Course</label>
+                                                    <select
+                                                        value={item.courseId}
+                                                        onChange={(e) => handleUpdateBatchField(item.id, 'courseId', e.target.value)}
+                                                        className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-blue-900 font-medium focus:border-indigo-600 outline-none"
+                                                    >
+                                                        <option value="">-- No Linked Course --</option>
+                                                        {courses.map((cr: any) => (
+                                                            <option key={cr.id} value={cr.id}>
+                                                                {cr.code ? `[${cr.code}] ` : ''}{cr.title}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+
+                                                <div className="lg:col-span-3">
+                                                    <label className="block text-[9px] font-black uppercase tracking-widest text-blue-900 mb-1">Description</label>
+                                                    <input
+                                                        type="text"
+                                                        value={item.description}
+                                                        onChange={(e) => handleUpdateBatchField(item.id, 'description', e.target.value)}
+                                                        placeholder="Description / Module Details..."
+                                                        className="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs text-slate-700 font-medium focus:border-indigo-600 outline-none"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-[9px] font-black uppercase tracking-widest text-blue-900 mb-1">Real Price ($)</label>
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        value={item.realPrice}
+                                                        onChange={(e) => handleUpdateBatchField(item.id, 'realPrice', e.target.value)}
+                                                        placeholder="1850.00"
+                                                        className="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs font-bold text-blue-900 focus:border-indigo-600 outline-none"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-[9px] font-black uppercase tracking-widest text-blue-900 mb-1">Subsidised Price ($)</label>
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        value={item.subsidisedPrice}
+                                                        onChange={(e) => handleUpdateBatchField(item.id, 'subsidisedPrice', e.target.value)}
+                                                        placeholder="647.50"
+                                                        className="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs font-bold text-emerald-700 focus:border-indigo-600 outline-none"
+                                                    />
+                                                </div>
+
+                                                <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-200">
+                                                    <span className="text-[10px] font-bold text-blue-900">Sponsorship Eligible</span>
+                                                    <label className="relative inline-flex items-center cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={item.canApplySponsorship}
+                                                            onChange={(e) => handleUpdateBatchField(item.id, 'canApplySponsorship', e.target.checked)}
+                                                            className="sr-only peer"
+                                                        />
+                                                        <div className="w-9 h-5 bg-slate-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-900" />
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+
+                        {/* Footer Actions */}
+                        <div className="pt-4 border-t border-blue-50 flex items-center justify-between flex-shrink-0 flex-wrap gap-3">
+                            <div className="text-[10px] font-bold text-slate-500">
+                                Total Batch Items: <span className="font-black text-indigo-900 text-xs">{batchItems.length}</span>
+                                {batchItems.length > 0 && (
+                                    <span className="ml-3 text-emerald-700 font-bold bg-emerald-50 px-2 py-1 rounded border border-emerald-100">
+                                        Total Subsidised: ${batchItems.reduce((acc, i) => acc + (parseFloat(i.subsidisedPrice) || parseFloat(i.realPrice) || 0), 0).toFixed(2)} AUD
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowBatchAdd(false)}
+                                    className="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleSaveBatch}
+                                    disabled={batchSaving || batchItems.length === 0}
+                                    className="bg-indigo-900 hover:bg-black text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-indigo-900/20 disabled:opacity-50 transition-all flex items-center gap-2"
+                                >
+                                    {batchSaving ? (
+                                        <>
+                                            <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            Saving Batch...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="material-symbols-outlined text-sm">check_circle</span>
+                                            Create Batch Requirements ({batchItems.length})
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

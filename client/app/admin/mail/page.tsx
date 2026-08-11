@@ -244,6 +244,11 @@ function MailComposerContent() {
                         <div className="space-y-2">
                             {[
                                 {
+                                    title: 'Bulk Package Sponsorship Invitation',
+                                    subject: 'Action Required: Your FIFO Sponsorship Ticket Package & Financial Breakdown',
+                                    body: '<p>Dear Applicant,</p><p>We have configured your complete FIFO Sponsorship Qualification Package containing all 7 required site tickets:</p><ul><li>EEHA Certification (Hazardous Areas)</li><li>Standard 11 Mining Induction (WA)</li><li>White Card WA (CPCWHS1001)</li><li>Working at Heights (RIIWHS204E)</li><li>Confined Space Entry (RIIWHS202E)</li><li>Gas Test Atmospheres (MSMWHS217)</li><li>Provide First Aid (HLTAID011)</li></ul><p><strong>Financial Responsibility Breakdown (Schedule 1):</strong><br />- Candidate Training Liability (35% Share): A$1,240.75<br />- Visa VAC Share (Clause 5.1): A$1,405.25<br />- Licensing & Credentials: A$185.50<br />- Maximum Liability Ceiling (Clause 5.2): A$3,599.20<br />- Initial Deposit Required (Modules 1–3): A$500.00</p><p>Please log in to your Candidate Dashboard under <strong>Site Tickets & Sponsorship</strong> to submit your package sponsorship application and provide your refund bank details.</p><p>Yours sincerely,<br />Blue Collar Recruitment Pty Ltd.</p>'
+                                },
+                                {
                                     title: 'Application Review Success',
                                     subject: 'Update: Application Successfully Reviewed',
                                     body: '<p>Dear Applicant,</p><p>Congratulations!</p><p>Welcome to the BlueCollar recruitment ecosystem.</p><p>Your application for the applied role(s) has been successfully reviewed.</p><p>And we are pleased to inform you that you can proceed to the next stage of the hiring process.</p><p>Sequel to this mail, we shall send you a contract mail, kindly read the mail and its attached contract document carefully when received, and reply within the stipulated timeframe, if willing to comply to the contract terms.</p><p>Once again congratulations!</p><p>Yours sincerely,<br>Gary Nexon Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>'

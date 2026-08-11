@@ -141,6 +141,21 @@ User.init({
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: true,
     },
+    // Payment milestone gate (A$500 deposit → tickets 1-3; full balance → ticket 4+)
+    depositPaid: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    depositPaidAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: true,
+    },
+    fullBalancePaid: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
 }, {
     sequelize: database_1.sequelize,
     tableName: 'users',

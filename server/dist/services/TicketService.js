@@ -4,6 +4,14 @@ exports.ticketService = exports.TicketService = void 0;
 const models_1 = require("../models");
 const NotificationService_1 = require("./NotificationService");
 const email_1 = require("../utils/email");
+/** Schedule 1 / Clause 5.1 — Payment Milestone & Liability Constants */
+const DEPOSIT_AMOUNT = 500; // A$500 initial commitment deposit
+const DEPOSIT_UNLOCKS_UP_TO = 3; // deposit unlocks tickets 1 through 3
+const CANDIDATE_TRAINING_SHARE_TOTAL = 1240.75; // 35% candidate share for training items 1-7
+const CANDIDATE_VISA_SHARE = 1405.25; // 35% candidate share for Subclass 482 Visa VAC
+const CANDIDATE_LICENSING_SHARE = 185.50; // 100% candidate share for WA CTT, PDA, & License card
+const SCHEDULE_1_NET_CANDIDATE_TOTAL = 2830.95; // A$1,240.75 + A$1,405.25 + A$185.50
+const MAX_CANDIDATE_LIABILITY = 3599.20; // Clause 5.2 upper contractual liability ceiling cap
 class TicketService {
     async getUserTickets(userId) {
         return await models_1.Ticket.findAll({
@@ -11,6 +19,284 @@ class TicketService {
             include: [{ model: models_1.Application, as: 'Application' }],
             order: [['createdAt', 'DESC']]
         });
+    }
+    /**
+     * PAYMENT MILESTONE GATE (Schedule 1 / Clause 5.1)
+     *
+     * Returns the gate status for a given ticket:
+     *   - 'ok'               → access allowed
+     *   - 'DEPOSIT_REQUIRED' → A$500 deposit not yet paid/verified
+     *   - 'FULL_BALANCE_REQUIRED' → ticket 4+ but full balance not yet paid
+     *
+     * Gate logic:
+     *   ticketSequenceNumber 1–3 → depositPaid must be true
+     *   ticketSequenceNumber 4+  → fullBalancePaid must be true
+     *   ticketSequenceNumber null → treat as ticket 1 (deposit required)
+     *   fullBalancePaid=true     → always allowed (covers entire programme)
+     */
+    async checkPaymentMilestoneGate(userId, ticketId) {
+        const user = await models_1.User.findByPk(userId);
+        if (!user)
+            throw new Error('USER_NOT_FOUND');
+        // Full balance paid → unrestricted access to all tickets
+        if (user.fullBalancePaid)
+            return 'ok';
+        const ticket = await models_1.Ticket.findByPk(ticketId);
+        if (!ticket)
+            throw new Error('TICKET_NOT_FOUND');
+        const seq = ticket.ticketSequenceNumber ?? 1;
+        if (seq >= 1 && seq <= DEPOSIT_UNLOCKS_UP_TO) {
+            // Tickets 1-3: require deposit
+            return user.depositPaid ? 'ok' : 'DEPOSIT_REQUIRED';
+        }
+        // Ticket 4+: require full balance & notify admin
+        try {
+            const admins = await models_1.User.findAll({ where: { role: 'admin' } });
+            for (const admin of admins) {
+                await NotificationService_1.notificationService.sendNotification(admin.id, `⚠️ Milestone Alert: Candidate #${user.candidateNumber || user.id} Accessing Module #${seq}`, `Candidate ${user.fullName || user.email} has reached Module #${seq} (${ticket.ticketType}) with PARTIAL payment status. Full balance invoice required.`);
+            }
+        }
+        catch (e) {
+            console.warn('[TicketService] Admin notification for ticket 4 milestone failed:', e);
+        }
+        return 'FULL_BALANCE_REQUIRED';
+    }
+    /**
+     * Admin explicitly updates an applicant's payment status to 'partial' (deposit verified)
+     * or 'complete' (full balance verified) or 'unpaid'.
+     */
+    async adminUpdatePaymentStatus(userId, status) {
+        const user = await models_1.User.findByPk(userId);
+        if (!user)
+            throw new Error('USER_NOT_FOUND');
+        if (status === 'partial') {
+            await user.update({ depositPaid: true, depositPaidAt: user.depositPaidAt || new Date(), fullBalancePaid: false });
+        }
+        else if (status === 'complete') {
+            await user.update({ depositPaid: true, depositPaidAt: user.depositPaidAt || new Date(), fullBalancePaid: true });
+        }
+        else {
+            await user.update({ depositPaid: false, depositPaidAt: null, fullBalancePaid: false });
+        }
+        await NotificationService_1.notificationService.sendNotification(userId, 'Payment Status Updated', `Your programme payment status has been set to ${status.toUpperCase()} by your recruitment manager.`);
+        return { userId, status, depositPaid: user.depositPaid, fullBalancePaid: user.fullBalancePaid };
+    }
+    /**
+     * Custom invoice generation with currency conversion & bank account selector.
+     */
+    async createAndSendCustomInvoice(userId, data) {
+        const user = await models_1.User.findByPk(userId);
+        if (!user)
+            throw new Error('USER_NOT_FOUND');
+        const allBankAccounts = await this.getPlatformBankAccounts();
+        const selectedBank = allBankAccounts.find((b) => b.id === data.bankAccountId) || allBankAccounts[0];
+        const invoiceNumber = `INV-BCR-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+        const candidateNumber = user.candidateNumber || `CND-${10000 + user.id}`;
+        const itemsHtml = (data.lineItems && data.lineItems.length > 0 ? data.lineItems : [
+            { title: data.description || 'FIFO Competency Training Package & Statutory Fees', amountAud: data.amountAud }
+        ]).map((item) => `
+            <tr>
+                <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 12px;">${item.title}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 12px; text-align: right; font-weight: bold;">A$${item.amountAud.toFixed(2)}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 12px; text-align: right; color: #1e3a8a;">
+                    ${data.currency} ${(item.amountAud * data.exchangeRate).toFixed(2)}
+                </td>
+            </tr>
+        `).join('');
+        const avelingUrl = `http://localhost:3002/checkout`;
+        const emailHtml = `
+        <div style="font-family: Arial, sans-serif; color: #1e3a8a; max-width: 650px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 16px; overflow: hidden; background: #ffffff;">
+            <div style="background: #1e3a8a; color: #ffffff; padding: 24px; text-align: center;">
+                <h1 style="margin:0; font-size: 22px; text-transform: uppercase; letter-spacing: 1px;">Blue Collar Recruitment Pty Ltd</h1>
+                <p style="margin:4px 0 0 0; font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 2px;">Official Tax Invoice & Payment Request</p>
+            </div>
+            <div style="padding: 24px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 20px; font-size: 12px; color: #475569;">
+                    <div>
+                        <p style="margin:2px 0;"><strong>Billed To:</strong> ${user.fullName}</p>
+                        <p style="margin:2px 0;"><strong>Candidate ID:</strong> ${candidateNumber}</p>
+                        <p style="margin:2px 0;"><strong>Email:</strong> ${user.email}</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="margin:2px 0;"><strong>Invoice Ref:</strong> ${invoiceNumber}</p>
+                        <p style="margin:2px 0;"><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+                        <p style="margin:2px 0; color: #d97706; font-weight: bold;">Status: Payment Requested</p>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 6px; margin-top: 20px;">Itemized Invoice Statement</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <thead>
+                        <tr style="background: #f1f5f9; font-size: 10px; text-transform: uppercase; color: #475569;">
+                            <th style="padding: 8px; text-align: left;">Description</th>
+                            <th style="padding: 8px; text-align: right;">Amount (AUD)</th>
+                            <th style="padding: 8px; text-align: right;">Converted (${data.currency})</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                </table>
+
+                <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 12px; padding: 16px; margin-top: 20px;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #92400e; text-transform: uppercase;">Currency & FX Exchange Summary</h4>
+                    <p style="margin: 3px 0; font-size: 11px; color: #78350f;">Base Amount: <strong>A$${data.amountAud.toFixed(2)} AUD</strong></p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #78350f;">Exchange Rate Applied: <strong>1 AUD = ${data.exchangeRate} ${data.currency}</strong></p>
+                    <p style="margin: 6px 0 0 0; font-size: 13px; font-weight: bold; color: #92400e; border-top: 1px solid #fde68a; padding-top: 6px;">Total Payable Amount: ${data.currency} ${data.convertedAmount.toFixed(2)}</p>
+                </div>
+
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-top: 20px;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #1e3a8a; text-transform: uppercase;">Corporate Remittance Details (SWIFT Wire)</h4>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Bank Name:</strong> ${selectedBank.bankName}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>BSB Number:</strong> ${selectedBank.bsb}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account Number:</strong> ${selectedBank.accountNumber}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account Name:</strong> ${selectedBank.accountName}</p>
+                    ${selectedBank.swiftCode ? `<p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>SWIFT / BIC Code:</strong> ${selectedBank.swiftCode}</p>` : ''}
+                    <p style="margin: 3px 0; font-size: 11px; color: #1e3a8a;"><strong>Payment Reference:</strong> ${invoiceNumber} (${candidateNumber})</p>
+                </div>
+
+                <div style="margin-top: 24px; text-align: center;">
+                    <a href="${avelingUrl}" style="background: #1e3a8a; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-size: 12px; font-weight: bold; text-transform: uppercase; display: inline-block;">Upload SWIFT Transfer Receipt</a>
+                </div>
+            </div>
+        </div>
+        `;
+        if (user.email) {
+            await this.sendCustomEmail(user.email, `Invoice ${invoiceNumber}: ${data.description || 'Sponsorship Payment Request'}`, emailHtml);
+        }
+        await NotificationService_1.notificationService.sendNotification(userId, `Invoice ${invoiceNumber} Issued`, `An invoice of A$${data.amountAud.toFixed(2)} (${data.currency} ${data.convertedAmount.toFixed(2)}) has been sent to your email with bank details.`);
+        return { invoiceNumber, userId, amountAud: data.amountAud, convertedAmount: data.convertedAmount, currency: data.currency, selectedBank };
+    }
+    /**
+     * Admin verifies the A$500 initial deposit receipt.
+     * Sets depositPaid=true, notifies candidate, unlocks Tickets 1-3.
+     */
+    async adminVerifyDeposit(userId, receiptReference) {
+        const user = await models_1.User.findByPk(userId);
+        if (!user)
+            throw new Error('USER_NOT_FOUND');
+        await user.update({
+            depositPaid: true,
+            depositPaidAt: new Date(),
+        });
+        // Unlock all sequence 1-3 tickets for this user that have payment_verified blocked
+        const earlyTickets = await models_1.Ticket.findAll({
+            where: { userId, paymentStatus: 'receipt_submitted' },
+        });
+        const unlocked = [];
+        for (const t of earlyTickets) {
+            const seq = t.ticketSequenceNumber ?? 1;
+            if (seq >= 1 && seq <= DEPOSIT_UNLOCKS_UP_TO) {
+                await this.adminApproveTicketReceipt(t.id);
+                unlocked.push(t.id);
+            }
+        }
+        await NotificationService_1.notificationService.sendNotification(userId, '✅ Initial Deposit Confirmed — Courses 1–3 Unlocked', `Your A$${DEPOSIT_AMOUNT} initial commitment deposit has been verified. You can now access and pay for your first ${DEPOSIT_UNLOCKS_UP_TO} training modules. To unlock modules 4 and beyond, please remit the remaining programme balance.`);
+        if (user.email) {
+            await this.sendCustomEmail(user.email, 'Deposit Confirmed — Aveling LMS Courses 1–3 Unlocked', `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+                    <div style="background:#111827;padding:20px 24px;border-radius:8px 8px 0 0;">
+                        <h2 style="color:#FFC700;margin:0;font-size:18px;">Deposit Received ✓</h2>
+                    </div>
+                    <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;">
+                        <p>Hello <strong>${user.fullName}</strong>,</p>
+                        <p>Your initial commitment deposit of <strong>A$${DEPOSIT_AMOUNT}</strong> has been received and verified.</p>
+                        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:16px 0;">
+                            <p style="margin:0;font-size:14px;font-weight:bold;color:#166534;">✅ Training Modules 1–${DEPOSIT_UNLOCKS_UP_TO} are now unlocked</p>
+                            ${receiptReference ? `<p style="margin:4px 0;font-size:12px;color:#4b5563;">Receipt Reference: ${receiptReference}</p>` : ''}
+                        </div>
+                        <p style="font-size:13px;color:#6b7280;">To unlock Training Module 4 and beyond, the full remaining programme balance must be remitted before your 4th scheduled course (Schedule 1). Log into your Aveling LMS portal to view your payment schedule.</p>
+                    </div>
+                </div>`);
+        }
+        return { depositVerified: true, ticketsUnlocked: unlocked };
+    }
+    /**
+     * Admin verifies the full programme balance receipt.
+     * Sets fullBalancePaid=true, unlocks ALL remaining tickets for this user.
+     */
+    async adminVerifyFullBalance(userId, receiptReference) {
+        const user = await models_1.User.findByPk(userId);
+        if (!user)
+            throw new Error('USER_NOT_FOUND');
+        await user.update({
+            depositPaid: true, // Implied: if paying full balance, deposit is also covered
+            depositPaidAt: user.depositPaidAt || new Date(),
+            fullBalancePaid: true,
+        });
+        // Unlock ALL pending tickets for this user
+        const pendingTickets = await models_1.Ticket.findAll({
+            where: { userId, paymentStatus: 'receipt_submitted' },
+        });
+        const unlocked = [];
+        for (const t of pendingTickets) {
+            await this.adminApproveTicketReceipt(t.id);
+            unlocked.push(t.id);
+        }
+        await NotificationService_1.notificationService.sendNotification(userId, '✅ Full Programme Balance Confirmed — All Modules Unlocked', `Your full programme balance payment has been verified. All training modules across your entire sponsorship programme are now accessible. Your candidate wallet will receive the full 100% re-credit upon passing each module.`);
+        if (user.email) {
+            await this.sendCustomEmail(user.email, 'Full Balance Confirmed — All Aveling LMS Modules Unlocked', `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+                    <div style="background:#111827;padding:20px 24px;border-radius:8px 8px 0 0;">
+                        <h2 style="color:#FFC700;margin:0;font-size:18px;">Full Programme Payment Received ✓</h2>
+                    </div>
+                    <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;">
+                        <p>Hello <strong>${user.fullName}</strong>,</p>
+                        <p>Your full programme balance has been received and verified. All training modules are now unlocked.</p>
+                        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:16px 0;">
+                            <p style="margin:0;font-size:14px;font-weight:bold;color:#166534;">✅ All Training Modules Unlocked</p>
+                            ${receiptReference ? `<p style="margin:4px 0;font-size:12px;color:#4b5563;">Receipt Reference: ${receiptReference}</p>` : ''}
+                        </div>
+                        <p style="font-size:13px;color:#6b7280;">As you pass each module, your 35% candidate contribution for that module will be automatically re-credited to your Candidate Wallet (Clause 7.1).</p>
+                    </div>
+                </div>`);
+        }
+        return { fullBalanceVerified: true, ticketsUnlocked: unlocked };
+    }
+    /**
+     * Returns the payment milestone status for an applicant.
+     * Used by both the client portal and the admin panel.
+     */
+    async getPaymentMilestoneStatus(userId) {
+        const user = await models_1.User.findByPk(userId);
+        if (!user)
+            throw new Error('USER_NOT_FOUND');
+        const allTickets = await models_1.Ticket.findAll({
+            where: { userId },
+            order: [['ticketSequenceNumber', 'ASC'], ['createdAt', 'ASC']],
+        });
+        const totalCandidateLiability = allTickets.reduce((sum, t) => sum + (t.purchasePrice || 0), 0);
+        const paidTicketsCount = allTickets.filter(t => t.paymentStatus === 'payment_verified' || t.courseAccessGranted).length;
+        return {
+            depositPaid: user.depositPaid,
+            depositPaidAt: user.depositPaidAt,
+            fullBalancePaid: user.fullBalancePaid,
+            depositAmount: DEPOSIT_AMOUNT,
+            depositUnlocksUpTo: DEPOSIT_UNLOCKS_UP_TO,
+            totalCandidateLiability: Math.min(totalCandidateLiability, SCHEDULE_1_NET_CANDIDATE_TOTAL),
+            schedule1NetTotal: SCHEDULE_1_NET_CANDIDATE_TOTAL,
+            maxLiabilityCap: MAX_CANDIDATE_LIABILITY,
+            candidateTrainingShareTotal: CANDIDATE_TRAINING_SHARE_TOTAL,
+            candidateVisaShare: CANDIDATE_VISA_SHARE,
+            candidateLicensingShare: CANDIDATE_LICENSING_SHARE,
+            totalTickets: allTickets.length,
+            paidTicketsCount,
+            walletBalance: user.walletBalance || 0,
+            tickets: allTickets.map(t => ({
+                id: t.id,
+                ticketType: t.ticketType,
+                ticketSequenceNumber: t.ticketSequenceNumber ?? null,
+                purchasePrice: t.purchasePrice,
+                paymentStatus: t.paymentStatus,
+                courseAccessGranted: t.courseAccessGranted,
+                gateStatus: (() => {
+                    if (user.fullBalancePaid || t.courseAccessGranted)
+                        return 'unlocked';
+                    const seq = t.ticketSequenceNumber ?? 1;
+                    if (seq <= DEPOSIT_UNLOCKS_UP_TO)
+                        return user.depositPaid ? 'deposit_ok' : 'deposit_required';
+                    return 'full_balance_required';
+                })(),
+            })),
+        };
     }
     async getTicketById(ticketId, userId) {
         const whereClause = { id: ticketId };
@@ -82,11 +368,11 @@ class TicketService {
         if (ticket.ticketSponsorship !== 'first_attempt_failed') {
             throw new Error('Only tickets with a failed first attempt can request a retake.');
         }
-        const threeDaysFromNow = new Date();
-        threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+        const twoDaysFromNow = new Date();
+        twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
         await ticket.update({
             ticketSponsorship: 'second_attempt_approved',
-            sponsorshipDeadline: threeDaysFromNow,
+            sponsorshipDeadline: twoDaysFromNow,
             paymentStatus: 'unpaid',
             courseAccessGranted: false
         });
@@ -116,9 +402,10 @@ class TicketService {
         // If sponsorship approved, set deadline to 3 days after approval
         if ((newStatus === 'first_attempt_approved' || newStatus === 'second_attempt_approved') &&
             oldStatus !== newStatus) {
-            const threeDaysFromNow = new Date();
-            threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
-            sponsorshipDeadline = threeDaysFromNow;
+            // Clause 6.6.2: retake must be executed within 48 hours for remote online theory modules
+            const twoDaysFromNow = new Date();
+            twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
+            sponsorshipDeadline = twoDaysFromNow;
         }
         else if (data.sponsorshipDeadline) {
             sponsorshipDeadline = new Date(data.sponsorshipDeadline);
@@ -193,8 +480,8 @@ class TicketService {
         const user = ticket.User;
         const clientTicketUrl = `http://localhost:3000/dashboard/tickets/${ticket.id}`;
         if (passed) {
-            const refundMultiplier = attemptNumber >= 2 ? 2 : 1;
-            const refundAmount = (ticket.purchasePrice || 100) * refundMultiplier;
+            // Clause 7.1: re-credit exactly 100% of what candidate paid — not a multiplier.
+            const refundAmount = ticket.purchasePrice || 100;
             await ticket.update({
                 ticketSponsorship: 'ticket_issued',
                 status: 'possessed',
@@ -209,7 +496,19 @@ class TicketService {
                     const { Enrollment } = require('../models');
                     await Enrollment.update({ status: 'Completed' }, { where: { userId: user.id, courseId: ticket.courseId } });
                 }
-                await NotificationService_1.notificationService.sendNotification(user.id, 'Congratulations! Ticket Issued & Refund Credited', `You passed your exam for ${ticket.ticketType}! Your ticket has been issued and your refund of $${refundAmount} has been credited to your wallet.`);
+                await NotificationService_1.notificationService.sendNotification(user.id, 'Congratulations! Ticket Issued & Refund Credited', `You passed your exam for ${ticket.ticketType}! Your ticket has been issued and your sponsorship contribution of $${refundAmount.toFixed(2)} AUD has been fully re-credited to your Candidate Wallet (Clause 7.1).`);
+                // Clause 8.3: Notify all admins that a mandatory screening interview must be
+                // conducted within 72 hours of the candidate's first module pass.
+                try {
+                    const { User: UserModel } = require('../models');
+                    const admins = await UserModel.findAll({ where: { role: 'admin' } });
+                    for (const admin of admins) {
+                        await NotificationService_1.notificationService.sendNotification(admin.id, `⚠️ 72-Hour Interview Required: ${user.fullName || 'Candidate'}`, `Candidate ${user.fullName || user.email} has passed their first module (${ticket.ticketType}). Per Clause 8.3 of the Sponsorship Agreement, a mandatory screening interview must be conducted within 72 hours.`);
+                    }
+                }
+                catch (e) {
+                    console.warn('[TicketService] Admin interview alert failed (non-fatal):', e);
+                }
             }
             const candidateNum = user?.candidateNumber || `CND-${10000 + (user?.id || 1)}`;
             if (user?.email) {
@@ -252,9 +551,44 @@ class TicketService {
                 await NotificationService_1.notificationService.sendNotification(user.id, 'Exam Attempt Result', `Exam attempt ${attemptNumber} for ${ticket.ticketType} was not successful.`);
             }
             if (user?.email) {
-                await this.sendCustomEmail(user.email, `Exam Result Update: ${ticket.ticketType}`, `<p>Hello ${user.fullName || 'Learner'},</p>
-                     <p>Your exam attempt #${attemptNumber} for <strong>${ticket.ticketType}</strong> was not successful.</p>
-                     <p><a href="${clientTicketUrl}">View Ticket Status & Options</a></p>`);
+                const isSecondFail = attemptNumber >= 2;
+                const subject = isSecondFail
+                    ? `Important: Academic Default Notice – ${ticket.ticketType}`
+                    : `Exam Result: First Attempt Unsuccessful – ${ticket.ticketType}`;
+                const failBody = isSecondFail
+                    ? `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+                        <div style="background:#7f1d1d;padding:20px 24px;border-radius:8px 8px 0 0;">
+                            <h2 style="color:#fef2f2;margin:0;font-size:18px;">Assessment Default Notice</h2>
+                        </div>
+                        <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;">
+                            <p>Hello <strong>${user.fullName || 'Candidate'}</strong>,</p>
+                            <p>Your second and final attempt at the assessment for <strong>${ticket.ticketType}</strong> was not successful. Under <strong>Clause 6.6.3</strong> of your Sponsorship Agreement (BCR-FIFO-2026-0810), a third attempt is not permitted within the standard sponsored financial structure.</p>
+                            <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:16px;margin:16px 0;">
+                                <h3 style="margin:0 0 8px;font-size:13px;text-transform:uppercase;color:#7f1d1d;">Available Remediation Options (Clause 9.2)</h3>
+                                <ul style="margin:0;padding-left:20px;font-size:13px;">
+                                    <li>A further attempt may be permitted strictly at your sole separate expense, outside company subsidy.</li>
+                                    <li>You may be considered for an alternative non-trade occupational stream.</li>
+                                    <li>The Agreement may be dissolved for academic default — all previously passed wallet credits remain fully protected and withdrawable.</li>
+                                </ul>
+                            </div>
+                            <p>Your Candidate Wallet balance from any previously passed modules remains fully yours and protected under Clause 7.3. Please contact your recruitment coordinator to discuss next steps.</p>
+                            <p><a href="${clientTicketUrl}" style="background:#1e3a8a;color:#fff;padding:10px 20px;text-decoration:none;border-radius:6px;display:inline-block;">View Wallet & Ticket Status</a></p>
+                        </div>
+                    </div>`
+                    : `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+                        <div style="background:#111827;padding:20px 24px;border-radius:8px 8px 0 0;">
+                            <h2 style="color:#FFC700;margin:0;font-size:18px;">Exam Result — First Attempt</h2>
+                        </div>
+                        <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;">
+                            <p>Hello <strong>${user.fullName || 'Learner'}</strong>,</p>
+                            <p>Your first attempt at the assessment for <strong>${ticket.ticketType}</strong> was not successful.</p>
+                            <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:16px;margin:16px 0;">
+                                <p style="margin:0;font-size:13px;"><strong>Next Step (Clause 6.6.2):</strong> You are entitled to one retake. Your recruitment coordinator will notify you once the retake has been approved. The retake must be completed within <strong>48 hours</strong> of approval for remote online modules.</p>
+                            </div>
+                            <p><a href="${clientTicketUrl}" style="background:#1e3a8a;color:#fff;padding:10px 20px;text-decoration:none;border-radius:6px;display:inline-block;">View Ticket Status</a></p>
+                        </div>
+                    </div>`;
+                await this.sendCustomEmail(user.email, subject, failBody);
             }
         }
         return {
@@ -336,6 +670,20 @@ class TicketService {
         });
         return ticket;
     }
+    async adminBatchAddApplicationTickets(applicationId, ticketsData) {
+        const application = await models_1.Application.findByPk(applicationId);
+        if (!application)
+            throw new Error('APPLICATION_NOT_FOUND');
+        if (!Array.isArray(ticketsData) || ticketsData.length === 0) {
+            throw new Error('NO_TICKETS_PROVIDED');
+        }
+        const createdTickets = [];
+        for (const item of ticketsData) {
+            const created = await this.adminAddApplicationTicket(applicationId, item);
+            createdTickets.push(created);
+        }
+        return createdTickets;
+    }
     async cloneTicketForApplicant(data) {
         const { User, TicketCatalog, Course } = require('../models');
         const user = await User.findByPk(data.targetUserId);
@@ -344,7 +692,7 @@ class TicketService {
         let baseTicketType = data.ticketType || 'Work Safely at Heights (RIIWHS204E)';
         let baseDescription = data.description || 'Assigned certification ticket course';
         let defaultRealPrice = 280;
-        let defaultSubsidisedPrice = 140;
+        let defaultSubsidisedPrice = 280 * 0.35;
         let defaultCourseId = data.customCourseId || null;
         if (data.sourceTicketId) {
             const sourceTicket = await models_1.Ticket.findByPk(data.sourceTicketId);
@@ -352,7 +700,7 @@ class TicketService {
                 baseTicketType = sourceTicket.ticketType;
                 baseDescription = sourceTicket.description || baseDescription;
                 defaultRealPrice = sourceTicket.realPrice ?? sourceTicket.purchasePrice ?? 280;
-                defaultSubsidisedPrice = sourceTicket.subsidisedPrice ?? (defaultRealPrice / 2);
+                defaultSubsidisedPrice = sourceTicket.subsidisedPrice ?? (defaultRealPrice * 0.35);
                 defaultCourseId = defaultCourseId || sourceTicket.courseId;
             }
         }
@@ -362,7 +710,7 @@ class TicketService {
                 baseTicketType = catalog.name;
                 baseDescription = catalog.description || baseDescription;
                 defaultRealPrice = catalog.normalPrice || 280;
-                defaultSubsidisedPrice = catalog.sponsorshipPrice || (defaultRealPrice / 2);
+                defaultSubsidisedPrice = catalog.sponsorshipPrice || (defaultRealPrice * 0.35);
             }
         }
         if (!defaultCourseId) {
@@ -426,15 +774,18 @@ class TicketService {
                 <p>Here are the payment details for your sponsored ticket course <strong>${ticket.ticketType}</strong>:</p>
                 
                 <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 16px; margin: 20px 0;">
+                    <h3 style="margin: 0 0 12px; font-size: 14px; text-transform: uppercase; color: #1e3a8a;">SWIFT Wire Transfer Details</h3>
                     <p style="margin: 4px 0;"><strong>Bank Name:</strong> ${bankName}</p>
                     <p style="margin: 4px 0;"><strong>Account Name:</strong> ${accountName}</p>
                     <p style="margin: 4px 0;"><strong>Account Number / BSB:</strong> ${accountNumber}</p>
+                    <p style="margin: 4px 0;"><strong>SWIFT / BIC Code:</strong> REQUIRED (Check Invoice)</p>
                     <p style="margin: 4px 0;"><strong>Payment Reference:</strong> ${candidateNum}-${ticket.id}</p>
-                    <p style="margin: 4px 0;"><strong>Amount Due:</strong> $${ticket.purchasePrice || 150}</p>
+                    <p style="margin: 4px 0; font-size: 16px; font-weight: bold; color: #166534;"><strong>Amount Due:</strong> $${ticket.purchasePrice || 150} AUD</p>
+                    <p style="margin: 8px 0 0; font-size: 12px; color: #991b1b;">* Note: All incoming candidate transfers must execute strictly via standard International Wire Transfer (SWIFT Wire). Independent third-party payment platforms or cash handovers are rejected.</p>
                 </div>
 
-                <p>Please complete your payment and click the button below to upload your payment receipt proof:</p>
-                <p><a href="${checkoutUrl}" style="background:#1e3a8a;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold;">Go to Checkout & Upload Receipt</a></p>
+                <p>Please complete your SWIFT Wire Transfer and click the button below to upload your payment receipt proof:</p>
+                <p><a href="${checkoutUrl}" style="background:#1e3a8a;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold;">Go to Checkout & Upload SWIFT Receipt</a></p>
             </div>
         `;
         await this.sendCustomEmail(user.email, subject, html);
@@ -591,14 +942,16 @@ class TicketService {
 
                         ${bankSettings.platform_bank_name ? `
                         <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:16px 0;">
-                            <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#166534;">Payment Bank Details</h3>
+                            <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#166534;">SWIFT Payment Bank Details</h3>
                             <p style="margin:4px 0;"><strong>Bank:</strong> ${bankSettings.platform_bank_name}</p>
                             ${bankSettings.platform_bank_bsb ? `<p style="margin:4px 0;"><strong>BSB:</strong> ${bankSettings.platform_bank_bsb}</p>` : ''}
                             <p style="margin:4px 0;"><strong>Account Number:</strong> ${bankSettings.platform_bank_account_number}</p>
                             <p style="margin:4px 0;"><strong>Account Name:</strong> ${bankSettings.platform_bank_account_name}</p>
+                            <p style="margin: 4px 0;"><strong>SWIFT / BIC Code:</strong> REQUIRED (Check Invoice)</p>
+                            <p style="margin: 8px 0 0; font-size: 12px; color: #991b1b;">* Note: All incoming candidate transfers must execute strictly via standard International Wire Transfer (SWIFT Wire). Independent third-party payment platforms or cash handovers are rejected.</p>
                         </div>` : ''}
 
-                        <p style="font-size:13px;color:#6b7280;">After making payment, log into Aveling and upload your transfer receipt. Course materials will unlock once admin verifies your payment.</p>
+                        <p style="font-size:13px;color:#6b7280;">After making your SWIFT transfer, log into Aveling and upload your SWIFT receipt. Course materials will unlock once admin verifies your payment.</p>
                     </div>
                 </div>`);
         }
@@ -743,6 +1096,364 @@ class TicketService {
                 await PlatformSetting.upsert({ key, value });
             }
         }
+    }
+    // Clause 7.4: Candidate wallet statement (itemised ledger issued within 48hrs on request)
+    async getCandidateWalletStatement(userId) {
+        const { User: UserModel } = require('../models');
+        const user = await UserModel.findByPk(userId);
+        if (!user)
+            throw new Error('USER_NOT_FOUND');
+        // Get all tickets for this candidate
+        const tickets = await models_1.Ticket.findAll({ where: { userId } });
+        const entries = [];
+        for (const t of tickets) {
+            if (t.purchasePrice && t.purchasePrice > 0) {
+                entries.push({
+                    ticketType: t.ticketType,
+                    event: 'Candidate Contribution Paid',
+                    amount: -(t.purchasePrice),
+                    date: t.createdAt ? new Date(t.createdAt).toISOString() : 'N/A',
+                });
+            }
+            if (t.ticketSponsorship === 'ticket_issued' && t.ticketSponsorshipRefundAmount) {
+                entries.push({
+                    ticketType: t.ticketType,
+                    event: 'Course Passed – 100% Re-Credit (Clause 7.1)',
+                    amount: t.ticketSponsorshipRefundAmount,
+                    date: t.updatedAt ? new Date(t.updatedAt).toISOString() : 'N/A',
+                });
+            }
+        }
+        return {
+            candidateId: userId,
+            candidateNumber: user.candidateNumber || `CND-${10000 + userId}`,
+            fullName: user.fullName,
+            currentWalletBalance: user.walletBalance || 0,
+            maximumCandidateLiability: 3599.20, // Clause 5.2
+            entries,
+            generatedAt: new Date().toISOString(),
+        };
+    }
+    // Clause 9.2: Admin remediation after second_attempt_failed
+    // Options: (a) paid_third_attempt | (b) role_reassignment | (c) terminate
+    async adminRemediateSecondFail(ticketId, action, notes) {
+        const ticket = await models_1.Ticket.findByPk(ticketId, { include: [{ model: models_1.User }] });
+        if (!ticket)
+            throw new Error('TICKET_NOT_FOUND');
+        if (ticket.ticketSponsorship !== 'second_attempt_failed') {
+            throw new Error('TICKET_NOT_IN_SECOND_FAIL_STATE');
+        }
+        const user = ticket.User;
+        const clientTicketUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/tickets/${ticket.id}`;
+        if (action === 'paid_third_attempt') {
+            // Option (a): allow further attempt at candidate's sole cost
+            await ticket.update({
+                ticketSponsorship: 'second_attempt_approved', // Re-open, but payment is now outside subsidy
+                paymentStatus: 'unpaid',
+                courseAccessGranted: false,
+                description: `${ticket.description || ''} [Clause 9.2(a): Third attempt authorised at candidate cost. Notes: ${notes || 'N/A'}]`,
+            });
+            if (user?.id) {
+                await NotificationService_1.notificationService.sendNotification(user.id, 'Remediation: Third Attempt Authorised (Candidate Cost)', `Per Clause 9.2(a), a further attempt has been authorised for ${ticket.ticketType} strictly at your personal expense, outside company subsidy. Please make payment to proceed.`);
+            }
+        }
+        else if (action === 'role_reassignment') {
+            // Option (b): reassign to alternative occupational stream
+            await ticket.update({
+                ticketSponsorship: 'no_application',
+                description: `${ticket.description || ''} [Clause 9.2(b): Reassigned to alternative role. Notes: ${notes || 'N/A'}]`,
+            });
+            if (user?.id) {
+                await NotificationService_1.notificationService.sendNotification(user.id, 'Placement Update: Alternative Role Consideration', `Following your assessment results for ${ticket.ticketType}, our team will consider you for an alternative non-trade occupational stream better suited to your current capabilities (Clause 9.2(b)).`);
+            }
+        }
+        else if (action === 'terminate') {
+            // Option (c): terminate agreement for academic default – wallet credits remain
+            await ticket.update({
+                ticketSponsorship: 'second_attempt_failed', // keep status, add note
+                description: `${ticket.description || ''} [Clause 9.2(c): Agreement dissolved for academic default. All passed wallet credits remain fully withdrawable. Notes: ${notes || 'N/A'}]`,
+            });
+            if (user?.id) {
+                await NotificationService_1.notificationService.sendNotification(user.id, 'Agreement Dissolved – Wallet Credits Protected', `Your Sponsorship Agreement has been dissolved for academic default following the second assessment failure for ${ticket.ticketType} (Clause 9.2(c)). Your Candidate Wallet balance from all previously passed modules remains fully yours and withdrawable.`);
+            }
+        }
+        return ticket;
+    }
+    // Default corporate bank accounts for invoice remittance
+    async getPlatformBankAccounts() {
+        const { PlatformSetting } = require('../models');
+        const setting = await PlatformSetting.findOne({ where: { key: 'platform_bank_accounts_json' } });
+        if (setting && setting.value) {
+            try {
+                return JSON.parse(setting.value);
+            }
+            catch (e) {
+                console.error('[TicketService] Failed to parse platform_bank_accounts_json:', e);
+            }
+        }
+        const legacySingleBank = await this.getPlatformBankAccount();
+        const defaultAccounts = [
+            {
+                id: 'cba-primary',
+                bankName: legacySingleBank.bankName || 'Commonwealth Bank of Australia',
+                bsb: legacySingleBank.bsb || '066-000',
+                accountNumber: legacySingleBank.accountNumber || '10293847',
+                accountName: legacySingleBank.accountName || 'Blue Collar Recruitment Pty Ltd - Operating Account',
+                swiftCode: 'CTBAAU2S',
+                isDefault: true
+            },
+            {
+                id: 'anz-usd',
+                bankName: 'ANZ International Corporate (USD Gateway)',
+                bsb: '016-008',
+                accountNumber: '98765432',
+                accountName: 'Blue Collar Recruitment Pty Ltd - Int\'l Remittance',
+                swiftCode: 'ANZBAU33',
+                isDefault: false
+            },
+            {
+                id: 'westpac-lms',
+                bankName: 'Westpac Banking Corp (Aveling LMS Escrow)',
+                bsb: '036-000',
+                accountNumber: '54321098',
+                accountName: 'Aveling Training Agency Escrow Account',
+                swiftCode: 'WPACAU2S',
+                isDefault: false
+            }
+        ];
+        return defaultAccounts;
+    }
+    async updatePlatformBankAccounts(accounts) {
+        const { PlatformSetting } = require('../models');
+        await PlatformSetting.upsert({
+            key: 'platform_bank_accounts_json',
+            value: JSON.stringify(accounts)
+        });
+        // Also update primary legacy single bank settings for backward compatibility
+        const primary = accounts.find((a) => a.isDefault) || accounts[0];
+        if (primary) {
+            await this.updatePlatformBankAccount({
+                bankName: primary.bankName,
+                bsb: primary.bsb,
+                accountNumber: primary.accountNumber,
+                accountName: primary.accountName
+            });
+        }
+        return accounts;
+    }
+    // Bulk ticket creation for an applicant (Assign all tickets at once)
+    async assignAllTicketsToUser(userId, customTickets) {
+        const { User: UserModel } = require('../models');
+        const user = await UserModel.findByPk(userId);
+        if (!user)
+            throw new Error('USER_NOT_FOUND');
+        const defaultPackage = [
+            {
+                ticketType: 'EEHA Certification (Hazardous Areas)',
+                description: 'Electrical Equipment in Hazardous Areas (UEE42620 / EEHA) Competency Ticket',
+                realPrice: 1850.00,
+                subsidisedPrice: 647.50,
+                canApplySponsorship: true,
+                courseId: 'eeha-cert-01'
+            },
+            {
+                ticketType: 'Standard 11 Mining Induction (WA)',
+                description: 'Surface and Underground Mining Health and Safety Induction (RIIRIS301E)',
+                realPrice: 690.00,
+                subsidisedPrice: 241.50,
+                canApplySponsorship: true,
+                courseId: 'std11-mining-02'
+            },
+            {
+                ticketType: 'White Card WA (CPCWHS1001)',
+                description: 'Prepare to Work Safely in the Construction Industry (CPCWHS1001)',
+                realPrice: 95.00,
+                subsidisedPrice: 33.25,
+                canApplySponsorship: true,
+                courseId: 'whitecard-wa-03'
+            },
+            {
+                ticketType: 'Working at Heights (RIIWHS204E)',
+                description: 'Work Safely at Heights Competency Ticket (RIIWHS204E)',
+                realPrice: 270.00,
+                subsidisedPrice: 94.50,
+                canApplySponsorship: true,
+                courseId: 'heights-04'
+            },
+            {
+                ticketType: 'Confined Space Entry (RIIWHS202E)',
+                description: 'Enter and Work in Confined Spaces Competency Ticket (RIIWHS202E)',
+                realPrice: 290.00,
+                subsidisedPrice: 101.50,
+                canApplySponsorship: true,
+                courseId: 'confined-space-05'
+            },
+            {
+                ticketType: 'Gas Test Atmospheres (MSMWHS217)',
+                description: 'Conduct Gas Testing Atmospheres Competency Ticket (MSMWHS217)',
+                realPrice: 190.00,
+                subsidisedPrice: 66.50,
+                canApplySponsorship: true,
+                courseId: 'gas-test-06'
+            },
+            {
+                ticketType: 'Provide First Aid (HLTAID011)',
+                description: 'Provide First Aid and CPR Competency Ticket (HLTAID011)',
+                realPrice: 160.00,
+                subsidisedPrice: 56.00,
+                canApplySponsorship: true,
+                courseId: 'first-aid-07'
+            }
+        ];
+        const ticketsToCreate = (customTickets && customTickets.length > 0) ? customTickets : defaultPackage;
+        const createdTickets = [];
+        for (const item of ticketsToCreate) {
+            // Check if ticket of same type already exists for this user
+            const existing = await models_1.Ticket.findOne({ where: { userId, ticketType: item.ticketType } });
+            if (!existing) {
+                const created = await models_1.Ticket.create({
+                    userId,
+                    ticketType: item.ticketType,
+                    status: 'not_possessed',
+                    ticketSponsorship: 'no_application',
+                    realPrice: item.realPrice,
+                    subsidisedPrice: item.subsidisedPrice,
+                    purchasePrice: item.subsidisedPrice,
+                    canApplySponsorship: item.canApplySponsorship !== false,
+                    courseId: item.courseId || null,
+                    description: item.description || null
+                });
+                createdTickets.push(created);
+            }
+        }
+        if (createdTickets.length > 0) {
+            await NotificationService_1.notificationService.sendNotification(userId, 'Sponsorship Ticket Package Configured', `Your recruitment manager has assigned your complete ${createdTickets.length}-ticket sponsorship package. Log in to your candidate portal to submit your sponsorship application.`);
+        }
+        return createdTickets;
+    }
+    // Applicant applies for sponsorship of their assigned ticket package
+    async applyBatchPackageSponsorship(userId, bankData) {
+        const { User: UserModel } = require('../models');
+        const user = await UserModel.findByPk(userId);
+        if (!user)
+            throw new Error('USER_NOT_FOUND');
+        // Save bank account info on user profile
+        await user.update({
+            bankName: bankData.bankName,
+            accountNumber: bankData.accountNumber,
+            accountName: bankData.accountName
+        });
+        // Find all unpossessed tickets for user with 'no_application'
+        const tickets = await models_1.Ticket.findAll({
+            where: {
+                userId,
+                status: 'not_possessed',
+                ticketSponsorship: 'no_application'
+            }
+        });
+        if (tickets.length === 0) {
+            throw new Error('NO_ELIGIBLE_TICKETS_FOR_SPONSORSHIP');
+        }
+        for (const t of tickets) {
+            await t.update({ ticketSponsorship: 'applied' });
+        }
+        await NotificationService_1.notificationService.sendNotification(userId, 'Package Sponsorship Application Submitted', `Your sponsorship application for ${tickets.length} ticket requirement(s) has been submitted for administrative review. An invoice and approval notice will be issued shortly.`);
+        return { count: tickets.length, tickets };
+    }
+    // Admin approves candidate's ticket package and dispatches official corporate invoice with selected bank account
+    async approvePackageAndSendInvoice(userId, bankAccount, adminNotes) {
+        const { User: UserModel } = require('../models');
+        const user = await UserModel.findByPk(userId);
+        if (!user)
+            throw new Error('USER_NOT_FOUND');
+        const tickets = await models_1.Ticket.findAll({ where: { userId } });
+        const appliedTickets = tickets.filter(t => t.ticketSponsorship === 'applied');
+        // Transition applied tickets to 'first_attempt_approved'
+        for (const t of appliedTickets) {
+            await t.update({ ticketSponsorship: 'first_attempt_approved' });
+        }
+        const invoiceNumber = `INV-BCR-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+        const candidateNumber = user.candidateNumber || `CND-${10000 + user.id}`;
+        // Build itemized email content
+        const ticketRowsHtml = tickets.map((t, idx) => `
+            <tr>
+                <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-size:12px;"><strong>Module ${idx + 1}:</strong> ${t.ticketType}</td>
+                <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">A$${(t.realPrice || 0).toFixed(2)}</td>
+                <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;color:#059669;">A$${((t.realPrice || 0) * 0.65).toFixed(2)} (65%)</td>
+                <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;font-weight:bold;">A$${(t.subsidisedPrice || t.purchasePrice || 0).toFixed(2)} (35%)</td>
+            </tr>
+        `).join('');
+        const checkoutUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/checkout`;
+        const avelingUrl = `http://localhost:3002/checkout`;
+        const emailHtml = `
+        <div style="font-family: Arial, sans-serif; color: #1e3a8a; max-width: 650px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 16px; overflow: hidden; background: #ffffff;">
+            <div style="background: #1e3a8a; color: #ffffff; padding: 24px; text-align: center;">
+                <h1 style="margin:0; font-size: 22px; text-transform: uppercase; tracking: 1px;">Blue Collar Recruitment Pty Ltd</h1>
+                <p style="margin:4px 0 0 0; font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 2px;">Official Sponsorship Invoice & Approval Notice</p>
+            </div>
+            <div style="padding: 24px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 20px; font-size: 12px; color: #475569;">
+                    <div>
+                        <p style="margin:2px 0;"><strong>Billed To:</strong> ${user.fullName}</p>
+                        <p style="margin:2px 0;"><strong>Candidate ID:</strong> ${candidateNumber}</p>
+                        <p style="margin:2px 0;"><strong>Email:</strong> ${user.email}</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="margin:2px 0;"><strong>Invoice Ref:</strong> ${invoiceNumber}</p>
+                        <p style="margin:2px 0;"><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+                        <p style="margin:2px 0; color: #059669; font-weight: bold;">Status: Approved & Pending Remittance</p>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 6px; margin-top: 20px;">Sponsorship Ticket Package & Liability Matrix</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <thead>
+                        <tr style="background: #f1f5f9; font-size: 10px; text-transform: uppercase; color: #475569;">
+                            <th style="padding: 8px; text-align: left;">Qualification / Ticket</th>
+                            <th style="padding: 8px; text-align: right;">Total Price</th>
+                            <th style="padding: 8px; text-align: right;">Company Share</th>
+                            <th style="padding: 8px; text-align: right;">Candidate Share</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${ticketRowsHtml}
+                    </tbody>
+                </table>
+
+                <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px; margin-top: 20px;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #1e3a8a; text-transform: uppercase;">Financial Summary (Schedule 1)</h4>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;">Candidate Training Liability (35% Share): <strong>A$1,240.75</strong></p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;">Subclass 482 Visa VAC Share (Clause 5.1): <strong>A$1,405.25</strong></p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;">WA High-Risk Licensing & Site Credentials: <strong>A$185.50</strong></p>
+                    <p style="margin: 6px 0 0 0; font-size: 12px; font-weight: bold; color: #1e3a8a; border-top: 1px solid #cbd5e1; padding-top: 6px;">Total Maximum Contractual Liability (Clause 5.2 Cap): A$3,599.20</p>
+                    <p style="margin: 4px 0 0 0; font-size: 11px; color: #059669; font-weight: bold;">Initial Deposit Required to Unlock Modules 1–3: A$500.00</p>
+                </div>
+
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-top: 20px;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #1e3a8a; text-transform: uppercase;">Corporate Remittance Details (Selected Bank Account)</h4>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Bank Name:</strong> ${bankAccount.bankName}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>BSB Number:</strong> ${bankAccount.bsb}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account Number:</strong> ${bankAccount.accountNumber}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account Name:</strong> ${bankAccount.accountName}</p>
+                    ${bankAccount.swiftCode ? `<p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>SWIFT / BIC Code:</strong> ${bankAccount.swiftCode}</p>` : ''}
+                    <p style="margin: 3px 0; font-size: 11px; color: #1e3a8a;"><strong>Payment Reference:</strong> ${invoiceNumber} (${candidateNumber})</p>
+                </div>
+
+                <div style="margin-top: 24px; text-align: center;">
+                    <a href="${avelingUrl}" style="background: #1e3a8a; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-size: 12px; font-weight: bold; text-transform: uppercase; display: inline-block;">Pay Deposit or Complete Remittance Now</a>
+                </div>
+
+                <p style="font-size: 10px; color: #64748b; margin-top: 20px; text-align: center;">
+                    Note: Under Clause 7.1, 100% of all candidate course fees paid are credited to your Candidate Wallet upon passing each module.
+                </p>
+            </div>
+        </div>
+        `;
+        if (user.email) {
+            await this.sendCustomEmail(user.email, `Invoice & Approval Notice: Ticket Sponsorship Package (${invoiceNumber})`, emailHtml);
+        }
+        await NotificationService_1.notificationService.sendNotification(userId, 'Sponsorship Package Approved & Invoice Dispatched', `Your complete ticket sponsorship application has been approved! Invoice ${invoiceNumber} has been issued to your email with bank details for your A$500 deposit / remittance.`);
+        return { invoiceNumber, ticketsApproved: appliedTickets.length, bankAccount };
     }
 }
 exports.TicketService = TicketService;

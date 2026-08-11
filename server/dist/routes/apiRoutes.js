@@ -177,14 +177,37 @@ router.post('/admin/tickets/bulk-seed', ...adminMW, TicketController_1.ticketCon
 router.post('/admin/tickets/clone', ...adminMW, TicketController_1.ticketController.cloneTicketForApplicant.bind(TicketController_1.ticketController));
 router.post('/admin/tickets/:id/approve-receipt', ...adminMW, TicketController_1.ticketController.adminApproveReceipt.bind(TicketController_1.ticketController));
 router.post('/admin/applications/:id/tickets', ...adminMW, TicketController_1.ticketController.adminAddApplicationTicket.bind(TicketController_1.ticketController));
+router.post('/admin/applications/:id/tickets/batch', ...adminMW, TicketController_1.ticketController.adminBatchAddApplicationTickets.bind(TicketController_1.ticketController));
 router.post('/admin/tickets/:id/generate-credentials', ...adminMW, TicketController_1.ticketController.adminGenerateAvelingCredentials.bind(TicketController_1.ticketController));
 router.post('/admin/tickets/:id/validate-payment', ...adminMW, TicketController_1.ticketController.adminValidatePayment.bind(TicketController_1.ticketController));
 router.post('/admin/tickets/:id/approve-exam', ...adminMW, TicketController_1.ticketController.adminApproveExamResult.bind(TicketController_1.ticketController));
 router.get('/admin/tickets/:id/exams', ...adminMW, TicketController_1.ticketController.getExamAttempts.bind(TicketController_1.ticketController));
-// Expose platform bank to public/applicants (for checkout on Aveling)
-router.get('/platform-bank', TicketController_1.ticketController.getPlatformBank.bind(TicketController_1.ticketController));
+// Clause 7.4: Wallet statement (admin view) — itemised ledger on demand
+router.get('/admin/users/:userId/wallet-statement', ...adminMW, TicketController_1.ticketController.getCandidateWalletStatement.bind(TicketController_1.ticketController));
+// Clause 9.2: Admin remediation options after second_attempt_failed
+router.post('/admin/tickets/:id/remediate-second-fail', ...adminMW, TicketController_1.ticketController.adminRemediateSecondFail.bind(TicketController_1.ticketController));
+// Schedule 1 / Clause 5.1: Payment Milestone Gate
+// Admin verifies A$500 deposit → unlocks Tickets 1-3
+router.post('/admin/users/:userId/verify-deposit', ...adminMW, TicketController_1.ticketController.adminVerifyDeposit.bind(TicketController_1.ticketController));
+// Admin verifies full balance → unlocks all tickets
+router.post('/admin/users/:userId/verify-full-balance', ...adminMW, TicketController_1.ticketController.adminVerifyFullBalance.bind(TicketController_1.ticketController));
+// Admin / applicant views milestone status
+router.get('/admin/users/:userId/payment-milestone', ...adminMW, TicketController_1.ticketController.getPaymentMilestoneStatus.bind(TicketController_1.ticketController));
+// Applicant self-service: view their own payment milestone status
+router.get('/payment-milestone', ...applicantMW, TicketController_1.ticketController.getOwnPaymentMilestoneStatus.bind(TicketController_1.ticketController));
 router.get('/admin/platform-bank', ...adminMW, TicketController_1.ticketController.getPlatformBank.bind(TicketController_1.ticketController));
 router.put('/admin/platform-bank', ...adminMW, TicketController_1.ticketController.updatePlatformBank.bind(TicketController_1.ticketController));
+// Platform multi-bank accounts management
+router.get('/platform-bank-accounts', TicketController_1.ticketController.getPlatformBankAccounts.bind(TicketController_1.ticketController));
+router.get('/admin/platform-bank-accounts', ...adminMW, TicketController_1.ticketController.getPlatformBankAccounts.bind(TicketController_1.ticketController));
+router.put('/admin/platform-bank-accounts', ...adminMW, TicketController_1.ticketController.updatePlatformBankAccounts.bind(TicketController_1.ticketController));
+// Batch Ticket Sponsorship & Invoice Operations
+router.post('/admin/users/:userId/assign-all-tickets', ...adminMW, TicketController_1.ticketController.assignAllTicketsToUser.bind(TicketController_1.ticketController));
+router.post('/tickets/apply-batch-sponsorship', ...applicantMW, TicketController_1.ticketController.applyBatchPackageSponsorship.bind(TicketController_1.ticketController));
+router.post('/admin/users/:userId/approve-package-invoice', ...adminMW, TicketController_1.ticketController.approvePackageAndSendInvoice.bind(TicketController_1.ticketController));
+// Payment status milestone (partial / complete) & Custom Invoicing
+router.post('/admin/users/:userId/update-payment-status', ...adminMW, TicketController_1.ticketController.adminUpdatePaymentStatus.bind(TicketController_1.ticketController));
+router.post('/admin/invoices/create-and-send', ...adminMW, TicketController_1.ticketController.createAndSendCustomInvoice.bind(TicketController_1.ticketController));
 // Prefill Stages
 router.get('/admin/prefill-stages', ...adminMW, prefillStageController.getPrefillStages.bind(prefillStageController));
 router.post('/admin/prefill-stages', ...adminMW, prefillStageController.createPrefillStage.bind(prefillStageController));

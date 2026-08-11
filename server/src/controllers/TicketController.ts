@@ -303,6 +303,29 @@ export class TicketController {
         }
     }
 
+    public async adminBatchAddApplicationTickets(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const applicationId = parseInt(req.params.id as string, 10);
+            if (!applicationId || isNaN(applicationId)) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid applicationId is required.' });
+                return;
+            }
+            const { tickets } = req.body;
+            if (!Array.isArray(tickets) || tickets.length === 0) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'At least one ticket requirement is required.' });
+                return;
+            }
+            const result = await ticketService.adminBatchAddApplicationTickets(applicationId, tickets);
+            res.status(CONSTANTS.HTTP_STATUS.CREATED).json({ success: true, data: result, message: `${result.length} ticket requirement(s) added successfully.` });
+        } catch (error: any) {
+            if (error.message === 'APPLICATION_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Application not found.' });
+                return;
+            }
+            next(error);
+        }
+    }
+
     public async adminBulkSeedTickets(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { tickets } = req.body;
@@ -572,7 +595,137 @@ export class TicketController {
             next(error);
         }
     }
+
+    // Admin: Bulk seed all 7 FIFO tickets for a specific user
+    public async assignAllTicketsToUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = parseInt(req.params.userId as string, 10);
+            if (!userId || isNaN(userId)) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
+                return;
+            }
+            const tickets = await ticketService.assignAllTicketsToUser(userId, req.body.tickets);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: tickets, message: 'All tickets assigned to applicant successfully.' });
+        } catch (error: any) {
+            if (error.message === 'USER_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Candidate not found.' });
+                return;
+            }
+            next(error);
+        }
+    }
+
+    // Applicant: Apply for batch sponsorship of assigned package
+    public async applyBatchPackageSponsorship(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                res.status(401).json({ code: 401, message: 'Unauthorized.' });
+                return;
+            }
+            const { bankName, accountNumber, accountName } = req.body;
+            if (!bankName || !accountNumber || !accountName) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Complete bank account details are required.' });
+                return;
+            }
+            const result = await ticketService.applyBatchPackageSponsorship(userId, { bankName, accountNumber, accountName });
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: 'Batch sponsorship application submitted successfully.' });
+        } catch (error: any) {
+            if (error.message === 'NO_ELIGIBLE_TICKETS_FOR_SPONSORSHIP') {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'No eligible tickets available for sponsorship application.' });
+                return;
+            }
+            next(error);
+        }
+    }
+
+    // Admin: Approve candidate's sponsorship package & dispatch corporate invoice with selected bank account
+    public async approvePackageAndSendInvoice(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = parseInt(req.params.userId as string, 10);
+            const { bankAccount, adminNotes } = req.body;
+            if (!userId || isNaN(userId)) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
+                return;
+            }
+            if (!bankAccount || !bankAccount.bankName || !bankAccount.accountNumber) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Bank account details are required.' });
+                return;
+            }
+            const result = await ticketService.approvePackageAndSendInvoice(userId, bankAccount, adminNotes);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: 'Sponsorship package approved and corporate invoice dispatched.' });
+        } catch (error: any) {
+            if (error.message === 'USER_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Candidate not found.' });
+                return;
+            }
+            next(error);
+        }
+    }
+
+    // Admin: Multi-bank accounts management
+    public async getPlatformBankAccounts(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const accounts = await ticketService.getPlatformBankAccounts();
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: accounts });
+        } catch (error) { next(error); }
+    }
+
+    public async updatePlatformBankAccounts(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { accounts } = req.body;
+            if (!Array.isArray(accounts)) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Accounts array is required.' });
+                return;
+            }
+            const updated = await ticketService.updatePlatformBankAccounts(accounts);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: updated, message: 'Bank accounts updated successfully.' });
+        } catch (error) { next(error); }
+    }
+
+    public async adminUpdatePaymentStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = parseInt(req.params.userId as string, 10);
+            const { status } = req.body;
+            if (!userId || isNaN(userId)) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
+                return;
+            }
+            if (!['partial', 'complete', 'unpaid'].includes(status)) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Status must be partial, complete, or unpaid.' });
+                return;
+            }
+            const result = await ticketService.adminUpdatePaymentStatus(userId, status);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: `Payment status updated to ${status}.` });
+        } catch (error: any) {
+            next(error);
+        }
+    }
+
+    public async createAndSendCustomInvoice(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = parseInt(req.body.userId as string, 10);
+            const { bankAccountId, amountAud, currency, exchangeRate, convertedAmount, description, lineItems } = req.body;
+            if (!userId || isNaN(userId)) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
+                return;
+            }
+            const result = await ticketService.createAndSendCustomInvoice(userId, {
+                bankAccountId,
+                amountAud: parseFloat(amountAud) || 0,
+                currency: currency || 'USD',
+                exchangeRate: parseFloat(exchangeRate) || 1.0,
+                convertedAmount: parseFloat(convertedAmount) || 0,
+                description,
+                lineItems
+            });
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: `Invoice ${result.invoiceNumber} created and emailed.` });
+        } catch (error: any) {
+            next(error);
+        }
+    }
 }
 
 export const ticketController = new TicketController();
+
 

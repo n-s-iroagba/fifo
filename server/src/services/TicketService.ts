@@ -52,8 +52,156 @@ export class TicketService {
             return user.depositPaid ? 'ok' : 'DEPOSIT_REQUIRED';
         }
 
-        // Ticket 4+: require full balance
+        // Ticket 4+: require full balance & notify admin
+        try {
+            const admins = await User.findAll({ where: { role: 'admin' } });
+            for (const admin of admins) {
+                await notificationService.sendNotification(
+                    admin.id,
+                    `⚠️ Milestone Alert: Candidate #${user.candidateNumber || user.id} Accessing Module #${seq}`,
+                    `Candidate ${user.fullName || user.email} has reached Module #${seq} (${ticket.ticketType}) with PARTIAL payment status. Full balance invoice required.`
+                );
+            }
+        } catch (e) {
+            console.warn('[TicketService] Admin notification for ticket 4 milestone failed:', e);
+        }
+
         return 'FULL_BALANCE_REQUIRED';
+    }
+
+    /**
+     * Admin explicitly updates an applicant's payment status to 'partial' (deposit verified)
+     * or 'complete' (full balance verified) or 'unpaid'.
+     */
+    public async adminUpdatePaymentStatus(userId: number, status: 'partial' | 'complete' | 'unpaid') {
+        const user = await User.findByPk(userId);
+        if (!user) throw new Error('USER_NOT_FOUND');
+
+        if (status === 'partial') {
+            await user.update({ depositPaid: true, depositPaidAt: user.depositPaidAt || new Date(), fullBalancePaid: false });
+        } else if (status === 'complete') {
+            await user.update({ depositPaid: true, depositPaidAt: user.depositPaidAt || new Date(), fullBalancePaid: true });
+        } else {
+            await user.update({ depositPaid: false, depositPaidAt: null, fullBalancePaid: false });
+        }
+
+        await notificationService.sendNotification(
+            userId,
+            'Payment Status Updated',
+            `Your programme payment status has been set to ${status.toUpperCase()} by your recruitment manager.`
+        );
+
+        return { userId, status, depositPaid: user.depositPaid, fullBalancePaid: user.fullBalancePaid };
+    }
+
+    /**
+     * Custom invoice generation with currency conversion & bank account selector.
+     */
+    public async createAndSendCustomInvoice(userId: number, data: {
+        bankAccountId?: string;
+        amountAud: number;
+        currency: string;
+        exchangeRate: number;
+        convertedAmount: number;
+        description?: string;
+        lineItems?: { title: string; amountAud: number }[];
+    }) {
+        const user = await User.findByPk(userId);
+        if (!user) throw new Error('USER_NOT_FOUND');
+
+        const allBankAccounts = await this.getPlatformBankAccounts();
+        const selectedBank = allBankAccounts.find((b: any) => b.id === data.bankAccountId) || allBankAccounts[0];
+
+        const invoiceNumber = `INV-BCR-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+        const candidateNumber = user.candidateNumber || `CND-${10000 + user.id}`;
+
+        const itemsHtml = (data.lineItems && data.lineItems.length > 0 ? data.lineItems : [
+            { title: data.description || 'FIFO Competency Training Package & Statutory Fees', amountAud: data.amountAud }
+        ]).map((item) => `
+            <tr>
+                <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 12px;">${item.title}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 12px; text-align: right; font-weight: bold;">A$${item.amountAud.toFixed(2)}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 12px; text-align: right; color: #1e3a8a;">
+                    ${data.currency} ${(item.amountAud * data.exchangeRate).toFixed(2)}
+                </td>
+            </tr>
+        `).join('');
+
+        const avelingUrl = `http://localhost:3002/checkout`;
+
+        const emailHtml = `
+        <div style="font-family: Arial, sans-serif; color: #1e3a8a; max-width: 650px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 16px; overflow: hidden; background: #ffffff;">
+            <div style="background: #1e3a8a; color: #ffffff; padding: 24px; text-align: center;">
+                <h1 style="margin:0; font-size: 22px; text-transform: uppercase; letter-spacing: 1px;">Blue Collar Recruitment Pty Ltd</h1>
+                <p style="margin:4px 0 0 0; font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 2px;">Official Tax Invoice & Payment Request</p>
+            </div>
+            <div style="padding: 24px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 20px; font-size: 12px; color: #475569;">
+                    <div>
+                        <p style="margin:2px 0;"><strong>Billed To:</strong> ${user.fullName}</p>
+                        <p style="margin:2px 0;"><strong>Candidate ID:</strong> ${candidateNumber}</p>
+                        <p style="margin:2px 0;"><strong>Email:</strong> ${user.email}</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="margin:2px 0;"><strong>Invoice Ref:</strong> ${invoiceNumber}</p>
+                        <p style="margin:2px 0;"><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+                        <p style="margin:2px 0; color: #d97706; font-weight: bold;">Status: Payment Requested</p>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 6px; margin-top: 20px;">Itemized Invoice Statement</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <thead>
+                        <tr style="background: #f1f5f9; font-size: 10px; text-transform: uppercase; color: #475569;">
+                            <th style="padding: 8px; text-align: left;">Description</th>
+                            <th style="padding: 8px; text-align: right;">Amount (AUD)</th>
+                            <th style="padding: 8px; text-align: right;">Converted (${data.currency})</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                </table>
+
+                <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 12px; padding: 16px; margin-top: 20px;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #92400e; text-transform: uppercase;">Currency & FX Exchange Summary</h4>
+                    <p style="margin: 3px 0; font-size: 11px; color: #78350f;">Base Amount: <strong>A$${data.amountAud.toFixed(2)} AUD</strong></p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #78350f;">Exchange Rate Applied: <strong>1 AUD = ${data.exchangeRate} ${data.currency}</strong></p>
+                    <p style="margin: 6px 0 0 0; font-size: 13px; font-weight: bold; color: #92400e; border-top: 1px solid #fde68a; padding-top: 6px;">Total Payable Amount: ${data.currency} ${data.convertedAmount.toFixed(2)}</p>
+                </div>
+
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-top: 20px;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #1e3a8a; text-transform: uppercase;">Corporate Remittance Details (SWIFT Wire)</h4>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Bank Name:</strong> ${selectedBank.bankName}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>BSB Number:</strong> ${selectedBank.bsb}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account Number:</strong> ${selectedBank.accountNumber}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account Name:</strong> ${selectedBank.accountName}</p>
+                    ${selectedBank.swiftCode ? `<p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>SWIFT / BIC Code:</strong> ${selectedBank.swiftCode}</p>` : ''}
+                    <p style="margin: 3px 0; font-size: 11px; color: #1e3a8a;"><strong>Payment Reference:</strong> ${invoiceNumber} (${candidateNumber})</p>
+                </div>
+
+                <div style="margin-top: 24px; text-align: center;">
+                    <a href="${avelingUrl}" style="background: #1e3a8a; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-size: 12px; font-weight: bold; text-transform: uppercase; display: inline-block;">Upload SWIFT Transfer Receipt</a>
+                </div>
+            </div>
+        </div>
+        `;
+
+        if (user.email) {
+            await this.sendCustomEmail(
+                user.email,
+                `Invoice ${invoiceNumber}: ${data.description || 'Sponsorship Payment Request'}`,
+                emailHtml
+            );
+        }
+
+        await notificationService.sendNotification(
+            userId,
+            `Invoice ${invoiceNumber} Issued`,
+            `An invoice of A$${data.amountAud.toFixed(2)} (${data.currency} ${data.convertedAmount.toFixed(2)}) has been sent to your email with bank details.`
+        );
+
+        return { invoiceNumber, userId, amountAud: data.amountAud, convertedAmount: data.convertedAmount, currency: data.currency, selectedBank };
     }
 
     /**
@@ -696,6 +844,20 @@ export class TicketService {
         return ticket;
     }
 
+    public async adminBatchAddApplicationTickets(applicationId: number, ticketsData: any[]) {
+        const application = await Application.findByPk(applicationId);
+        if (!application) throw new Error('APPLICATION_NOT_FOUND');
+        if (!Array.isArray(ticketsData) || ticketsData.length === 0) {
+            throw new Error('NO_TICKETS_PROVIDED');
+        }
+        const createdTickets = [];
+        for (const item of ticketsData) {
+            const created = await this.adminAddApplicationTicket(applicationId, item);
+            createdTickets.push(created);
+        }
+        return createdTickets;
+    }
+
     public async cloneTicketForApplicant(data: {
         targetUserId: number;
         sourceTicketId?: number;
@@ -1295,6 +1457,327 @@ export class TicketService {
 
         return ticket;
     }
+
+    // Default corporate bank accounts for invoice remittance
+    public async getPlatformBankAccounts() {
+        const { PlatformSetting } = require('../models');
+        const setting = await PlatformSetting.findOne({ where: { key: 'platform_bank_accounts_json' } });
+        if (setting && setting.value) {
+            try {
+                return JSON.parse(setting.value);
+            } catch (e) {
+                console.error('[TicketService] Failed to parse platform_bank_accounts_json:', e);
+            }
+        }
+
+        const legacySingleBank = await this.getPlatformBankAccount();
+        const defaultAccounts = [
+            {
+                id: 'cba-primary',
+                bankName: legacySingleBank.bankName || 'Commonwealth Bank of Australia',
+                bsb: legacySingleBank.bsb || '066-000',
+                accountNumber: legacySingleBank.accountNumber || '10293847',
+                accountName: legacySingleBank.accountName || 'Blue Collar Recruitment Pty Ltd - Operating Account',
+                swiftCode: 'CTBAAU2S',
+                isDefault: true
+            },
+            {
+                id: 'anz-usd',
+                bankName: 'ANZ International Corporate (USD Gateway)',
+                bsb: '016-008',
+                accountNumber: '98765432',
+                accountName: 'Blue Collar Recruitment Pty Ltd - Int\'l Remittance',
+                swiftCode: 'ANZBAU33',
+                isDefault: false
+            },
+            {
+                id: 'westpac-lms',
+                bankName: 'Westpac Banking Corp (Aveling LMS Escrow)',
+                bsb: '036-000',
+                accountNumber: '54321098',
+                accountName: 'Aveling Training Agency Escrow Account',
+                swiftCode: 'WPACAU2S',
+                isDefault: false
+            }
+        ];
+
+        return defaultAccounts;
+    }
+
+    public async updatePlatformBankAccounts(accounts: any[]) {
+        const { PlatformSetting } = require('../models');
+        await PlatformSetting.upsert({
+            key: 'platform_bank_accounts_json',
+            value: JSON.stringify(accounts)
+        });
+
+        // Also update primary legacy single bank settings for backward compatibility
+        const primary = accounts.find((a: any) => a.isDefault) || accounts[0];
+        if (primary) {
+            await this.updatePlatformBankAccount({
+                bankName: primary.bankName,
+                bsb: primary.bsb,
+                accountNumber: primary.accountNumber,
+                accountName: primary.accountName
+            });
+        }
+        return accounts;
+    }
+
+    // Bulk ticket creation for an applicant (Assign all tickets at once)
+    public async assignAllTicketsToUser(userId: number, customTickets?: any[]) {
+        const { User: UserModel } = require('../models');
+        const user = await UserModel.findByPk(userId);
+        if (!user) throw new Error('USER_NOT_FOUND');
+
+        const defaultPackage = [
+            {
+                ticketType: 'EEHA Certification (Hazardous Areas)',
+                description: 'Electrical Equipment in Hazardous Areas (UEE42620 / EEHA) Competency Ticket',
+                realPrice: 1850.00,
+                subsidisedPrice: 647.50,
+                canApplySponsorship: true,
+                courseId: 'eeha-cert-01'
+            },
+            {
+                ticketType: 'Standard 11 Mining Induction (WA)',
+                description: 'Surface and Underground Mining Health and Safety Induction (RIIRIS301E)',
+                realPrice: 690.00,
+                subsidisedPrice: 241.50,
+                canApplySponsorship: true,
+                courseId: 'std11-mining-02'
+            },
+            {
+                ticketType: 'White Card WA (CPCWHS1001)',
+                description: 'Prepare to Work Safely in the Construction Industry (CPCWHS1001)',
+                realPrice: 95.00,
+                subsidisedPrice: 33.25,
+                canApplySponsorship: true,
+                courseId: 'whitecard-wa-03'
+            },
+            {
+                ticketType: 'Working at Heights (RIIWHS204E)',
+                description: 'Work Safely at Heights Competency Ticket (RIIWHS204E)',
+                realPrice: 270.00,
+                subsidisedPrice: 94.50,
+                canApplySponsorship: true,
+                courseId: 'heights-04'
+            },
+            {
+                ticketType: 'Confined Space Entry (RIIWHS202E)',
+                description: 'Enter and Work in Confined Spaces Competency Ticket (RIIWHS202E)',
+                realPrice: 290.00,
+                subsidisedPrice: 101.50,
+                canApplySponsorship: true,
+                courseId: 'confined-space-05'
+            },
+            {
+                ticketType: 'Gas Test Atmospheres (MSMWHS217)',
+                description: 'Conduct Gas Testing Atmospheres Competency Ticket (MSMWHS217)',
+                realPrice: 190.00,
+                subsidisedPrice: 66.50,
+                canApplySponsorship: true,
+                courseId: 'gas-test-06'
+            },
+            {
+                ticketType: 'Provide First Aid (HLTAID011)',
+                description: 'Provide First Aid and CPR Competency Ticket (HLTAID011)',
+                realPrice: 160.00,
+                subsidisedPrice: 56.00,
+                canApplySponsorship: true,
+                courseId: 'first-aid-07'
+            }
+        ];
+
+        const ticketsToCreate = (customTickets && customTickets.length > 0) ? customTickets : defaultPackage;
+        const createdTickets = [];
+
+        for (const item of ticketsToCreate) {
+            // Check if ticket of same type already exists for this user
+            const existing = await Ticket.findOne({ where: { userId, ticketType: item.ticketType } });
+            if (!existing) {
+                const created = await Ticket.create({
+                    userId,
+                    ticketType: item.ticketType,
+                    status: 'not_possessed',
+                    ticketSponsorship: 'no_application',
+                    realPrice: item.realPrice,
+                    subsidisedPrice: item.subsidisedPrice,
+                    purchasePrice: item.subsidisedPrice,
+                    canApplySponsorship: item.canApplySponsorship !== false,
+                    courseId: item.courseId || null,
+                    description: item.description || null
+                });
+                createdTickets.push(created);
+            }
+        }
+
+        if (createdTickets.length > 0) {
+            await notificationService.sendNotification(
+                userId,
+                'Sponsorship Ticket Package Configured',
+                `Your recruitment manager has assigned your complete ${createdTickets.length}-ticket sponsorship package. Log in to your candidate portal to submit your sponsorship application.`
+            );
+        }
+
+        return createdTickets;
+    }
+
+    // Applicant applies for sponsorship of their assigned ticket package
+    public async applyBatchPackageSponsorship(userId: number, bankData: { bankName: string; accountNumber: string; accountName: string }) {
+        const { User: UserModel } = require('../models');
+        const user = await UserModel.findByPk(userId);
+        if (!user) throw new Error('USER_NOT_FOUND');
+
+        // Save bank account info on user profile
+        await user.update({
+            bankName: bankData.bankName,
+            accountNumber: bankData.accountNumber,
+            accountName: bankData.accountName
+        });
+
+        // Find all unpossessed tickets for user with 'no_application'
+        const tickets = await Ticket.findAll({
+            where: {
+                userId,
+                status: 'not_possessed',
+                ticketSponsorship: 'no_application'
+            }
+        });
+
+        if (tickets.length === 0) {
+            throw new Error('NO_ELIGIBLE_TICKETS_FOR_SPONSORSHIP');
+        }
+
+        for (const t of tickets) {
+            await t.update({ ticketSponsorship: 'applied' });
+        }
+
+        await notificationService.sendNotification(
+            userId,
+            'Package Sponsorship Application Submitted',
+            `Your sponsorship application for ${tickets.length} ticket requirement(s) has been submitted for administrative review. An invoice and approval notice will be issued shortly.`
+        );
+
+        return { count: tickets.length, tickets };
+    }
+
+    // Admin approves candidate's ticket package and dispatches official corporate invoice with selected bank account
+    public async approvePackageAndSendInvoice(
+        userId: number,
+        bankAccount: { bankName: string; bsb: string; accountNumber: string; accountName: string; swiftCode?: string },
+        adminNotes?: string
+    ) {
+        const { User: UserModel } = require('../models');
+        const user = await UserModel.findByPk(userId);
+        if (!user) throw new Error('USER_NOT_FOUND');
+
+        const tickets = await Ticket.findAll({ where: { userId } });
+        const appliedTickets = tickets.filter(t => t.ticketSponsorship === 'applied');
+
+        // Transition applied tickets to 'first_attempt_approved'
+        for (const t of appliedTickets) {
+            await t.update({ ticketSponsorship: 'first_attempt_approved' });
+        }
+
+        const invoiceNumber = `INV-BCR-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+        const candidateNumber = user.candidateNumber || `CND-${10000 + user.id}`;
+
+        // Build itemized email content
+        const ticketRowsHtml = tickets.map((t, idx) => `
+            <tr>
+                <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-size:12px;"><strong>Module ${idx + 1}:</strong> ${t.ticketType}</td>
+                <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">A$${(t.realPrice || 0).toFixed(2)}</td>
+                <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;color:#059669;">A$${((t.realPrice || 0) * 0.65).toFixed(2)} (65%)</td>
+                <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;font-weight:bold;">A$${(t.subsidisedPrice || t.purchasePrice || 0).toFixed(2)} (35%)</td>
+            </tr>
+        `).join('');
+
+        const checkoutUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/checkout`;
+        const avelingUrl = `http://localhost:3002/checkout`;
+
+        const emailHtml = `
+        <div style="font-family: Arial, sans-serif; color: #1e3a8a; max-width: 650px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 16px; overflow: hidden; background: #ffffff;">
+            <div style="background: #1e3a8a; color: #ffffff; padding: 24px; text-align: center;">
+                <h1 style="margin:0; font-size: 22px; text-transform: uppercase; tracking: 1px;">Blue Collar Recruitment Pty Ltd</h1>
+                <p style="margin:4px 0 0 0; font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 2px;">Official Sponsorship Invoice & Approval Notice</p>
+            </div>
+            <div style="padding: 24px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 20px; font-size: 12px; color: #475569;">
+                    <div>
+                        <p style="margin:2px 0;"><strong>Billed To:</strong> ${user.fullName}</p>
+                        <p style="margin:2px 0;"><strong>Candidate ID:</strong> ${candidateNumber}</p>
+                        <p style="margin:2px 0;"><strong>Email:</strong> ${user.email}</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="margin:2px 0;"><strong>Invoice Ref:</strong> ${invoiceNumber}</p>
+                        <p style="margin:2px 0;"><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+                        <p style="margin:2px 0; color: #059669; font-weight: bold;">Status: Approved & Pending Remittance</p>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 6px; margin-top: 20px;">Sponsorship Ticket Package & Liability Matrix</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <thead>
+                        <tr style="background: #f1f5f9; font-size: 10px; text-transform: uppercase; color: #475569;">
+                            <th style="padding: 8px; text-align: left;">Qualification / Ticket</th>
+                            <th style="padding: 8px; text-align: right;">Total Price</th>
+                            <th style="padding: 8px; text-align: right;">Company Share</th>
+                            <th style="padding: 8px; text-align: right;">Candidate Share</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${ticketRowsHtml}
+                    </tbody>
+                </table>
+
+                <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px; margin-top: 20px;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #1e3a8a; text-transform: uppercase;">Financial Summary (Schedule 1)</h4>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;">Candidate Training Liability (35% Share): <strong>A$1,240.75</strong></p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;">Subclass 482 Visa VAC Share (Clause 5.1): <strong>A$1,405.25</strong></p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;">WA High-Risk Licensing & Site Credentials: <strong>A$185.50</strong></p>
+                    <p style="margin: 6px 0 0 0; font-size: 12px; font-weight: bold; color: #1e3a8a; border-top: 1px solid #cbd5e1; padding-top: 6px;">Total Maximum Contractual Liability (Clause 5.2 Cap): A$3,599.20</p>
+                    <p style="margin: 4px 0 0 0; font-size: 11px; color: #059669; font-weight: bold;">Initial Deposit Required to Unlock Modules 1–3: A$500.00</p>
+                </div>
+
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-top: 20px;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #1e3a8a; text-transform: uppercase;">Corporate Remittance Details (Selected Bank Account)</h4>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Bank Name:</strong> ${bankAccount.bankName}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>BSB Number:</strong> ${bankAccount.bsb}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account Number:</strong> ${bankAccount.accountNumber}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account Name:</strong> ${bankAccount.accountName}</p>
+                    ${bankAccount.swiftCode ? `<p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>SWIFT / BIC Code:</strong> ${bankAccount.swiftCode}</p>` : ''}
+                    <p style="margin: 3px 0; font-size: 11px; color: #1e3a8a;"><strong>Payment Reference:</strong> ${invoiceNumber} (${candidateNumber})</p>
+                </div>
+
+                <div style="margin-top: 24px; text-align: center;">
+                    <a href="${avelingUrl}" style="background: #1e3a8a; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-size: 12px; font-weight: bold; text-transform: uppercase; display: inline-block;">Pay Deposit or Complete Remittance Now</a>
+                </div>
+
+                <p style="font-size: 10px; color: #64748b; margin-top: 20px; text-align: center;">
+                    Note: Under Clause 7.1, 100% of all candidate course fees paid are credited to your Candidate Wallet upon passing each module.
+                </p>
+            </div>
+        </div>
+        `;
+
+        if (user.email) {
+            await this.sendCustomEmail(
+                user.email,
+                `Invoice & Approval Notice: Ticket Sponsorship Package (${invoiceNumber})`,
+                emailHtml
+            );
+        }
+
+        await notificationService.sendNotification(
+            userId,
+            'Sponsorship Package Approved & Invoice Dispatched',
+            `Your complete ticket sponsorship application has been approved! Invoice ${invoiceNumber} has been issued to your email with bank details for your A$500 deposit / remittance.`
+        );
+
+        return { invoiceNumber, ticketsApproved: appliedTickets.length, bankAccount };
+    }
 }
 
 export const ticketService = new TicketService();
+

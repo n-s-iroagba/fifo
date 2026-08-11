@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.run = run;
 const database_1 = require("./config/database");
 const apex_network_migration_1 = require("./migrations/apex_network_migration");
+const payment_milestone_migration_1 = require("./migrations/payment_milestone_migration");
 async function run() {
     // Existing migrations...
     try {
@@ -15,4 +16,6 @@ async function run() {
     }
     // New Apex Network Migration
     await (0, apex_network_migration_1.migrateApexNetwork)();
+    // Payment Milestone Gate (Schedule 1 / Clause 5.1)
+    await (0, payment_milestone_migration_1.migratePaymentMilestone)();
 }

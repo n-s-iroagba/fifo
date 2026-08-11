@@ -284,6 +284,12 @@ export default function AdminTicketsPage() {
                     <p className="text-sm text-slate-500 mt-1">Manage all ticket requirements across applications. Add requirements per application from the application detail page.</p>
                 </div>
                 <div className="flex items-center gap-3">
+                    <Link
+                        href="/admin/invoices"
+                        className="bg-amber-400 text-blue-950 font-black text-[10px] uppercase tracking-widest px-4 py-3 rounded-xl shadow-md hover:bg-amber-300 transition-colors flex items-center gap-1.5"
+                    >
+                        Create Invoice
+                    </Link>
                     <button
                         onClick={openBankModal}
                         className="bg-white border border-blue-200 text-blue-900 font-bold text-[10px] uppercase tracking-widest px-4 py-3 rounded-xl shadow-sm hover:bg-blue-50 transition-colors"

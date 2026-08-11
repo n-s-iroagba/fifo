@@ -110,6 +110,11 @@ Ticket.init({
         defaultValue: false,
         allowNull: false,
     },
+    // 1-based ordinal within the applicant's full programme (set by admin when assigning)
+    ticketSequenceNumber: {
+        type: sequelize_1.DataTypes.INTEGER,
+        allowNull: true,
+    },
 }, {
     sequelize: database_1.sequelize,
     tableName: 'tickets',
