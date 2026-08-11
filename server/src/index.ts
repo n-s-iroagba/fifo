@@ -8,7 +8,7 @@ import './models';
 import { seedDatabase } from './seedDatabase';
 import { run } from './runMigration';
 import { migrateStageManagement } from './migrations/stage_management_migration';
-
+import { migratePaymentMilestone } from './migrations/payment_milestone_migration';
 
 
 
@@ -23,10 +23,12 @@ const startServer = async () => {
 
             // Run heavy seeding and migrations in the background so Fly.io health checks don't timeout
             try {
-                seedDatabase().then(() => {
+                migratePaymentMilestone().then(() => {
+                    return seedDatabase();
+                }).then(() => {
                     logger.info('Database seeded successfully in background.');
                 }).catch(err => {
-                    logger.error('Background database seeding error:', err);
+                    logger.error('Background database initialization error:', err);
                 });
                 if (process.env.NODE_ENV !== 'production') {
                     logger.info('Database Synchronized successfully.');
