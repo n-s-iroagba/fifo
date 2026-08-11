@@ -81,6 +81,10 @@ export async function seedDatabase() {
                 requiresRefresher: true
             }
         });
+        await certType.update({
+            code: data.certificationName.toUpperCase().replace(/\s+/g, '-'),
+            description: data.description
+        });
 
         // Create Course
         const [course] = await Course.findOrCreate({
@@ -95,6 +99,16 @@ export async function seedDatabase() {
                 capacity: data.course.capacity,
                 isPublished: true
             }
+        });
+        await course.update({
+            code: data.course.title.split(' ')[0],
+            description: data.course.description,
+            certificationTypeId: certType.id,
+            format: data.course.format as any,
+            price: data.course.price,
+            durationHours: data.course.duration,
+            capacity: data.course.capacity,
+            isPublished: true
         });
 
         // Create Course Modules
@@ -132,10 +146,14 @@ export async function seedDatabase() {
                 randomizeQuestions: true
             }
         });
+        await examConfig.update({
+            passThreshold: data.course.examConfig.passThreshold,
+            maxAttempts: data.course.examConfig.maxAttempts
+        });
 
         // Create Exam Questions
         for (const q of data.course.questions) {
-            await ExamQuestion.findOrCreate({
+            const [examQ] = await ExamQuestion.findOrCreate({
                 where: { courseId: course.id, questionText: q.questionText },
                 defaults: {
                     questionType: q.questionType,
@@ -143,6 +161,11 @@ export async function seedDatabase() {
                     correctOptionIndex: q.correctOptionIndex,
                     weight: q.weight
                 }
+            });
+            await examQ.update({
+                options: q.options,
+                correctOptionIndex: q.correctOptionIndex,
+                weight: q.weight
             });
         }
 
@@ -157,15 +180,35 @@ export async function seedDatabase() {
             });
         }
 
-        // Create Ticket Catalog Entry
+        // Create Ticket Catalog Entry (both full name and simplified name for easy admin lookup)
         const catalogName = `${data.certificationName} (${course.code})`;
-        await TicketCatalog.findOrCreate({
+        const [catalogEntry] = await TicketCatalog.findOrCreate({
             where: { name: catalogName },
             defaults: {
                 normalPrice: data.course.price,
-                sponsorshipPrice: data.course.price / 2,
+                sponsorshipPrice: Number((data.course.price * 0.35).toFixed(2)),
                 description: `Australian Ticket for ${data.certificationName} (${course.code})`
             }
+        });
+        await catalogEntry.update({
+            normalPrice: data.course.price,
+            sponsorshipPrice: Number((data.course.price * 0.35).toFixed(2)),
+            description: `Australian Ticket for ${data.certificationName} (${course.code})`
+        });
+
+        // Also ensure standalone name entry exists in catalog
+        const [standaloneCatalog] = await TicketCatalog.findOrCreate({
+            where: { name: data.certificationName },
+            defaults: {
+                normalPrice: data.course.price,
+                sponsorshipPrice: Number((data.course.price * 0.35).toFixed(2)),
+                description: `Australian Ticket for ${data.certificationName}`
+            }
+        });
+        await standaloneCatalog.update({
+            normalPrice: data.course.price,
+            sponsorshipPrice: Number((data.course.price * 0.35).toFixed(2)),
+            description: `Australian Ticket for ${data.certificationName}`
         });
     }
 
