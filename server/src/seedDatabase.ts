@@ -52,7 +52,11 @@ export async function seedDatabase() {
         "ADD COLUMN accountNumber VARCHAR(255) DEFAULT NULL",
         "ADD COLUMN accountName VARCHAR(255) DEFAULT NULL",
         "ADD COLUMN avelingUsername VARCHAR(255) DEFAULT NULL",
-        "ADD COLUMN avelingPassword VARCHAR(255) DEFAULT NULL"
+        "ADD COLUMN avelingPassword VARCHAR(255) DEFAULT NULL",
+        "ADD COLUMN adminStageId VARCHAR(255) DEFAULT NULL",
+        "ADD COLUMN depositPaid BOOLEAN DEFAULT false",
+        "ADD COLUMN depositPaidAt DATETIME DEFAULT NULL",
+        "ADD COLUMN fullBalancePaid BOOLEAN DEFAULT false"
     ];
 
     for (const colDef of userColumns) {
@@ -75,15 +79,11 @@ export async function seedDatabase() {
         const [certType] = await CertificationType.findOrCreate({
             where: { name: data.certificationName },
             defaults: {
-                code: data.certificationName.toUpperCase().replace(/\s+/g, '-'),
-                description: data.description,
-                validityMonths: 24,
-                requiresRefresher: true
+                code: data.certificationName.toUpperCase().replace(/\s+/g, '-')
             }
         });
         await certType.update({
-            code: data.certificationName.toUpperCase().replace(/\s+/g, '-'),
-            description: data.description
+            code: data.certificationName.toUpperCase().replace(/\s+/g, '-')
         });
 
         // Create Course
@@ -95,7 +95,6 @@ export async function seedDatabase() {
                 certificationTypeId: certType.id,
                 format: data.course.format as any,
                 price: data.course.price,
-                durationHours: data.course.duration,
                 capacity: data.course.capacity,
                 isPublished: true
             }
@@ -106,7 +105,6 @@ export async function seedDatabase() {
             certificationTypeId: certType.id,
             format: data.course.format as any,
             price: data.course.price,
-            durationHours: data.course.duration,
             capacity: data.course.capacity,
             isPublished: true
         });
@@ -141,14 +139,11 @@ export async function seedDatabase() {
             where: { courseId: course.id },
             defaults: {
                 passThreshold: data.course.examConfig.passThreshold,
-                maxAttempts: data.course.examConfig.maxAttempts,
-                timeLimitMinutes: 60,
-                randomizeQuestions: true
+                timeLimitMinutes: 60
             }
         });
         await examConfig.update({
-            passThreshold: data.course.examConfig.passThreshold,
-            maxAttempts: data.course.examConfig.maxAttempts
+            passThreshold: data.course.examConfig.passThreshold
         });
 
         // Create Exam Questions
