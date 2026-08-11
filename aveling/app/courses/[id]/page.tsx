@@ -86,9 +86,12 @@ export default function CoursePlayerPage() {
                 {/* STEP-015 Sequence Gate Indicator */}
                 <div className="flex items-center gap-3">
 
-                    <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-200 flex items-center gap-2 font-medium">
-                        <Lock className="h-4 w-4 text-amber-600" />
-                        Complete all theory modules (100%) praticals are guided demonstrations and are not scored upon starting the jobs.
+                    <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-200 flex items-start gap-3 font-medium shadow-sm">
+                        <Lock className="h-4 w-4 text-amber-600 mt-0.5" />
+                        <div>
+                            <span className="block font-bold mb-0.5">Sequence Gate Active</span>
+                            Complete all theory modules and pass the exam to unlock your certificate. Practicals are guided demonstrations assessed on the job.
+                        </div>
                     </div>
 
                 </div>
@@ -126,9 +129,12 @@ export default function CoursePlayerPage() {
 
                                 {/* Real Implementation: Expanded Module Content Reader */}
                                 {selectedModule === idx && (
-                                    <div className="ml-4 pl-4 border-l-2 border-[#FFC700] py-3 pr-3 text-xs leading-relaxed text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 rounded-r-xl shadow-sm">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="font-bold text-zinc-900 dark:text-white">Module Content Reader</span>
+                                    <div className="ml-2 pl-4 border-l-4 border-amber-400 py-4 pr-4 mt-2 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-900 rounded-r-xl shadow-inner">
+                                        <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-200 dark:border-zinc-800">
+                                            <span className="font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                                                <BookOpen className="h-4 w-4 text-amber-500" />
+                                                Study Material
+                                            </span>
                                             <button
                                                 onClick={() => {
                                                     const blob = new Blob([mod.description], { type: 'text/plain' });
@@ -139,12 +145,14 @@ export default function CoursePlayerPage() {
                                                     a.click();
                                                     URL.revokeObjectURL(url);
                                                 }}
-                                                className="text-[10px] font-bold text-[#FFC700] hover:underline"
+                                                className="text-[10px] font-bold text-amber-600 bg-amber-100/50 px-3 py-1.5 rounded hover:bg-amber-100 dark:text-amber-400 dark:bg-amber-950/50 dark:hover:bg-amber-900 transition-colors uppercase tracking-wider"
                                             >
-                                                Download as TXT
+                                                Download TXT
                                             </button>
                                         </div>
-                                        {mod.description}
+                                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                                            <p>{mod.description}</p>
+                                        </div>
                                     </div>
                                 )}
                             </div>
