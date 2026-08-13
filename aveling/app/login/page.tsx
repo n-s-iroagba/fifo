@@ -16,111 +16,101 @@ export default function LmsLogin() {
         e.preventDefault();
         setError('');
         setIsLoading(true);
-
         try {
-            const response = await apiClient.post('/lms-auth/login', {
-                lmsUsername: username,
-                password
-            });
-
+            const response = await apiClient.post('/lms-auth/login', { lmsUsername: username, password });
             if (response.data?.success) {
                 const { accessToken, user } = response.data.data;
                 localStorage.setItem('lms_token', accessToken);
                 localStorage.setItem('lms_user', JSON.stringify(user));
-                
-                // Redirect to LMS dashboard or catalog (STEP-008)
                 router.push('/dashboard');
             }
         } catch (err: any) {
-            if (err.response?.status === 401) {
-                setError('Invalid LMS username or password.');
-            } else {
-                setError('An error occurred during login. Please try again.');
-            }
+            setError(err.response?.status === 401 ? 'Invalid LMS username or password.' : 'An error occurred during login. Please try again.');
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+        <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-4 py-16">
+            {/* Background texture */}
+            <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
+
+            <div className="relative w-full max-w-md space-y-8">
+                {/* Brand */}
                 <div className="text-center">
-                    <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-                        Aveling LMS Portal
-                    </h2>
-                    <p className="mt-2 text-sm text-gray-600">
-                        Sign in with your specialized training credentials
-                    </p>
+                    <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-[#FFC700] text-black mb-6 mx-auto shadow-2xl shadow-[#FFC700]/20">
+                        <Lock className="h-8 w-8 stroke-[3]" />
+                    </div>
+                    <h1 className="text-4xl font-black text-white tracking-tight">AVELING</h1>
+                    <p className="text-xs font-extrabold text-zinc-500 uppercase tracking-[0.4em] mt-2">LMS Training Portal</p>
+                    <div className="w-16 h-0.5 bg-[#FFC700] mx-auto mt-4" />
+                    <p className="text-sm text-zinc-400 font-medium mt-4">Sign in with your specialized training credentials</p>
                 </div>
-                
-                <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+
+                {/* Card */}
+                <div className="bg-zinc-900 border-2 border-zinc-800 rounded-2xl p-8 shadow-2xl space-y-6">
                     {error && (
-                        <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded">
-                            <div className="flex">
-                                <div className="flex-shrink-0">
-                                    <AlertCircle className="h-5 w-5 text-red-400" />
-                                </div>
-                                <div className="ml-3">
-                                    <p className="text-sm text-red-700">{error}</p>
-                                </div>
-                            </div>
+                        <div className="flex items-start gap-3 bg-rose-950/50 border border-rose-800 rounded-xl p-4">
+                            <AlertCircle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
+                            <p className="text-sm text-rose-300 font-medium">{error}</p>
                         </div>
                     )}
-                    
-                    <div className="rounded-md shadow-sm space-y-4">
+
+                    <form className="space-y-5" onSubmit={handleLogin}>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="username">
-                                LMS Username
-                            </label>
+                            <label className="block text-xs font-extrabold text-zinc-400 uppercase tracking-wider mb-2" htmlFor="username">LMS Username</label>
                             <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <User className="h-5 w-5 text-gray-400" />
+                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <User className="h-4 w-4 text-zinc-500" />
                                 </div>
                                 <input
                                     id="username"
                                     name="username"
                                     type="text"
                                     required
-                                    className="appearance-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-[#1E3A8A] focus:border-[#1E3A8A] focus:z-10 sm:text-sm"
                                     placeholder="e.g. Aveling-JOHDOE1234"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
+                                    className="w-full bg-zinc-800 border-2 border-zinc-700 text-white placeholder-zinc-600 rounded-xl pl-10 pr-4 py-3 text-sm font-medium focus:outline-none focus:border-[#FFC700] focus:ring-1 focus:ring-[#FFC700] transition-all"
                                 />
                             </div>
                         </div>
+
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="password">
-                                Password
-                            </label>
+                            <label className="block text-xs font-extrabold text-zinc-400 uppercase tracking-wider mb-2" htmlFor="password">Password</label>
                             <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Lock className="h-5 w-5 text-gray-400" />
+                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <Lock className="h-4 w-4 text-zinc-500" />
                                 </div>
                                 <input
                                     id="password"
                                     name="password"
                                     type="password"
                                     required
-                                    className="appearance-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-[#1E3A8A] focus:border-[#1E3A8A] focus:z-10 sm:text-sm"
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full bg-zinc-800 border-2 border-zinc-700 text-white placeholder-zinc-600 rounded-xl pl-10 pr-4 py-3 text-sm font-medium focus:outline-none focus:border-[#FFC700] focus:ring-1 focus:ring-[#FFC700] transition-all"
                                 />
                             </div>
                         </div>
-                    </div>
 
-                    <div>
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#1E3A8A] hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1E3A8A] disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
+                            className="w-full bg-[#FFC700] text-black font-extrabold text-sm py-4 rounded-xl hover:bg-yellow-400 transition-all uppercase tracking-wider shadow-lg shadow-[#FFC700]/20 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
                         >
-                            {isLoading ? 'Signing in...' : 'Sign In to Training Portal'}
+                            {isLoading ? 'Authenticating...' : 'Sign In to LMS Portal'}
                         </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
+
+                <p className="text-center text-xs text-zinc-600 font-medium">
+                    Credentials are assigned by your recruiter. Contact{' '}
+                    <a href="mailto:booking@swiftwings.online" className="text-[#FFC700] hover:text-yellow-400 font-bold">booking@swiftwings.online</a>
+                    {' '}for support.
+                </p>
             </div>
         </div>
     );

@@ -1,66 +1,65 @@
 'use client';
 
-// STEP-029
 import React from 'react';
-import { Bell, Tag, CheckCircle2, Award, Calendar, AlertCircle } from 'lucide-react';
+import { Bell } from 'lucide-react';
+import { PageShell } from '../../components/PageShell';
 
 export default function NotificationsPage() {
     const [notifications, setNotifications] = React.useState<any[]>([]);
     const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
-        const fetchNotifications = async () => {
-            try {
-                // Endpoint might not exist yet, removing hardcoded fallback
-                // const res = await apiClient.get('/notifications/me');
-                // if (res.data?.data) setNotifications(res.data.data);
-                setNotifications([]);
-            } catch {
-                setNotifications([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchNotifications();
+        // Endpoint pending implementation
+        setTimeout(() => { setNotifications([]); setLoading(false); }, 500);
     }, []);
 
     return (
-        <div className="space-y-6">
-            <div className="border-b border-zinc-200 pb-4 dark:border-zinc-800">
-                <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white flex items-center gap-2">
-                    <Bell className="h-7 w-7 text-amber-600" />
-                    Notifications & Alerts Center
-                </h1>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                    Real-time updates regarding your certification gaps, subsidies, exams, and recruiter syncs.
-                </p>
+        <PageShell>
+            <div className="mb-8">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFC700] text-black font-extrabold text-xs uppercase tracking-wider w-fit mb-3">
+                    <Bell className="h-3.5 w-3.5" /> Alerts
+                </div>
+                <h1 className="text-4xl font-black text-zinc-900 tracking-tight">Notifications & Alerts</h1>
+                <p className="text-sm font-medium text-zinc-500 mt-2">Real-time updates on certification gaps, subsidies, exams, and recruiter syncs.</p>
             </div>
+            <div className="w-full h-0.5 bg-[#FFC700] mb-10" />
 
-            <div className="space-y-3">
-                {loading && <div className="text-xs text-zinc-500 font-bold p-4">Loading notifications...</div>}
-                {!loading && notifications.length === 0 && (
-                    <div className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm text-center dark:border-zinc-800 dark:bg-zinc-900">
-                        <p className="text-xs font-bold text-zinc-500">No new notifications.</p>
-                    </div>
-                )}
-                {!loading && notifications.map((n) => {
-                    const Icon = n.icon || Bell;
-                    return (
-                        <div key={n.id} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 flex items-start gap-4">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400">
-                                <Icon className="h-5 w-5" />
-                            </div>
-                            <div className="flex-1 space-y-1">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white">{n.title}</h3>
-                                    <span className="text-[10px] text-zinc-400 font-mono">{n.time}</span>
+            {loading && (
+                <div className="flex flex-col items-center justify-center py-24 space-y-5">
+                    <div className="animate-spin rounded-full h-14 w-14 border-4 border-zinc-200 border-t-[#FFC700]" />
+                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest animate-pulse">Loading notifications...</p>
+                </div>
+            )}
+
+            {!loading && notifications.length === 0 && (
+                <div className="bg-white border-2 border-zinc-200 rounded-2xl p-14 shadow-sm text-center">
+                    <Bell className="h-12 w-12 text-zinc-300 mx-auto mb-4" />
+                    <p className="text-sm font-extrabold text-zinc-400 uppercase tracking-widest">No new notifications.</p>
+                    <p className="text-xs text-zinc-400 mt-2">Updates on your certifications and sponsorships will appear here.</p>
+                </div>
+            )}
+
+            {!loading && notifications.length > 0 && (
+                <div className="space-y-3">
+                    {notifications.map((n) => {
+                        const Icon = n.icon || Bell;
+                        return (
+                            <div key={n.id} className="bg-white border-2 border-zinc-200 rounded-2xl p-5 shadow-md hover:border-[#FFC700] transition-all flex items-start gap-4">
+                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FFC700]/20 text-[#FFC700]">
+                                    <Icon className="h-5 w-5" />
                                 </div>
-                                <p className="text-xs text-zinc-600 dark:text-zinc-400">{n.message}</p>
+                                <div className="flex-1 space-y-1">
+                                    <div className="flex items-center justify-between gap-4">
+                                        <h3 className="text-sm font-extrabold text-zinc-900">{n.title}</h3>
+                                        <span className="text-[10px] text-zinc-400 font-mono shrink-0">{n.time}</span>
+                                    </div>
+                                    <p className="text-xs text-zinc-500">{n.message}</p>
+                                </div>
                             </div>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
+                        );
+                    })}
+                </div>
+            )}
+        </PageShell>
     );
 }

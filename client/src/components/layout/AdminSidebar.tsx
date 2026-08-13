@@ -11,6 +11,7 @@ const navItems = [
     { label: 'Pipeline Stages', href: '/admin/settings/stages', icon: 'linear_scale' },
     { label: 'Ticket Sponsorships', href: '/admin/tickets', icon: 'confirmation_number' },
     { label: 'Applicants', href: '/admin/applicants', icon: 'groups' },
+    { label: 'Psychometric Reviews', href: '/admin/psychometric', icon: 'psychiatry' },
     { label: 'Interests', href: '/admin/interests', icon: 'psychology' },
     { label: 'Payment Queue', href: CONSTANTS.ROUTES.ADMIN.UNVERIFIED, icon: 'account_tree' },
     { label: 'Payments', href: CONSTANTS.ROUTES.ADMIN.UNPAID, icon: 'receipt_long' },

@@ -22,7 +22,7 @@ import { certificateController } from '../controllers/CertificateController';
 import { ticketController } from '../controllers/TicketController';
 import { PrefillStageController } from '../controllers/PrefillStageController';
 import { psychometricController } from '../controllers/PsychometricController';
-import { requirePsychometricClear } from '../middleware/psychometricGuard';
+// Removed requirePsychometricClear import
 
 const prefillStageController = new PrefillStageController();
 
@@ -70,7 +70,7 @@ const applicantMW = [requireAuth, requireRole([CONSTANTS.ROLES.APPLICANT]), apiL
 router.get('/dashboard', ...applicantMW, applicationController.getDashboardSummary.bind(applicationController));
 
 // STK-APP-APPLY-001..005
-router.post('/applications', ...applicantMW, requirePsychometricClear, applicationController.startApplication.bind(applicationController));
+router.post('/applications', ...applicantMW, applicationController.startApplication.bind(applicationController));
 router.get('/applications', ...applicantMW, applicationController.getUserApplications.bind(applicationController));
 router.get('/applications/:id', ...applicantMW, applicationController.getApplicationDetails.bind(applicationController));
 router.post('/applications/:id/advance', ...applicantMW, applicationController.advanceApplication.bind(applicationController));
@@ -100,6 +100,7 @@ router.post('/tickets/:id/exam-outcome', ...applicantMW, ticketController.record
 router.post('/tickets/:id/set-review-awaiting', ...applicantMW, ticketController.setExamReviewAwaiting.bind(ticketController));
 
 // STK-APP-PAY-001: payment details with bank account routing
+router.get('/payments/me', ...applicantMW, paymentController.getMyAvelingInvoices.bind(paymentController));
 router.get('/payments/:id', ...applicantMW, paymentController.getPaymentDetails.bind(paymentController));
 // STK-APP-PAY-002, STK-APP-PAY-003: upload proof
 router.post('/payments/:id/proof', ...applicantMW, paymentController.uploadProof.bind(paymentController));
@@ -246,6 +247,7 @@ router.post('/admin/users/:userId/approve-package-invoice', ...adminMW, ticketCo
 // Payment status milestone (partial / complete) & Custom Invoicing
 router.post('/admin/users/:userId/update-payment-status', ...adminMW, ticketController.adminUpdatePaymentStatus.bind(ticketController));
 router.post('/admin/invoices/create-and-send', ...adminMW, ticketController.createAndSendCustomInvoice.bind(ticketController));
+router.get('/admin/users/:userId/aveling-invoices', ...adminMW, paymentController.getUserAvelingInvoices.bind(paymentController));
 
 
 // Prefill Stages
@@ -257,6 +259,11 @@ router.post('/admin/prefill-stages/reorder', ...adminMW, prefillStageController.
 
 // Candidate receipt submission (public or candidate authenticated)
 router.post('/tickets/:id/submit-receipt', ticketController.submitReceipt.bind(ticketController));
+
+// Admin Psychometric Test Review
+router.get('/admin/psychometric/attempts', ...adminMW, psychometricController.getAdminAttempts.bind(psychometricController));
+router.post('/admin/psychometric/attempts/:id/approve', ...adminMW, psychometricController.approveAttempt.bind(psychometricController));
+router.post('/admin/psychometric/attempts/:id/reject', ...adminMW, psychometricController.rejectAttempt.bind(psychometricController));
 
 
 import { interestController } from '../controllers/InterestController';

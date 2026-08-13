@@ -3,6 +3,118 @@ import { paymentService } from '../services/PaymentService';
 import { CONSTANTS } from '../constants';
 
 export class PaymentController {
+    public async getMyAvelingInvoices(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = (req as any).user.id;
+            
+            // 1. Fetch Psychometric Attempts
+            const { PsychometricAttempt, Ticket } = require('../models');
+            const psychoAttempts = await PsychometricAttempt.findAll({
+                where: { userId, passed: true }
+            });
+            
+            // 2. Fetch Tickets
+            const tickets = await Ticket.findAll({
+                where: { userId }
+            });
+
+            const receipts: any[] = [];
+            
+            // Map Psychometric Attempts (Paid fully by Blue Collar)
+            psychoAttempts.forEach((attempt: any) => {
+                receipts.push({
+                    id: `INV-PSY-${attempt.id}`,
+                    date: new Date(attempt.createdAt).toLocaleDateString(),
+                    courses: [`Psychometric Test - ${attempt.module === 'module_1' ? 'General' : 'Flow Course'}`],
+                    subsidiesCovered: 50.00, // Fixed price for psycho test covered by Blue Collar
+                    amountPaid: 0.00,
+                    type: 'psychometric',
+                    note: 'Paid on behalf of applicant by Blue Collar'
+                });
+            });
+            
+            // Map Tickets
+            tickets.forEach((ticket: any) => {
+                const price = parseFloat(ticket.purchasePrice || ticket.price || 0);
+                const subsidisedPrice = ticket.subsidisedPrice !== null ? parseFloat(ticket.subsidisedPrice) : price;
+                const subsidyAmount = price - subsidisedPrice;
+                
+                receipts.push({
+                    id: `INV-TKT-${ticket.id}`,
+                    date: new Date(ticket.createdAt).toLocaleDateString(),
+                    courses: [`${ticket.ticketType} Certification`],
+                    subsidiesCovered: subsidyAmount > 0 ? subsidyAmount : 0,
+                    amountPaid: subsidisedPrice,
+                    type: 'ticket'
+                });
+            });
+
+            // Sort by date descending
+            receipts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ data: receipts });
+        } catch (error: any) {
+            console.error('[PaymentController.getMyAvelingInvoices]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+
+    public async getUserAvelingInvoices(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = parseInt(req.params.userId, 10);
+            
+            // 1. Fetch Psychometric Attempts
+            const { PsychometricAttempt, Ticket } = require('../models');
+            const psychoAttempts = await PsychometricAttempt.findAll({
+                where: { userId, passed: true }
+            });
+            
+            // 2. Fetch Tickets
+            const tickets = await Ticket.findAll({
+                where: { userId }
+            });
+
+            const receipts: any[] = [];
+            
+            // Map Psychometric Attempts (Paid fully by Blue Collar)
+            psychoAttempts.forEach((attempt: any) => {
+                receipts.push({
+                    id: `INV-PSY-${attempt.id}`,
+                    date: new Date(attempt.createdAt).toLocaleDateString(),
+                    courses: [`Psychometric Test - ${attempt.module === 'module_1' ? 'General' : 'Flow Course'}`],
+                    subsidiesCovered: 50.00, // Fixed price for psycho test covered by Blue Collar
+                    amountPaid: 0.00,
+                    type: 'psychometric',
+                    note: 'Paid on behalf of applicant by Blue Collar'
+                });
+            });
+            
+            // Map Tickets
+            tickets.forEach((ticket: any) => {
+                const price = parseFloat(ticket.purchasePrice || ticket.price || 0);
+                const subsidisedPrice = ticket.subsidisedPrice !== null ? parseFloat(ticket.subsidisedPrice) : price;
+                const subsidyAmount = price - subsidisedPrice;
+                
+                receipts.push({
+                    id: `INV-TKT-${ticket.id}`,
+                    date: new Date(ticket.createdAt).toLocaleDateString(),
+                    courses: [`${ticket.ticketType} Certification`],
+                    subsidiesCovered: subsidyAmount > 0 ? subsidyAmount : 0,
+                    amountPaid: subsidisedPrice,
+                    type: 'ticket'
+                });
+            });
+
+            // Sort by date descending
+            receipts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ data: receipts });
+        } catch (error: any) {
+            console.error('[PaymentController.getUserAvelingInvoices]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+
     // Maps to STK-APP-PAY-001 — get payment details with appropriate bank account display
     public async getPaymentDetails(req: Request, res: Response): Promise<void> {
         try {

@@ -27,7 +27,7 @@ const CertificateController_1 = require("../controllers/CertificateController");
 const TicketController_1 = require("../controllers/TicketController");
 const PrefillStageController_1 = require("../controllers/PrefillStageController");
 const PsychometricController_1 = require("../controllers/PsychometricController");
-const psychometricGuard_1 = require("../middleware/psychometricGuard");
+// Removed requirePsychometricClear import
 const prefillStageController = new PrefillStageController_1.PrefillStageController();
 const upload = (0, multer_1.default)({
     storage: multer_1.default.memoryStorage(),
@@ -64,7 +64,7 @@ const applicantMW = [auth_1.requireAuth, (0, rbac_1.requireRole)([constants_1.CO
 // STK-APP-DASH-001..003
 router.get('/dashboard', ...applicantMW, ApplicationController_1.applicationController.getDashboardSummary.bind(ApplicationController_1.applicationController));
 // STK-APP-APPLY-001..005
-router.post('/applications', ...applicantMW, psychometricGuard_1.requirePsychometricClear, ApplicationController_1.applicationController.startApplication.bind(ApplicationController_1.applicationController));
+router.post('/applications', ...applicantMW, ApplicationController_1.applicationController.startApplication.bind(ApplicationController_1.applicationController));
 router.get('/applications', ...applicantMW, ApplicationController_1.applicationController.getUserApplications.bind(ApplicationController_1.applicationController));
 router.get('/applications/:id', ...applicantMW, ApplicationController_1.applicationController.getApplicationDetails.bind(ApplicationController_1.applicationController));
 router.post('/applications/:id/advance', ...applicantMW, ApplicationController_1.applicationController.advanceApplication.bind(ApplicationController_1.applicationController));
@@ -90,6 +90,7 @@ router.post('/tickets/:id/pay-aveling', ...applicantMW, TicketController_1.ticke
 router.post('/tickets/:id/exam-outcome', ...applicantMW, TicketController_1.ticketController.recordExamOutcome.bind(TicketController_1.ticketController));
 router.post('/tickets/:id/set-review-awaiting', ...applicantMW, TicketController_1.ticketController.setExamReviewAwaiting.bind(TicketController_1.ticketController));
 // STK-APP-PAY-001: payment details with bank account routing
+router.get('/payments/me', ...applicantMW, PaymentController_1.paymentController.getMyAvelingInvoices.bind(PaymentController_1.paymentController));
 router.get('/payments/:id', ...applicantMW, PaymentController_1.paymentController.getPaymentDetails.bind(PaymentController_1.paymentController));
 // STK-APP-PAY-002, STK-APP-PAY-003: upload proof
 router.post('/payments/:id/proof', ...applicantMW, PaymentController_1.paymentController.uploadProof.bind(PaymentController_1.paymentController));
@@ -222,6 +223,10 @@ router.delete('/admin/prefill-stages/:id', ...adminMW, prefillStageController.de
 router.post('/admin/prefill-stages/reorder', ...adminMW, prefillStageController.reorderPrefillStages.bind(prefillStageController));
 // Candidate receipt submission (public or candidate authenticated)
 router.post('/tickets/:id/submit-receipt', TicketController_1.ticketController.submitReceipt.bind(TicketController_1.ticketController));
+// Admin Psychometric Test Review
+router.get('/admin/psychometric/attempts', ...adminMW, PsychometricController_1.psychometricController.getAdminAttempts.bind(PsychometricController_1.psychometricController));
+router.post('/admin/psychometric/attempts/:id/approve', ...adminMW, PsychometricController_1.psychometricController.approveAttempt.bind(PsychometricController_1.psychometricController));
+router.post('/admin/psychometric/attempts/:id/reject', ...adminMW, PsychometricController_1.psychometricController.rejectAttempt.bind(PsychometricController_1.psychometricController));
 const InterestController_1 = require("../controllers/InterestController");
 const TicketCatalogController_1 = require("../controllers/TicketCatalogController");
 // Expression of Interest Routes

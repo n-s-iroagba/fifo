@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ApplicationStageManager } from '@/components/admin/ApplicationStageManager';
 import { LmsAccessPanel } from '@/components/admin/LmsAccessPanel';
+import { AvelingInvoicesPanel } from '@/components/admin/AvelingInvoicesPanel';
 import { Application } from '@/types/models';
 
 export default function AdminApplicantDetailPage() {
@@ -222,6 +223,8 @@ export default function AdminApplicantDetailPage() {
                         initialPassword={user.avelingPassword}
                         onUpdated={refetchUser}
                     />
+
+                    <AvelingInvoicesPanel applicantId={id as string} />
 
                 </div>
 

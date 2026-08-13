@@ -28,11 +28,20 @@ export default function JobDetailPage() {
     const handleInitialApplyClick = () => {
         const user = userData?.user;
         const isBiodataComplete = !!(user?.fullName && user?.phoneNumber && user?.nationality);
+        const isPsychometricComplete = !!(user?.psychometricModule1Passed && user?.psychometricModule2Passed);
         const isCvUploaded = !!user?.cvUrl;
 
         if (!isBiodataComplete) {
-            alert('Your professional profile is split. Please complete your basic biodata (Name, Phone, Nationality) before proceeding.');
+            alert('Your professional profile is incomplete. Please complete your basic biodata (Name, Phone, Nationality) before proceeding.');
             router.push(`${CONSTANTS.ROUTES.PROFILE}?redirect=/dashboard/jobs/${jobId}`);
+            return;
+        }
+
+        if (!isPsychometricComplete) {
+            alert('You must pass the Aveling Psychometric Test before proceeding.');
+            const token = localStorage.getItem('accessToken');
+            const avelingUrl = process.env.NEXT_PUBLIC_AVELING_URL || 'http://localhost:3002';
+            window.location.href = `${avelingUrl}/psychometric?token=${token}`;
             return;
         }
 
@@ -65,7 +74,7 @@ export default function JobDetailPage() {
         setIsApplyModalOpen(false);
     };
 
-    const isReadyToApply = userData?.user?.fullName && userData?.user?.phoneNumber && userData?.user?.nationality && userData?.user?.cvUrl;
+    const isReadyToApply = userData?.user?.fullName && userData?.user?.phoneNumber && userData?.user?.nationality && userData?.user?.cvUrl && userData?.user?.psychometricModule1Passed && userData?.user?.psychometricModule2Passed;
 
     if (isLoading) return (
         <div className="space-y-12 animate-pulse">
@@ -148,6 +157,12 @@ export default function JobDetailPage() {
                                 label="Personal Information"
                                 isComplete={!!(userData?.user?.fullName && userData?.user?.phoneNumber && userData?.user?.nationality)}
                                 link={`${CONSTANTS.ROUTES.PROFILE}?redirect=/dashboard/jobs/${jobId}`}
+                            />
+                            <ReadinessItem
+                                label="Aveling Psychometric Test"
+                                isComplete={!!(userData?.user?.psychometricModule1Passed && userData?.user?.psychometricModule2Passed)}
+                                link={process.env.NEXT_PUBLIC_AVELING_URL ? `${process.env.NEXT_PUBLIC_AVELING_URL}/psychometric?token=${typeof window !== 'undefined' ? localStorage.getItem('accessToken') : ''}` : '#'}
+                                external={true}
                             />
                             <ReadinessItem
                                 label="CV / Career History"
@@ -292,7 +307,7 @@ export default function JobDetailPage() {
     );
 }
 
-function ReadinessItem({ label, isComplete, link }: { label: string, isComplete: boolean, link: string }) {
+function ReadinessItem({ label, isComplete, link, external }: { label: string, isComplete: boolean, link: string, external?: boolean }) {
     return (
         <div className="flex items-center justify-between group">
             <div className="flex items-center gap-3">
@@ -306,9 +321,15 @@ function ReadinessItem({ label, isComplete, link }: { label: string, isComplete:
                 </span>
             </div>
             {!isComplete && (
-                <Link href={link} className="text-[9px] font-black uppercase tracking-widest text-blue-900 hover:underline decoration-2 underline-offset-4">
-                    Update
-                </Link>
+                external ? (
+                    <a href={link} className="text-[9px] font-black uppercase tracking-widest text-blue-900 hover:underline decoration-2 underline-offset-4">
+                        Update
+                    </a>
+                ) : (
+                    <Link href={link} className="text-[9px] font-black uppercase tracking-widest text-blue-900 hover:underline decoration-2 underline-offset-4">
+                        Update
+                    </Link>
+                )
             )}
         </div>
     );

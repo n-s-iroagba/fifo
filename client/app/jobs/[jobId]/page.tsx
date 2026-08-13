@@ -163,7 +163,7 @@ export default function JobDetailPage() {
 
                         <section className="space-y-8 pt-12 border-t border-blue-50">
                             <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400">Position Overview</h2>
-                            <div className="text-blue-500 font-medium leading-relaxed prose prose-lg prose-blue max-w-none text-sm md:text-base" dangerouslySetInnerHTML={{ __html: job.description }} />
+                            <div className="text-blue-500 font-medium leading-relaxed text-sm md:text-base whitespace-pre-wrap">{job.description}</div>
                         </section>
                     </div>
 

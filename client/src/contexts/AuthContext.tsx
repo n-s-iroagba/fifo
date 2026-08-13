@@ -107,14 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 }
             } else {
                 // Logged in: Handle cross-role protection
-                const needsPsychometric = user.role === CONSTANTS.ROLES.APPLICANT && (!user.psychometricModule1Passed || !user.psychometricModule2Passed);
-
-                if (needsPsychometric && !isPublicRoute && !isAuthRoute) {
-                    const token = localStorage.getItem('accessToken');
-                    const avelingUrl = process.env.NEXT_PUBLIC_AVELING_URL || 'http://localhost:3002';
-                    window.location.href = `${avelingUrl}/psychometric?token=${token}`;
-                    return;
-                }
+                // Psychometric global redirect removed as it is now an application stage
                 
                 if (user.role === CONSTANTS.ROLES.APPLICANT && isAdminRoute) {
                     router.push(CONSTANTS.ROUTES.DASHBOARD);

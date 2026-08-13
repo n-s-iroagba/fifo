@@ -60,10 +60,17 @@ class PsychometricController {
                 res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ alreadyPassed: true });
                 return;
             }
-            // Enforce Module 1 must be passed before Module 2
+            // Enforce Module 1 attempt must exist and have a passing score before Module 2
             if (moduleEnum === 'module_2' && !user.psychometricModule1Passed) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.FORBIDDEN).json({ error: 'You must pass Module 1 before starting Module 2.' });
-                return;
+                // If admin hasn't approved yet, check if there's a system-passed attempt
+                const m1Attempt = await PsychometricAttempt_1.PsychometricAttempt.findOne({
+                    where: { userId, module: 'module_1', passed: true },
+                    order: [['createdAt', 'DESC']]
+                });
+                if (!m1Attempt) {
+                    res.status(constants_1.CONSTANTS.HTTP_STATUS.FORBIDDEN).json({ error: 'You must achieve a passing score on Module 1 before starting Module 2.' });
+                    return;
+                }
             }
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -119,8 +126,14 @@ class PsychometricController {
                 return;
             }
             if (moduleEnum === 'module_2' && !user.psychometricModule1Passed) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.FORBIDDEN).json({ error: 'You must pass Module 1 before starting Module 2.' });
-                return;
+                const m1Attempt = await PsychometricAttempt_1.PsychometricAttempt.findOne({
+                    where: { userId, module: 'module_1', passed: true },
+                    order: [['createdAt', 'DESC']]
+                });
+                if (!m1Attempt) {
+                    res.status(constants_1.CONSTANTS.HTTP_STATUS.FORBIDDEN).json({ error: 'You must achieve a passing score on Module 1 before starting Module 2.' });
+                    return;
+                }
             }
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -169,23 +182,9 @@ class PsychometricController {
                 passed,
                 answers
             });
-            let fullyCompleted = false;
-            if (passed) {
-                if (moduleEnum === 'module_1') {
-                    user.psychometricModule1Passed = true;
-                }
-                else {
-                    user.psychometricModule2Passed = true;
-                }
-                if (user.psychometricModule1Passed && user.psychometricModule2Passed) {
-                    user.psychometricCompletedAt = new Date();
-                    fullyCompleted = true;
-                }
-                await user.save();
-            }
+            const fullyCompleted = user.psychometricModule1Passed && user.psychometricModule2Passed;
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({
-                score,
-                passed,
+                message: 'Your results have been submitted and will be reviewed within 24 hours. You will be notified via email.',
                 module1Passed: user.psychometricModule1Passed,
                 module2Passed: user.psychometricModule2Passed,
                 fullyCompleted
@@ -193,6 +192,91 @@ class PsychometricController {
         }
         catch (error) {
             console.error('[PsychometricController.submitModule]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async getAdminAttempts(req, res) {
+        try {
+            const attempts = await PsychometricAttempt_1.PsychometricAttempt.findAll({
+                include: [{
+                        model: User_1.User,
+                        attributes: ['id', 'email', 'fullName', 'psychometricModule1Passed', 'psychometricModule2Passed']
+                    }],
+                order: [['createdAt', 'DESC']]
+            });
+            const enrichedAttempts = attempts.map(attempt => {
+                let failedQuestions = [];
+                const questions = attempt.module === 'module_1' ? psychometricModule1Questions_1.psychometricModule1Questions : psychometricModule2Questions_1.psychometricModule2Questions;
+                if (attempt.answers && Array.isArray(attempt.answers)) {
+                    attempt.answers.forEach((ans) => {
+                        const q = questions.find(fq => fq.questionText === ans.questionText);
+                        if (q && q.correctOptionIndex !== ans.selectedOption) {
+                            failedQuestions.push({
+                                questionText: q.questionText,
+                                selectedOptionText: q.options[ans.selectedOption] || 'Unknown',
+                                correctOptionText: q.options[q.correctOptionIndex],
+                                weight: q.weight
+                            });
+                        }
+                    });
+                }
+                return {
+                    ...attempt.toJSON(),
+                    failedQuestions
+                };
+            });
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ attempts: enrichedAttempts });
+        }
+        catch (error) {
+            console.error('[PsychometricController.getAdminAttempts]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async approveAttempt(req, res) {
+        try {
+            const attemptId = req.params.id;
+            const attempt = await PsychometricAttempt_1.PsychometricAttempt.findByPk(attemptId);
+            if (!attempt) {
+                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: 'Attempt not found' });
+                return;
+            }
+            const user = await User_1.User.findByPk(attempt.userId);
+            if (!user) {
+                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: 'User not found' });
+                return;
+            }
+            if (attempt.module === 'module_1') {
+                user.psychometricModule1Passed = true;
+            }
+            else {
+                user.psychometricModule2Passed = true;
+            }
+            if (user.psychometricModule1Passed && user.psychometricModule2Passed) {
+                user.psychometricCompletedAt = new Date();
+            }
+            await user.save();
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Attempt approved and candidate profile updated.' });
+        }
+        catch (error) {
+            console.error('[PsychometricController.approveAttempt]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async rejectAttempt(req, res) {
+        try {
+            const attemptId = req.params.id;
+            const attempt = await PsychometricAttempt_1.PsychometricAttempt.findByPk(attemptId);
+            if (!attempt) {
+                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: 'Attempt not found' });
+                return;
+            }
+            // Mark attempt as passed = false so they can retake tomorrow
+            attempt.passed = false;
+            await attempt.save();
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Attempt rejected. Candidate will need to retake.' });
+        }
+        catch (error) {
+            console.error('[PsychometricController.rejectAttempt]', error);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
