@@ -84,7 +84,7 @@ export default function PaymentsPage() {
                                 className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-bold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
                             >
                                 <Download className="h-3.5 w-3.5" />
-                                Tax Invoice
+                                Payment Invoice
                             </button>
                         </div>
                     </div>
