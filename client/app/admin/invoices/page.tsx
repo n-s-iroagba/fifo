@@ -334,7 +334,7 @@ export default function InvoiceCreationPage() {
                             )}
                         </div>
 
-                        {/* 2. Select Corporate Bank Account */}
+                        {/* 2. Select Corporate Bank Account -> Crypto Wallet */}
                         <div className="bg-white rounded-3xl border border-blue-100 p-6 shadow-sm space-y-4">
                             <h2 className="text-xs font-black uppercase tracking-wider text-blue-900 flex items-center gap-2">
                                 <Building2 className="h-4 w-4 text-amber-500" /> 2. Corporate Receiving Crypto Wallet
@@ -343,23 +343,50 @@ export default function InvoiceCreationPage() {
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
                                     Select Corporate USDT Wallet:
                                 </label>
-                                <select
-                                    value={selectedBankId}
-                                    onChange={e => setSelectedBankId(e.target.value)}
-                                    className="w-full bg-slate-50 border border-blue-100 rounded-xl p-3 text-xs font-bold text-blue-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                                >
-                                    {bankAccounts.map(bank => (
-                                        <option key={bank.id} value={bank.id}>
-                                            {bank.bankName} — Net: TRC-20 | Addr: {bank.accountNumber} {bank.isDefault ? '(PRIMARY)' : ''}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="relative">
+                                    <select
+                                        value={selectedBankId}
+                                        onChange={e => setSelectedBankId(e.target.value)}
+                                        className="w-full bg-slate-50 border border-blue-100 rounded-xl p-3 text-xs font-bold text-blue-900 focus:outline-none focus:ring-2 focus:ring-amber-400 appearance-none pr-10"
+                                    >
+                                        {bankAccounts.map(bank => (
+                                            <option key={bank.id} value={bank.id}>
+                                                {bank.bankName} {bank.isDefault ? '(PRIMARY)' : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <Lock className="h-4 w-4 text-slate-400" />
+                                    </div>
+                                </div>
                             </div>
                             {selectedBank && (
-                                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs space-y-1 font-mono">
-                                    <div className="flex justify-between"><span className="text-slate-500">Account Name:</span> <span className="font-bold text-blue-900">{selectedBank.accountName}</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-500">Network:</span> <span className="font-bold">TRC-20</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-500">USDT Wallet Address:</span> <span className="font-bold">{selectedBank.accountNumber}</span></div>
+                                <div className="bg-gradient-to-br from-blue-900 to-blue-950 p-4 rounded-xl border border-blue-800 text-xs space-y-3 font-mono shadow-inner">
+                                    <div className="flex justify-between items-center pb-2 border-b border-blue-800/50">
+                                        <span className="text-blue-300 font-sans text-[10px] uppercase tracking-wider">Account Name</span> 
+                                        <span className="font-bold text-white">{selectedBank.accountName}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center pb-2 border-b border-blue-800/50">
+                                        <span className="text-blue-300 font-sans text-[10px] uppercase tracking-wider">Network</span> 
+                                        <span className="font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded">TRC-20</span>
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-blue-300 font-sans text-[10px] uppercase tracking-wider">USDT Wallet Address</span> 
+                                        <div className="flex items-center justify-between bg-black/20 p-2 rounded border border-blue-800/50">
+                                            <span className="font-bold text-emerald-400 break-all">{selectedBank.accountNumber}</span>
+                                            <button 
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    navigator.clipboard.writeText(selectedBank.accountNumber);
+                                                }}
+                                                className="ml-2 bg-blue-800 hover:bg-blue-700 text-white p-1.5 rounded transition-colors"
+                                                title="Copy to clipboard"
+                                            >
+                                                <FileText className="h-3 w-3" />
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -517,92 +544,157 @@ export default function InvoiceCreationPage() {
                 </div>
             </div>
 
-            {/* Printable PDF-Ready Modal */}
+            {/* Printable PDF-Ready Modal (Crypto Redesign) */}
             {printModalOpen && (
-                <div className="fixed inset-0 z-50 bg-blue-950/60 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-white rounded-3xl max-w-3xl w-full p-8 shadow-2xl space-y-6 my-8 print:m-0 print:p-0 print:shadow-none print:w-full">
-                        {/* Printable Header */}
-                        <div className="flex justify-between items-start border-b-2 border-blue-900 pb-4">
-                            <div>
-                                <h1 className="text-2xl font-black uppercase text-blue-900 tracking-tight">Blue Collar Recruitment Pty Ltd</h1>
-                                <p className="text-xs font-bold text-slate-500">ABN: 67 105 263 152 | FIFO Talent &amp; Training Placement Services</p>
-                                <p className="text-[11px] text-slate-400">Level 12, 108 St Georges Terrace, Perth WA 6000</p>
-                            </div>
-                            <div className="text-right">
-                                <span className="bg-blue-900 text-amber-400 font-black text-xs uppercase px-3 py-1 rounded">TAX INVOICE</span>
-                                <p className="text-xs font-bold text-blue-900 mt-2">Ref: {generatedInvoiceNum}</p>
-                                <p className="text-[11px] text-slate-500">Date: {new Date().toLocaleDateString()}</p>
-                            </div>
-                        </div>
-
-                        {/* Candidate Billing Info */}
-                        <div className="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-xl border border-slate-200">
-                            <div>
-                                <p className="text-slate-400 uppercase text-[9px] font-bold">Billed To Candidate:</p>
-                                <p className="font-bold text-blue-900 text-sm">{selectedApplicant?.fullName}</p>
-                                <p className="text-slate-600">ID: {selectedApplicant?.candidateNumber || `CND-${10000 + (selectedApplicant?.id || 1)}`}</p>
-                                <p className="text-slate-600">{selectedApplicant?.email}</p>
-                            </div>
-                            <div>
-                                <p className="text-slate-400 uppercase text-[9px] font-bold">Sponsorship Agreement:</p>
-                                <p className="font-bold text-blue-900">BCR-FIFO-2026-0810</p>
-                                <p className="text-slate-600">Milestone: {paymentMilestone === 'partial' ? 'Initial Deposit (Modules 1-3)' : 'Full Programme Balance'}</p>
+                <div className="fixed inset-0 z-50 bg-blue-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-white rounded-xl max-w-3xl w-full shadow-2xl my-8 print:m-0 print:p-0 print:shadow-none print:w-full overflow-hidden border border-slate-200">
+                        
+                        {/* Premium Crypto Header */}
+                        <div className="bg-blue-950 text-white p-8 border-b-4 border-amber-400 print:bg-white print:text-blue-950 print:border-b-2 print:border-blue-900">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h1 className="text-3xl font-black uppercase tracking-tighter text-white print:text-blue-900 flex items-center gap-3">
+                                        <ShieldAlert className="h-8 w-8 text-amber-400" />
+                                        Blue Collar Recruitment
+                                    </h1>
+                                    <div className="mt-3 space-y-1">
+                                        <p className="text-[11px] font-bold text-blue-200 print:text-slate-500 uppercase tracking-widest">Digital Asset Tax Invoice</p>
+                                        <p className="text-[10px] text-blue-300 print:text-slate-400">ABN: 67 105 263 152 | FIFO Talent Placement</p>
+                                        <p className="text-[10px] text-blue-300 print:text-slate-400">Level 12, 108 St Georges Terrace, Perth WA</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="inline-block bg-white/10 print:bg-blue-50 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/20 print:border-blue-200">
+                                        <p className="text-[10px] uppercase tracking-widest text-blue-200 print:text-blue-700 font-bold mb-1">Invoice Reference</p>
+                                        <p className="text-lg font-black font-mono text-amber-400 print:text-blue-900">{generatedInvoiceNum}</p>
+                                    </div>
+                                    <p className="text-[11px] text-blue-300 print:text-slate-500 mt-3 font-medium">Issued: {new Date().toLocaleDateString()}</p>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Invoice Table */}
-                        <table className="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr className="bg-blue-900 text-white font-bold text-[10px] uppercase">
-                                    <th className="p-3">Item Description</th>
-                                    <th className="p-3 text-right">Amount (AUD)</th>
-                                    <th className="p-3 text-right">Converted ({currency})</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-200">
-                                <tr>
-                                    <td className="p-3 font-semibold text-blue-950">{invoiceDescription}</td>
-                                    <td className="p-3 text-right font-bold">A${amountAud.toFixed(2)}</td>
-                                    <td className="p-3 text-right font-black text-blue-900">{currency} {convertedAmount.toFixed(2)}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div className="p-8 space-y-8">
+                            {/* Candidate & Contract Info */}
+                            <div className="flex flex-col md:flex-row gap-6">
+                                <div className="flex-1 bg-slate-50 rounded-xl p-5 border border-slate-200">
+                                    <p className="text-slate-400 uppercase text-[9px] font-black tracking-widest mb-3">Billed To Candidate</p>
+                                    <p className="font-black text-blue-950 text-lg uppercase">{selectedApplicant?.fullName}</p>
+                                    <div className="mt-2 space-y-1 text-xs text-slate-600 font-medium">
+                                        <p>Candidate ID: <span className="font-bold text-slate-900">{selectedApplicant?.candidateNumber || `CND-${10000 + (selectedApplicant?.id || 1)}`}</span></p>
+                                        <p>{selectedApplicant?.email}</p>
+                                    </div>
+                                </div>
+                                <div className="flex-1 bg-slate-50 rounded-xl p-5 border border-slate-200">
+                                    <p className="text-slate-400 uppercase text-[9px] font-black tracking-widest mb-3">Sponsorship Agreement</p>
+                                    <p className="font-bold text-blue-900 text-sm font-mono">BCR-FIFO-2026-0810</p>
+                                    <p className="text-xs text-slate-600 mt-2 font-medium">
+                                        Milestone: <span className="font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">{paymentMilestone === 'partial' ? 'Initial Deposit (Modules 1-3)' : 'Full Programme Balance'}</span>
+                                    </p>
+                                </div>
+                            </div>
 
-                        {/* Exchange Rate Box */}
-                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs space-y-1">
-                            <div className="font-bold text-amber-950 uppercase text-[10px]">Foreign Currency Conversion Breakdown</div>
-                            <p className="text-amber-900">Base Currency Amount: <strong>A${amountAud.toFixed(2)} AUD</strong></p>
-                            <p className="text-amber-900">Exchange Rate Applied: <strong>1 AUD = {exchangeRate} {currency}</strong></p>
-                            <p className="text-amber-950 font-black text-sm pt-1 border-t border-amber-200">
-                                Net Remittance Due: {currency} {convertedAmount.toFixed(2)}
-                            </p>
+                            {/* Line Items Table */}
+                            <div className="rounded-xl overflow-hidden border border-slate-200">
+                                <table className="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-100 text-slate-500 font-black text-[10px] uppercase tracking-wider">
+                                            <th className="p-4 border-b border-slate-200">Description of Services</th>
+                                            <th className="p-4 border-b border-slate-200 text-right">Fiat Base (AUD)</th>
+                                            <th className="p-4 border-b border-slate-200 text-right bg-blue-50/50">Crypto Due ({currency})</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        <tr>
+                                            <td className="p-4 font-semibold text-blue-950 leading-relaxed">{invoiceDescription}</td>
+                                            <td className="p-4 text-right font-medium text-slate-600">A${amountAud.toFixed(2)}</td>
+                                            <td className="p-4 text-right font-black text-blue-900 bg-blue-50/50">{currency} {convertedAmount.toFixed(2)}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Conversion & Remittance Split */}
+                            <div className="flex flex-col md:flex-row gap-6">
+                                {/* Conversion Breakdown */}
+                                <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-5 text-xs space-y-3">
+                                    <div className="flex items-center gap-2 text-slate-500 font-black uppercase text-[10px] tracking-widest border-b border-slate-200 pb-2 mb-2">
+                                        <RefreshCw className="h-3 w-3" /> Fiat-to-Crypto Conversion
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-slate-500">Fiat Base Amount:</span>
+                                        <span className="font-bold text-slate-800">A${amountAud.toFixed(2)} AUD</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-slate-500">Locked Rate:</span>
+                                        <span className="font-mono font-bold text-slate-800 bg-white px-1 border border-slate-200 rounded">1 AUD = {exchangeRate} {currency}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center pt-3 border-t border-slate-200 mt-2">
+                                        <span className="text-blue-900 font-black uppercase text-[10px] tracking-wider">Final Settlement Amount</span>
+                                        <span className="text-lg font-black text-blue-900">{currency} {convertedAmount.toFixed(2)}</span>
+                                    </div>
+                                </div>
+
+                                {/* Crypto Remittance Details */}
+                                {selectedBank && (
+                                    <div className="flex-[1.5] bg-blue-950 text-white rounded-xl p-5 shadow-inner print:bg-white print:text-blue-950 print:border print:border-blue-900">
+                                        <div className="flex items-center justify-between border-b border-blue-800 pb-3 mb-4 print:border-blue-200">
+                                            <div className="font-black uppercase text-[10px] tracking-widest text-amber-400 print:text-blue-900 flex items-center gap-2">
+                                                <Lock className="h-3.5 w-3.5" /> Secure Remittance Details
+                                            </div>
+                                            <span className="bg-amber-400/20 text-amber-400 print:bg-blue-100 print:text-blue-800 px-2 py-0.5 rounded font-bold text-[9px] uppercase tracking-wider border border-amber-400/30 print:border-blue-300">
+                                                Strictly TRC-20 Network
+                                            </span>
+                                        </div>
+                                        
+                                        <div className="space-y-3 text-xs font-mono">
+                                            <div>
+                                                <div className="text-[9px] font-sans font-bold text-blue-400 print:text-slate-500 uppercase tracking-widest mb-0.5">Asset / Network</div>
+                                                <div className="text-sm font-bold flex items-center gap-2">
+                                                    USDT <span className="text-blue-300 print:text-slate-400 text-xs">on</span> TRON (TRC-20)
+                                                </div>
+                                            </div>
+                                            
+                                            <div>
+                                                <div className="text-[9px] font-sans font-bold text-blue-400 print:text-slate-500 uppercase tracking-widest mb-0.5">Destination Address</div>
+                                                <div className="bg-black/30 print:bg-slate-100 p-2 rounded border border-blue-800 print:border-slate-300 font-bold text-emerald-400 print:text-blue-900 break-all">
+                                                    {selectedBank.accountNumber}
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="grid grid-cols-2 gap-4 pt-2">
+                                                <div>
+                                                    <div className="text-[9px] font-sans font-bold text-blue-400 print:text-slate-500 uppercase tracking-widest mb-0.5">Entity Name</div>
+                                                    <div className="font-bold print:text-slate-800">{selectedBank.accountName}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-[9px] font-sans font-bold text-blue-400 print:text-slate-500 uppercase tracking-widest mb-0.5">Payment Ref</div>
+                                                    <div className="font-bold text-amber-400 print:text-amber-600">{generatedInvoiceNum}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="mt-4 pt-3 border-t border-blue-800/50 print:border-blue-100 text-[9px] text-blue-300 print:text-slate-500 font-sans leading-relaxed">
+                                            <strong>WARNING:</strong> Sending any other asset to this address or using a non-TRC20 network will result in permanent loss of funds. Blue Collar Recruitment is not liable for incorrect transfers.
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
                         </div>
 
-                        {/* Remittance Details */}
-                        {selectedBank && (
-                            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-1 font-mono">
-                                <div className="font-sans font-bold text-blue-900 uppercase text-[10px] mb-2">Corporate Remittance Details (USDT TRC-20)</div>
-                                <div><span className="font-sans text-slate-500">Wallet Name:</span> <strong>{selectedBank.bankName}</strong></div>
-                                <div><span className="font-sans text-slate-500">Network:</span> <strong>TRC-20</strong></div>
-                                <div><span className="font-sans text-slate-500">USDT Wallet Address:</span> <strong>{selectedBank.accountNumber}</strong></div>
-                                <div><span className="font-sans text-slate-500">Account Name:</span> <strong>{selectedBank.accountName}</strong></div>
-                                {selectedBank.swiftCode && <div><span className="font-sans text-slate-500">SWIFT / BIC Code:</span> <strong>{selectedBank.swiftCode}</strong></div>}
-                                <div><span className="font-sans text-slate-500">Payment Reference:</span> <strong className="text-amber-700">{generatedInvoiceNum}</strong></div>
-                            </div>
-                        )}
-
-                        <div className="border-t border-slate-200 pt-4 flex items-center justify-between print:hidden">
+                        {/* Modal Actions */}
+                        <div className="bg-slate-50 p-6 border-t border-slate-200 flex items-center justify-between print:hidden">
                             <button
                                 onClick={() => setPrintModalOpen(false)}
-                                className="px-5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                                className="px-6 py-3 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-white transition-colors"
                             >
                                 Close Preview
                             </button>
                             <button
                                 onClick={() => window.print()}
-                                className="bg-blue-900 text-amber-400 hover:bg-blue-800 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg"
+                                className="bg-blue-900 text-amber-400 hover:bg-blue-800 px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-blue-900/20 transition-all active:scale-95"
                             >
-                                <Printer className="h-4 w-4" /> Print / Save as PDF
+                                <Printer className="h-4 w-4" /> Save / Print Crypto Invoice
                             </button>
                         </div>
                     </div>
