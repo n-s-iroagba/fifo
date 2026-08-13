@@ -117,6 +117,25 @@ function JobsContent() {
                         ))}
                     </div>
                 )}
+                
+                <div className="mt-16 bg-blue-50/50 border border-blue-100 rounded-[3rem] p-10 lg:p-16 text-center max-w-4xl mx-auto">
+                    <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-900/5">
+                        <span className="material-symbols-outlined text-4xl text-blue-900">campaign</span>
+                    </div>
+                    <h3 className="text-2xl md:text-3xl font-black text-blue-900 mb-4 tracking-tight">
+                        Can't find the perfect role?
+                    </h3>
+                    <p className="text-blue-500 font-medium leading-relaxed max-w-xl mx-auto mb-8">
+                        We are always scouting for elite talent. Register today and submit an Expression of Interest to be notified when matching positions open up.
+                    </p>
+                    <Link
+                        href="/register?redirect=/dashboard/jobs/eoi"
+                        className="inline-flex items-center gap-3 bg-blue-900 text-white px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-800 transition-all hover:scale-105"
+                    >
+                        Register & Submit EOI
+                        <span className="material-symbols-outlined text-sm">east</span>
+                    </Link>
+                </div>
             </main>
 
             <PublicFooter />

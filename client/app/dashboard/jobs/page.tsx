@@ -228,6 +228,25 @@ export default function BrowseJobsPage() {
                             <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Refine your filters to find more opportunities.</p>
                         </div>
                     )}
+
+                    <div className="mt-16 bg-blue-50 border border-blue-100 rounded-[3rem] p-10 lg:p-16 text-center max-w-4xl mx-auto">
+                        <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-900/5">
+                            <span className="material-symbols-outlined text-4xl text-blue-900">campaign</span>
+                        </div>
+                        <h3 className="text-2xl md:text-3xl font-black text-blue-900 mb-4 tracking-tight">
+                            Can't find the perfect role?
+                        </h3>
+                        <p className="text-blue-500 font-medium leading-relaxed max-w-xl mx-auto mb-8">
+                            Submit an Expression of Interest to let our scouting team know exactly what you're looking for. We'll notify you the moment a matching position opens.
+                        </p>
+                        <Link
+                            href="/dashboard/jobs/eoi"
+                            className="inline-flex items-center gap-3 bg-blue-900 text-white px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-800 transition-all hover:scale-105"
+                        >
+                            Submit Expression of Interest
+                            <span className="material-symbols-outlined text-sm">east</span>
+                        </Link>
+                    </div>
                 </div>
             )}
             {/* Apex Access Modal */}
