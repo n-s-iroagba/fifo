@@ -10,7 +10,7 @@ class AuthController {
             this.setRefreshTokenCookie(res, refreshToken);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json({
                 message: constants_1.CONSTANTS.SUCCESS_MESSAGES.REGISTER_SUCCESS,
-                user: { id: user.id, email: user.email, role: user.role, fullName: user.fullName, cvUrl: user.cvUrl, phoneNumber: user.phoneNumber, nationality: user.nationality },
+                user: { id: user.id, email: user.email, role: user.role, fullName: user.fullName, cvUrl: user.cvUrl, phoneNumber: user.phoneNumber, nationality: user.nationality, psychometricModule1Passed: user.psychometricModule1Passed, psychometricModule2Passed: user.psychometricModule2Passed },
                 accessToken
             });
         }
@@ -29,7 +29,7 @@ class AuthController {
             this.setRefreshTokenCookie(res, refreshToken);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json({
                 message: constants_1.CONSTANTS.SUCCESS_MESSAGES.REGISTER_SUCCESS,
-                user: { id: user.id, email: user.email, role: user.role, fullName: user.fullName, cvUrl: user.cvUrl, phoneNumber: user.phoneNumber, nationality: user.nationality },
+                user: { id: user.id, email: user.email, role: user.role, fullName: user.fullName, cvUrl: user.cvUrl, phoneNumber: user.phoneNumber, nationality: user.nationality, psychometricModule1Passed: user.psychometricModule1Passed, psychometricModule2Passed: user.psychometricModule2Passed },
                 accessToken
             });
         }
@@ -108,7 +108,9 @@ class AuthController {
                     fullName: user.fullName,
                     cvUrl: user.cvUrl,
                     phoneNumber: user.phoneNumber,
-                    nationality: user.nationality
+                    nationality: user.nationality,
+                    psychometricModule1Passed: user.psychometricModule1Passed,
+                    psychometricModule2Passed: user.psychometricModule2Passed
                 },
                 accessToken
             });
@@ -164,7 +166,9 @@ class AuthController {
                     countryOfResidence: user.countryOfResidence,
                     zipCode: user.zipCode,
                     cvUrl: user.cvUrl,
-                    languages: user.languages
+                    languages: user.languages,
+                    psychometricModule1Passed: user.psychometricModule1Passed,
+                    psychometricModule2Passed: user.psychometricModule2Passed
                 }
             });
         }
@@ -195,7 +199,9 @@ class AuthController {
                     countryOfResidence: user.countryOfResidence,
                     zipCode: user.zipCode,
                     cvUrl: user.cvUrl,
-                    languages: user.languages
+                    languages: user.languages,
+                    psychometricModule1Passed: user.psychometricModule1Passed,
+                    psychometricModule2Passed: user.psychometricModule2Passed
                 }
             });
         }

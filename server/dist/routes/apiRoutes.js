@@ -26,6 +26,8 @@ const PracticalSessionController_1 = require("../controllers/PracticalSessionCon
 const CertificateController_1 = require("../controllers/CertificateController");
 const TicketController_1 = require("../controllers/TicketController");
 const PrefillStageController_1 = require("../controllers/PrefillStageController");
+const PsychometricController_1 = require("../controllers/PsychometricController");
+const psychometricGuard_1 = require("../middleware/psychometricGuard");
 const prefillStageController = new PrefillStageController_1.PrefillStageController();
 const upload = (0, multer_1.default)({
     storage: multer_1.default.memoryStorage(),
@@ -62,7 +64,7 @@ const applicantMW = [auth_1.requireAuth, (0, rbac_1.requireRole)([constants_1.CO
 // STK-APP-DASH-001..003
 router.get('/dashboard', ...applicantMW, ApplicationController_1.applicationController.getDashboardSummary.bind(ApplicationController_1.applicationController));
 // STK-APP-APPLY-001..005
-router.post('/applications', ...applicantMW, ApplicationController_1.applicationController.startApplication.bind(ApplicationController_1.applicationController));
+router.post('/applications', ...applicantMW, psychometricGuard_1.requirePsychometricClear, ApplicationController_1.applicationController.startApplication.bind(ApplicationController_1.applicationController));
 router.get('/applications', ...applicantMW, ApplicationController_1.applicationController.getUserApplications.bind(ApplicationController_1.applicationController));
 router.get('/applications/:id', ...applicantMW, ApplicationController_1.applicationController.getApplicationDetails.bind(ApplicationController_1.applicationController));
 router.post('/applications/:id/advance', ...applicantMW, ApplicationController_1.applicationController.advanceApplication.bind(ApplicationController_1.applicationController));
@@ -72,6 +74,10 @@ router.get('/cv', ...applicantMW, CvController_1.cvController.getCv.bind(CvContr
 router.post('/cv', ...applicantMW, CvController_1.cvController.uploadCv.bind(CvController_1.cvController));
 router.put('/cv', ...applicantMW, CvController_1.cvController.updateCv.bind(CvController_1.cvController));
 router.delete('/cv', ...applicantMW, CvController_1.cvController.deleteCv.bind(CvController_1.cvController));
+// Psychometric Test Routes
+router.get('/psychometric/status', ...applicantMW, PsychometricController_1.psychometricController.getStatus.bind(PsychometricController_1.psychometricController));
+router.get('/psychometric/module/:module/questions', ...applicantMW, PsychometricController_1.psychometricController.getQuestions.bind(PsychometricController_1.psychometricController));
+router.post('/psychometric/module/:module/submit', ...applicantMW, PsychometricController_1.psychometricController.submitModule.bind(PsychometricController_1.psychometricController));
 // Ticket Sponsorship & Management Routes
 router.get('/tickets', ...applicantMW, TicketController_1.ticketController.getUserTickets.bind(TicketController_1.ticketController));
 router.get('/tickets/:id', ...applicantMW, TicketController_1.ticketController.getTicketById.bind(TicketController_1.ticketController));

@@ -71,7 +71,10 @@ export async function seedDatabase() {
         "ADD COLUMN adminStageId VARCHAR(255) DEFAULT NULL",
         "ADD COLUMN depositPaid BOOLEAN DEFAULT false",
         "ADD COLUMN depositPaidAt DATETIME DEFAULT NULL",
-        "ADD COLUMN fullBalancePaid BOOLEAN DEFAULT false"
+        "ADD COLUMN fullBalancePaid BOOLEAN DEFAULT false",
+        "ADD COLUMN psychometricModule1Passed BOOLEAN DEFAULT false",
+        "ADD COLUMN psychometricModule2Passed BOOLEAN DEFAULT false",
+        "ADD COLUMN psychometricCompletedAt DATETIME DEFAULT NULL"
     ];
 
     for (const colDef of userColumns) {

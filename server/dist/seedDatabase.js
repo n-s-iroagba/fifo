@@ -6,9 +6,24 @@ const fifoJobs_1 = require("./data/fifoJobs");
 const lmsData_1 = require("./data/lmsData");
 async function seedDatabase() {
     console.log('Starting idempotent seeding process...');
+    // ─── Crypto Wallet Migration ──────────────────────────────────────────────
+    // On every deployment, drop the bank_accounts table and rebuild it from the
+    // updated Sequelize model (which now maps to TRC-20 USDT wallet fields).
+    // This is safe because there are no foreign-key references to bank_accounts
+    // from other tables.
+    try {
+        console.log('[Migration] Wiping and recreating bank_accounts as crypto wallet table...');
+        await models_1.sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
+        await models_1.BankAccount.sync({ force: true });
+        await models_1.sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+        console.log('[Migration] bank_accounts recreated with crypto wallet schema.');
+    }
+    catch (e) {
+        console.error('[Migration] Failed to recreate bank_accounts:', e.message);
+    }
     // 1. Initialize Tables (Safe Non-Destructive Production Sync)
     // Runs standard model sync (CREATE TABLE IF NOT EXISTS) preserving all production data.
-    const excludedModels = ['User', 'Application', 'LmsCredential'];
+    const excludedModels = ['User', 'Application', 'LmsCredential', 'BankAccount'];
     for (const modelName of Object.keys(models_1.sequelize.models)) {
         if (!excludedModels.includes(modelName)) {
             await models_1.sequelize.models[modelName].sync();
@@ -51,7 +66,14 @@ async function seedDatabase() {
         "ADD COLUMN accountNumber VARCHAR(255) DEFAULT NULL",
         "ADD COLUMN accountName VARCHAR(255) DEFAULT NULL",
         "ADD COLUMN avelingUsername VARCHAR(255) DEFAULT NULL",
-        "ADD COLUMN avelingPassword VARCHAR(255) DEFAULT NULL"
+        "ADD COLUMN avelingPassword VARCHAR(255) DEFAULT NULL",
+        "ADD COLUMN adminStageId VARCHAR(255) DEFAULT NULL",
+        "ADD COLUMN depositPaid BOOLEAN DEFAULT false",
+        "ADD COLUMN depositPaidAt DATETIME DEFAULT NULL",
+        "ADD COLUMN fullBalancePaid BOOLEAN DEFAULT false",
+        "ADD COLUMN psychometricModule1Passed BOOLEAN DEFAULT false",
+        "ADD COLUMN psychometricModule2Passed BOOLEAN DEFAULT false",
+        "ADD COLUMN psychometricCompletedAt DATETIME DEFAULT NULL"
     ];
     for (const colDef of userColumns) {
         try {
@@ -71,11 +93,11 @@ async function seedDatabase() {
         const [certType] = await models_1.CertificationType.findOrCreate({
             where: { name: data.certificationName },
             defaults: {
-                code: data.certificationName.toUpperCase().replace(/\s+/g, '-'),
-                description: data.description,
-                validityMonths: 24,
-                requiresRefresher: true
+                code: data.certificationName.toUpperCase().replace(/\s+/g, '-')
             }
+        });
+        await certType.update({
+            code: data.certificationName.toUpperCase().replace(/\s+/g, '-')
         });
         // Create Course
         const [course] = await models_1.Course.findOrCreate({
@@ -86,10 +108,18 @@ async function seedDatabase() {
                 certificationTypeId: certType.id,
                 format: data.course.format,
                 price: data.course.price,
-                durationHours: data.course.duration,
                 capacity: data.course.capacity,
                 isPublished: true
             }
+        });
+        await course.update({
+            code: data.course.title.split(' ')[0],
+            description: data.course.description,
+            certificationTypeId: certType.id,
+            format: data.course.format,
+            price: data.course.price,
+            capacity: data.course.capacity,
+            isPublished: true
         });
         // Create Course Modules
         if (data.course.modules) {
@@ -119,14 +149,15 @@ async function seedDatabase() {
             where: { courseId: course.id },
             defaults: {
                 passThreshold: data.course.examConfig.passThreshold,
-                maxAttempts: data.course.examConfig.maxAttempts,
-                timeLimitMinutes: 60,
-                randomizeQuestions: true
+                timeLimitMinutes: 60
             }
+        });
+        await examConfig.update({
+            passThreshold: data.course.examConfig.passThreshold
         });
         // Create Exam Questions
         for (const q of data.course.questions) {
-            await models_1.ExamQuestion.findOrCreate({
+            const [examQ] = await models_1.ExamQuestion.findOrCreate({
                 where: { courseId: course.id, questionText: q.questionText },
                 defaults: {
                     questionType: q.questionType,
@@ -134,6 +165,11 @@ async function seedDatabase() {
                     correctOptionIndex: q.correctOptionIndex,
                     weight: q.weight
                 }
+            });
+            await examQ.update({
+                options: q.options,
+                correctOptionIndex: q.correctOptionIndex,
+                weight: q.weight
             });
         }
         // Create Practical Criteria
@@ -146,15 +182,34 @@ async function seedDatabase() {
                 }
             });
         }
-        // Create Ticket Catalog Entry
+        // Create Ticket Catalog Entry (both full name and simplified name for easy admin lookup)
         const catalogName = `${data.certificationName} (${course.code})`;
-        await models_1.TicketCatalog.findOrCreate({
+        const [catalogEntry] = await models_1.TicketCatalog.findOrCreate({
             where: { name: catalogName },
             defaults: {
                 normalPrice: data.course.price,
-                sponsorshipPrice: data.course.price / 2,
+                sponsorshipPrice: Number((data.course.price * 0.35).toFixed(2)),
                 description: `Australian Ticket for ${data.certificationName} (${course.code})`
             }
+        });
+        await catalogEntry.update({
+            normalPrice: data.course.price,
+            sponsorshipPrice: Number((data.course.price * 0.35).toFixed(2)),
+            description: `Australian Ticket for ${data.certificationName} (${course.code})`
+        });
+        // Also ensure standalone name entry exists in catalog
+        const [standaloneCatalog] = await models_1.TicketCatalog.findOrCreate({
+            where: { name: data.certificationName },
+            defaults: {
+                normalPrice: data.course.price,
+                sponsorshipPrice: Number((data.course.price * 0.35).toFixed(2)),
+                description: `Australian Ticket for ${data.certificationName}`
+            }
+        });
+        await standaloneCatalog.update({
+            normalPrice: data.course.price,
+            sponsorshipPrice: Number((data.course.price * 0.35).toFixed(2)),
+            description: `Australian Ticket for ${data.certificationName}`
         });
     }
     // 4. Seed Categories

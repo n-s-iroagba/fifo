@@ -156,6 +156,20 @@ User.init({
         defaultValue: false,
         allowNull: false,
     },
+    psychometricModule1Passed: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    psychometricModule2Passed: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    psychometricCompletedAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: true,
+    },
 }, {
     sequelize: database_1.sequelize,
     tableName: 'users',

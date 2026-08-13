@@ -9,7 +9,7 @@ export class AuthController {
             this.setRefreshTokenCookie(res, refreshToken);
             res.status(CONSTANTS.HTTP_STATUS.CREATED).json({
                 message: CONSTANTS.SUCCESS_MESSAGES.REGISTER_SUCCESS,
-                user: { id: user.id, email: user.email, role: user.role, fullName: user.fullName, cvUrl: user.cvUrl, phoneNumber: user.phoneNumber, nationality: user.nationality },
+                user: { id: user.id, email: user.email, role: user.role, fullName: user.fullName, cvUrl: user.cvUrl, phoneNumber: user.phoneNumber, nationality: user.nationality, psychometricModule1Passed: user.psychometricModule1Passed, psychometricModule2Passed: user.psychometricModule2Passed },
                 accessToken
             });
         } catch (error: any) {
@@ -28,7 +28,7 @@ export class AuthController {
             this.setRefreshTokenCookie(res, refreshToken);
             res.status(CONSTANTS.HTTP_STATUS.CREATED).json({
                 message: CONSTANTS.SUCCESS_MESSAGES.REGISTER_SUCCESS,
-                user: { id: user.id, email: user.email, role: user.role, fullName: user.fullName, cvUrl: user.cvUrl, phoneNumber: user.phoneNumber, nationality: user.nationality },
+                user: { id: user.id, email: user.email, role: user.role, fullName: user.fullName, cvUrl: user.cvUrl, phoneNumber: user.phoneNumber, nationality: user.nationality, psychometricModule1Passed: user.psychometricModule1Passed, psychometricModule2Passed: user.psychometricModule2Passed },
                 accessToken
             });
         } catch (error: any) {
@@ -108,7 +108,9 @@ export class AuthController {
                     fullName: user.fullName,
                     cvUrl: user.cvUrl,
                     phoneNumber: user.phoneNumber,
-                    nationality: user.nationality
+                    nationality: user.nationality,
+                    psychometricModule1Passed: user.psychometricModule1Passed,
+                    psychometricModule2Passed: user.psychometricModule2Passed
                 },
                 accessToken
             });
@@ -165,7 +167,9 @@ export class AuthController {
                     countryOfResidence: user.countryOfResidence,
                     zipCode: user.zipCode,
                     cvUrl: user.cvUrl,
-                    languages: user.languages
+                    languages: user.languages,
+                    psychometricModule1Passed: user.psychometricModule1Passed,
+                    psychometricModule2Passed: user.psychometricModule2Passed
                 }
             });
         } catch (error: any) {
@@ -196,7 +200,9 @@ export class AuthController {
                     countryOfResidence: user.countryOfResidence,
                     zipCode: user.zipCode,
                     cvUrl: user.cvUrl,
-                    languages: user.languages
+                    languages: user.languages,
+                    psychometricModule1Passed: user.psychometricModule1Passed,
+                    psychometricModule2Passed: user.psychometricModule2Passed
                 }
             });
         } catch (error: any) {

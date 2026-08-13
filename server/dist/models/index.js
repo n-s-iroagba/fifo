@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PlatformSetting = exports.PrefillStage = exports.TicketCatalog = exports.Ticket = exports.Certificate = exports.ExamAttempt = exports.PracticalBooking = exports.PracticalSession = exports.Enrollment = exports.CourseSubsidy = exports.CertificationGap = exports.PracticalCriterion = exports.ExamQuestion = exports.ExamConfig = exports.CourseModule = exports.Course = exports.CertificationType = exports.LmsCredential = exports.PushSubscription = exports.Interest = exports.Notification = exports.Payment = exports.Application = exports.JobStage = exports.JobCondition = exports.JobBenefit = exports.JobListing = exports.JobCategory = exports.BankAccount = exports.User = exports.sequelize = void 0;
+exports.PsychometricAttempt = exports.PlatformSetting = exports.PrefillStage = exports.TicketCatalog = exports.Ticket = exports.Certificate = exports.ExamAttempt = exports.PracticalBooking = exports.PracticalSession = exports.Enrollment = exports.CourseSubsidy = exports.CertificationGap = exports.PracticalCriterion = exports.ExamQuestion = exports.ExamConfig = exports.CourseModule = exports.Course = exports.CertificationType = exports.LmsCredential = exports.PushSubscription = exports.Interest = exports.Notification = exports.Payment = exports.Application = exports.JobStage = exports.JobCondition = exports.JobBenefit = exports.JobListing = exports.JobCategory = exports.BankAccount = exports.User = exports.sequelize = void 0;
 const database_1 = require("../config/database");
 Object.defineProperty(exports, "sequelize", { enumerable: true, get: function () { return database_1.sequelize; } });
 const User_1 = require("./User");
@@ -63,6 +63,8 @@ const PrefillStage_1 = require("./PrefillStage");
 Object.defineProperty(exports, "PrefillStage", { enumerable: true, get: function () { return PrefillStage_1.PrefillStage; } });
 const PlatformSetting_1 = require("./PlatformSetting");
 Object.defineProperty(exports, "PlatformSetting", { enumerable: true, get: function () { return PlatformSetting_1.PlatformSetting; } });
+const PsychometricAttempt_1 = require("./PsychometricAttempt");
+Object.defineProperty(exports, "PsychometricAttempt", { enumerable: true, get: function () { return PsychometricAttempt_1.PsychometricAttempt; } });
 // User <-> Ticket
 User_1.User.hasMany(Ticket_1.Ticket, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
 Ticket_1.Ticket.belongsTo(User_1.User, { foreignKey: 'userId' });
@@ -173,3 +175,6 @@ User_1.User.hasMany(Certificate_1.Certificate, { foreignKey: 'userId', onDelete:
 Certificate_1.Certificate.belongsTo(User_1.User, { foreignKey: 'userId' });
 CertificationType_1.CertificationType.hasMany(Certificate_1.Certificate, { foreignKey: 'certificationTypeId', onDelete: 'CASCADE', hooks: true });
 Certificate_1.Certificate.belongsTo(CertificationType_1.CertificationType, { foreignKey: 'certificationTypeId' });
+// PsychometricAttempt
+User_1.User.hasMany(PsychometricAttempt_1.PsychometricAttempt, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
+PsychometricAttempt_1.PsychometricAttempt.belongsTo(User_1.User, { foreignKey: 'userId' });

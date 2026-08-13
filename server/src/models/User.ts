@@ -38,6 +38,9 @@ export class User extends Model {
     declare depositPaid: boolean;
     declare depositPaidAt: Date | null;
     declare fullBalancePaid: boolean;
+    declare psychometricModule1Passed: boolean;
+    declare psychometricModule2Passed: boolean;
+    declare psychometricCompletedAt: Date | null;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 }
@@ -190,6 +193,20 @@ User.init({
         type: DataTypes.BOOLEAN,
         defaultValue: false,
         allowNull: false,
+    },
+    psychometricModule1Passed: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    psychometricModule2Passed: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    psychometricCompletedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
     },
 }, {
     sequelize,

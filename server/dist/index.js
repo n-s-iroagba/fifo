@@ -10,6 +10,7 @@ const logger_1 = require("./utils/logger");
 // Initializes Associations Mapping
 require("./models");
 const seedDatabase_1 = require("./seedDatabase");
+const payment_milestone_migration_1 = require("./migrations/payment_milestone_migration");
 const PORT = process.env.PORT || 5000;
 const startServer = async () => {
     try {
@@ -18,10 +19,12 @@ const startServer = async () => {
             logger_1.logger.info(`Server activated and mapping routes on port ${PORT}`);
             // Run heavy seeding and migrations in the background so Fly.io health checks don't timeout
             try {
-                (0, seedDatabase_1.seedDatabase)().then(() => {
+                (0, payment_milestone_migration_1.migratePaymentMilestone)().then(() => {
+                    return (0, seedDatabase_1.seedDatabase)();
+                }).then(() => {
                     logger_1.logger.info('Database seeded successfully in background.');
                 }).catch(err => {
-                    logger_1.logger.error('Background database seeding error:', err);
+                    logger_1.logger.error('Background database initialization error:', err);
                 });
                 if (process.env.NODE_ENV !== 'production') {
                     logger_1.logger.info('Database Synchronized successfully.');

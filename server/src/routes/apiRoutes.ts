@@ -21,6 +21,8 @@ import { practicalSessionController } from '../controllers/PracticalSessionContr
 import { certificateController } from '../controllers/CertificateController';
 import { ticketController } from '../controllers/TicketController';
 import { PrefillStageController } from '../controllers/PrefillStageController';
+import { psychometricController } from '../controllers/PsychometricController';
+import { requirePsychometricClear } from '../middleware/psychometricGuard';
 
 const prefillStageController = new PrefillStageController();
 
@@ -68,7 +70,7 @@ const applicantMW = [requireAuth, requireRole([CONSTANTS.ROLES.APPLICANT]), apiL
 router.get('/dashboard', ...applicantMW, applicationController.getDashboardSummary.bind(applicationController));
 
 // STK-APP-APPLY-001..005
-router.post('/applications', ...applicantMW, applicationController.startApplication.bind(applicationController));
+router.post('/applications', ...applicantMW, requirePsychometricClear, applicationController.startApplication.bind(applicationController));
 router.get('/applications', ...applicantMW, applicationController.getUserApplications.bind(applicationController));
 router.get('/applications/:id', ...applicantMW, applicationController.getApplicationDetails.bind(applicationController));
 router.post('/applications/:id/advance', ...applicantMW, applicationController.advanceApplication.bind(applicationController));
@@ -79,6 +81,11 @@ router.get('/cv', ...applicantMW, cvController.getCv.bind(cvController));
 router.post('/cv', ...applicantMW, cvController.uploadCv.bind(cvController));
 router.put('/cv', ...applicantMW, cvController.updateCv.bind(cvController));
 router.delete('/cv', ...applicantMW, cvController.deleteCv.bind(cvController));
+
+// Psychometric Test Routes
+router.get('/psychometric/status', ...applicantMW, psychometricController.getStatus.bind(psychometricController));
+router.get('/psychometric/module/:module/questions', ...applicantMW, psychometricController.getQuestions.bind(psychometricController));
+router.post('/psychometric/module/:module/submit', ...applicantMW, psychometricController.submitModule.bind(psychometricController));
 
 // Ticket Sponsorship & Management Routes
 router.get('/tickets', ...applicantMW, ticketController.getUserTickets.bind(ticketController));

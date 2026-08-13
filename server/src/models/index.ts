@@ -29,6 +29,7 @@ import { Ticket } from './Ticket';
 import { TicketCatalog } from './TicketCatalog';
 import { PrefillStage } from './PrefillStage';
 import { PlatformSetting } from './PlatformSetting';
+import { PsychometricAttempt } from './PsychometricAttempt';
 
 // User <-> Ticket
 User.hasMany(Ticket, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
@@ -171,6 +172,10 @@ Certificate.belongsTo(User, { foreignKey: 'userId' });
 CertificationType.hasMany(Certificate, { foreignKey: 'certificationTypeId', onDelete: 'CASCADE', hooks: true });
 Certificate.belongsTo(CertificationType, { foreignKey: 'certificationTypeId' });
 
+// PsychometricAttempt
+User.hasMany(PsychometricAttempt, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
+PsychometricAttempt.belongsTo(User, { foreignKey: 'userId' });
+
 export {
     sequelize,
     User,
@@ -202,5 +207,6 @@ export {
     Ticket,
     TicketCatalog,
     PrefillStage,
-    PlatformSetting
+    PlatformSetting,
+    PsychometricAttempt
 };

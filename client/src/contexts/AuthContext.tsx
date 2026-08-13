@@ -19,6 +19,8 @@ interface User {
     state?: string;
     country?: string;
     zipCode?: string;
+    psychometricModule1Passed?: boolean;
+    psychometricModule2Passed?: boolean;
 }
 
 interface AuthContextType {
@@ -105,7 +107,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 }
             } else {
                 // Logged in: Handle cross-role protection
-                // Removed auto-redirect from isAuthRoute to allow user control on Login page
+                const needsPsychometric = user.role === CONSTANTS.ROLES.APPLICANT && (!user.psychometricModule1Passed || !user.psychometricModule2Passed);
+
+                if (needsPsychometric && !isPublicRoute && !isAuthRoute) {
+                    const token = localStorage.getItem('accessToken');
+                    const avelingUrl = process.env.NEXT_PUBLIC_AVELING_URL || 'http://localhost:3002';
+                    window.location.href = `${avelingUrl}/psychometric?token=${token}`;
+                    return;
+                }
+                
                 if (user.role === CONSTANTS.ROLES.APPLICANT && isAdminRoute) {
                     router.push(CONSTANTS.ROUTES.DASHBOARD);
                 } else if (user.role === CONSTANTS.ROLES.ADMIN && isDashboardRoute) {
