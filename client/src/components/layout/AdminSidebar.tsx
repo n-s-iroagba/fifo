@@ -14,6 +14,7 @@ const navItems = [
     { label: 'Interests', href: '/admin/interests', icon: 'psychology' },
     { label: 'Payment Queue', href: CONSTANTS.ROUTES.ADMIN.UNVERIFIED, icon: 'account_tree' },
     { label: 'Payments', href: CONSTANTS.ROUTES.ADMIN.UNPAID, icon: 'receipt_long' },
+    { label: 'Invoices', href: '/admin/invoices', icon: 'request_quote' },
     { label: 'Jobs', href: CONSTANTS.ROUTES.ADMIN.JOBS, icon: 'business_center' },
     { label: 'Categories', href: CONSTANTS.ROUTES.ADMIN.CATEGORIES, icon: 'layers' },
     { label: 'Benefits', href: CONSTANTS.ROUTES.ADMIN.BENEFITS, icon: 'redeem' },

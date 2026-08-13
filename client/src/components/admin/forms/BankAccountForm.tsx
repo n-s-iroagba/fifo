@@ -68,11 +68,11 @@ export default function BankAccountForm({ initialData, isEdit = false }: BankAcc
             <div className="p-6 md:p-10">
                 <form onSubmit={handleSubmit} className="space-y-8">
                     <div className="space-y-2">
-                        <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1" htmlFor="bank_name">Bank Name</label>
+                        <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1" htmlFor="bank_name">Wallet Name / Nickname</label>
                         <input
                             className="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-900 placeholder:text-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-900/5 focus:border-blue-900 transition-all outline-none"
                             id="bank_name"
-                            placeholder="e.g. JPMorgan Chase"
+                            placeholder="e.g. Corporate Binance TRC-20"
                             type="text"
                             value={bankName}
                             onChange={(e) => setBankName(e.target.value)}
@@ -82,11 +82,11 @@ export default function BankAccountForm({ initialData, isEdit = false }: BankAcc
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
-                            <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1" htmlFor="account_number">Account Number</label>
+                            <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1" htmlFor="account_number">USDT Wallet Address</label>
                             <input
-                                className="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-900 placeholder:text-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-900/5 focus:border-blue-900 transition-all outline-none"
+                                className="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-900 placeholder:text-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-900/5 focus:border-blue-900 transition-all outline-none font-mono"
                                 id="account_number"
-                                placeholder="..."
+                                placeholder="e.g. T..."
                                 type="text"
                                 value={accountNumber}
                                 onChange={(e) => setAccountNumber(e.target.value)}
@@ -109,11 +109,11 @@ export default function BankAccountForm({ initialData, isEdit = false }: BankAcc
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
-                            <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1" htmlFor="routing_code">Routing / Sort Code</label>
+                            <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1" htmlFor="routing_code">Network</label>
                             <input
-                                className="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-900 placeholder:text-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-900/5 focus:border-blue-900 transition-all outline-none"
+                                className="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-900 placeholder:text-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-900/5 focus:border-blue-900 transition-all outline-none font-mono"
                                 id="routing_code"
-                                placeholder="..."
+                                placeholder="e.g. TRC-20"
                                 type="text"
                                 value={routingCode}
                                 onChange={(e) => setRoutingCode(e.target.value)}
@@ -128,6 +128,7 @@ export default function BankAccountForm({ initialData, isEdit = false }: BankAcc
                                 value={currency}
                                 onChange={(e) => setCurrency(e.target.value)}
                             >
+                                <option value="USDT">USDT</option>
                                 <option value="USD">USD</option>
                                 <option value="EUR">EUR</option>
                                 <option value="GBP">GBP</option>
@@ -164,7 +165,7 @@ export default function BankAccountForm({ initialData, isEdit = false }: BankAcc
                             type="submit"
                             disabled={mutation.isPending}
                         >
-                            {mutation.isPending ? 'Saving...' : isEdit ? 'Update Account' : 'Save Account'}
+                            {mutation.isPending ? 'Saving...' : isEdit ? 'Update Wallet' : 'Save Wallet'}
                         </button>
                     </div>
                 </form>

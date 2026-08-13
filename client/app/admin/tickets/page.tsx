@@ -705,8 +705,8 @@ export default function AdminTicketsPage() {
                         <div className="flex items-start justify-between mb-6">
                             <div>
                                 <span className="text-[9px] font-black uppercase tracking-widest text-blue-400 block mb-1">Global Settings</span>
-                                <h2 className="text-xl font-bold text-blue-900">Platform Bank Account</h2>
-                                <p className="text-xs text-slate-500 mt-1">This is the bank account displayed to candidates when they are required to pay for subsidised courses via Aveling.</p>
+                                <h2 className="text-xl font-bold text-blue-900">Corporate USDT Wallet</h2>
+                                <p className="text-xs text-slate-500 mt-1">This is the TRC-20 wallet address displayed to candidates when they are required to pay for subsidised courses.</p>
                             </div>
                             <button onClick={() => setBankModalOpen(false)} className="text-slate-400 hover:text-slate-600 mt-1">
                                 <span className="material-symbols-outlined">close</span>
@@ -715,16 +715,16 @@ export default function AdminTicketsPage() {
 
                         <form onSubmit={handleSaveBank} className="space-y-4">
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Bank Name</label>
-                                <input type="text" value={platformBank.bankName} onChange={e => setPlatformBank({ ...platformBank, bankName: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" placeholder="Commonwealth Bank" />
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Wallet Name / Nickname</label>
+                                <input type="text" value={platformBank.bankName} onChange={e => setPlatformBank({ ...platformBank, bankName: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" placeholder="Corporate Binance" />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">BSB Number</label>
-                                <input type="text" value={platformBank.bsb} onChange={e => setPlatformBank({ ...platformBank, bsb: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" placeholder="066-000" />
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Network</label>
+                                <input type="text" value="TRC-20" readOnly className="w-full bg-slate-100 border border-slate-200 rounded-xl p-3 text-xs text-slate-500 font-mono cursor-not-allowed" placeholder="TRC-20" />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Account Number</label>
-                                <input type="text" value={platformBank.accountNumber} onChange={e => setPlatformBank({ ...platformBank, accountNumber: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" placeholder="10293847" />
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">USDT Wallet Address</label>
+                                <input type="text" value={platformBank.accountNumber} onChange={e => setPlatformBank({ ...platformBank, accountNumber: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-mono" placeholder="T..." />
                             </div>
                             <div>
                                 <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Account Name</label>

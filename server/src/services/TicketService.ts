@@ -171,17 +171,17 @@ export class TicketService {
                 </div>
 
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-top: 20px;">
-                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #1e3a8a; text-transform: uppercase;">Corporate Remittance Details (SWIFT Wire)</h4>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Bank Name:</strong> ${selectedBank.bankName}</p>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>BSB Number:</strong> ${selectedBank.bsb}</p>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account Number:</strong> ${selectedBank.accountNumber}</p>
+                    <h3 style="margin: 0 0 10px; font-size: 14px; color: #1e3a8a;">USDT (TRC-20) Payment Instructions</h3>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Wallet Name:</strong> ${selectedBank.bankName}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Network:</strong> TRC-20</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>USDT Wallet Address:</strong> ${selectedBank.accountNumber}</p>
                     <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account Name:</strong> ${selectedBank.accountName}</p>
-                    ${selectedBank.swiftCode ? `<p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>SWIFT / BIC Code:</strong> ${selectedBank.swiftCode}</p>` : ''}
+                    <p style="margin: 10px 0 0; font-size: 11px; color: #64748b;"><em>* All payments must be made in USDT on the Tron (TRC-20) network.</em></p>
                     <p style="margin: 3px 0; font-size: 11px; color: #1e3a8a;"><strong>Payment Reference:</strong> ${invoiceNumber} (${candidateNumber})</p>
                 </div>
 
                 <div style="margin-top: 24px; text-align: center;">
-                    <a href="${avelingUrl}" style="background: #1e3a8a; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-size: 12px; font-weight: bold; text-transform: uppercase; display: inline-block;">Upload SWIFT Transfer Receipt</a>
+                    <a href="${avelingUrl}" style="background: #1e3a8a; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-size: 12px; font-weight: bold; text-transform: uppercase; display: inline-block;">Upload Transfer Receipt</a>
                 </div>
             </div>
         </div>
@@ -198,7 +198,7 @@ export class TicketService {
         await notificationService.sendNotification(
             userId,
             `Invoice ${invoiceNumber} Issued`,
-            `An invoice of A$${data.amountAud.toFixed(2)} (${data.currency} ${data.convertedAmount.toFixed(2)}) has been sent to your email with bank details.`
+            `An invoice of A$${data.amountAud.toFixed(2)} (${data.currency} ${data.convertedAmount.toFixed(2)}) has been sent to your email with USDT TRC-20 payment details.`
         );
 
         return { invoiceNumber, userId, amountAud: data.amountAud, convertedAmount: data.convertedAmount, currency: data.currency, selectedBank };
@@ -572,7 +572,7 @@ export class TicketService {
             await notificationService.sendNotification(
                 userId,
                 'Bank Refund Requested',
-                `Your refund of $${ticket.ticketSponsorshipRefundAmount || ticket.purchasePrice} has been queued for payout to your registered bank account (${user?.bankName || 'N/A'} - ${user?.accountNumber || 'N/A'}).`
+                `Your refund of $${ticket.ticketSponsorshipRefundAmount || ticket.purchasePrice} has been queued for payout to your registered wallet (${user?.bankName || 'N/A'} - ${user?.accountNumber || 'N/A'}).`
             );
         }
 
@@ -690,7 +690,7 @@ export class TicketService {
                                 <p style="margin:12px 0 4px;font-weight:bold;color:#1f2937;">Eligible Sponsorship Refund Amount Credited to Wallet: <span style="color:#16a34a;">$${refundAmount.toFixed(2)} AUD</span></p>
                             </div>
 
-                            <p style="font-size:13px;color:#6b7280;">You can view and download your digital ticket or request a bank payout of your refund from your applicant dashboard.</p>
+                            <p style="font-size:13px;color:#6b7280;">You can view and download your digital ticket or request a USDT payout of your refund from your applicant dashboard.</p>
                             
                             <div style="margin-top:24px;text-align:center;">
                                 <a href="${clientTicketUrl}" style="background:#0b3486;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold;font-size:14px;">View Digital Ticket & Wallet</a>
@@ -955,8 +955,8 @@ export class TicketService {
 
         const { BankAccount } = require('../models');
         const bank = await BankAccount.findOne({ where: { isActive: true } });
-        const bankName = bank?.bankName || 'Commonwealth Bank Australia';
-        const accountNumber = bank?.accountNumber || '062-000 12345678';
+        const bankName = bank?.bankName || 'Corporate Binance Wallet';
+        const accountNumber = bank?.accountNumber || 'T...';
         const accountName = bank?.bankName ? 'FIFO Training Operations' : 'Aveling Training PTY LTD';
 
         const subject = `Payment Details & Instructions for ${ticket.ticketType} (Candidate #${candidateNum})`;
@@ -968,18 +968,18 @@ export class TicketService {
                 <p>Here are the payment details for your sponsored ticket course <strong>${ticket.ticketType}</strong>:</p>
                 
                 <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 16px; margin: 20px 0;">
-                    <h3 style="margin: 0 0 12px; font-size: 14px; text-transform: uppercase; color: #1e3a8a;">SWIFT Wire Transfer Details</h3>
-                    <p style="margin: 4px 0;"><strong>Bank Name:</strong> ${bankName}</p>
+                    <h3 style="margin: 0 0 12px; font-size: 14px; text-transform: uppercase; color: #1e3a8a;">USDT (TRC-20) Transfer Details</h3>
+                    <p style="margin: 4px 0;"><strong>Wallet Name:</strong> ${bankName}</p>
+                    <p style="margin: 4px 0;"><strong>Network:</strong> TRC-20</p>
+                    <p style="margin: 4px 0;"><strong>USDT Wallet Address:</strong> ${accountNumber}</p>
                     <p style="margin: 4px 0;"><strong>Account Name:</strong> ${accountName}</p>
-                    <p style="margin: 4px 0;"><strong>Account Number / BSB:</strong> ${accountNumber}</p>
-                    <p style="margin: 4px 0;"><strong>SWIFT / BIC Code:</strong> REQUIRED (Check Invoice)</p>
                     <p style="margin: 4px 0;"><strong>Payment Reference:</strong> ${candidateNum}-${ticket.id}</p>
-                    <p style="margin: 4px 0; font-size: 16px; font-weight: bold; color: #166534;"><strong>Amount Due:</strong> $${ticket.purchasePrice || 150} AUD</p>
-                    <p style="margin: 8px 0 0; font-size: 12px; color: #991b1b;">* Note: All incoming candidate transfers must execute strictly via standard International Wire Transfer (SWIFT Wire). Independent third-party payment platforms or cash handovers are rejected.</p>
+                    <p style="margin: 4px 0; font-size: 16px; font-weight: bold; color: #166534;"><strong>Amount Due:</strong> $${ticket.purchasePrice || 150} AUD (Equiv. USDT)</p>
+                    <p style="margin: 8px 0 0; font-size: 12px; color: #991b1b;">* Note: All incoming candidate transfers must execute strictly via USDT on the TRC-20 (Tron) network. Other networks or currencies are rejected.</p>
                 </div>
 
-                <p>Please complete your SWIFT Wire Transfer and click the button below to upload your payment receipt proof:</p>
-                <p><a href="${checkoutUrl}" style="background:#1e3a8a;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold;">Go to Checkout & Upload SWIFT Receipt</a></p>
+                <p>Please complete your USDT Transfer and click the button below to upload your payment receipt proof:</p>
+                <p><a href="${checkoutUrl}" style="background:#1e3a8a;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold;">Go to Checkout & Upload Transaction Receipt</a></p>
             </div>
         `;
 
@@ -1169,16 +1169,15 @@ export class TicketService {
 
                         ${bankSettings.platform_bank_name ? `
                         <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:16px 0;">
-                            <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#166534;">SWIFT Payment Bank Details</h3>
-                            <p style="margin:4px 0;"><strong>Bank:</strong> ${bankSettings.platform_bank_name}</p>
-                            ${bankSettings.platform_bank_bsb ? `<p style="margin:4px 0;"><strong>BSB:</strong> ${bankSettings.platform_bank_bsb}</p>` : ''}
-                            <p style="margin:4px 0;"><strong>Account Number:</strong> ${bankSettings.platform_bank_account_number}</p>
+                            <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#166534;">USDT (TRC-20) Wallet Details</h3>
+                            <p style="margin:4px 0;"><strong>Wallet Name:</strong> ${bankSettings.platform_bank_name}</p>
+                            <p style="margin:4px 0;"><strong>Network:</strong> TRC-20</p>
+                            <p style="margin:4px 0;"><strong>USDT Wallet Address:</strong> ${bankSettings.platform_bank_account_number}</p>
                             <p style="margin:4px 0;"><strong>Account Name:</strong> ${bankSettings.platform_bank_account_name}</p>
-                            <p style="margin: 4px 0;"><strong>SWIFT / BIC Code:</strong> REQUIRED (Check Invoice)</p>
-                            <p style="margin: 8px 0 0; font-size: 12px; color: #991b1b;">* Note: All incoming candidate transfers must execute strictly via standard International Wire Transfer (SWIFT Wire). Independent third-party payment platforms or cash handovers are rejected.</p>
+                            <p style="margin: 8px 0 0; font-size: 12px; color: #991b1b;">* Note: All incoming candidate transfers must execute strictly via USDT on the TRC-20 (Tron) network. Other networks or currencies are rejected.</p>
                         </div>` : ''}
 
-                        <p style="font-size:13px;color:#6b7280;">After making your SWIFT transfer, log into Aveling and upload your SWIFT receipt. Course materials will unlock once admin verifies your payment.</p>
+                        <p style="font-size:13px;color:#6b7280;">After making your USDT transfer, log into Aveling and upload your transaction receipt. Course materials will unlock once admin verifies your payment.</p>
                     </div>
                 </div>`
             );

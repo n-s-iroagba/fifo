@@ -80,8 +80,8 @@ export function PaymentUpload({ paymentId, amount, onSuccess }: PaymentUploadPro
                         onClick={() => { setPaymentMode('bank'); setSelectedCurrency(null); }}
                         className={`p-6 rounded-2xl border transition-all text-left ${paymentMode === 'bank' ? 'bg-blue-900 border-blue-900 text-white shadow-xl shadow-blue-900/10' : 'bg-white border-blue-100 text-blue-900 hover:border-blue-300'}`}
                     >
-                        <span className="material-symbols-outlined mb-4 block">account_balance</span>
-                        <p className="text-xs font-bold uppercase tracking-widest">Bank Transfer</p>
+                        <span className="material-symbols-outlined mb-4 block">account_balance_wallet</span>
+                        <p className="text-xs font-bold uppercase tracking-widest">Crypto Transfer</p>
                     </button>
                 </div>
             </div>
@@ -115,7 +115,7 @@ export function PaymentUpload({ paymentId, amount, onSuccess }: PaymentUploadPro
                             <p className="text-[10px] text-amber-700 font-bold uppercase tracking-widest leading-relaxed">
                                 {details?.stage?.feeType === 'APEX_FEE' 
                                     ? "This infrastructure fee activates your Apex Network nodes. Access is guaranteed within 3 weeks of verification."
-                                    : "You are to make payment to the recruitment manager's company account for this process."}
+                                    : "You are to make payment to the corporate USDT TRC-20 wallet for this process."}
                             </p>
                         </div>
                     )}
@@ -134,7 +134,7 @@ export function PaymentUpload({ paymentId, amount, onSuccess }: PaymentUploadPro
                             <div key={acc.id} className="p-6 bg-white border border-blue-100 rounded-2xl shadow-sm space-y-4">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-1">Account Beneficiary</p>
+                                        <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-1">Wallet Beneficiary</p>
                                         <p className="text-sm font-bold text-blue-900 uppercase tracking-tight">
                                             {isHighValue ? `${acc.accountHolderName}` : 'JOBNEXE LLC'}
                                         </p>
@@ -148,7 +148,7 @@ export function PaymentUpload({ paymentId, amount, onSuccess }: PaymentUploadPro
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-blue-50">
                                     <div className="bg-blue-50 p-4 rounded-xl relative group">
-                                        <p className="text-[8px] font-bold text-blue-400 uppercase tracking-widest mb-1">Account Number</p>
+                                        <p className="text-[8px] font-bold text-blue-400 uppercase tracking-widest mb-1">USDT Wallet Address</p>
                                         <p className="text-xs font-mono font-bold text-blue-900 break-all">{acc.accountNumber}</p>
                                         <button
                                             onClick={() => handleCopy(acc.accountNumber, `bank-num-${acc.id}`)}
@@ -158,8 +158,8 @@ export function PaymentUpload({ paymentId, amount, onSuccess }: PaymentUploadPro
                                         </button>
                                     </div>
                                     <div className="bg-blue-50 p-4 rounded-xl relative">
-                                        <p className="text-[8px] font-bold text-blue-400 uppercase tracking-widest mb-1">Routing / Sort Code</p>
-                                        <p className="text-xs font-mono font-bold text-blue-900 break-all">{acc.routingCode || 'N/A'}</p>
+                                        <p className="text-[8px] font-bold text-blue-400 uppercase tracking-widest mb-1">Network</p>
+                                        <p className="text-xs font-mono font-bold text-blue-900 break-all">{acc.routingCode || 'TRC-20'}</p>
                                         {acc.routingCode && (
                                             <button
                                                 onClick={() => handleCopy(acc.routingCode, `bank-route-${acc.id}`)}

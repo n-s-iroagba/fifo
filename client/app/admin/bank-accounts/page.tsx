@@ -13,7 +13,7 @@ export default function BankAccountsPage() {
     });
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Are you sure you want to delete this bank account?')) return;
+        if (!confirm('Are you sure you want to delete this crypto wallet?')) return;
         try {
             await deleteMutation.mutateAsync(id);
         } catch (err) { console.error(err); }
@@ -27,12 +27,12 @@ export default function BankAccountsPage() {
         <div className="font-sans">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-blue-900 tracking-tight">Bank Accounts</h1>
-                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mt-1">Manage company payment accounts</p>
+                    <h1 className="text-2xl font-bold text-blue-900 tracking-tight">Crypto Wallets (USDT TRC-20)</h1>
+                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mt-1">Manage company receiving wallets</p>
                 </div>
                 <Link href="/admin/bank-accounts/new">
                     <button className="bg-blue-900 text-white px-5 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-blue-800 transition-all shadow-lg shadow-blue-900/10">
-                        Add Account
+                        Add Wallet
                     </button>
                 </Link>
             </div>
@@ -42,8 +42,8 @@ export default function BankAccountsPage() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-blue-50 border-b border-blue-100">
-                                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-blue-400">Bank</th>
-                                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-blue-400">Account</th>
+                                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-blue-400">Wallet Name</th>
+                                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-blue-400">Address / Network</th>
                                 <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-blue-400 text-center">Status</th>
                                 <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-blue-400 text-right">Actions</th>
                             </tr>

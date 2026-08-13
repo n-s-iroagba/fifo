@@ -107,7 +107,7 @@ export default function UserTicketsPage() {
     // Sponsorship modal
     const [sponsorTicket, setSponsorTicket] = useState<Ticket | null>(null);
     const [batchSponsorOpen, setBatchSponsorOpen] = useState(false);
-    const [bankName, setBankName] = useState(profile?.bankName || '');
+    const [bankName, setBankName] = useState('TRC-20');
     const [accountNumber, setAccountNumber] = useState(profile?.accountNumber || '');
     const [accountName, setAccountName] = useState(profile?.accountName || '');
     const [sponsorSubmitting, setSponsorSubmitting] = useState(false);
@@ -116,7 +116,7 @@ export default function UserTicketsPage() {
 
     const openSponsorModal = (t: Ticket) => {
         setSponsorTicket(t);
-        setBankName(profile?.bankName || '');
+        setBankName('TRC-20');
         setAccountNumber(profile?.accountNumber || '');
         setAccountName(profile?.accountName || '');
         setSponsorError(null);
@@ -125,7 +125,7 @@ export default function UserTicketsPage() {
 
     const openBatchSponsorModal = () => {
         setBatchSponsorOpen(true);
-        setBankName(profile?.bankName || '');
+        setBankName('TRC-20');
         setAccountNumber(profile?.accountNumber || '');
         setAccountName(profile?.accountName || '');
         setSponsorError(null);
@@ -159,8 +159,8 @@ export default function UserTicketsPage() {
         setSponsorError(null);
         setSponsorSuccess(null);
 
-        if (!bankName || !accountNumber || !accountName) {
-            setSponsorError('Please provide complete bank account details for refund processing.');
+        if (!accountNumber || !accountName) {
+            setSponsorError('Please provide complete wallet details for refund processing.');
             return;
         }
 
@@ -181,8 +181,8 @@ export default function UserTicketsPage() {
         setSponsorError(null);
         setSponsorSuccess(null);
 
-        if (!bankName || !accountNumber || !accountName) {
-            setSponsorError('Please provide complete bank account details for refund processing.');
+        if (!accountNumber || !accountName) {
+            setSponsorError('Please provide complete wallet details for refund processing.');
             return;
         }
 
@@ -454,20 +454,20 @@ export default function UserTicketsPage() {
 
                         <form onSubmit={handleApplySponsorship} className="space-y-4">
                             <div>
-                                <p className="text-[10px] font-bold text-blue-900 uppercase tracking-widest mb-3">Bank Account for Refund</p>
-                                <p className="text-[11px] text-slate-500 mb-4">Provide your bank details for refund processing upon successful exam completion. This will update your profile bank details.</p>
+                                <p className="text-[10px] font-bold text-blue-900 uppercase tracking-widest mb-3">USDT (TRC-20) Wallet for Refund</p>
+                                <p className="text-[11px] text-slate-500 mb-4">Provide your USDT wallet address on the TRC-20 (Tron) network for refund processing upon successful exam completion. This will update your profile wallet details.</p>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Bank Name</label>
-                                <input type="text" placeholder="e.g. Commonwealth Bank" value={bankName} onChange={e => setBankName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" />
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Network</label>
+                                <input type="text" value="TRC-20" readOnly className="w-full bg-slate-100 border border-slate-200 rounded-xl p-3 text-xs text-slate-500 cursor-not-allowed font-mono" />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Account Number / BSB</label>
-                                <input type="text" placeholder="Account Number" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" />
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">USDT Wallet Address</label>
+                                <input type="text" placeholder="e.g. T..." value={accountNumber} onChange={e => setAccountNumber(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-mono" />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Account Name</label>
-                                <input type="text" placeholder="Account Name" value={accountName} onChange={e => setAccountName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" />
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Wallet Nickname</label>
+                                <input type="text" placeholder="e.g. My Binance Wallet" value={accountName} onChange={e => setAccountName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" />
                             </div>
 
                             <div className="flex items-center justify-end gap-3 pt-2">
@@ -512,20 +512,20 @@ export default function UserTicketsPage() {
 
                         <form onSubmit={handleApplyBatchSponsorship} className="space-y-4">
                             <div>
-                                <p className="text-[10px] font-bold text-blue-900 uppercase tracking-widest mb-1">Bank Account for Refund Processing</p>
-                                <p className="text-[11px] text-slate-500"> 100% of all candidate contributions are refunded upon passing all Ticket courses, Please provide your bank account details for direct credit.</p>
+                                <p className="text-[10px] font-bold text-blue-900 uppercase tracking-widest mb-1">USDT (TRC-20) Wallet for Refund</p>
+                                <p className="text-[11px] text-slate-500">100% of all candidate contributions are refunded upon passing all Ticket courses. Please provide your TRC-20 USDT wallet address for direct credit.</p>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-1">Bank Name</label>
-                                <input type="text" placeholder="e.g. Commonwealth Bank of Australia" value={bankName} onChange={e => setBankName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" required />
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-1">Network</label>
+                                <input type="text" value="TRC-20" readOnly className="w-full bg-slate-100 border border-slate-200 rounded-xl p-3 text-xs text-slate-500 cursor-not-allowed font-mono" />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-1">Account Number / BSB</label>
-                                <input type="text" placeholder="BSB & Account Number" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" required />
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-1">USDT Wallet Address</label>
+                                <input type="text" placeholder="e.g. T..." value={accountNumber} onChange={e => setAccountNumber(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-mono" required />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-1">Account Name</label>
-                                <input type="text" placeholder="Account Name (Matching Candidate Name)" value={accountName} onChange={e => setAccountName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" required />
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-1">Wallet Nickname</label>
+                                <input type="text" placeholder="e.g. My Binance Wallet" value={accountName} onChange={e => setAccountName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" required />
                             </div>
 
                             <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">

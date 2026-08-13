@@ -336,11 +336,11 @@ export default function InvoiceCreationPage() {
                         {/* 2. Select Corporate Bank Account */}
                         <div className="bg-white rounded-3xl border border-blue-100 p-6 shadow-sm space-y-4">
                             <h2 className="text-xs font-black uppercase tracking-wider text-blue-900 flex items-center gap-2">
-                                <Building2 className="h-4 w-4 text-amber-500" /> 2. Corporate Receiving Bank Account
+                                <Building2 className="h-4 w-4 text-amber-500" /> 2. Corporate Receiving Crypto Wallet
                             </h2>
                             <div>
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-                                    Select Corporate Bank Account Dropdown:
+                                    Select Corporate USDT Wallet:
                                 </label>
                                 <select
                                     value={selectedBankId}
@@ -349,7 +349,7 @@ export default function InvoiceCreationPage() {
                                 >
                                     {bankAccounts.map(bank => (
                                         <option key={bank.id} value={bank.id}>
-                                            {bank.bankName} — BSB: {bank.bsb} | Acc: {bank.accountNumber} {bank.isDefault ? '(PRIMARY)' : ''}
+                                            {bank.bankName} — Net: TRC-20 | Addr: {bank.accountNumber} {bank.isDefault ? '(PRIMARY)' : ''}
                                         </option>
                                     ))}
                                 </select>
@@ -357,9 +357,8 @@ export default function InvoiceCreationPage() {
                             {selectedBank && (
                                 <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs space-y-1 font-mono">
                                     <div className="flex justify-between"><span className="text-slate-500">Account Name:</span> <span className="font-bold text-blue-900">{selectedBank.accountName}</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-500">BSB Code:</span> <span className="font-bold">{selectedBank.bsb}</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-500">Account Number:</span> <span className="font-bold">{selectedBank.accountNumber}</span></div>
-                                    {selectedBank.swiftCode && <div className="flex justify-between"><span className="text-slate-500">SWIFT / BIC Code:</span> <span className="font-bold text-amber-600">{selectedBank.swiftCode}</span></div>}
+                                    <div className="flex justify-between"><span className="text-slate-500">Network:</span> <span className="font-bold">TRC-20</span></div>
+                                    <div className="flex justify-between"><span className="text-slate-500">USDT Wallet Address:</span> <span className="font-bold">{selectedBank.accountNumber}</span></div>
                                 </div>
                             )}
                         </div>
@@ -581,10 +580,10 @@ export default function InvoiceCreationPage() {
                         {/* Remittance Details */}
                         {selectedBank && (
                             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-1 font-mono">
-                                <div className="font-sans font-bold text-blue-900 uppercase text-[10px] mb-2">Corporate Remittance Details (SWIFT Wire)</div>
-                                <div><span className="font-sans text-slate-500">Bank Name:</span> <strong>{selectedBank.bankName}</strong></div>
-                                <div><span className="font-sans text-slate-500">BSB Code:</span> <strong>{selectedBank.bsb}</strong></div>
-                                <div><span className="font-sans text-slate-500">Account Number:</span> <strong>{selectedBank.accountNumber}</strong></div>
+                                <div className="font-sans font-bold text-blue-900 uppercase text-[10px] mb-2">Corporate Remittance Details (USDT TRC-20)</div>
+                                <div><span className="font-sans text-slate-500">Wallet Name:</span> <strong>{selectedBank.bankName}</strong></div>
+                                <div><span className="font-sans text-slate-500">Network:</span> <strong>TRC-20</strong></div>
+                                <div><span className="font-sans text-slate-500">USDT Wallet Address:</span> <strong>{selectedBank.accountNumber}</strong></div>
                                 <div><span className="font-sans text-slate-500">Account Name:</span> <strong>{selectedBank.accountName}</strong></div>
                                 {selectedBank.swiftCode && <div><span className="font-sans text-slate-500">SWIFT / BIC Code:</span> <strong>{selectedBank.swiftCode}</strong></div>}
                                 <div><span className="font-sans text-slate-500">Payment Reference:</span> <strong className="text-amber-700">{generatedInvoiceNum}</strong></div>
