@@ -20,11 +20,12 @@ import api from '@/lib/api';
 
 interface BankAccount {
     id: string;
-    bankName: string;
-    bsb: string;
-    accountNumber: string;
-    accountName: string;
-    swiftCode?: string;
+    bankName: string;         // Wallet Nickname
+    accountNumber: string;    // USDT Wallet Address
+    accountName: string;      // Legal entity name
+    bsb?: string;             // Deprecated — not in DB
+    swiftCode?: string;       // Deprecated — not in DB
+    routingCode?: string;     // Network label (TRC-20)
     isDefault?: boolean;
 }
 

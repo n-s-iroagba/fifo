@@ -7,9 +7,24 @@ import { lmsSeedData } from './data/lmsData';
 export async function seedDatabase() {
     console.log('Starting idempotent seeding process...');
 
+    // ─── Crypto Wallet Migration ──────────────────────────────────────────────
+    // On every deployment, drop the bank_accounts table and rebuild it from the
+    // updated Sequelize model (which now maps to TRC-20 USDT wallet fields).
+    // This is safe because there are no foreign-key references to bank_accounts
+    // from other tables.
+    try {
+        console.log('[Migration] Wiping and recreating bank_accounts as crypto wallet table...');
+        await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
+        await BankAccount.sync({ force: true });
+        await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+        console.log('[Migration] bank_accounts recreated with crypto wallet schema.');
+    } catch (e: any) {
+        console.error('[Migration] Failed to recreate bank_accounts:', e.message);
+    }
+
     // 1. Initialize Tables (Safe Non-Destructive Production Sync)
     // Runs standard model sync (CREATE TABLE IF NOT EXISTS) preserving all production data.
-    const excludedModels = ['User', 'Application', 'LmsCredential'];
+    const excludedModels = ['User', 'Application', 'LmsCredential', 'BankAccount'];
     for (const modelName of Object.keys(sequelize.models)) {
         if (!excludedModels.includes(modelName)) {
             await sequelize.models[modelName].sync();

@@ -18,21 +18,23 @@ export default function BankAccountForm({ initialData, isEdit = false }: BankAcc
     const queryClient = useQueryClient();
     const [bankName, setBankName] = useState(initialData?.bankName || '');
     const [accountNumber, setAccountNumber] = useState(initialData?.accountNumber || '');
+    const [accountName, setAccountName] = useState((initialData as any)?.accountName || '');
     const [accountType, setAccountType] = useState(initialData?.accountType || CONSTANTS.BANK_ACCOUNT_TYPES.NORMAL);
-    const [routingCode, setRoutingCode] = useState(initialData?.routingCode || '');
-    const [currency, setCurrency] = useState(initialData?.currency || 'USD');
+    const [routingCode] = useState('TRC-20'); // Fixed — always TRC-20 for USDT
+    const [currency, setCurrency] = useState(initialData?.currency || 'USDT');
     const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
+    const [isDefault, setIsDefault] = useState((initialData as any)?.isDefault ?? false);
 
 
     useEffect(() => {
         if (initialData) {
             setBankName(initialData.bankName);
             setAccountNumber(initialData.accountNumber);
+            setAccountName((initialData as any).accountName || '');
             setAccountType(initialData.accountType);
-            setRoutingCode(initialData.routingCode || '');
             setCurrency(initialData.currency);
             setIsActive(initialData.isActive);
-
+            setIsDefault((initialData as any).isDefault ?? false);
         }
     }, [initialData]);
 
@@ -53,10 +55,12 @@ export default function BankAccountForm({ initialData, isEdit = false }: BankAcc
             await mutation.mutateAsync({
                 bankName,
                 accountNumber,
+                accountName,
                 accountType,
-                routingCode,
+                routingCode: 'TRC-20',
                 currency,
                 isActive,
+                isDefault,
             });
         } catch (err) {
             console.error(err);
@@ -109,15 +113,24 @@ export default function BankAccountForm({ initialData, isEdit = false }: BankAcc
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
+                            <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1" htmlFor="account_name">Account / Entity Name</label>
+                            <input
+                                className="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-900 placeholder:text-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-900/5 focus:border-blue-900 transition-all outline-none"
+                                id="account_name"
+                                placeholder="e.g. FIFO Training Operations"
+                                type="text"
+                                value={accountName}
+                                onChange={(e) => setAccountName(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
                             <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1" htmlFor="routing_code">Network</label>
                             <input
-                                className="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-900 placeholder:text-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-900/5 focus:border-blue-900 transition-all outline-none font-mono"
+                                className="w-full px-4 py-3 bg-slate-100 border border-blue-100 rounded-lg text-sm font-medium text-slate-500 font-mono cursor-not-allowed outline-none"
                                 id="routing_code"
-                                placeholder="e.g. TRC-20"
                                 type="text"
-                                value={routingCode}
-                                onChange={(e) => setRoutingCode(e.target.value)}
-                                required
+                                value="TRC-20"
+                                readOnly
                             />
                         </div>
                         <div className="space-y-2">
@@ -144,13 +157,19 @@ export default function BankAccountForm({ initialData, isEdit = false }: BankAcc
                             <p className="text-[9px] font-bold text-blue-400 uppercase tracking-[0.2em] mt-1">Enable for public usage</p>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                                className="sr-only peer"
-                                type="checkbox"
-                                checked={isActive}
-                                onChange={() => setIsActive(!isActive)}
-                            />
+                            <input className="sr-only peer" type="checkbox" checked={isActive} onChange={() => setIsActive(!isActive)} />
                             <div className="w-11 h-6 bg-blue-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-blue-900 transition-all after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                        </label>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-amber-50 rounded-xl border border-amber-100">
+                        <div>
+                            <h4 className="text-[10px] font-bold uppercase tracking-widest text-amber-900">Primary / Default Wallet</h4>
+                            <p className="text-[9px] font-bold text-amber-400 uppercase tracking-[0.2em] mt-1">Used on invoices when no wallet is manually selected</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input className="sr-only peer" type="checkbox" checked={isDefault} onChange={() => setIsDefault(!isDefault)} />
+                            <div className="w-11 h-6 bg-amber-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-amber-600 transition-all after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
                         </label>
                     </div>
 
