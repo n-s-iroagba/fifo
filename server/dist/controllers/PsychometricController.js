@@ -255,6 +255,9 @@ class PsychometricController {
                 user.psychometricCompletedAt = new Date();
             }
             await user.save();
+            // Also update the attempt to reflect it was passed (admin override)
+            attempt.passed = true;
+            await attempt.save();
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Attempt approved and candidate profile updated.' });
         }
         catch (error) {
