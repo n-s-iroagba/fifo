@@ -39,6 +39,43 @@ function ExamPortalContent() {
     const [questions, setQuestions] = useState<any[]>([]);
     const [attemptId, setAttemptId] = useState('');
     const [starting, setStarting] = useState(false);
+    
+    const [showRestoredNotification, setShowRestoredNotification] = useState(false);
+    const isRestoring = React.useRef(true);
+
+    React.useEffect(() => {
+        const savedStateStr = localStorage.getItem(`course_exam_state_${id}`);
+        if (savedStateStr) {
+            try {
+                const savedState = JSON.parse(savedStateStr);
+                if (savedState.phase === 'active' && savedState.questions?.length > 0) {
+                    setQuestions(savedState.questions);
+                    setAttemptId(savedState.attemptId);
+                    setCurrentIdx(savedState.currentIdx);
+                    setAnswers(savedState.answers);
+                    setPhase('active');
+                    setShowRestoredNotification(true);
+                    setTimeout(() => setShowRestoredNotification(false), 5000);
+                }
+            } catch (e) {
+                console.error("Failed to restore exam state", e);
+            }
+        }
+        isRestoring.current = false;
+    }, [id]);
+
+    React.useEffect(() => {
+        if (isRestoring.current) return;
+        if (phase === 'active') {
+            localStorage.setItem(`course_exam_state_${id}`, JSON.stringify({
+                phase,
+                questions,
+                attemptId,
+                currentIdx,
+                answers
+            }));
+        }
+    }, [phase, questions, attemptId, currentIdx, answers, id]);
 
     const startAssessment = async () => {
         setStarting(true);
@@ -88,6 +125,7 @@ function ExamPortalContent() {
         try {
             await apiClient.post(`/exams/attempts/${attemptId}/submit`, { answers });
             setPhase('review_awaiting');
+            localStorage.removeItem(`course_exam_state_${id}`);
         } catch (err) {
             console.error("Failed to submit exam:", err);
             alert("Failed to submit exam. Please try again.");
@@ -156,8 +194,14 @@ function ExamPortalContent() {
 
                 {/* PHASE: Active Questions */}
                 {phase === 'active' && questions.length > 0 && (
-                    <div className="bg-white border-2 border-zinc-200 rounded-2xl shadow-sm overflow-hidden">
-                        <div className="p-8 border-b-2 border-zinc-100 bg-zinc-50">
+                    <div className="bg-white border-2 border-zinc-200 rounded-2xl shadow-sm overflow-hidden relative">
+                        {showRestoredNotification && (
+                            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-full flex items-center gap-2 text-emerald-800 shadow-sm animate-fade-in">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                <span className="text-xs font-bold">Previous progress successfully restored.</span>
+                            </div>
+                        )}
+                        <div className="p-8 border-b-2 border-zinc-100 bg-zinc-50 pt-16">
                             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-2">
                                 Question {currentIdx + 1} of {questions.length} • {questions[currentIdx]?.questionType}
                             </span>

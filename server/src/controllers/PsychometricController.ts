@@ -287,6 +287,10 @@ export class PsychometricController {
 
             await user.save();
 
+            // Also update the attempt to reflect it was passed (admin override)
+            attempt.passed = true;
+            await attempt.save();
+
             res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Attempt approved and candidate profile updated.' });
         } catch (error: any) {
             console.error('[PsychometricController.approveAttempt]', error);

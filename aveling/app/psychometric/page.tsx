@@ -118,6 +118,43 @@ function PsychometricTestContent() {
         }
     };
 
+    const [showRestoredNotification, setShowRestoredNotification] = useState(false);
+    const isRestoring = React.useRef(true);
+
+    useEffect(() => {
+        const savedStateStr = localStorage.getItem('psychometric_test_state');
+        if (savedStateStr) {
+            try {
+                const savedState = JSON.parse(savedStateStr);
+                if (savedState.testState === 'testing' && savedState.questions?.length > 0) {
+                    setQuestions(savedState.questions);
+                    setActiveModule(savedState.activeModule);
+                    setCurrentQuestionIndex(savedState.currentQuestionIndex);
+                    setAnswers(savedState.answers);
+                    setTestState(savedState.testState);
+                    setShowRestoredNotification(true);
+                    setTimeout(() => setShowRestoredNotification(false), 5000);
+                }
+            } catch (e) {
+                console.error("Failed to restore test state", e);
+            }
+        }
+        isRestoring.current = false;
+    }, []);
+
+    useEffect(() => {
+        if (isRestoring.current) return;
+        if (testState === 'testing') {
+            localStorage.setItem('psychometric_test_state', JSON.stringify({
+                activeModule,
+                questions,
+                currentQuestionIndex,
+                answers,
+                testState
+            }));
+        }
+    }, [activeModule, questions, currentQuestionIndex, answers, testState]);
+
     const startModule = async (moduleNum: number) => {
         try {
             setLoading(true);
@@ -171,6 +208,7 @@ function PsychometricTestContent() {
             const response = await apiCall(`/psychometric/module/${activeModule}/submit`, 'POST', { answers });
             setResult({ message: response.message });
             setTestState('result');
+            localStorage.removeItem('psychometric_test_state');
             fetchStatus(token!);
         } catch (error: any) {
             alert(error.response?.data?.error || 'Failed to submit test');
@@ -234,6 +272,16 @@ function PsychometricTestContent() {
         return (
             <PageShell>
                 <div className="max-w-3xl mx-auto">
+                    {showRestoredNotification && (
+                        <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-800 shadow-sm animate-fade-in">
+                            <CheckCircle className="w-5 h-5 text-emerald-500" />
+                            <div>
+                                <h3 className="font-bold text-sm">Session Restored</h3>
+                                <p className="text-xs font-medium opacity-90">Your previous progress for Module {activeModule} has been seamlessly restored.</p>
+                            </div>
+                        </div>
+                    )}
+                    
                     <div className="mb-8">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFC700] text-black font-extrabold text-xs uppercase tracking-wider w-fit mb-3">
                             <BrainCircuit className="h-3.5 w-3.5" /> Module {activeModule}

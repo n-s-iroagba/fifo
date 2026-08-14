@@ -84,16 +84,11 @@ export default function AdminPsychometricPage() {
                                                 <span className="material-symbols-outlined text-sm">check_circle</span>
                                                 Approved
                                             </span>
-                                        ) : attempt.passed === false ? (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-[9px] font-black uppercase tracking-widest">
-                                                <span className="material-symbols-outlined text-sm">cancel</span>
-                                                Rejected
-                                            </span>
                                         ) : (
-                                            <div className="flex items-center justify-end gap-3">
+                                            <div className="flex flex-col sm:flex-row items-center justify-end gap-3">
                                                 <button
                                                     onClick={async () => {
-                                                        if (confirm('Are you sure you want to approve this test? This will update the candidate profile.')) {
+                                                        if (confirm('Are you sure you want to approve this test? This will update the candidate profile and override the system grade if they failed.')) {
                                                             try {
                                                                 await approveMutation.mutateAsync({ url: `/admin/psychometric/attempts/${attempt.id}/approve`, data: {} } as any);
                                                                 refetch();
@@ -102,7 +97,7 @@ export default function AdminPsychometricPage() {
                                                             }
                                                         }
                                                     }}
-                                                    className="inline-flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-emerald-700 transition-all shadow-sm active:scale-95"
+                                                    className="inline-flex items-center justify-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-emerald-700 transition-all shadow-sm active:scale-95"
                                                 >
                                                     Approve
                                                 </button>
@@ -117,7 +112,7 @@ export default function AdminPsychometricPage() {
                                                             }
                                                         }
                                                     }}
-                                                    className="inline-flex items-center gap-2 bg-white border border-red-200 text-red-600 px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-red-50 transition-all shadow-sm active:scale-95"
+                                                    className="inline-flex items-center justify-center gap-2 bg-white border border-red-200 text-red-600 px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-red-50 transition-all shadow-sm active:scale-95"
                                                 >
                                                     Reject
                                                 </button>
