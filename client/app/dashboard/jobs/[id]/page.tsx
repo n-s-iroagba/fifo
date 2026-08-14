@@ -40,7 +40,7 @@ export default function JobDetailPage() {
         if (!isPsychometricComplete) {
             alert('You must pass the Aveling Psychometric Test before proceeding.');
             const token = localStorage.getItem('accessToken');
-            const avelingUrl = process.env.NEXT_PUBLIC_AVELING_URL || 'http://localhost:3002';
+            const avelingUrl = 'https://aveling.online';
             window.location.href = `${avelingUrl}/psychometric?token=${token}`;
             return;
         }
@@ -54,7 +54,7 @@ export default function JobDetailPage() {
         // Open modal to add tickets
         setIsApplyModalOpen(true);
     };
-    
+
     const handleAddTicket = () => setTickets([...tickets, { ticketType: '' }]);
     const handleTicketChange = (index: number, val: string) => {
         const newT = [...tickets];
@@ -256,7 +256,7 @@ export default function JobDetailPage() {
                         <button onClick={() => setIsApplyModalOpen(false)} className="absolute top-8 right-8 text-blue-300 hover:text-blue-900 transition-colors">
                             <span className="material-symbols-outlined">close</span>
                         </button>
-                        
+
                         <h3 className="text-2xl font-bold text-blue-900 tracking-tight mb-2">Finalize Application</h3>
                         <div className="text-sm text-blue-400 mb-8 font-medium space-y-2">
                             <p>Please enter any certifications or tickets you possess before applying.</p>
@@ -265,12 +265,12 @@ export default function JobDetailPage() {
                                 No tickets? No problem! You can submit this application empty. Full training will be provided for any required tickets.
                             </p>
                         </div>
-                        
+
                         <div className="space-y-4 mb-8 max-h-[40vh] overflow-y-auto pr-2">
                             {tickets.map((t, idx) => (
                                 <div key={idx} className="flex gap-4 items-center">
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         placeholder="e.g. Working at Heights"
                                         className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         value={t.ticketType}
@@ -285,15 +285,15 @@ export default function JobDetailPage() {
                                 <span className="material-symbols-outlined text-sm">add</span> Add Ticket
                             </button>
                         </div>
-                        
+
                         <div className="flex gap-4">
-                            <button 
+                            <button
                                 onClick={() => setIsApplyModalOpen(false)}
                                 className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-colors"
                             >
                                 Cancel
                             </button>
-                            <button 
+                            <button
                                 onClick={handleFinalSubmit}
                                 className="flex-1 py-4 bg-blue-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-colors"
                             >

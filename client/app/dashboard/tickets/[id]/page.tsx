@@ -198,7 +198,7 @@ export default function TicketDetailPage() {
 
     // Aveling LMS Link
     const avelingBaseUrl = typeof window !== 'undefined'
-        ? (process.env.NEXT_PUBLIC_AVELING_URL || `${window.location.protocol}//${window.location.hostname}:3002`)
+        ? (`${window.location.protocol}//${window.location.hostname}:3002`)
         : 'https://aveling.online';
     const avelingPayUrl = 'https://aveling.online'
     // `${avelingBaseUrl}/checkout?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}&wallet=${userWalletBalance}`;

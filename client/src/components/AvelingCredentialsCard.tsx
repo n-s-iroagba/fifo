@@ -28,7 +28,7 @@ export function AvelingCredentialsCard({
     };
 
     const targetUrl = avelingUrl || (typeof window !== 'undefined'
-        ? (process.env.NEXT_PUBLIC_AVELING_URL || `${window.location.protocol}//${window.location.hostname}:3002/login`)
+        ? (`${window.location.protocol}//${window.location.hostname}:3002/login`)
         : 'https://aveling.online/login');
 
     return (
