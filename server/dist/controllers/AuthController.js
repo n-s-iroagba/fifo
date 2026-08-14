@@ -96,8 +96,8 @@ class AuthController {
     }
     async login(req, res) {
         try {
-            const { email, password } = req.body;
-            const { user, accessToken, refreshToken } = await AuthService_1.authService.login(email, password);
+            const { email, password, redirectUrl } = req.body;
+            const { user, accessToken, refreshToken } = await AuthService_1.authService.login(email, password, redirectUrl);
             this.setRefreshTokenCookie(res, refreshToken);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({
                 message: constants_1.CONSTANTS.SUCCESS_MESSAGES.LOGIN_SUCCESS,

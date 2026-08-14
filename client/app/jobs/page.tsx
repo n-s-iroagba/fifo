@@ -35,38 +35,11 @@ function JobsContent() {
                     <h1 className="text-4xl md:text-5xl font-black text-blue-900 leading-[1.1] tracking-tight mt-6">
                         Explore our world-class <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-blue-900 to-blue-600">positions</span>.
                     </h1>
-                    <p className="text-blue-500 text-sm font-medium max-w-[600px] leading-relaxed mt-4">
-                        Explore our global mission. We're sourcing elite talent to bridge industrial gaps and drive professional excellence.
-                    </p>
+
                 </header>
-                <div className="lg:col-span-4 space-y-8">
-
-                    <div className="p-10 mb-5 rounded-[3rem] bg-white border border-blue-100 relative overflow-hidden group hover:bg-blue-900 transition-all duration-500">
-                        <div className="absolute -top-10 -right-10 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                            <span className="material-symbols-outlined text-blue-900 group-hover:text-white text-[10rem]">verified</span>
-                        </div>
-                        <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600 group-hover:text-blue-300 mb-6 relative z-10 transition-colors">Direct Employment</h4>
-                        <p className="text-xs text-blue-900 leading-loose relative z-10 font-bold group-hover:text-white transition-colors">
-                            BlueCollar exclusively curates roles that offer direct contractual agreements with verified global entities. No intermediaries involved.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="mb-12">
-                    <div className="relative max-w-2xl">
-                        <span className="material-symbols-outlined absolute left-6 top-1/2 -translate-y-1/2 text-blue-300">search</span>
-                        <input
-                            type="text"
-                            placeholder="FILTER BY ROLE OR DEPARTMENT..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-blue-50 border border-blue-100 rounded-2xl pl-14 pr-6 py-5 text-[10px] font-black uppercase tracking-widest focus:bg-white focus:ring-4 focus:ring-blue-900/5 transition-all outline-none"
-                        />
-                    </div>
-                </div>
 
                 {isLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {[1, 2, 3].map(i => (
                             <div key={i} className="h-64 bg-blue-50 rounded-3xl animate-pulse border border-blue-100" />
                         ))}
@@ -117,7 +90,7 @@ function JobsContent() {
                         ))}
                     </div>
                 )}
-                
+
                 <div className="mt-16 bg-blue-50/50 border border-blue-100 rounded-[3rem] p-10 lg:p-16 text-center max-w-4xl mx-auto">
                     <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-900/5">
                         <span className="material-symbols-outlined text-4xl text-blue-900">campaign</span>

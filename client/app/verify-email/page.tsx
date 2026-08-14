@@ -62,7 +62,7 @@ function VerifyEmailContent() {
     const handleResend = () => {
         if (!email.trim()) return;
         setResendStatus('loading');
-        resendMutation.mutate({ email });
+        resendMutation.mutate({ email, redirectUrl: redirectParam || undefined });
     };
 
     return (

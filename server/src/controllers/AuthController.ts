@@ -95,8 +95,8 @@ export class AuthController {
 
     public async login(req: Request, res: Response): Promise<void> {
         try {
-            const { email, password } = req.body;
-            const { user, accessToken, refreshToken } = await authService.login(email, password);
+            const { email, password, redirectUrl } = req.body;
+            const { user, accessToken, refreshToken } = await authService.login(email, password, redirectUrl);
 
             this.setRefreshTokenCookie(res, refreshToken);
             res.status(CONSTANTS.HTTP_STATUS.OK).json({

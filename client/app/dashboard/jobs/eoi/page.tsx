@@ -100,7 +100,7 @@ export default function EOIPage() {
                             type="text"
                             value={roles}
                             onChange={(e) => setRoles(e.target.value)}
-                            placeholder="e.g. Senior Software Engineer, Technical Lead"
+                            placeholder="e.g. Heavy Diesel Mechanic, Rigger"
                             className="w-full bg-blue-50/50 border border-blue-100 rounded-2xl py-4 px-5 text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 focus:ring-4 focus:ring-blue-900/5 transition-all outline-none"
                             required
                         />
@@ -113,7 +113,7 @@ export default function EOIPage() {
                             type="text"
                             value={skills}
                             onChange={(e) => setSkills(e.target.value)}
-                            placeholder="e.g. React, Node.js, System Architecture"
+                            placeholder="e.g. Excavator Operation, Working at Heights"
                             className="w-full bg-blue-50/50 border border-blue-100 rounded-2xl py-4 px-5 text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 focus:ring-4 focus:ring-blue-900/5 transition-all outline-none"
                             required
                         />
@@ -126,7 +126,7 @@ export default function EOIPage() {
                             type="text"
                             value={qualifications}
                             onChange={(e) => setQualifications(e.target.value)}
-                            placeholder="e.g. BSc Computer Science, AWS Certified"
+                            placeholder="e.g. Cert IV in Engineering, White Card"
                             className="w-full bg-blue-50/50 border border-blue-100 rounded-2xl py-4 px-5 text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 focus:ring-4 focus:ring-blue-900/5 transition-all outline-none"
                             required
                         />

@@ -61,7 +61,7 @@ export class PaymentController {
 
     public async getUserAvelingInvoices(req: Request, res: Response): Promise<void> {
         try {
-            const userId = parseInt(req.params.userId, 10);
+            const userId = parseInt(req.params.userId as string, 10);
             
             // 1. Fetch Psychometric Attempts
             const { PsychometricAttempt, Ticket } = require('../models');

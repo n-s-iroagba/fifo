@@ -60,7 +60,7 @@ function LoginContent() {
 
     const onSubmit = (data: LoginForm) => {
         setLoginError(null);
-        loginMutation.mutate(data);
+        loginMutation.mutate({ ...data, redirectUrl: requestedRedirect || undefined } as any);
     };
 
     return (

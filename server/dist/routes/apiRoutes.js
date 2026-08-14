@@ -215,6 +215,7 @@ router.post('/admin/users/:userId/approve-package-invoice', ...adminMW, TicketCo
 // Payment status milestone (partial / complete) & Custom Invoicing
 router.post('/admin/users/:userId/update-payment-status', ...adminMW, TicketController_1.ticketController.adminUpdatePaymentStatus.bind(TicketController_1.ticketController));
 router.post('/admin/invoices/create-and-send', ...adminMW, TicketController_1.ticketController.createAndSendCustomInvoice.bind(TicketController_1.ticketController));
+router.get('/admin/users/:userId/aveling-invoices', ...adminMW, PaymentController_1.paymentController.getUserAvelingInvoices.bind(PaymentController_1.paymentController));
 // Prefill Stages
 router.get('/admin/prefill-stages', ...adminMW, prefillStageController.getPrefillStages.bind(prefillStageController));
 router.post('/admin/prefill-stages', ...adminMW, prefillStageController.createPrefillStage.bind(prefillStageController));

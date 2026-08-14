@@ -146,7 +146,7 @@ export default function ExpressionOfInterestPage() {
                                 <input
                                     key={field.id}
                                     {...register(`roles.${index}` as any)}
-                                    placeholder="e.g. VP of Engineering"
+                                    placeholder="e.g. Heavy Diesel Mechanic, Rigger"
                                     className="w-full bg-blue-50 border border-blue-100 rounded-xl px-5 py-4 text-xs font-bold focus:bg-white focus:ring-4 focus:ring-blue-100 outline-none transition-all"
                                 />
                             ))}
@@ -165,7 +165,7 @@ export default function ExpressionOfInterestPage() {
                                 <input
                                     key={field.id}
                                     {...register(`skills.${index}` as any)}
-                                    placeholder="e.g. Distributed Systems"
+                                    placeholder="e.g. Excavator Operation, Working at Heights"
                                     className="w-full bg-blue-50 border border-blue-100 rounded-xl px-5 py-4 text-xs font-bold focus:bg-white focus:ring-4 focus:ring-blue-100 outline-none transition-all"
                                 />
                             ))}
@@ -202,7 +202,7 @@ export default function ExpressionOfInterestPage() {
                                         <textarea
                                             {...register(`experience.${index}.achievements` as any)}
                                             rows={4}
-                                            placeholder="e.g. Scaled infrastructure from 10k to 1M DAU, reducing latency by 40%..."
+                                            placeholder="e.g. Operated 200t excavators safely on tier 1 mine sites with zero LTI incidents..."
                                             className="w-full bg-white border border-blue-100 rounded-xl px-4 py-4 text-xs font-bold outline-none resize-none"
                                         />
                                     </div>

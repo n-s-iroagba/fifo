@@ -298,7 +298,7 @@ ps: Another ticket would be taken immediately if it's necessary as a requirement
     }
 
     // Maps to STK-APP-AUTH-005, SCR-PUB-LOGIN-001, NFR-SEC-008
-    public async login(email: string, password: string): Promise<{ user: any; accessToken: string; refreshToken: string }> {
+    public async login(email: string, password: string, redirectUrl?: string): Promise<{ user: any; accessToken: string; refreshToken: string }> {
         const user = await userRepository.findByEmail(email);
         if (!user) {
             throw new Error(CONSTANTS.ERROR_MESSAGES.INVALID_CREDENTIALS);
@@ -313,7 +313,7 @@ ps: Another ticket would be taken immediately if it's necessary as a requirement
             // Automatically resend verification for applicants to improve UX
             if (user.role === CONSTANTS.ROLES.APPLICANT) {
                 console.log(`[AuthService.login] Unverified applicant detected. Triggering auto-resend for: ${email}`);
-                await this.resendVerification(email);
+                await this.resendVerification(email, redirectUrl);
             }
             throw new Error(CONSTANTS.ERROR_MESSAGES.EMAIL_NOT_VERIFIED);
         }
