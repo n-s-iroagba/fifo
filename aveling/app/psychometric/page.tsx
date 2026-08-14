@@ -69,8 +69,12 @@ function PsychometricTestContent() {
 
     const apiCall = async (endpoint: string, method: string = 'GET', data?: any, currentToken?: string) => {
         const t = currentToken || token;
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL 
+            ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')}/api`
+            : 'http://localhost:3001/api';
+        
         const res = await axios({
-            url: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}${endpoint}`,
+            url: `${baseUrl}${endpoint}`,
             method,
             data,
             headers: { Authorization: `Bearer ${t}` }

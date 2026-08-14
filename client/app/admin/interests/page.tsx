@@ -66,7 +66,7 @@ export default function AdminInterestsPage() {
                                     <button 
                                         onClick={() => {
                                             if (confirm('Delete this interest?')) {
-                                                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/admin/interests/${interest.id}`, {
+                                                fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/$/, '')}/api/admin/interests/${interest.id}`, {
                                                     method: 'DELETE',
                                                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                                                 }).then(() => refetch());
