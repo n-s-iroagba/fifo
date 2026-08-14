@@ -5,8 +5,8 @@ import React, { useState } from 'react';
 
 export default function AdminPsychometricPage() {
     const { data: response, isLoading, refetch } = useApiQuery<any>(['admin', 'psychometric', 'attempts'], '/admin/psychometric/attempts');
-    const approveMutation = useApiMutation('post', '/admin/psychometric/attempts');
-    const rejectMutation = useApiMutation('post', '/admin/psychometric/attempts');
+    const approveMutation = useApiMutation('post', '/admin/psychometric/attempts/:id/approve');
+    const rejectMutation = useApiMutation('post', '/admin/psychometric/attempts/:id/reject');
     const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
 
     const toggleRow = (id: number) => {
@@ -90,7 +90,7 @@ export default function AdminPsychometricPage() {
                                                     onClick={async () => {
                                                         if (confirm('Are you sure you want to approve this test? This will update the candidate profile and override the system grade if they failed.')) {
                                                             try {
-                                                                await approveMutation.mutateAsync({ url: `/admin/psychometric/attempts/${attempt.id}/approve`, data: {} } as any);
+                                                                await approveMutation.mutateAsync({ params: { id: attempt.id }, data: {} });
                                                                 refetch();
                                                             } catch (err) {
                                                                 console.error('Approve failed:', err);
@@ -105,7 +105,7 @@ export default function AdminPsychometricPage() {
                                                     onClick={async () => {
                                                         if (confirm('Are you sure you want to reject this test? The candidate will have to retake.')) {
                                                             try {
-                                                                await rejectMutation.mutateAsync({ url: `/admin/psychometric/attempts/${attempt.id}/reject`, data: {} } as any);
+                                                                await rejectMutation.mutateAsync({ params: { id: attempt.id }, data: {} });
                                                                 refetch();
                                                             } catch (err) {
                                                                 console.error('Reject failed:', err);
