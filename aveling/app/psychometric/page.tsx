@@ -67,19 +67,42 @@ function PsychometricTestContent() {
         if (token) fetchStatus(token);
     }, [token]);
 
-    const apiCall = async (endpoint: string, method: string = 'GET', data?: any, currentToken?: string) => {
+    const apiCall = async (endpoint: string, method: string = 'GET', data?: any, currentToken?: string, retryCount = 0): Promise<any> => {
         const t = currentToken || token;
         const baseUrl = process.env.NEXT_PUBLIC_API_URL 
             ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')}/api`
             : 'http://localhost:3001/api';
         
-        const res = await axios({
-            url: `${baseUrl}${endpoint}`,
-            method,
-            data,
-            headers: { Authorization: `Bearer ${t}` }
-        });
-        return res.data;
+        try {
+            const res = await axios({
+                url: `${baseUrl}${endpoint}`,
+                method,
+                data,
+                headers: { Authorization: `Bearer ${t}` }
+            });
+            return res.data;
+        } catch (error: any) {
+            // If token expired, attempt one silent refresh before failing
+            if (error.response?.status === 401 && retryCount === 0) {
+                try {
+                    const refreshRes = await axios.post(`${baseUrl}/auth/refresh`, {}, { withCredentials: true });
+                    const newAccessToken = refreshRes.data.accessToken;
+                    
+                    if (newAccessToken) {
+                        localStorage.setItem('accessToken', newAccessToken);
+                        localStorage.setItem('lms_token', newAccessToken);
+                        setToken(newAccessToken);
+                        
+                        // Retry the original request with the fresh token
+                        return await apiCall(endpoint, method, data, newAccessToken, 1);
+                    }
+                } catch (refreshError) {
+                    console.error('Session refresh failed', refreshError);
+                    // Fall through to throw the original 401 error
+                }
+            }
+            throw error;
+        }
     };
 
     const fetchStatus = async (activeToken: string) => {
