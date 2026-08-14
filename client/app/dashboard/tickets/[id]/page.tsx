@@ -199,7 +199,7 @@ export default function TicketDetailPage() {
     // Aveling LMS Link
     const avelingBaseUrl = typeof window !== 'undefined'
         ? (process.env.NEXT_PUBLIC_AVELING_URL || `${window.location.protocol}//${window.location.hostname}:3002`)
-        : 'http://localhost:3002';
+        : 'https://aveling.online';
     const avelingPayUrl = 'https://aveling.online'
     // `${avelingBaseUrl}/checkout?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}&wallet=${userWalletBalance}`;
 
@@ -220,8 +220,8 @@ export default function TicketDetailPage() {
                     <div className="flex flex-wrap items-center gap-3">
                         <span className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em]">Ticket Details</span>
                         <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${ticket.status === 'possessed'
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                : 'bg-amber-50 text-amber-700 border-amber-200'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : 'bg-amber-50 text-amber-700 border-amber-200'
                             }`}>
                             {ticket.status === 'possessed' ? 'Possessed' : 'Not Possessed'}
                         </span>
@@ -366,8 +366,8 @@ export default function TicketDetailPage() {
                     </div>
                     {ticket.paymentStatus && (
                         <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${ticket.paymentStatus === 'paid'
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                : 'bg-amber-50 text-amber-700 border-amber-200'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : 'bg-amber-50 text-amber-700 border-amber-200'
                             }`}>
                             Payment: {ticket.paymentStatus}
                         </span>

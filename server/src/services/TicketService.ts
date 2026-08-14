@@ -127,7 +127,7 @@ export class TicketService {
             </tr>
         `).join('');
 
-        const avelingUrl = `http://localhost:3002/checkout`;
+        const avelingUrl = `https://aveling.online/checkout`;
 
         const emailHtml = `
         <div style="font-family: Arial, sans-serif; color: #1e3a8a; max-width: 650px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 16px; overflow: hidden; background: #ffffff;">
@@ -582,7 +582,7 @@ export class TicketService {
     public async payTicketOnAveling(ticketId: number, userId: number) {
         const ticket = await this.getTicketById(ticketId, userId);
 
-        const avelingCourseUrl = `http://localhost:3002/courses/${ticket.courseId || 'ticket-course'}`;
+        const avelingCourseUrl = `https://aveling.online/courses/${ticket.courseId || 'ticket-course'}`;
         const user = (ticket as any).User;
 
         await notificationService.sendNotification(
@@ -951,7 +951,7 @@ export class TicketService {
         }
 
         const candidateNum = user.candidateNumber;
-        const checkoutUrl = `http://localhost:3002/checkout?ticketId=${ticket.id}&candidateNumber=${candidateNum}`;
+        const checkoutUrl = `https://aveling.online/checkout?ticketId=${ticket.id}&candidateNumber=${candidateNum}`;
 
         const { BankAccount } = require('../models');
         const bank = await BankAccount.findOne({ where: { isActive: true } });
@@ -990,7 +990,7 @@ export class TicketService {
     private async sendTicketEmailNotification(ticket: any, user: any, sponsorshipStatus: string) {
         if (!user?.email) return;
 
-        const avelingPayUrl = `http://localhost:3002/checkout?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}`;
+        const avelingPayUrl = `https://aveling.online/checkout?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}`;
         const subject = `Ticket Sponsorship Update: ${ticket.ticketType}`;
 
         let body = `<p>Hello ${user.fullName || 'Applicant'},</p>
@@ -1059,7 +1059,7 @@ export class TicketService {
         }
 
         if (user?.email && ticket.courseId) {
-            const courseUrl = `http://localhost:3002/courses/${ticket.courseId}`;
+            const courseUrl = `https://aveling.online/courses/${ticket.courseId}`;
             await this.sendCustomEmail(
                 user.email,
                 `Course Access Unlocked: ${ticket.ticketType}`,
@@ -1104,7 +1104,7 @@ export class TicketService {
             },
             order: [['createdAt', 'DESC']]
         });
-        
+
         return attempts;
     }
 
@@ -1155,7 +1155,7 @@ export class TicketService {
 
                         <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:16px 0;">
                             <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;">Your Aveling LMS Login</h3>
-                            <p style="margin:4px 0;"><strong>Login URL:</strong> <a href="${process.env.AVELING_URL || 'http://localhost:3002'}">${process.env.AVELING_URL || 'http://localhost:3002'}</a></p>
+                            <p style="margin:4px 0;"><strong>Login URL:</strong> <a href="${process.env.AVELING_URL || 'https://aveling.online'}">${process.env.AVELING_URL || 'https://aveling.online'}</a></p>
                             <p style="margin:4px 0;"><strong>Username:</strong> <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${username}</code></p>
                             <p style="margin:4px 0;"><strong>Password:</strong> <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${rawPassword}</code></p>
                         </div>
@@ -1294,7 +1294,7 @@ export class TicketService {
         }
 
         if (user?.email && ticket.courseId) {
-            const courseUrl = `${process.env.AVELING_URL || 'http://localhost:3002'}/courses/${ticket.courseId}`;
+            const courseUrl = `${process.env.AVELING_URL || 'https://aveling.online'}/courses/${ticket.courseId}`;
             await this.sendCustomEmail(
                 user.email,
                 `Payment Verified – Start Your Course Now: ${ticket.ticketType}`,
@@ -1693,7 +1693,7 @@ export class TicketService {
         `).join('');
 
         const checkoutUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/checkout`;
-        const avelingUrl = `http://localhost:3002/checkout`;
+        const avelingUrl = `https://aveling.online/checkout`;
 
         const emailHtml = `
         <div style="font-family: Arial, sans-serif; color: #1e3a8a; max-width: 650px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 16px; overflow: hidden; background: #ffffff;">
