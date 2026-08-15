@@ -20,7 +20,7 @@ export default function DocumentPage() {
 
                     <div className="bg-blue-50/50 p-12 lg:p-20 rounded-[3rem] border border-blue-50 mb-20 shadow-xl shadow-blue-900/5">
                         <h2 className="text-3xl font-black italic text-blue-900 mb-12 uppercase tracking-tighter">The 7-Step Pathway</h2>
-                        
+
                         <div className="space-y-16">
                             <section className="relative pl-12 border-l-4 border-blue-100">
                                 <div className="absolute -left-[14px] top-0 w-6 h-6 rounded-full bg-blue-400 border-4 border-white shadow-sm"></div>
