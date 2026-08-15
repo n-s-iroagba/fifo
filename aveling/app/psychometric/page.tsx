@@ -435,8 +435,8 @@ function PsychometricTestContent() {
                     </div>
                     <div className="text-zinc-500 font-medium text-sm mb-6 flex-1 space-y-3">
                         <p>Ensures you fully understand the Blue Collar Recruitment application process, payments, and Aveling certification.</p>
-                        <a href="/assets/blue_collar_aveling_flow_modules.pdf" target="_blank" className="text-zinc-900 border-b-2 border-[#FFC700] font-black hover:bg-[#FFC700] transition-all inline-flex items-center gap-1.5 py-1">
-                            Download Flow Modules <Download className="w-3.5 h-3.5" />
+                        <a href="http://localhost:3000/document" target="_blank" className="text-zinc-900 border-b-2 border-[#FFC700] font-black hover:bg-[#FFC700] transition-all inline-flex items-center gap-1.5 py-1">
+                            View Flow Document <Download className="w-3.5 h-3.5" />
                         </a>
                     </div>
                     

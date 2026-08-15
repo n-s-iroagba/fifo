@@ -163,7 +163,16 @@ export default function AdminAvelingInvoicePage() {
                         </div>
                     )}
 
-                    <div className="mt-16 text-center text-xs font-bold text-zinc-400">
+                    <div className="mt-6 bg-zinc-50 border border-zinc-200 p-6 rounded-xl text-zinc-600 print:bg-white print:border-zinc-300">
+                        <p className="text-xs font-bold flex items-start gap-3">
+                            <span className="material-symbols-outlined text-zinc-400 shrink-0">public</span>
+                            <span>
+                                <strong>International Payments Note:</strong> All international payments originating outside of Australia are processed exclusively using USDT crypto currency on the TRON (TRC-20) network.
+                            </span>
+                        </p>
+                    </div>
+
+                    <div className="mt-10 text-center text-xs font-bold text-zinc-400">
                         <p>Thank you for choosing Aveling Training.</p>
                         <p>This is a computer-generated document. No signature is required.</p>
                     </div>

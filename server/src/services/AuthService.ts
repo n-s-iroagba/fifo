@@ -110,11 +110,41 @@ export class AuthService {
         const welcomeSubject = 'Welcome to BlueCollar - Account Verified';
         const welcomeContent = `
             <p>Your account has been successfully verified. Welcome to the BlueCollar Recruitment Platform!</p>
-            <p>To successfully secure your next FIFO role, please follow these steps to complete your application process:</p>
+            <p>To successfully secure your next FIFO role, please follow the 6 steps of our recruitment and placement process:</p>
+            
             <ol style="margin-bottom: 20px;">
-                <li style="margin-bottom: 10px;"><strong>Complete Your Profile:</strong> Navigate to your dashboard and upload your CV. You <strong>MUST</strong> use the attached ATS-Compliant CV Template to ensure our systems can accurately process your qualifications.</li>
-                <li style="margin-bottom: 10px;"><strong>Browse Available Jobs:</strong> Explore our active FIFO job listings tailored to your profession.</li>
-                <li style="margin-bottom: 10px;"><strong>Submit Your Application:</strong> During the application process, you will be asked to declare your current certifications (Tickets). If you are missing any required tickets, you can request <strong>Ticket Sponsorship</strong> directly within the application flow.</li>
+                <li style="margin-bottom: 10px;">
+                    <strong>Step 1: Application</strong><br/>
+                    Complete your application by fulfilling the following sub-steps:<br/>
+                    a. Upload your CV in ATS format (using the attached template).<br/>
+                    b. Fill out your biodata.<br/>
+                    c. Pass the Psychometric assessment.
+                </li>
+                <li style="margin-bottom: 10px;">
+                    <strong>Step 2: Voice Call Interview</strong><br/>
+                    A brief voice call interview will be conducted to verify your application details and suitability.
+                </li>
+                <li style="margin-bottom: 10px;">
+                    <strong>Step 3: Nomination</strong><br/>
+                    Upon successfully passing all requirements in Step 1 and 2, you shall be nominated to top FIFO companies. You will receive a Notification of Nomination, which you can choose to accept or decline.
+                </li>
+                <li style="margin-bottom: 10px;">
+                    <strong>Step 4: Contract Signing</strong><br/>
+                    If you accept the nomination in Step 3, a binding contract will be drafted and signed by both parties (Blue Collar and the Applicant).
+                </li>
+                <li style="margin-bottom: 10px;">
+                    <strong>Step 5: Ticket Sponsorship Payment</strong><br/>
+                    You shall pay your financial responsibility under the ticket sponsorship program. This can be paid in part (to be completed before taking the 4th ticket) or paid completely upfront at an extra 10% discount.<br/>
+                    <em>Note: International payments from outside Australia are made using USDT crypto currency on the TRON network.</em>
+                </li>
+                <li style="margin-bottom: 10px;">
+                    <strong>Step 6: Ticket Delivery</strong><br/>
+                    Upon successfully passing your ticket courses, your physical tickets/certifications will be delivered to your specified address anywhere in the globe.
+                </li>
+                <li style="margin-bottom: 10px;">
+                    <strong>Step 7: Visa Sponsorship & Processing</strong><br/>
+                    A separate email will be sent detailing the Visa Sponsorship and Processing steps as you prepare for deployment.
+                </li>
             </ol>
             <div class="cta-block">
                 <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/profile" class="button">Complete Your Profile Now</a>

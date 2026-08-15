@@ -244,6 +244,41 @@ function MailComposerContent() {
                         <div className="space-y-2">
                             {[
                                 {
+                                    title: 'Step 1: Application Completion Reminder',
+                                    subject: 'Action Required: Complete Your Application Steps',
+                                    body: '<p>Dear Applicant,</p><p>We noticed you have not yet completed all steps of your application. To proceed to the nomination stage, please ensure you complete the following:</p><ul><li>Upload your CV using the ATS format template.</li><li>Complete your Biodata profile.</li><li>Pass the Psychometric assessment.</li></ul><p>Please log in to your dashboard to complete these requirements.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                },
+                                {
+                                    title: 'Step 2: Voice Call Interview Invitation',
+                                    subject: 'Action Required: Schedule Your Voice Call Interview',
+                                    body: '<p>Dear Applicant,</p><p>Congratulations on completing the first stage of your application. The next step is a brief Voice Call Interview to verify your application details and suitability.</p><p>Please let us know your availability over the next 48 hours so we can schedule the call.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                },
+                                {
+                                    title: 'Step 3: Notification of Nomination',
+                                    subject: 'Congratulations: Notification of Company Nomination',
+                                    body: '<p>Dear Applicant,</p><p>Congratulations! Having passed all initial requirements and the Voice Call Interview, you have been officially nominated to our partner FIFO companies.</p><p>You must now log in to your dashboard to formally <strong>Accept</strong> or <strong>Decline</strong> this nomination. If accepted, we will proceed to draft your binding contract.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                },
+                                {
+                                    title: 'Step 4: Binding Contract',
+                                    subject: 'Action Required: Your Placement Contract',
+                                    body: '<p>Dear Applicant,</p><p>Following your acceptance of our nomination, please find attached your binding contract between you and Blue Collar Recruitment.</p><p>Kindly review the document carefully, sign where indicated, and reply to this email within the stipulated timeframe.</p><p>Yours sincerely,<br />Gary Nexon Fletcher.<br />Hiring Manager.<br />Blue Collar Recruitment.</p>'
+                                },
+                                {
+                                    title: 'Step 5: Ticket Sponsorship Payment',
+                                    subject: 'Invoice: Ticket Sponsorship Financial Responsibility',
+                                    body: '<p>Dear Applicant,</p><p>To proceed with your required certifications, please complete your financial responsibility under the Ticket Sponsorship program.</p><p>You may choose to pay in parts (which must be completed before taking your 4th ticket) or pay the complete amount upfront to receive an extra 10% discount.</p><p><em>Note: International payments from outside Australia are made using USDT crypto currency on the TRON network.</em></p><p>Please log in to your dashboard to complete your payment.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                },
+                                {
+                                    title: 'Step 6: Ticket Delivery Confirmation',
+                                    subject: 'Update: Your Physical Tickets are on the Way',
+                                    body: '<p>Dear Applicant,</p><p>Congratulations on passing your required ticket courses! We are pleased to inform you that your physical tickets and certifications have been printed and will be delivered to your specified physical address.</p><p>Please ensure your address details on your profile are up to date. You will receive a tracking number shortly.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                },
+                                {
+                                    title: 'Step 7: Visa Sponsorship & Processing',
+                                    subject: 'Action Required: Visa Sponsorship and Processing Initiation',
+                                    body: '<p>Dear Applicant,</p><p>With your tickets successfully acquired, we are now initiating your Visa Sponsorship and Processing.</p><p>Please review the attached visa documentation guidelines. You will be required to submit specific identification and medical documents to proceed with the final stages of your deployment.</p><p>Our immigration team will be in touch with you shortly.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                },
+                                {
                                     title: 'Bulk Package Sponsorship Invitation',
                                     subject: 'Action Required: Your FIFO Sponsorship Ticket Package & Financial Breakdown',
                                     body: '<p>Dear Applicant,</p><p>We have configured your complete FIFO Sponsorship Qualification Package containing all 7 required site tickets:</p><ul><li>EEHA Certification (Hazardous Areas)</li><li>Standard 11 Mining Induction (WA)</li><li>White Card WA (CPCWHS1001)</li><li>Working at Heights (RIIWHS204E)</li><li>Confined Space Entry (RIIWHS202E)</li><li>Gas Test Atmospheres (MSMWHS217)</li><li>Provide First Aid (HLTAID011)</li></ul><p><strong>Financial Responsibility Breakdown (Schedule 1):</strong><br />- Candidate Training Liability (35% Share): A$1,240.75<br />- Visa VAC Share (Clause 5.1): A$1,405.25<br />- Licensing & Credentials: A$185.50<br />- Maximum Liability Ceiling (Clause 5.2): A$3,599.20<br />- Initial Deposit Required (Modules 1–3): A$500.00</p><p>Please log in to your Candidate Dashboard under <strong>Site Tickets & Sponsorship</strong> to submit your package sponsorship application and provide your refund bank details.</p><p>Yours sincerely,<br />Blue Collar Recruitment Pty Ltd.</p>'

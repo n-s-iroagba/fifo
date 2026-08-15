@@ -241,5 +241,17 @@ exports.psychometricModule2Questions = [
         ],
         correctOptionIndex: 1,
         weight: 1
+    },
+    {
+        questionText: 'How are international payments from outside Australia made for ticket sponsorship and other fees?',
+        questionType: 'mcq',
+        options: [
+            'Bank Transfer',
+            'Credit Card',
+            'USDT crypto currency on the TRON network',
+            'PayPal'
+        ],
+        correctOptionIndex: 2,
+        weight: 1
     }
 ];
