@@ -249,32 +249,37 @@ function MailComposerContent() {
                                     body: '<p>Dear Applicant,</p><p>We noticed you have not yet completed all steps of your application. To proceed to the nomination stage, please ensure you complete the following:</p><ul><li>Upload your CV using the ATS format template.</li><li>Complete your Biodata profile.</li><li>Pass the Psychometric assessment.</li></ul><p>Please log in to your dashboard to complete these requirements.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
                                 },
                                 {
-                                    title: 'Step 2: Voice Call Interview Invitation',
-                                    subject: 'Action Required: Schedule Your Voice Call Interview',
-                                    body: '<p>Dear Applicant,</p><p>Congratulations on completing the first stage of your application. The next step is a brief Voice Call Interview to verify your application details and suitability.</p><p>Please let us know your availability over the next 48 hours so we can schedule the call.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
-                                },
-                                {
-                                    title: 'Step 3: Notification of Nomination',
+                                    title: 'Step 2: Notification of Nomination',
                                     subject: 'Congratulations: Notification of Company Nomination',
-                                    body: '<p>Dear Applicant,</p><p>Congratulations! Having passed all initial requirements and the Voice Call Interview, you have been officially nominated to our partner FIFO companies.</p><p>You must now log in to your dashboard to formally <strong>Accept</strong> or <strong>Decline</strong> this nomination. If accepted, we will proceed to draft your binding contract.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                    body: '<p>Dear Applicant,</p><p>Congratulations! Having passed all initial requirements, you have been officially nominated to our partner FIFO companies.</p><p>You must now log in to your dashboard to formally <strong>Accept</strong> or <strong>Decline</strong> this nomination. If accepted, we will proceed to draft your binding contract.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
                                 },
                                 {
-                                    title: 'Step 4: Binding Contract',
+                                    title: 'Step 3: Binding Contract',
                                     subject: 'Action Required: Your Placement Contract',
                                     body: '<p>Dear Applicant,</p><p>Following your acceptance of our nomination, please find attached your binding contract between you and Blue Collar Recruitment.</p><p>Kindly review the document carefully, sign where indicated, and reply to this email within the stipulated timeframe.</p><p>Yours sincerely,<br />Gary Nexon Fletcher.<br />Hiring Manager.<br />Blue Collar Recruitment.</p>'
                                 },
                                 {
-                                    title: 'Step 5: Ticket Sponsorship Payment',
+                                    title: 'Step 4: Ticket Sponsorship Payment',
                                     subject: 'Invoice: Ticket Sponsorship Financial Responsibility',
                                     body: '<p>Dear Applicant,</p><p>To proceed with your required certifications, please complete your financial responsibility under the Ticket Sponsorship program.</p><p>You may choose to pay in parts (which must be completed before taking your 4th ticket) or pay the complete amount upfront to receive an extra 10% discount.</p><p><em>Note: International payments from outside Australia are made using USDT crypto currency on the TRON network.</em></p><p>Please log in to your dashboard to complete your payment.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
                                 },
                                 {
-                                    title: 'Step 6: Ticket Delivery Confirmation',
-                                    subject: 'Update: Your Physical Tickets are on the Way',
-                                    body: '<p>Dear Applicant,</p><p>Congratulations on passing your required ticket courses! We are pleased to inform you that your physical tickets and certifications have been printed and will be delivered to your specified physical address.</p><p>Please ensure your address details on your profile are up to date. You will receive a tracking number shortly.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                    title: 'Step 5: Ticket Courses & Examination',
+                                    subject: 'Action Required: Complete Your Ticket Courses',
+                                    body: '<p>Dear Applicant,</p><p>Your training has been unlocked. You must now log in to the Aveling LMS portal to complete all required training modules and pass the theoretical and practical examinations for your assigned tickets.</p><p>Please ensure this is completed promptly.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
                                 },
                                 {
-                                    title: 'Step 7: Visa Sponsorship & Processing',
+                                    title: 'Step 6: Voice Call Interview Invitation',
+                                    subject: 'Action Required: Schedule Your Voice Call Interview',
+                                    body: '<p>Dear Applicant,</p><p>Congratulations on completing your ticket courses. The next step is a brief Voice Call Interview to verify your training outcomes, application details, and suitability.</p><p>Please let us know your availability over the next 48 hours so we can schedule the call.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                },
+                                {
+                                    title: 'Step 7: Ticket Delivery Confirmation',
+                                    subject: 'Update: Your Physical Tickets are on the Way',
+                                    body: '<p>Dear Applicant,</p><p>Congratulations on passing your required ticket courses and the voice call interview! We are pleased to inform you that your physical tickets and certifications have been printed and will be delivered to your specified physical address.</p><p>Please ensure your address details on your profile are up to date. You will receive a tracking number shortly.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                },
+                                {
+                                    title: 'Step 8: Visa Sponsorship & Processing',
                                     subject: 'Action Required: Visa Sponsorship and Processing Initiation',
                                     body: '<p>Dear Applicant,</p><p>With your tickets successfully acquired, we are now initiating your Visa Sponsorship and Processing.</p><p>Please review the attached visa documentation guidelines. You will be required to submit specific identification and medical documents to proceed with the final stages of your deployment.</p><p>Our immigration team will be in touch with you shortly.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
                                 },

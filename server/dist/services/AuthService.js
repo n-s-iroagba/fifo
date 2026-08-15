@@ -103,28 +103,32 @@ class AuthService {
                     c. Pass the Psychometric assessment.
                 </li>
                 <li style="margin-bottom: 10px;">
-                    <strong>Step 2: Voice Call Interview</strong><br/>
-                    A brief voice call interview will be conducted to verify your application details and suitability.
+                    <strong>Step 2: Nomination</strong><br/>
+                    Upon successfully passing all requirements in Step 1, you shall be nominated to top FIFO companies. You will receive a Notification of Nomination, which you can choose to accept or decline.
                 </li>
                 <li style="margin-bottom: 10px;">
-                    <strong>Step 3: Nomination</strong><br/>
-                    Upon successfully passing all requirements in Step 1 and 2, you shall be nominated to top FIFO companies. You will receive a Notification of Nomination, which you can choose to accept or decline.
+                    <strong>Step 3: Contract Signing</strong><br/>
+                    If you accept the nomination in Step 2, a binding contract will be drafted and signed by both parties (Blue Collar and the Applicant).
                 </li>
                 <li style="margin-bottom: 10px;">
-                    <strong>Step 4: Contract Signing</strong><br/>
-                    If you accept the nomination in Step 3, a binding contract will be drafted and signed by both parties (Blue Collar and the Applicant).
-                </li>
-                <li style="margin-bottom: 10px;">
-                    <strong>Step 5: Ticket Sponsorship Payment</strong><br/>
+                    <strong>Step 4: Ticket Sponsorship Payment</strong><br/>
                     You shall pay your financial responsibility under the ticket sponsorship program. This can be paid in part (to be completed before taking the 4th ticket) or paid completely upfront at an extra 10% discount.<br/>
                     <em>Note: International payments from outside Australia are made using USDT crypto currency on the TRON network.</em>
                 </li>
                 <li style="margin-bottom: 10px;">
-                    <strong>Step 6: Ticket Delivery</strong><br/>
-                    Upon successfully passing your ticket courses, your physical tickets/certifications will be delivered to your specified address anywhere in the globe.
+                    <strong>Step 5: Ticket Courses & Examination</strong><br/>
+                    You must access the Aveling LMS portal to complete all required training modules and pass the respective theoretical and practical examinations for your assigned tickets.
                 </li>
                 <li style="margin-bottom: 10px;">
-                    <strong>Step 7: Visa Sponsorship & Processing</strong><br/>
+                    <strong>Step 6: Voice Call Interview</strong><br/>
+                    A brief voice call interview will be conducted to verify your training outcomes, application details, and suitability.
+                </li>
+                <li style="margin-bottom: 10px;">
+                    <strong>Step 7: Ticket Delivery</strong><br/>
+                    Upon successfully completing the voice call and all requirements, your physical tickets/certifications will be delivered to your specified address anywhere in the globe.
+                </li>
+                <li style="margin-bottom: 10px;">
+                    <strong>Step 8: Visa Sponsorship & Processing</strong><br/>
                     A separate email will be sent detailing the Visa Sponsorship and Processing steps as you prepare for deployment.
                 </li>
             </ol>

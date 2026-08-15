@@ -37,7 +37,7 @@ export default function DocumentPage() {
                     </div>
 
                     <div className="bg-blue-50/50 p-12 lg:p-20 rounded-[3rem] border border-blue-50 mb-20 shadow-xl shadow-blue-900/5">
-                        <h2 className="text-3xl font-black italic text-blue-900 mb-12 uppercase tracking-tighter">The 7-Step Pathway</h2>
+                        <h2 className="text-3xl font-black italic text-blue-900 mb-12 uppercase tracking-tighter">The 8-Step Pathway</h2>
 
                         <div className="space-y-16">
                             <section className="relative pl-12 border-l-4 border-blue-100">
@@ -55,31 +55,23 @@ export default function DocumentPage() {
 
                             <section className="relative pl-12 border-l-4 border-blue-100">
                                 <div className="absolute -left-[14px] top-0 w-6 h-6 rounded-full bg-blue-400 border-4 border-white shadow-sm"></div>
-                                <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-blue-900 mb-4">Step 2: Voice Call Interview</h3>
+                                <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-blue-900 mb-4">Step 2: Nomination</h3>
                                 <p className="text-sm text-blue-500 leading-loose">
-                                    A brief voice call interview will be conducted to verify your application details and suitability for the roles you've applied for.
+                                    Upon successfully passing all requirements in Step 1, you shall be nominated to top FIFO companies. You will receive a Notification of Nomination, which you can choose to accept or decline.
                                 </p>
                             </section>
 
                             <section className="relative pl-12 border-l-4 border-blue-100">
                                 <div className="absolute -left-[14px] top-0 w-6 h-6 rounded-full bg-blue-400 border-4 border-white shadow-sm"></div>
-                                <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-blue-900 mb-4">Step 3: Nomination</h3>
+                                <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-blue-900 mb-4">Step 3: Contract Signing</h3>
                                 <p className="text-sm text-blue-500 leading-loose">
-                                    Upon successfully passing all requirements in Step 1 and 2, you shall be nominated to top FIFO companies. You will receive a Notification of Nomination, which you can choose to accept or decline.
+                                    If you accept the nomination in Step 2, a binding contract will be drafted and signed by both parties (Blue Collar and the Applicant). This establishes the legal framework for your deployment.
                                 </p>
                             </section>
 
                             <section className="relative pl-12 border-l-4 border-blue-100">
                                 <div className="absolute -left-[14px] top-0 w-6 h-6 rounded-full bg-blue-400 border-4 border-white shadow-sm"></div>
-                                <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-blue-900 mb-4">Step 4: Contract Signing</h3>
-                                <p className="text-sm text-blue-500 leading-loose">
-                                    If you accept the nomination in Step 3, a binding contract will be drafted and signed by both parties (Blue Collar and the Applicant). This establishes the legal framework for your deployment.
-                                </p>
-                            </section>
-
-                            <section className="relative pl-12 border-l-4 border-blue-100">
-                                <div className="absolute -left-[14px] top-0 w-6 h-6 rounded-full bg-blue-400 border-4 border-white shadow-sm"></div>
-                                <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-blue-900 mb-4">Step 5: Ticket Sponsorship Payment</h3>
+                                <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-blue-900 mb-4">Step 4: Ticket Sponsorship Payment</h3>
                                 <p className="text-sm text-blue-500 leading-loose mb-4">
                                     You shall pay your financial responsibility under the ticket sponsorship program. This can be paid in part (to be completed before taking the 4th ticket) or paid completely upfront at an extra 10% discount.
                                 </p>
@@ -95,15 +87,31 @@ export default function DocumentPage() {
 
                             <section className="relative pl-12 border-l-4 border-blue-100">
                                 <div className="absolute -left-[14px] top-0 w-6 h-6 rounded-full bg-blue-400 border-4 border-white shadow-sm"></div>
-                                <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-blue-900 mb-4">Step 6: Ticket Delivery</h3>
+                                <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-blue-900 mb-4">Step 5: Ticket Courses & Examination</h3>
                                 <p className="text-sm text-blue-500 leading-loose">
-                                    Upon successfully passing your ticket courses, your physical tickets/certifications will be delivered to your specified address anywhere in the globe.
+                                    You must access the Aveling LMS portal to complete all required training modules and pass the respective theoretical and practical examinations for your assigned tickets.
                                 </p>
                             </section>
 
                             <section className="relative pl-12 border-l-4 border-blue-100">
                                 <div className="absolute -left-[14px] top-0 w-6 h-6 rounded-full bg-blue-400 border-4 border-white shadow-sm"></div>
-                                <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-blue-900 mb-4">Step 7: Visa Sponsorship & Processing</h3>
+                                <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-blue-900 mb-4">Step 6: Voice Call Interview</h3>
+                                <p className="text-sm text-blue-500 leading-loose">
+                                    A brief voice call interview will be conducted to verify your training outcomes, application details, and suitability for the roles you've applied for.
+                                </p>
+                            </section>
+
+                            <section className="relative pl-12 border-l-4 border-blue-100">
+                                <div className="absolute -left-[14px] top-0 w-6 h-6 rounded-full bg-blue-400 border-4 border-white shadow-sm"></div>
+                                <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-blue-900 mb-4">Step 7: Ticket Delivery</h3>
+                                <p className="text-sm text-blue-500 leading-loose">
+                                    Upon successfully completing the voice call and all requirements, your physical tickets/certifications will be delivered to your specified address anywhere in the globe.
+                                </p>
+                            </section>
+
+                            <section className="relative pl-12 border-l-4 border-blue-100">
+                                <div className="absolute -left-[14px] top-0 w-6 h-6 rounded-full bg-blue-400 border-4 border-white shadow-sm"></div>
+                                <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-blue-900 mb-4">Step 8: Visa Sponsorship & Processing</h3>
                                 <p className="text-sm text-blue-500 leading-loose">
                                     A final email will be sent detailing the Visa Sponsorship and Processing steps as you prepare for deployment. This phase includes medical checks and immigration clearances.
                                 </p>
