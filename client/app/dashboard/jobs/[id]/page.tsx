@@ -84,7 +84,7 @@ export default function JobDetailPage() {
                 {lines.map((line, idx) => {
                     const trimmed = line.trim();
                     if (!trimmed) return null;
-                    
+
                     const listMatch = trimmed.match(/^(\d+\.)\s*(.*)/);
                     if (listMatch) {
                         return (
@@ -264,25 +264,15 @@ export default function JobDetailPage() {
                                 <span className="absolute -top-10 -right-10 material-symbols-outlined text-[20rem] opacity-5 text-white italic">award_star</span>
 
                                 <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-16">
-                                    <div className="space-y-10">
-                                        <h3 className="text-[10px] font-black uppercase tracking-[0.5em] text-blue-300">Terms & Conditions</h3>
-                                        <div className="space-y-8">
-                                            {job.JobConditions?.map((condition: any) => (
-                                                <div key={condition.id} className="group text-right md:text-left">
-                                                    <h4 className="text-xs font-black uppercase tracking-[0.2em] text-white mb-2 group-hover:text-blue-300 transition-colors">{condition.name}</h4>
-                                                    <p className="text-sm text-blue-300 font-medium leading-relaxed">{condition.description}</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
+
 
                                     <div className="space-y-10">
                                         <h3 className="text-[10px] font-black uppercase tracking-[0.5em] text-blue-300">Employee Benefits</h3>
                                         <div className="space-y-8">
                                             {job.JobBenefits?.map((benefit: any) => (
                                                 <div key={benefit.id} className="group">
-                                                    <h4 className="text-xs font-black uppercase tracking-[0.2em] text-white mb-2 group-hover:text-blue-300 transition-colors">{benefit.benefitType}</h4>
-                                                    <p className="text-sm text-blue-300 font-medium leading-relaxed">{benefit.description}</p>
+                                                    <h4 className="text-xs font-black uppercase tracking-[0.2em] text-white mb-2 group-hover:text-blue-300 transition-colors">{benefit.description}</h4>
+
                                                     {benefit.value && <span className="inline-block mt-3 px-3 py-1 bg-white/10 rounded-lg text-[9px] font-black uppercase tracking-widest text-blue-100">{benefit.value}</span>}
                                                 </div>
                                             ))}
