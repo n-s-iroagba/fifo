@@ -263,23 +263,21 @@ export default function JobDetailPage() {
                             <div className="bg-blue-900 text-white p-12 rounded-[4rem] shadow-2xl shadow-blue-900/10 space-y-12 relative overflow-hidden">
                                 <span className="absolute -top-10 -right-10 material-symbols-outlined text-[20rem] opacity-5 text-white italic">award_star</span>
 
-                                <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-16">
-
-
+                                <div className="relative z-10 grid grid-cols-1 gap-16">
                                     <div className="space-y-10">
                                         <h3 className="text-[10px] font-black uppercase tracking-[0.5em] text-blue-300">Employee Benefits</h3>
-                                        <div className="space-y-8">
+                                        <div className="space-y-6">
                                             {job.JobBenefits?.map((benefit: any) => (
-                                                <div key={benefit.id} className="group">
-                                                    <h4 className="text-xs font-black uppercase tracking-[0.2em] text-white mb-2 group-hover:text-blue-300 transition-colors">{benefit.description}</h4>
-
-                                                    {benefit.value && <span className="inline-block mt-3 px-3 py-1 bg-white/10 rounded-lg text-[9px] font-black uppercase tracking-widest text-blue-100">{benefit.value}</span>}
+                                                <div key={benefit.id} className="group flex items-start gap-4">
+                                                    <span className="material-symbols-outlined text-blue-300 text-xl group-hover:text-white transition-colors">check_circle</span>
+                                                    <div>
+                                                        <h4 className="text-sm font-bold text-white leading-relaxed group-hover:text-blue-100 transition-colors">{benefit.description || benefit.benefitType}</h4>
+                                                        {benefit.value && <span className="inline-block mt-2 px-3 py-1 bg-white/10 rounded-lg text-[9px] font-black uppercase tracking-widest text-blue-100">{benefit.value}</span>}
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
-
-
                                 </div>
                             </div>
                         )}
