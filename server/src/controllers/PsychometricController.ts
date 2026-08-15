@@ -195,7 +195,7 @@ export class PsychometricController {
             }
 
             const passThreshold = moduleEnum === 'module_1' ? 70 : 80;
-            const passed = score >= passThreshold;
+            const passed = moduleEnum === 'module_2' ? true : (score >= passThreshold);
 
             await PsychometricAttempt.create({
                 userId,

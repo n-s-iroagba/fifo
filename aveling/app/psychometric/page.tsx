@@ -433,9 +433,9 @@ function PsychometricTestContent() {
                         {!status.module1Passed && <Lock className="text-zinc-400 w-6 h-6 shrink-0" />}
                     </div>
                     <div className="text-zinc-500 font-medium text-sm mb-6 flex-1 space-y-3">
-                        <p>Ensures you fully understand the Blue Collar Recruitment application process, payments, and Aveling certification.</p>
-                        <a href="https://bluecollarrecruitment.co//document" target="_blank" className="text-zinc-900 border-b-2 border-[#FFC700] font-black hover:bg-[#FFC700] transition-all inline-flex items-center gap-1.5 py-1">
-                            View Flow Document <Download className="w-3.5 h-3.5" />
+                        <p>Ensures you fully understand the Blue Collar Recruitment application process, payments (including international payments via USDT TRC-20 on the TRON network), and Aveling certification.</p>
+                        <a href="https://bluecollarrecruitment.co/document" target="_blank" className="text-zinc-900 border-b-2 border-[#FFC700] font-black hover:bg-[#FFC700] transition-all inline-flex items-center gap-1.5 py-1">
+                            View Course Module or Data <Download className="w-3.5 h-3.5" />
                         </a>
                     </div>
 

@@ -17,6 +17,24 @@ export default function DocumentPage() {
                             This document outlines the standard operating procedures, policies, and the complete 6-step recruitment lifecycle for all applicants on the BlueCollar platform.
                         </p>
                     </header>
+                    <div className="bg-white p-12 lg:p-16 rounded-[3rem] border border-blue-100 mb-12 shadow-sm">
+                        <h2 className="text-2xl font-black italic text-blue-900 mb-8 uppercase tracking-tight">Introduction & Ecosystem Overview</h2>
+                        <div className="space-y-6 text-sm text-blue-600 leading-loose">
+                            <p>
+                                Welcome to the <strong>Blue Collar Recruitment Ecosystem</strong>. This platform is designed as an end-to-end recruitment and placement portal specifically built for Fly-In-Fly-Out (FIFO) professionals. Our infrastructure seamlessly links two main hubs:
+                            </p>
+                            <ul className="list-disc pl-5 space-y-2">
+                                <li><strong>The Recruitment Portal:</strong> Where applicants submit their ATS-compliant CVs, manage their biodata, take psychometric assessments, and track their nomination status.</li>
+                                <li><strong>The LMS / Training Portal (Aveling):</strong> Where applicants access mandated training courses, complete theoretical and practical assessments, and earn the critical compliance tickets (such as EEHA, Standard 11, Working at Heights, etc.) necessary for site deployment.</li>
+                            </ul>
+                            <p>
+                                By unifying these systems, we eliminate redundant data entry. Certification gaps identified during the recruitment phase are automatically synchronized with your training dashboard, ensuring you only take the courses you absolutely need.
+                            </p>
+                            <p>
+                                The following framework details the step-by-step pathway from initial application to final visa processing and deployment. Adherence to this framework is mandatory, and it forms the basis of all process literacy assessments.
+                            </p>
+                        </div>
+                    </div>
 
                     <div className="bg-blue-50/50 p-12 lg:p-20 rounded-[3rem] border border-blue-50 mb-20 shadow-xl shadow-blue-900/5">
                         <h2 className="text-3xl font-black italic text-blue-900 mb-12 uppercase tracking-tighter">The 7-Step Pathway</h2>

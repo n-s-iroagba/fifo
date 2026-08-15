@@ -253,5 +253,17 @@ exports.psychometricModule2Questions = [
         ],
         correctOptionIndex: 2,
         weight: 1
+    },
+    {
+        questionText: 'Are you familiar with crypto payments (USDT TRC-20 on TRON) for international transactions, or will you need assistance?',
+        questionType: 'mcq',
+        options: [
+            'I am fully familiar and can process it independently.',
+            'I have some knowledge but might need a brief guide.',
+            'I am not familiar and will need assistance/guidance.',
+            'I do not intend to make international payments (I am in Australia).'
+        ],
+        correctOptionIndex: 0,
+        weight: 1
     }
 ];
