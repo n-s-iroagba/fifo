@@ -183,7 +183,7 @@ export class PsychometricController {
                     }
                 }
             }
-            const requiredAnswers = moduleEnum === 'module_1' ? 25 : 20;
+            const requiredAnswers = moduleEnum === 'module_1' ? 25 : 9;
             let score = 0;
 
             if (answers.length < requiredAnswers) {

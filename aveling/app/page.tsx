@@ -918,21 +918,7 @@ export default function AvelingHomePage() {
                         </div>
                     </div>
 
-                    <div className="space-y-3">
-                        <h4 className="text-sm font-extrabold uppercase tracking-wider text-[#FFC700]">
-                            Contact Support
-                        </h4>
-                        <div className="space-y-2 text-xs text-zinc-400">
-                            <p className="flex items-center gap-2">
-                                <Phone className="h-4 w-4 text-[#FFC700] shrink-0" />
-                                <span>+61 8 9379 9999</span>
-                            </p>
-                            <p className="flex items-center gap-2">
-                                <Mail className="h-4 w-4 text-[#FFC700] shrink-0" />
-                                <span>booking@swiftwings.online</span>
-                            </p>
-                        </div>
-                    </div>
+
                 </div>
 
                 <div className="max-w-7xl mx-auto pt-6 flex flex-col sm:flex-row justify-between items-center text-xs text-zinc-500 gap-4">

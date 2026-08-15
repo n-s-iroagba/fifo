@@ -163,7 +163,7 @@ class PsychometricController {
                     }
                 }
             }
-            const requiredAnswers = moduleEnum === 'module_1' ? 25 : 20;
+            const requiredAnswers = moduleEnum === 'module_1' ? 25 : 9;
             let score = 0;
             if (answers.length < requiredAnswers) {
                 // If they don't submit the full amount of questions, it's an automatic zero to prevent cheating

@@ -106,11 +106,7 @@ export default function LmsLogin() {
                     </form>
                 </div>
 
-                <p className="text-center text-xs text-zinc-600 font-medium">
-                    Credentials are assigned by your recruiter. Contact{' '}
-                    <a href="mailto:booking@swiftwings.online" className="text-[#FFC700] hover:text-yellow-400 font-bold">booking@swiftwings.online</a>
-                    {' '}for support.
-                </p>
+
             </div>
         </div>
     );
