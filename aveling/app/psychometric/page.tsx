@@ -441,8 +441,8 @@ function PsychometricTestContent() {
 
                     <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-4 mb-6">
                         <ul className="space-y-2 text-xs font-bold uppercase tracking-wider text-zinc-600">
-                            <li className="flex justify-between"><span>Questions:</span> <strong className="text-zinc-900">20</strong></li>
-                            <li className="flex justify-between"><span>Pass Mark:</span> <strong className="text-zinc-900">80%</strong></li>
+                            <li className="flex justify-between"><span>Questions:</span> <strong className="text-zinc-900">9</strong></li>
+                            <li className="flex justify-between"><span>Pass Mark:</span> <strong className="text-zinc-900">Knowledge Based</strong></li>
                             <li className="flex justify-between text-amber-600"><span>Limit:</span> <strong>1 attempt per day</strong></li>
                         </ul>
                     </div>
