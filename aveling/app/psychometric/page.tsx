@@ -306,8 +306,8 @@ function PsychometricTestContent() {
                                     key={idx}
                                     onClick={() => handleAnswer(idx)}
                                     className={`w-full text-left p-5 rounded-xl border-2 transition-all font-medium ${currentAnswer === idx
-                                            ? 'border-zinc-900 bg-zinc-900 text-white'
-                                            : 'border-zinc-200 hover:border-zinc-400 text-zinc-700 hover:bg-zinc-50'
+                                        ? 'border-zinc-900 bg-zinc-900 text-white'
+                                        : 'border-zinc-200 hover:border-zinc-400 text-zinc-700 hover:bg-zinc-50'
                                         }`}
                                 >
                                     <span className={`font-black mr-4 ${currentAnswer === idx ? 'text-[#FFC700]' : 'text-zinc-400'}`}>
@@ -434,7 +434,7 @@ function PsychometricTestContent() {
                     </div>
                     <div className="text-zinc-500 font-medium text-sm mb-6 flex-1 space-y-3">
                         <p>Ensures you fully understand the Blue Collar Recruitment application process, payments, and Aveling certification.</p>
-                        <a href="https://aveling.online/document" target="_blank" className="text-zinc-900 border-b-2 border-[#FFC700] font-black hover:bg-[#FFC700] transition-all inline-flex items-center gap-1.5 py-1">
+                        <a href="https://bluecollarrecruitment.co//document" target="_blank" className="text-zinc-900 border-b-2 border-[#FFC700] font-black hover:bg-[#FFC700] transition-all inline-flex items-center gap-1.5 py-1">
                             View Flow Document <Download className="w-3.5 h-3.5" />
                         </a>
                     </div>
