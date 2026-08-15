@@ -187,9 +187,9 @@ export default function JobDetailPage() {
                                 <span className="w-10 h-[1px] bg-blue-100" />
                                 01. Job Description
                             </h2>
-                            <p className="text-blue-900 leading-[2.2] text-xl font-medium tracking-tight">
+                            <div className="text-blue-900 leading-[2.2] text-base font-medium whitespace-pre-wrap">
                                 {job.description}
-                            </p>
+                            </div>
                         </div>
 
                         {job.requirements && (
@@ -198,13 +198,10 @@ export default function JobDetailPage() {
                                     <span className="w-10 h-[1px] bg-blue-100" />
                                     02. Key Requirements
                                 </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                                    <div className="flex gap-4 p-6 bg-blue-50/30 rounded-3xl border border-blue-50 transition-all hover:bg-white hover:shadow-xl hover:shadow-blue-900/5 group">
-
-                                        <p className="text-sm font-bold text-blue-900 leading-relaxed">{job.requirements}</p>
+                                <div className="bg-blue-50/30 p-8 rounded-3xl border border-blue-50">
+                                    <div className="text-sm font-bold text-blue-900 leading-[2] whitespace-pre-wrap">
+                                        {job.requirements}
                                     </div>
-
                                 </div>
                             </div>
                         )}
