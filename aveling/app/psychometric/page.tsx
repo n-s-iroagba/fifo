@@ -42,7 +42,7 @@ function PsychometricTestContent() {
     const [questions, setQuestions] = useState<Question[]>([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<{ questionText: string, selectedOption: number }[]>([]);
-    
+
     const [testState, setTestState] = useState<'intro' | 'testing' | 'result'>('intro');
     const [result, setResult] = useState<{ message: string } | null>(null);
 
@@ -51,7 +51,7 @@ function PsychometricTestContent() {
     useEffect(() => {
         const urlToken = searchParams.get('token');
         let activeToken = urlToken || localStorage.getItem('accessToken') || localStorage.getItem('lms_token');
-        
+
         if (urlToken) localStorage.setItem('accessToken', urlToken);
 
         if (!activeToken) {
@@ -59,7 +59,7 @@ function PsychometricTestContent() {
             setLoading(false);
             return;
         }
-        
+
         setToken(activeToken);
     }, [searchParams]);
 
@@ -69,10 +69,10 @@ function PsychometricTestContent() {
 
     const apiCall = async (endpoint: string, method: string = 'GET', data?: any, currentToken?: string, retryCount = 0): Promise<any> => {
         const t = currentToken || token;
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL 
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL
             ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')}/api`
             : 'http://localhost:3001/api';
-        
+
         try {
             const res = await axios({
                 url: `${baseUrl}${endpoint}`,
@@ -87,12 +87,12 @@ function PsychometricTestContent() {
                 try {
                     const refreshRes = await axios.post(`${baseUrl}/auth/refresh`, {}, { withCredentials: true });
                     const newAccessToken = refreshRes.data.accessToken;
-                    
+
                     if (newAccessToken) {
                         localStorage.setItem('accessToken', newAccessToken);
                         localStorage.setItem('lms_token', newAccessToken);
                         setToken(newAccessToken);
-                        
+
                         // Retry the original request with the fresh token
                         return await apiCall(endpoint, method, data, newAccessToken, 1);
                     }
@@ -159,7 +159,7 @@ function PsychometricTestContent() {
         try {
             setLoading(true);
             const response = await apiCall(`/psychometric/module/${moduleNum}/questions`);
-            
+
             if (response.alreadyPassed) {
                 alert('You have already passed this module.');
                 fetchStatus(token!);
@@ -253,7 +253,7 @@ function PsychometricTestContent() {
                             You have successfully passed both modules of the mandatory psychometric assessment. You are now cleared to apply for FIFO positions.
                         </p>
                         <button
-                            onClick={() => window.location.href = 'http://localhost:3000/dashboard'}
+                            onClick={() => window.location.href = 'https://bluecollarrecruitment.co/dashboard'}
                             className="inline-flex items-center gap-2 bg-[#FFC700] text-black font-extrabold px-8 py-4 rounded-xl hover:bg-yellow-400 uppercase tracking-wider shadow-md transition-all"
                         >
                             Return to Recruitment Dashboard <ChevronRight className="w-5 h-5" />
@@ -281,13 +281,13 @@ function PsychometricTestContent() {
                             </div>
                         </div>
                     )}
-                    
+
                     <div className="mb-8">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFC700] text-black font-extrabold text-xs uppercase tracking-wider w-fit mb-3">
                             <BrainCircuit className="h-3.5 w-3.5" /> Module {activeModule}
                         </div>
                         <h1 className="text-3xl font-black text-zinc-900 tracking-tight">Psychometric Assessment</h1>
-                        
+
                         <div className="mt-6 w-full bg-zinc-200 rounded-full h-2">
                             <div className="bg-[#FFC700] h-2 rounded-full transition-all duration-300" style={{ width: `${progress}%` }}></div>
                         </div>
@@ -305,11 +305,10 @@ function PsychometricTestContent() {
                                 <button
                                     key={idx}
                                     onClick={() => handleAnswer(idx)}
-                                    className={`w-full text-left p-5 rounded-xl border-2 transition-all font-medium ${
-                                        currentAnswer === idx 
-                                        ? 'border-zinc-900 bg-zinc-900 text-white' 
-                                        : 'border-zinc-200 hover:border-zinc-400 text-zinc-700 hover:bg-zinc-50'
-                                    }`}
+                                    className={`w-full text-left p-5 rounded-xl border-2 transition-all font-medium ${currentAnswer === idx
+                                            ? 'border-zinc-900 bg-zinc-900 text-white'
+                                            : 'border-zinc-200 hover:border-zinc-400 text-zinc-700 hover:bg-zinc-50'
+                                        }`}
                                 >
                                     <span className={`font-black mr-4 ${currentAnswer === idx ? 'text-[#FFC700]' : 'text-zinc-400'}`}>
                                         {String.fromCharCode(65 + idx)}.
@@ -319,26 +318,26 @@ function PsychometricTestContent() {
                             ))}
                         </div>
                         <div className="flex justify-between items-center p-6 border-t-2 border-zinc-100 bg-zinc-50">
-                            <button 
-                                onClick={previousQuestion} 
+                            <button
+                                onClick={previousQuestion}
                                 disabled={currentQuestionIndex === 0}
                                 className="px-6 py-3 rounded-xl font-extrabold text-zinc-500 uppercase tracking-wider border-2 border-zinc-200 hover:bg-zinc-100 disabled:opacity-50 transition-colors"
                             >
                                 Previous
                             </button>
-                            
+
                             {currentQuestionIndex === questions.length - 1 ? (
-                                <button 
-                                    onClick={submitTest} 
-                                    disabled={loading || currentAnswer === undefined} 
+                                <button
+                                    onClick={submitTest}
+                                    disabled={loading || currentAnswer === undefined}
                                     className="px-8 py-3 rounded-xl font-extrabold text-black bg-[#FFC700] hover:bg-yellow-400 uppercase tracking-wider disabled:opacity-50 transition-colors shadow-md"
                                 >
                                     {loading ? 'Submitting...' : 'Submit Test'}
                                 </button>
                             ) : (
-                                <button 
-                                    onClick={nextQuestion} 
-                                    disabled={currentAnswer === undefined} 
+                                <button
+                                    onClick={nextQuestion}
+                                    disabled={currentAnswer === undefined}
                                     className="px-8 py-3 rounded-xl font-extrabold text-white bg-zinc-900 hover:bg-black uppercase tracking-wider disabled:opacity-50 transition-colors shadow-md"
                                 >
                                     Next
@@ -363,12 +362,12 @@ function PsychometricTestContent() {
                         <p className="my-4 font-bold text-zinc-600 text-lg">
                             {result.message}
                         </p>
-                        <button 
+                        <button
                             onClick={() => {
                                 setResult(null);
                                 setTestState('intro');
                                 fetchStatus(token!);
-                            }} 
+                            }}
                             className="mt-4 bg-zinc-900 text-white font-extrabold px-8 py-4 rounded-xl uppercase tracking-wider hover:bg-black transition-all shadow-md"
                         >
                             Return to Assessment Overview
@@ -396,13 +395,13 @@ function PsychometricTestContent() {
                 {/* MODULE 1 */}
                 <div className={`border-2 rounded-2xl p-8 flex flex-col ${status.module1Passed ? "border-emerald-200 bg-emerald-50/50" : "border-zinc-200 shadow-md bg-white hover:border-[#FFC700] transition-all"}`}>
                     <div className="flex justify-between items-start mb-4">
-                        <h2 className="text-2xl font-black text-zinc-900">Module 1:<br/>Psychometric Assessment</h2>
+                        <h2 className="text-2xl font-black text-zinc-900">Module 1:<br />Psychometric Assessment</h2>
                         {status.module1Passed && <CheckCircle className="text-emerald-500 w-8 h-8 shrink-0" />}
                     </div>
                     <p className="text-zinc-500 font-medium text-sm mb-6 flex-1">
                         Evaluates your logical reasoning, situational judgment, and suitability for high-risk FIFO work environments.
                     </p>
-                    
+
                     <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-4 mb-6">
                         <ul className="space-y-2 text-xs font-bold uppercase tracking-wider text-zinc-600">
                             <li className="flex justify-between"><span>Questions:</span> <strong className="text-zinc-900">25</strong></li>
@@ -410,7 +409,7 @@ function PsychometricTestContent() {
                             <li className="flex justify-between text-amber-600"><span>Limit:</span> <strong>1 attempt per day</strong></li>
                         </ul>
                     </div>
-                    
+
                     <div>
                         {status.module1Passed ? (
                             <div className="text-emerald-700 font-black uppercase tracking-widest text-xs border-2 border-emerald-200 bg-emerald-100 py-4 rounded-xl text-center">Passed</div>
@@ -429,17 +428,17 @@ function PsychometricTestContent() {
                 {/* MODULE 2 */}
                 <div className={`border-2 rounded-2xl p-8 flex flex-col ${status.module2Passed ? "border-emerald-200 bg-emerald-50/50" : !status.module1Passed ? "bg-zinc-50 border-zinc-200 opacity-60" : "border-[#FFC700] shadow-md bg-white ring-2 ring-[#FFC700]/20"}`}>
                     <div className="flex justify-between items-start mb-4">
-                        <h2 className="text-2xl font-black text-zinc-900">Module 2:<br/>Process Literacy</h2>
+                        <h2 className="text-2xl font-black text-zinc-900">Module 2:<br />Process Literacy</h2>
                         {status.module2Passed && <CheckCircle className="text-emerald-500 w-8 h-8 shrink-0" />}
                         {!status.module1Passed && <Lock className="text-zinc-400 w-6 h-6 shrink-0" />}
                     </div>
                     <div className="text-zinc-500 font-medium text-sm mb-6 flex-1 space-y-3">
                         <p>Ensures you fully understand the Blue Collar Recruitment application process, payments, and Aveling certification.</p>
-                        <a href="http://localhost:3000/document" target="_blank" className="text-zinc-900 border-b-2 border-[#FFC700] font-black hover:bg-[#FFC700] transition-all inline-flex items-center gap-1.5 py-1">
+                        <a href="https://aveling.online/document" target="_blank" className="text-zinc-900 border-b-2 border-[#FFC700] font-black hover:bg-[#FFC700] transition-all inline-flex items-center gap-1.5 py-1">
                             View Flow Document <Download className="w-3.5 h-3.5" />
                         </a>
                     </div>
-                    
+
                     <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-4 mb-6">
                         <ul className="space-y-2 text-xs font-bold uppercase tracking-wider text-zinc-600">
                             <li className="flex justify-between"><span>Questions:</span> <strong className="text-zinc-900">20</strong></li>
@@ -447,7 +446,7 @@ function PsychometricTestContent() {
                             <li className="flex justify-between text-amber-600"><span>Limit:</span> <strong>1 attempt per day</strong></li>
                         </ul>
                     </div>
-                    
+
                     <div>
                         {status.module2Passed ? (
                             <div className="text-emerald-700 font-black uppercase tracking-widest text-xs border-2 border-emerald-200 bg-emerald-100 py-4 rounded-xl text-center">Passed</div>
