@@ -55,12 +55,20 @@ const cleanHtmlContent = (content: string): string => {
     return cleaned;
 };
 
-const getStandardEmailTemplate = (subject: string, content: string) => {
+const getStandardEmailTemplate = (subject: string, content: string, fromType: 'auth' | 'info' | 'aveling' = 'info') => {
     const trimmed = content.trim();
     if (/^\s*<!DOCTYPE\s+html/i.test(trimmed) || /<html/i.test(trimmed) || /<body/i.test(trimmed)) {
         return content;
     }
     const cleanedContent = cleanHtmlContent(content);
+    
+    const isAveling = fromType === 'aveling';
+    const logoUrl = isAveling ? `${process.env.AVELING_URL || 'http://localhost:3002'}/favicon.ico` : `${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg`;
+    const headerBgColor = isAveling ? '#FFC700' : '#0b3486';
+    const primaryColor = isAveling ? '#000000' : '#0b3486';
+    const altText = isAveling ? 'Aveling LMS Training' : 'BlueCollar Curated Career';
+    const logoStyle = isAveling ? 'display: block; width: 64px; height: 64px; margin: 20px auto; outline: none; border: none; text-decoration: none;' : 'display: block; width: 100%; height: auto; max-width: 600px; margin: 0 auto; outline: none; border: none; text-decoration: none;';
+
     return `
     <!DOCTYPE html>
     <html>
@@ -68,21 +76,21 @@ const getStandardEmailTemplate = (subject: string, content: string) => {
         <style>
             body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7fb; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
             .container { max-width: 600px; margin: 60px auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(12, 59, 139, 0.15); border: 1px solid #eef2f6; }
-            .header { background-color: #0b3486; margin: 0; padding: 0; line-height: 0; font-size: 0; text-align: center; } /* elegant deep blue fallback */
-            .header img { display: block; width: 100%; height: auto; max-width: 600px; margin: 0 auto; outline: none; border: none; text-decoration: none; }
+            .header { background-color: ${headerBgColor}; margin: 0; padding: 0; line-height: 0; font-size: 0; text-align: center; } /* elegant fallback */
+            .header img { ${logoStyle} }
             .content { padding: 50px; color: #334155; line-height: 1.7; font-size: 15px; }
             .footer { padding: 35px 50px; text-align: center; color: #94a3b8; font-size: 12px; border-top: 1px solid #f8fafc; background-color: #fcfdfe; line-height: 1.6; }
-            h1 { color: #0b3486; font-size: 22px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 0; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; display: inline-block; padding-bottom: 12px; }
+            h1 { color: ${primaryColor}; font-size: 22px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 0; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; display: inline-block; padding-bottom: 12px; }
             p { margin-bottom: 24px; color: #475569; font-weight: 500; }
             .cta-block { margin-top: 45px; text-align: center; margin-bottom: 15px; }
-            .button { display: inline-block; padding: 18px 40px; background-color: #0b3486; color: #ffffff !important; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; box-shadow: 0 10px 20px -5px rgba(11, 52, 134, 0.35); transition: background-color 0.2s ease; }
-            .button:hover { background-color: #08296a; }
+            .button { display: inline-block; padding: 18px 40px; background-color: ${primaryColor}; color: ${isAveling ? '#FFC700' : '#ffffff'} !important; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.35); transition: background-color 0.2s ease; }
+            .button:hover { background-color: ${isAveling ? '#333333' : '#08296a'}; }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
-                <img src="${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg" alt="BlueCollar Curated Career" />
+                <img src="${logoUrl}" alt="${altText}" />
             </div>
             <div class="content">
                 <h1>${subject}</h1>
@@ -91,8 +99,8 @@ const getStandardEmailTemplate = (subject: string, content: string) => {
                 </div>
             </div>
             <div class="footer">
-                &copy; 2026 BlueCollar Infrastructure. All rights reserved.<br>
-                <span style="font-weight: 800; color: #0b3486; margin-top: 12px; display: block; letter-spacing: 1px;">SECURE RECRUITMENT PIPELINE PROTOCOL</span>
+                &copy; 2026 ${isAveling ? 'Aveling LMS Training' : 'BlueCollar Infrastructure'}. All rights reserved.<br>
+                <span style="font-weight: 800; color: ${primaryColor}; margin-top: 12px; display: block; letter-spacing: 1px;">SECURE RECRUITMENT PIPELINE PROTOCOL</span>
             </div>
         </div>
     </body>
@@ -106,7 +114,7 @@ export const sendAuthEmail = async (to: string, subject: string, content: string
             from: process.env.SMTP_AUTH_FROM || '"BlueCollar Authentication" <donotreply@BlueCollar.com>',
             to,
             subject,
-            html: getStandardEmailTemplate(subject, content),
+            html: getStandardEmailTemplate(subject, content, 'auth'),
             attachments,
         });
         console.log(`[EmailUtil] Auth email dispatched to: ${to}`);
@@ -127,7 +135,7 @@ export const sendInfoEmail = async (to: string, subject: string, content: string
             from: process.env.SMTP_INFO_FROM || '"BlueCollar Infrastructure" <info@BlueCollar.com>',
             to,
             subject,
-            html: getStandardEmailTemplate(subject, content),
+            html: getStandardEmailTemplate(subject, content, 'info'),
             attachments,
         });
         console.log(`[EmailUtil] Info email dispatched to: ${to}`);
@@ -143,7 +151,7 @@ export const sendAvelingEmail = async (to: string, subject: string, content: str
             from: process.env.AV_SMTP_INFO_FROM || '"BlueCollarRecruitment Aveling" <info@jobnexe.com>',
             to,
             subject,
-            html: getStandardEmailTemplate(subject, content),
+            html: getStandardEmailTemplate(subject, content, 'aveling'),
             attachments,
         });
         console.log(`[EmailUtil] Aveling email dispatched to: ${to}`);
@@ -170,7 +178,7 @@ export const sendEmailFrom = async (fromType: 'auth' | 'info' | 'aveling', to: s
             from,
             to,
             subject,
-            html: getStandardEmailTemplate(subject, content),
+            html: getStandardEmailTemplate(subject, content, fromType),
             attachments,
         });
         console.log(`[EmailUtil] ${fromType} email dispatched to: ${to}`);

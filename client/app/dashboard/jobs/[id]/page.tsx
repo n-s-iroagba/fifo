@@ -76,6 +76,63 @@ export default function JobDetailPage() {
 
     const isReadyToApply = userData?.user?.fullName && userData?.user?.phoneNumber && userData?.user?.nationality && userData?.user?.cvUrl && userData?.user?.psychometricModule1Passed && userData?.user?.psychometricModule2Passed;
 
+    const renderRichText = (text: string) => {
+        if (!text) return null;
+        const lines = text.split('\n');
+        return (
+            <div className="space-y-3">
+                {lines.map((line, idx) => {
+                    const trimmed = line.trim();
+                    if (!trimmed) return null;
+                    
+                    const listMatch = trimmed.match(/^(\d+\.)\s*(.*)/);
+                    if (listMatch) {
+                        return (
+                            <div key={idx} className="flex gap-4 items-start bg-white p-5 rounded-2xl border border-blue-50/60 shadow-sm shadow-blue-900/5 group hover:border-blue-200 hover:shadow-md transition-all">
+                                <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-blue-50 rounded-full text-[10px] font-black text-blue-900 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                    {listMatch[1].replace('.', '')}
+                                </span>
+                                <span className="text-sm font-medium text-slate-600 leading-relaxed pt-1.5">
+                                    {listMatch[2]}
+                                </span>
+                            </div>
+                        );
+                    }
+
+                    if (trimmed.includes(':') && trimmed.split(':')[0].length < 30) {
+                        const parts = trimmed.split(':');
+                        const label = parts[0];
+                        const rest = parts.slice(1).join(':');
+                        return (
+                            <div key={idx} className="text-sm md:text-base text-slate-600 leading-relaxed bg-blue-50/30 p-4 rounded-xl border border-blue-50/50 flex items-start gap-3">
+                                <span className="material-symbols-outlined text-blue-300 mt-0.5 text-lg">info</span>
+                                <div>
+                                    <span className="font-bold text-blue-900 mr-2">{label}:</span>
+                                    <span>{rest}</span>
+                                </div>
+                            </div>
+                        );
+                    }
+
+                    if (trimmed.length < 40 && !trimmed.endsWith('.') && !trimmed.includes(',')) {
+                        return (
+                            <h3 key={idx} className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 mt-10 mb-4 pb-2 flex items-center gap-3">
+                                <span className="w-6 h-[1px] bg-blue-100" />
+                                {trimmed}
+                            </h3>
+                        );
+                    }
+
+                    return (
+                        <p key={idx} className="text-sm md:text-base text-slate-600 leading-loose font-medium">
+                            {trimmed}
+                        </p>
+                    );
+                })}
+            </div>
+        );
+    };
+
     if (isLoading) return (
         <div className="space-y-12 animate-pulse">
             <div className="h-64 bg-blue-50/50 rounded-[3rem]" />
@@ -187,9 +244,7 @@ export default function JobDetailPage() {
                                 <span className="w-10 h-[1px] bg-blue-100" />
                                 01. Job Description
                             </h2>
-                            <div className="text-blue-900 leading-[2.2] text-base font-medium whitespace-pre-wrap">
-                                {job.description}
-                            </div>
+                            {renderRichText(job.description)}
                         </div>
 
                         {job.requirements && (
@@ -198,10 +253,8 @@ export default function JobDetailPage() {
                                     <span className="w-10 h-[1px] bg-blue-100" />
                                     02. Key Requirements
                                 </h2>
-                                <div className="bg-blue-50/30 p-8 rounded-3xl border border-blue-50">
-                                    <div className="text-sm font-bold text-blue-900 leading-[2] whitespace-pre-wrap">
-                                        {job.requirements}
-                                    </div>
+                                <div className="bg-slate-50/50 p-6 md:p-10 rounded-[2.5rem] border border-blue-50">
+                                    {renderRichText(job.requirements)}
                                 </div>
                             </div>
                         )}
