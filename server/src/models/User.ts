@@ -8,7 +8,8 @@ export class User extends Model {
     declare email: string;
     declare passwordHash: string;
     declare role: string;
-    declare preferences: object;
+    declare subsidyPercentage: number | null
+
     declare isVerified: boolean;
     declare cvUrl: string | null;
     declare verificationToken: string | null;
@@ -24,8 +25,8 @@ export class User extends Model {
     declare country: string | null;
     declare countryOfResidence: string | null;
     declare zipCode: string | null;
-    declare isApexMember: boolean;
-    declare apexStatus: string | null; // 'PENDING', 'APPROVED', 'INVITED'
+
+
     declare candidateNumber: string | null;
     declare walletBalance: number;
     declare bankName: string | null;
@@ -34,13 +35,13 @@ export class User extends Model {
     declare avelingUsername: string | null;
     declare avelingPassword: string | null;
     declare adminStageId: number | null;
-    // Payment milestone fields (Schedule 1 / Clause 5.1)
-    declare depositPaid: boolean;
-    declare depositPaidAt: Date | null;
-    declare fullBalancePaid: boolean;
+
     declare psychometricModule1Passed: boolean;
     declare psychometricModule2Passed: boolean;
     declare psychometricCompletedAt: Date | null;
+    declare depositPaid: boolean;
+    declare depositPaidAt: Date | null;
+    declare fullBalancePaid: boolean;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 }
@@ -208,6 +209,15 @@ User.init({
         type: DataTypes.DATE,
         allowNull: true,
     },
+    subsidyPercentage: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 70,
+        validate: {
+            min: 0,
+            max: 100
+        }
+    }
 }, {
     sequelize,
     tableName: 'users',

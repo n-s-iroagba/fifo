@@ -51,7 +51,7 @@ class JobRepository {
         // Step 2: Fetch the full details with all associations for the retrieved IDs
         const rows = jobIds.length > 0 ? await models_1.JobListing.findAll({
             where: { id: jobIds },
-            include: [models_1.JobCategory, models_1.JobBenefit, models_1.JobCondition],
+            include: [models_1.JobCategory],
             order
         }) : [];
         return {
@@ -104,7 +104,7 @@ class JobRepository {
     // Maps to STK-APP-APPLY-001, STK-APP-PAY-001
     async findById(id, transaction) {
         return models_1.JobListing.findByPk(id, {
-            include: [models_1.JobCategory, models_1.JobBenefit, models_1.JobCondition],
+            include: [models_1.JobCategory],
             transaction
         });
     }

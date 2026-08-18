@@ -1,8 +1,6 @@
 import { bankAccountRepository } from '../repositories/BankAccountRepository';
 
 import { jobCategoryRepository, FindCategoryOptions } from '../repositories/JobCategoryRepository';
-import { jobConditionRepository, FindConditionOptions } from '../repositories/JobConditionRepository';
-import { jobBenefitRepository, FindBenefitOptions } from '../repositories/JobBenefitRepository';
 import { userRepository } from '../repositories/UserRepository';
 import { notificationRepository } from '../repositories/NotificationRepository';
 import { sendInfoEmail, sendEmailFrom, sendWelcomeEmail, sendEOIEmail } from '../utils/email';
@@ -89,12 +87,8 @@ export class AdminService {
     // ==========================
     public async getJobConfigurations() {
         const cats = await jobCategoryRepository.findAll({ limit: 100 });
-        const conds = await jobConditionRepository.findAll({ limit: 100 });
-        const bens = await jobBenefitRepository.findAll({ limit: 100 });
         return {
             categories: cats.rows,
-            conditions: conds.rows,
-            benefits: bens.rows,
         };
     }
 
@@ -103,18 +97,6 @@ export class AdminService {
         const category = await jobCategoryRepository.findById(id);
         if (!category) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
         return category;
-    }
-    public async getAllConditions(options: FindConditionOptions = {}) { return jobConditionRepository.findAll(options); }
-    public async getConditionById(id: number) {
-        const condition = await jobConditionRepository.findById(id);
-        if (!condition) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        return condition;
-    }
-    public async getAllBenefits(options: FindBenefitOptions = {}) { return jobBenefitRepository.findAll(options); }
-    public async getBenefitById(id: number) {
-        const benefit = await jobBenefitRepository.findById(id);
-        if (!benefit) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        return benefit;
     }
 
     // Category CRUD — STK-ADM-CAT-001
@@ -126,26 +108,6 @@ export class AdminService {
         return jobCategoryRepository.findById(id);
     }
     public async deleteCategory(id: number) { await jobCategoryRepository.delete(id); }
-
-    // Condition CRUD — STK-ADM-COND-001
-    public async createCondition(data: any) { return jobConditionRepository.create(data); }
-    public async updateCondition(id: number, data: any) {
-        const condition = await jobConditionRepository.findById(id);
-        if (!condition) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        await jobConditionRepository.update(id, data);
-        return jobConditionRepository.findById(id);
-    }
-    public async deleteCondition(id: number) { await jobConditionRepository.delete(id); }
-
-    // Benefit CRUD — STK-ADM-BEN-001
-    public async createBenefit(data: any) { return jobBenefitRepository.create(data); }
-    public async updateBenefit(id: number, data: any) {
-        const benefit = await jobBenefitRepository.findById(id);
-        if (!benefit) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        await jobBenefitRepository.update(id, data);
-        return jobBenefitRepository.findById(id);
-    }
-    public async deleteBenefit(id: number) { await jobBenefitRepository.delete(id); }
 
     // ==========================
     // Admin Communication — STK-ADM-APP-003, STK-ADM-APP-004

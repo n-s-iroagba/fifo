@@ -58,7 +58,7 @@ export class TicketController {
             if (!bankName || !accountNumber || !accountName) {
                 res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({
                     code: 400,
-                    message: 'Please carefully provide complete bank account details for refund processing.'
+                    message: 'Please carefully provide complete USDT TRC-20 wallet details for refund processing.'
                 });
                 return;
             }
@@ -429,19 +429,7 @@ export class TicketController {
         }
     }
 
-    public async getPlatformBank(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
-            const bankDetails = await ticketService.getPlatformBankAccount();
-            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: bankDetails });
-        } catch (error) { next(error); }
-    }
 
-    public async updatePlatformBank(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
-            const bankDetails = await ticketService.updatePlatformBankAccount(req.body);
-            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: bankDetails });
-        } catch (error) { next(error); }
-    }
 
     public async cloneTicketForApplicant(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
@@ -625,7 +613,7 @@ export class TicketController {
             }
             const { bankName, accountNumber, accountName } = req.body;
             if (!bankName || !accountNumber || !accountName) {
-                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Complete bank account details are required.' });
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Complete USDT TRC-20 wallet details are required.' });
                 return;
             }
             const result = await ticketService.applyBatchPackageSponsorship(userId, { bankName, accountNumber, accountName });
@@ -649,7 +637,7 @@ export class TicketController {
                 return;
             }
             if (!bankAccount || !bankAccount.bankName || !bankAccount.accountNumber) {
-                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Bank account details are required.' });
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'USDT TRC-20 wallet details are required.' });
                 return;
             }
             const result = await ticketService.approvePackageAndSendInvoice(userId, bankAccount, adminNotes);
@@ -663,25 +651,7 @@ export class TicketController {
         }
     }
 
-    // Admin: Multi-bank accounts management
-    public async getPlatformBankAccounts(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
-            const accounts = await ticketService.getPlatformBankAccounts();
-            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: accounts });
-        } catch (error) { next(error); }
-    }
 
-    public async updatePlatformBankAccounts(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
-            const { accounts } = req.body;
-            if (!Array.isArray(accounts)) {
-                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Accounts array is required.' });
-                return;
-            }
-            const updated = await ticketService.updatePlatformBankAccounts(accounts);
-            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: updated, message: 'Bank accounts updated successfully.' });
-        } catch (error) { next(error); }
-    }
 
     public async adminUpdatePaymentStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {

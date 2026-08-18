@@ -1,6 +1,7 @@
 import { sequelize } from './config/database';
 import { migrateApexNetwork } from './migrations/apex_network_migration';
 import { migratePaymentMilestone } from './migrations/payment_milestone_migration';
+import { migrateAccountingAndSubsidy } from './migrations/accounting_migration';
 
 export async function run() {
     // Existing migrations...
@@ -17,5 +18,8 @@ export async function run() {
 
     // Payment Milestone Gate (Schedule 1 / Clause 5.1)
     await migratePaymentMilestone();
+
+    // Accounting & Subsidy
+    await migrateAccountingAndSubsidy();
 }
 

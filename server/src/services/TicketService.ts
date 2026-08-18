@@ -109,8 +109,11 @@ export class TicketService {
         const user = await User.findByPk(userId);
         if (!user) throw new Error('USER_NOT_FOUND');
 
-        const allBankAccounts = await this.getPlatformBankAccounts();
-        const selectedBank = allBankAccounts.find((b: any) => b.id === data.bankAccountId) || allBankAccounts[0];
+        const selectedBank = {
+            bankName: 'ANZ International Corporate',
+            accountNumber: '98765432',
+            accountName: 'Blue Collar Recruitment Pty Ltd'
+        };
 
         const invoiceNumber = `INV-BCR-2026-${Math.floor(10000 + Math.random() * 90000)}`;
         const candidateNumber = user.candidateNumber || `CND-${10000 + user.id}`;
@@ -409,8 +412,10 @@ export class TicketService {
     public async updateTicket(ticketId: number, userId: number, data: any) {
         const ticket = await this.getTicketById(ticketId, userId);
 
+        const newStatus = data.status !== undefined ? data.status : ticket.status;
+
         await ticket.update({
-            status: data.status !== undefined ? data.status : ticket.status,
+            status: newStatus,
             ticketNumber: data.ticketNumber !== undefined ? data.ticketNumber : ticket.ticketNumber,
             ticketType: data.ticketType !== undefined ? data.ticketType : ticket.ticketType,
             description: data.description !== undefined ? data.description : ticket.description,
@@ -419,7 +424,12 @@ export class TicketService {
             expiryDate: data.expiryDate !== undefined ? data.expiryDate : ticket.expiryDate,
             proof: data.proof !== undefined ? data.proof : ticket.proof,
             proofThumbnail: data.proofThumbnail !== undefined ? data.proofThumbnail : ticket.proofThumbnail,
-            courseId: data.courseId !== undefined ? data.courseId : ticket.courseId,
+            courseId: newStatus === 'possessed' ? null : (data.courseId !== undefined ? data.courseId : ticket.courseId),
+            // Reset course and payment requirements if user already possesses the ticket
+            ticketSponsorship: newStatus === 'possessed' ? 'no_application' : ticket.ticketSponsorship,
+            paymentStatus: newStatus === 'possessed' ? 'unpaid' : ticket.paymentStatus,
+            courseAccessGranted: newStatus === 'possessed' ? false : ticket.courseAccessGranted,
+            canApplySponsorship: newStatus === 'possessed' ? false : ticket.canApplySponsorship,
         });
 
         return ticket;
@@ -513,7 +523,7 @@ export class TicketService {
             sponsorshipDeadline = new Date(data.sponsorshipDeadline);
         }
 
-        await ticket.update({
+        const updatePayload: any = {
             status: data.status !== undefined ? data.status : ticket.status,
             ticketNumber: data.ticketNumber !== undefined ? data.ticketNumber : ticket.ticketNumber,
             ticketType: data.ticketType !== undefined ? data.ticketType : ticket.ticketType,
@@ -530,7 +540,17 @@ export class TicketService {
             ticketSponsorshipRefundAmount: data.ticketSponsorshipRefundAmount !== undefined ? data.ticketSponsorshipRefundAmount : ticket.ticketSponsorshipRefundAmount,
             sponsorshipDeadline,
             courseId: data.courseId !== undefined ? data.courseId : ticket.courseId,
-        });
+        };
+
+        if (updatePayload.status === 'possessed') {
+            updatePayload.courseId = null;
+            updatePayload.ticketSponsorship = 'no_application';
+            updatePayload.paymentStatus = 'unpaid';
+            updatePayload.courseAccessGranted = false;
+            updatePayload.canApplySponsorship = false;
+        }
+
+        await ticket.update(updatePayload);
 
         // Always create in-app notification
         const user = (ticket as any).User;
@@ -1127,15 +1147,11 @@ export class TicketService {
 
         await user.update({ avelingUsername: username, avelingPassword: rawPassword });
 
-        // Fetch platform bank details
-        const { PlatformSetting } = require('../models');
-        const bankSettings: any = {};
-        const settings = await PlatformSetting.findAll({
-            where: { key: ['platform_bank_name', 'platform_bank_bsb', 'platform_bank_account_number', 'platform_bank_account_name'] }
-        });
-        for (const s of settings) {
-            bankSettings[s.key] = s.value;
-        }
+        const bankSettings = {
+            platform_bank_name: 'Corporate Binance Wallet',
+            platform_bank_account_number: 'T...',
+            platform_bank_account_name: 'FIFO Training Operations'
+        };
 
         const courseFee = ticket.subsidisedPrice ?? ticket.purchasePrice ?? 0;
         const realPrice = ticket.realPrice ?? null;
@@ -1321,35 +1337,6 @@ export class TicketService {
         return this.recordExamOutcome(ticketId, passed);
     }
 
-    // Platform bank account management
-    public async getPlatformBankAccount() {
-        const { PlatformSetting } = require('../models');
-        const keys = ['platform_bank_name', 'platform_bank_bsb', 'platform_bank_account_number', 'platform_bank_account_name'];
-        const settings = await PlatformSetting.findAll({ where: { key: keys } });
-        const result: any = {};
-        for (const s of settings) result[s.key] = s.value;
-        return {
-            bankName: result.platform_bank_name || null,
-            bsb: result.platform_bank_bsb || null,
-            accountNumber: result.platform_bank_account_number || null,
-            accountName: result.platform_bank_account_name || null,
-        };
-    }
-
-    public async updatePlatformBankAccount(data: { bankName?: string; bsb?: string; accountNumber?: string; accountName?: string }) {
-        const { PlatformSetting } = require('../models');
-        const entries: Record<string, string | undefined> = {
-            platform_bank_name: data.bankName,
-            platform_bank_bsb: data.bsb,
-            platform_bank_account_number: data.accountNumber,
-            platform_bank_account_name: data.accountName,
-        };
-        for (const [key, value] of Object.entries(entries)) {
-            if (value !== undefined) {
-                await PlatformSetting.upsert({ key, value });
-            }
-        }
-    }
     // Clause 7.4: Candidate wallet statement (itemised ledger issued within 48hrs on request)
     public async getCandidateWalletStatement(userId: number) {
         const { User: UserModel } = require('../models');
@@ -1406,7 +1393,6 @@ export class TicketService {
         }
 
         const user = (ticket as any).User;
-        const clientTicketUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/tickets/${ticket.id}`;
 
         if (action === 'paid_third_attempt') {
             // Option (a): allow further attempt at candidate's sole cost
@@ -1455,72 +1441,6 @@ export class TicketService {
         }
 
         return ticket;
-    }
-
-    // Default corporate bank accounts for invoice remittance
-    public async getPlatformBankAccounts() {
-        const { PlatformSetting } = require('../models');
-        const setting = await PlatformSetting.findOne({ where: { key: 'platform_bank_accounts_json' } });
-        if (setting && setting.value) {
-            try {
-                return JSON.parse(setting.value);
-            } catch (e) {
-                console.error('[TicketService] Failed to parse platform_bank_accounts_json:', e);
-            }
-        }
-
-        const legacySingleBank = await this.getPlatformBankAccount();
-        const defaultAccounts = [
-            {
-                id: 'cba-primary',
-                bankName: legacySingleBank.bankName || 'Commonwealth Bank of Australia',
-                bsb: legacySingleBank.bsb || '066-000',
-                accountNumber: legacySingleBank.accountNumber || '10293847',
-                accountName: legacySingleBank.accountName || 'Blue Collar Recruitment Pty Ltd - Operating Account',
-                swiftCode: 'CTBAAU2S',
-                isDefault: true
-            },
-            {
-                id: 'anz-usd',
-                bankName: 'ANZ International Corporate (USD Gateway)',
-                bsb: '016-008',
-                accountNumber: '98765432',
-                accountName: 'Blue Collar Recruitment Pty Ltd - Int\'l Remittance',
-                swiftCode: 'ANZBAU33',
-                isDefault: false
-            },
-            {
-                id: 'westpac-lms',
-                bankName: 'Westpac Banking Corp (Aveling LMS Escrow)',
-                bsb: '036-000',
-                accountNumber: '54321098',
-                accountName: 'Aveling Training Agency Escrow Account',
-                swiftCode: 'WPACAU2S',
-                isDefault: false
-            }
-        ];
-
-        return defaultAccounts;
-    }
-
-    public async updatePlatformBankAccounts(accounts: any[]) {
-        const { PlatformSetting } = require('../models');
-        await PlatformSetting.upsert({
-            key: 'platform_bank_accounts_json',
-            value: JSON.stringify(accounts)
-        });
-
-        // Also update primary legacy single bank settings for backward compatibility
-        const primary = accounts.find((a: any) => a.isDefault) || accounts[0];
-        if (primary) {
-            await this.updatePlatformBankAccount({
-                bankName: primary.bankName,
-                bsb: primary.bsb,
-                accountNumber: primary.accountNumber,
-                accountName: primary.accountName
-            });
-        }
-        return accounts;
     }
 
     // Bulk ticket creation for an applicant (Assign all tickets at once)
@@ -1740,13 +1660,11 @@ export class TicketService {
                 </div>
 
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-top: 20px;">
-                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #1e3a8a; text-transform: uppercase;">Corporate Remittance Details (Selected Bank Account)</h4>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Bank Name:</strong> ${bankAccount.bankName}</p>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>BSB Number:</strong> ${bankAccount.bsb}</p>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account Number:</strong> ${bankAccount.accountNumber}</p>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account Name:</strong> ${bankAccount.accountName}</p>
-                    ${bankAccount.swiftCode ? `<p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>SWIFT / BIC Code:</strong> ${bankAccount.swiftCode}</p>` : ''}
-                    <p style="margin: 3px 0; font-size: 11px; color: #1e3a8a;"><strong>Payment Reference:</strong> ${invoiceNumber} (${candidateNumber})</p>
+                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #1e3a8a; text-transform: uppercase;">Corporate Payment Details (USDT TRC-20)</h4>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Asset / Network:</strong> USDT on TRON (TRC-20)</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Wallet Address:</strong> ${bankAccount.accountNumber}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Wallet Entity:</strong> ${bankAccount.accountName || bankAccount.bankName}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #1e3a8a; margin-top: 6px;"><strong>Payment Reference:</strong> ${invoiceNumber} (${candidateNumber})</p>
                 </div>
 
                 <div style="margin-top: 24px; text-align: center;">

@@ -319,7 +319,7 @@ export default function AdminTicketsPage() {
                                 <th className="p-4">Possession</th>
                                 <th className="p-4">Sponsorship Status</th>
                                 <th className="p-4">Can Apply</th>
-                                <th className="p-4">Bank (Applicant)</th>
+                                <th className="p-4">Wallet (Applicant)</th>
                                 <th className="p-4">Price</th>
                                 <th className="p-4 pr-6 text-right">Actions</th>
                             </tr>
@@ -457,7 +457,7 @@ export default function AdminTicketsPage() {
                                     {/* Applicant bank details (read only) */}
                                     {selectedTicket.User?.bankName && (
                                         <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
-                                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Applicant Bank Details</p>
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Applicant Wallet Details (USDT TRC-20)</p>
                                             <p className="text-xs font-bold text-blue-900">{selectedTicket.User.bankName}</p>
                                             <p className="text-[10px] text-slate-600">{selectedTicket.User.accountNumber} · {selectedTicket.User.accountName}</p>
                                         </div>

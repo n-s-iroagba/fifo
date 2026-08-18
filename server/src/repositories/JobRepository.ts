@@ -1,5 +1,5 @@
 import { Transaction, Op } from 'sequelize';
-import { JobListing, JobCategory, JobBenefit, JobCondition, JobStage } from '../models';
+import { JobListing, JobCategory, JobStage, TicketCatalog } from '../models';
 
 export interface FindJobsOptions {
     limit?: number;
@@ -63,7 +63,7 @@ export class JobRepository {
         // Step 2: Fetch the full details with all associations for the retrieved IDs
         const rows = jobIds.length > 0 ? await JobListing.findAll({
             where: { id: jobIds },
-            include: [JobCategory, JobBenefit, JobCondition],
+            include: [JobCategory],
             order
         }) : [];
 
@@ -112,7 +112,7 @@ export class JobRepository {
             where: whereClause,
             limit: options.limit || 20,
             offset: options.offset || 0,
-            include: [JobCategory],
+            include: [JobCategory, { model: TicketCatalog, as: 'RequiredTickets' }],
             order,
             subQuery: false
         });
@@ -121,7 +121,7 @@ export class JobRepository {
     // Maps to STK-APP-APPLY-001, STK-APP-PAY-001
     public async findById(id: number, transaction?: Transaction): Promise<JobListing | null> {
         return JobListing.findByPk(id, {
-            include: [JobCategory, JobBenefit, JobCondition],
+            include: [JobCategory, { model: TicketCatalog, as: 'RequiredTickets' }],
             transaction
         });
     }

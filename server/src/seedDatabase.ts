@@ -1,4 +1,4 @@
-import { sequelize, User, BankAccount, JobCategory, JobListing, JobBenefit, JobCondition, CertificationType, Course, CourseModule, ExamConfig, ExamQuestion, PracticalCriterion, TicketCatalog } from './models';
+import { sequelize, User, BankAccount, JobCategory, JobListing, CertificationType, Course, CourseModule, ExamConfig, ExamQuestion, TicketCatalog } from './models';
 import { CONSTANTS } from './constants';
 import bcrypt from 'bcrypt';
 import { fifoJobs } from './data/fifoJobs';
@@ -182,17 +182,6 @@ export async function seedDatabase() {
             });
         }
 
-        // Create Practical Criteria
-        for (const crit of data.course.practicalCriteria) {
-            await PracticalCriterion.findOrCreate({
-                where: { courseId: course.id, description: crit },
-                defaults: {
-                    title: crit.split(' ').slice(0, 3).join(' '),
-                    isMandatory: true
-                }
-            });
-        }
-
         // Create Ticket Catalog Entry (both full name and simplified name for easy admin lookup)
         const catalogName = `${data.certificationName} (${course.code})`;
         const [catalogEntry] = await TicketCatalog.findOrCreate({
@@ -284,35 +273,11 @@ export async function seedDatabase() {
                 salary: jobData.salary,
                 visaSponsorship: false,
                 isActive: true,
-                stages: []
+                stages: [],
+                benefits: jobData.benefits.join('\n')
             }
         });
 
-        // 6. Link Benefits
-        for (const benefitDesc of jobData.benefits) {
-            const [benefit] = await JobBenefit.findOrCreate({
-                where: { description: benefitDesc },
-                defaults: {
-                    benefitType: 'Employment Benefit',
-                    description: benefitDesc,
-                    categoryId: category.id
-                }
-            });
-            await (job as any).addJobBenefit(benefit);
-        }
-
-        // 7. Link Conditions
-        for (const condDesc of jobData.requirements) {
-            const [condition] = await JobCondition.findOrCreate({
-                where: { description: condDesc },
-                defaults: {
-                    name: 'Site Requirement',
-                    description: condDesc,
-                    categoryId: category.id
-                }
-            });
-            await (job as any).addJobCondition(condition);
-        }
     }
 
     console.log('Idempotent seeding completed successfully!');

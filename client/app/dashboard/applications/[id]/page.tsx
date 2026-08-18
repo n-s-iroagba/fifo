@@ -63,12 +63,11 @@ export default function ApplicationDetailPage() {
     if (isLoading || catalogsLoading) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-blue-400">Loading Application Details...</div>;
     if (!app) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-red-500">Application not found</div>;
 
-    const stages = app?.JobStages?.sort((a: any, b: any) => a.orderPosition - b.orderPosition) || [];
+    const stages = app?.JobStages?.sort((a: any, b: any) => a.id - b.id) || [];
     const currentStageIndex = stages.findIndex((s: any) => s.id === app.currentStageId);
     const currentStage = (currentStageIndex >= 0 ? stages[currentStageIndex] : stages[0]) || {
-        name: 'Application Review in Progress',
-        description: 'Your application has been received and is currently under review by our recruitment team.',
-        orderPosition: 1
+        PrefillStage: { name: 'Initial Review' },
+        status: 'pending'
     };
     const currentPayment = app.Payments?.find(p => p.stageId === app.currentStageId);
 
@@ -134,7 +133,7 @@ export default function ApplicationDetailPage() {
                     {currentStage && (
                         <div className="px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] bg-blue-50 text-blue-900 border-2 border-blue-200 shadow-sm flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
-                            Current Stage: {currentStage.name}
+                            Current Stage: {currentStage.PrefillStage?.name}
                         </div>
                     )}
                     <div className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border-2 ${app.status === 'ACTIVE' || app.status === 'Active' ? 'bg-blue-900 text-white border-blue-900 shadow-xl shadow-blue-900/10' : 'bg-white text-blue-400 border-blue-50'}`}>
@@ -154,17 +153,8 @@ export default function ApplicationDetailPage() {
                                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
                                 <span className="text-[10px] font-black text-blue-200 uppercase tracking-[0.3em]">Active Recruitment Stage</span>
                             </div>
-                            <h2 className="text-2xl font-bold tracking-tight uppercase text-white">{currentStage?.name || 'Application Under Review'}</h2>
-                            {currentStage?.description && (
-                                <p className="text-[11px] font-medium text-blue-200 max-w-xl leading-relaxed opacity-90">{currentStage.description}</p>
-                            )}
+                            <h2 className="text-2xl font-bold tracking-tight uppercase text-white">{currentStage?.PrefillStage?.name || 'Application Under Review'}</h2>
                         </div>
-                        {stages.length > 0 && (
-                            <div className="flex flex-col items-start md:items-end flex-shrink-0 bg-white/10 px-5 py-3 rounded-2xl backdrop-blur-md border border-white/10">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-blue-300">Stage Position</span>
-                                <span className="text-sm font-bold text-white uppercase tracking-wider">{currentStageIndex >= 0 ? `Stage ${currentStageIndex + 1} of ${stages.length}` : 'Active'}</span>
-                            </div>
-                        )}
                     </section>
                     {/* Job Details & Specifications */}
                     <section className="bg-white p-10 rounded-[2.5rem] border border-blue-100 shadow-sm space-y-8">
@@ -406,45 +396,7 @@ export default function ApplicationDetailPage() {
                         </section>
                     )}
 
-                    {/* Payment Required Section */}
-                    {currentStage?.requiresPayment && currentPayment?.status !== 'Verified' && currentPayment?.status !== 'Paid' && (
-                        <section className="bg-blue-900 rounded-[2.5rem] p-10 relative overflow-hidden text-white shadow-2xl shadow-blue-900/20">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-800 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2" />
-                            <div className="relative z-10">
-                                {isPendingVerification ? (
-                                    <div className="text-center py-12">
-                                        <div className="w-20 h-20 bg-blue-800 text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-8 animate-pulse border border-blue-700">
-                                            <span className="material-symbols-outlined text-4xl">hourglass_empty</span>
-                                        </div>
-                                        <h3 className="text-2xl font-bold tracking-tight mb-4 uppercase tracking-[0.1em]">Verification In Progress</h3>
-                                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.25em] max-w-[450px] mx-auto leading-loose italic">
-                                            The verification process has been initiated. Our recruitment team is currently reviewing your payment confirmation against our records.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                                                <span className="material-symbols-outlined text-blue-400 text-sm">payments</span>
-                                            </div>
-                                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400">Required Financial Action</span>
-                                        </div>
-                                        <h3 className="text-3xl font-bold tracking-tight mb-4 uppercase">Payment Required to Proceed</h3>
-                                        <p className="text-[11px] font-bold text-blue-400 uppercase tracking-widest mb-10 max-w-[500px] leading-relaxed">
-                                            To continue with your application, a required processing fee of <span className="text-white text-lg ml-1">${currentStage.amount} {currentStage.currency}</span> is pending.
-                                        </p>
-                                        <div className="bg-white rounded-3xl p-8 shadow-2xl">
-                                            <PaymentUpload
-                                                paymentId={currentPayment?.id}
-                                                amount={currentStage.amount || 0}
-                                                onSuccess={refetch}
-                                            />
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        </section>
-                    )}
+
 
                     {/* Application Journey */}
                     <section className="space-y-6">
@@ -453,12 +405,9 @@ export default function ApplicationDetailPage() {
                             <span className="text-[9px] font-black text-blue-300 uppercase tracking-widest">Official Status</span>
                         </div>
                         <div className="space-y-4">
-                            {stages
-                                .filter((stage: any) => stage.isCompleted || stage.id === app.currentStageId)
-                                .map((stage: any) => {
+                            {stages.map((stage: any) => {
                                     const isActive = stage.id === app.currentStageId;
-                                    const isCompleted = stage.isCompleted;
-                                    const payment = getStagePayment(stage.id);
+                                    const isCompleted = stage.status === 'completed';
 
                                     return (
                                         <div key={stage.id} className="p-8 rounded-[2.5rem] border transition-all flex flex-col md:flex-row md:items-center justify-between gap-8 bg-white border-blue-100 shadow-sm">
@@ -471,26 +420,13 @@ export default function ApplicationDetailPage() {
                                                         {isCompleted ? 'Completed' : isActive ? (isPendingVerification ? 'Reviewing' : 'Current Stage') : 'Pending'}
                                                     </span>
                                                 </div>
-                                                <h4 className="font-bold text-blue-900 uppercase tracking-tight text-lg mb-2">{stage.name}</h4>
-                                                <p className="text-[10px] text-blue-400 font-black uppercase tracking-widest leading-relaxed line-clamp-2 max-w-[400px]">{stage.description}</p>
+                                                <h4 className="font-bold text-blue-900 uppercase tracking-tight text-lg mb-2">{stage.PrefillStage?.name || 'Unnamed Stage'}</h4>
                                             </div>
                                             <div className="flex flex-col items-end md:min-w-[150px] pt-6 md:pt-0 border-t md:border-t-0 border-blue-50">
-                                                <span className="text-[9px] font-black text-blue-300 uppercase tracking-widest mb-2">Requirement Status</span>
-                                                {stage.requiresPayment ? (
-                                                    <div className="text-right">
-                                                        <span className="text-sm font-bold text-blue-900">${stage.amount} {stage.currency}</span>
-                                                        {payment && (
-                                                            <div className={`text-[8px] font-black uppercase mt-1 tracking-widest ${payment.status === 'Verified' || payment.status === 'Paid' ? 'text-emerald-500' : payment.status === 'Pending' ? 'text-amber-500' : 'text-red-400'}`}>
-                                                                {payment.status === 'Verified' || payment.status === 'Paid' ? 'Receipt Verified' : `Status: ${payment.status}`}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-2 text-emerald-500 font-bold">
-                                                        <span className="material-symbols-outlined text-sm">check_circle</span>
-                                                        <span className="text-[9px] uppercase tracking-widest">Included</span>
-                                                    </div>
-                                                )}
+                                                <span className="text-[9px] font-black text-blue-300 uppercase tracking-widest mb-2">Status</span>
+                                                <div className="flex items-center gap-2 text-blue-500 font-bold uppercase tracking-widest text-[9px]">
+                                                    {stage.status}
+                                                </div>
                                             </div>
                                         </div>
                                     );

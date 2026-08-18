@@ -1,5 +1,6 @@
 import { Certificate } from '../models/Certificate';
-import { CertificationGap } from '../models/CertificationGap';
+import { Ticket } from '../models/Ticket';
+import { CertificationType } from '../models/CertificationType';
 import { v4 as uuidv4 } from 'uuid';
 
 export class CertificateService {
@@ -25,14 +26,18 @@ export class CertificateService {
             downloadUrl: 'https://example.com/cert.pdf'
         });
 
-        // Update gap
-        const gap = await CertificationGap.findOne({
-            where: { userId, certificationTypeId, status: 'Missing' }
-        });
-        
-        if (gap) {
-            gap.status = 'Valid';
-            await gap.save();
+        // Update ticket if exists
+        const certType = await CertificationType.findByPk(certificationTypeId);
+        if (certType) {
+            const ticket = await Ticket.findOne({
+                where: { userId, ticketType: certType.name, status: 'not_possessed' }
+            });
+            
+            if (ticket) {
+                ticket.status = 'possessed';
+                ticket.ticketSponsorship = 'ticket_issued';
+                await ticket.save();
+            }
         }
 
         return cert;

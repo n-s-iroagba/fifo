@@ -112,32 +112,6 @@ class AdminController {
             res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
-    async getAllConditions(req, res) {
-        try {
-            const limit = req.query.limit ? parseInt(req.query.limit, 10) : 20;
-            const offset = req.query.offset ? parseInt(req.query.offset, 10) : 0;
-            const searchQuery = req.query.searchQuery;
-            const categoryId = req.query.categoryId ? parseInt(req.query.categoryId, 10) : undefined;
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getAllConditions({ limit, offset, searchQuery, categoryId }));
-        }
-        catch (error) {
-            console.error('[AdminController.getAllConditions]', error);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    async getAllBenefits(req, res) {
-        try {
-            const limit = req.query.limit ? parseInt(req.query.limit, 10) : 20;
-            const offset = req.query.offset ? parseInt(req.query.offset, 10) : 0;
-            const searchQuery = req.query.searchQuery;
-            const categoryId = req.query.categoryId ? parseInt(req.query.categoryId, 10) : undefined;
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getAllBenefits({ limit, offset, searchQuery, categoryId }));
-        }
-        catch (error) {
-            console.error('[AdminController.getAllBenefits]', error);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
     async getCategoryById(req, res) {
         try {
             const id = parseInt(req.params.id, 10);
@@ -145,28 +119,6 @@ class AdminController {
         }
         catch (error) {
             console.error('[AdminController.getCategoryById]', error);
-            const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
-            res.status(status).json({ error: error.message });
-        }
-    }
-    async getConditionById(req, res) {
-        try {
-            const id = parseInt(req.params.id, 10);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getConditionById(id));
-        }
-        catch (error) {
-            console.error('[AdminController.getConditionById]', error);
-            const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
-            res.status(status).json({ error: error.message });
-        }
-    }
-    async getBenefitById(req, res) {
-        try {
-            const id = parseInt(req.params.id, 10);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.getBenefitById(id));
-        }
-        catch (error) {
-            console.error('[AdminController.getBenefitById]', error);
             const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
             res.status(status).json({ error: error.message });
         }
@@ -197,64 +149,6 @@ class AdminController {
         }
         catch (error) {
             console.error('[AdminController.deleteCategory]', error);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    // Conditions — STK-ADM-COND-001
-    async createCondition(req, res) {
-        try {
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json(await AdminService_1.adminService.createCondition(req.body));
-        }
-        catch (error) {
-            console.error('[AdminController.createCondition]', error);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    async updateCondition(req, res) {
-        try {
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.updateCondition(parseInt(req.params.id, 10), req.body));
-        }
-        catch (error) {
-            console.error('[AdminController.updateCondition]', error);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    async deleteCondition(req, res) {
-        try {
-            await AdminService_1.adminService.deleteCondition(parseInt(req.params.id, 10));
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ message: constants_1.CONSTANTS.SUCCESS_MESSAGES.DELETED });
-        }
-        catch (error) {
-            console.error('[AdminController.deleteCondition]', error);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    // Benefits — STK-ADM-BEN-001
-    async createBenefit(req, res) {
-        try {
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json(await AdminService_1.adminService.createBenefit(req.body));
-        }
-        catch (error) {
-            console.error('[AdminController.createBenefit]', error);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    async updateBenefit(req, res) {
-        try {
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(await AdminService_1.adminService.updateBenefit(parseInt(req.params.id, 10), req.body));
-        }
-        catch (error) {
-            console.error('[AdminController.updateBenefit]', error);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    async deleteBenefit(req, res) {
-        try {
-            await AdminService_1.adminService.deleteBenefit(parseInt(req.params.id, 10));
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ message: constants_1.CONSTANTS.SUCCESS_MESSAGES.DELETED });
-        }
-        catch (error) {
-            console.error('[AdminController.deleteBenefit]', error);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }

@@ -34,53 +34,8 @@ class NotificationService {
         return notification;
     }
     async triggerPushNotification(userId, title, body) {
-        if (!userId)
-            return;
-        const subscriptions = await models_1.PushSubscription.findAll({ where: { userId } });
-        const payload = JSON.stringify({
-            title,
-            body,
-            icon: '/icon-192x192.png',
-            badge: '/icon-192x192.png',
-            data: {
-                url: '/dashboard/notifications'
-            }
-        });
-        await Promise.all(subscriptions.map(sub => {
-            const pushSub = {
-                endpoint: sub.endpoint,
-                keys: {
-                    p256dh: sub.p256dh,
-                    auth: sub.auth
-                }
-            };
-            return web_push_1.default.sendNotification(pushSub, payload).catch(err => {
-                if (err.statusCode === 410 || err.statusCode === 404) {
-                    // Subscription has expired or is no longer valid
-                    return sub.destroy();
-                }
-                throw err;
-            });
-        }));
-    }
-    async savePushSubscription(userId, subscription) {
-        if (!userId)
-            return null;
-        // Avoid duplicate endpoints for the same user
-        const existing = await models_1.PushSubscription.findOne({
-            where: {
-                userId,
-                endpoint: subscription.endpoint
-            }
-        });
-        if (existing)
-            return existing;
-        return models_1.PushSubscription.create({
-            userId,
-            endpoint: subscription.endpoint,
-            p256dh: subscription.keys.p256dh,
-            auth: subscription.keys.auth
-        });
+        // Push notifications decommissioned
+        return;
     }
     async markAsRead(id) {
         await NotificationRepository_1.notificationRepository.markAsRead(id);

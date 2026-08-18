@@ -840,13 +840,8 @@ export default function ApplicationDetailPage() {
 
     // Form state for stage
     const [editingStage, setEditingStage] = useState<any>(null);
-    const [stageName, setStageName] = useState('');
-    const [stageDesc, setStageDesc] = useState('');
-    const [requiresPayment, setRequiresPayment] = useState(false);
-    const [amount, setAmount] = useState('');
-    const [setAsCurrent, setSetAsCurrent] = useState(false);
-    const [notifyInApp, setNotifyInApp] = useState(true);
-    const [notifyEmail, setNotifyEmail] = useState(false);
+    const [prefillStageId, setPrefillStageId] = useState<number | ''>('');
+    const [status, setStatus] = useState('pending');
     const [verifyingPayment, setVerifyingPayment] = useState<any>(null);
 
     const { data: application, isLoading, error, refetch } = useApiQuery<any>(
@@ -941,27 +936,15 @@ export default function ApplicationDetailPage() {
     );
 
     const resetStageForm = () => {
-        setStageName('');
-        setStageDesc('');
-        setRequiresPayment(false);
-        setAmount('');
-        setSetAsCurrent(false);
-        setNotifyInApp(true);
-        setNotifyEmail(false);
+        setPrefillStageId('');
+        setStatus('pending');
     };
 
     const handleSaveStage = async (e: React.FormEvent) => {
         e.preventDefault();
         const payload = {
-            name: stageName,
-            description: stageDesc,
-            requiresPayment,
-            amount: requiresPayment ? parseFloat(amount) : null,
-            currency: requiresPayment ? 'USD' : null,
-            orderPosition: editingStage ? editingStage.orderPosition : (application?.JobStages?.length || 0) + 1,
-            setAsCurrent,
-            notifyInApp,
-            notifyEmail
+            prefillStageId: prefillStageId ? Number(prefillStageId) : 1,
+            status: status
         };
 
         try {
@@ -980,11 +963,8 @@ export default function ApplicationDetailPage() {
 
     const handleEditClick = (stage: any) => {
         setEditingStage(stage);
-        setStageName(stage.name);
-        setStageDesc(stage.description);
-        setRequiresPayment(stage.requiresPayment);
-        setAmount(stage.amount?.toString() || '');
-        setSetAsCurrent(stage.id === application?.currentStageId);
+        setPrefillStageId(stage.prefillStageId || 1);
+        setStatus(stage.status || 'pending');
     };
 
 
@@ -1050,6 +1030,13 @@ export default function ApplicationDetailPage() {
                         }`}>
                         {application.status}
                     </span>
+                    <Link
+                        href={`/admin/mail?to=${encodeURIComponent(user?.email || '')}&applicantId=${user?.id || ''}`}
+                        className="bg-indigo-50 text-indigo-700 border border-indigo-100 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-100 transition-all flex items-center gap-2 active:scale-95"
+                    >
+                        <span className="material-symbols-outlined text-sm font-bold">mail</span>
+                        Email Applicant
+                    </Link>
                     <button
                         onClick={() => setShowAddStage(true)}
                         className="bg-blue-900 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all shadow-xl shadow-blue-900/10 active:scale-95"
@@ -1071,7 +1058,7 @@ export default function ApplicationDetailPage() {
                         </div>
 
                         <div className="space-y-4">
-                            {stages.sort((a: any, b: any) => a.orderPosition - b.orderPosition).map((stage: any, index: number) => {
+                            {stages.sort((a: any, b: any) => a.id - b.id).map((stage: any, index: number) => {
                                 const isCurrent = stage.id === application.currentStageId;
                                 const payment = getStagePayment(stage.id);
 
@@ -1089,26 +1076,10 @@ export default function ApplicationDetailPage() {
                                                 </div>
                                                 <div>
                                                     <h4 className="text-sm font-black uppercase tracking-tight text-blue-900 flex items-center gap-3">
-                                                        {stage.name}
-                                                        {stage.requiresPayment && (
-                                                            <div className="flex items-center gap-2">
-                                                                {payment ? (
-                                                                    <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${payment.status === 'Verified' || payment.status === 'Paid' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                                        payment.status === 'Pending' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-red-50 text-red-600 border-red-100'
-                                                                        }`}>
-                                                                        {payment.status === 'Verified' || payment.status === 'Paid' ? 'Payment Verified' :
-                                                                            payment.status === 'Pending' ? 'Review Needed' : 'Unpaid Entry'}
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className="px-2 py-0.5 bg-blue-50 text-blue-400 rounded text-[8px] font-black uppercase tracking-widest border border-blue-100">
-                                                                        Payment Due: ${stage.amount}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        )}
+                                                        {stage.PrefillStage?.name || 'Unnamed Stage'}
                                                     </h4>
                                                     <p className="text-[11px] font-bold text-blue-400 mt-1 leading-relaxed uppercase">
-                                                        {stage.description}
+                                                        Status: {stage.status}
                                                     </p>
 
                                                     {payment && (
@@ -1313,97 +1284,34 @@ export default function ApplicationDetailPage() {
                         </div>
                         <form onSubmit={handleSaveStage} className="p-10 space-y-8 overflow-y-auto custom-scrollbar">
                             <div className="space-y-2">
-                                <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Stage Name</label>
+                                <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Stage Type</label>
                                 <select
                                     required
-                                    value={stageName}
-                                    onChange={(e) => setStageName(e.target.value)}
+                                    value={prefillStageId}
+                                    onChange={(e) => setPrefillStageId(Number(e.target.value))}
                                     className="w-full px-6 py-4 bg-blue-50 border border-transparent rounded-2xl text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 outline-none transition-all"
                                 >
                                     <option value="" disabled>Select Applicant Display Stage</option>
                                     {prefillStages.map((s: any) => (
-                                        <option key={s.id} value={s.name}>{s.name}</option>
+                                        <option key={s.id} value={s.id}>{s.name}</option>
                                     ))}
                                 </select>
                             </div>
                             <div className="space-y-2">
-                                <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Stage Description</label>
-                                <textarea
-                                    rows={4}
+                                <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Stage Status</label>
+                                <select
                                     required
-                                    value={stageDesc}
-                                    onChange={(e) => setStageDesc(e.target.value)}
-                                    placeholder="Define stage requirements..."
-                                    className="w-full px-6 py-4 bg-blue-50 border border-transparent rounded-2xl text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 outline-none transition-all resize-none placeholder:text-blue-200"
-                                />
+                                    value={status}
+                                    onChange={(e) => setStatus(e.target.value)}
+                                    className="w-full px-6 py-4 bg-blue-50 border border-transparent rounded-2xl text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 outline-none transition-all"
+                                >
+                                    <option value="pending">Pending</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="failed">Failed</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
                             </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="flex items-center gap-4 p-5 bg-blue-50/50 rounded-2xl border border-blue-50">
-                                    <div className="flex items-center h-5">
-                                        <input
-                                            type="checkbox"
-                                            id="setAsCurrent"
-                                            checked={setAsCurrent}
-                                            onChange={(e) => setSetAsCurrent(e.target.checked)}
-                                            className="w-5 h-5 rounded-lg border-blue-200 text-blue-900 focus:ring-blue-900"
-                                        />
-                                    </div>
-                                    <label htmlFor="setAsCurrent" className="text-[10px] font-black text-blue-900 uppercase tracking-[0.2em] cursor-pointer">Mark as Current Stage</label>
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="flex items-center gap-4 p-5 bg-blue-50/50 rounded-2xl border border-blue-50">
-                                    <div className="flex items-center h-5">
-                                        <input
-                                            type="checkbox"
-                                            id="notifyInApp"
-                                            checked={notifyInApp}
-                                            onChange={(e) => setNotifyInApp(e.target.checked)}
-                                            className="w-5 h-5 rounded-lg border-blue-200 text-blue-900 focus:ring-blue-900"
-                                        />
-                                    </div>
-                                    <label htmlFor="notifyInApp" className="text-[10px] font-black text-blue-900 uppercase tracking-[0.2em] cursor-pointer">Alert on Dashboard</label>
-                                </div>
-                                <div className="flex items-center gap-4 p-5 bg-blue-50/50 rounded-2xl border border-blue-50">
-                                    <div className="flex items-center h-5">
-                                        <input
-                                            type="checkbox"
-                                            id="notifyEmail"
-                                            checked={notifyEmail}
-                                            onChange={(e) => setNotifyEmail(e.target.checked)}
-                                            className="w-5 h-5 rounded-lg border-blue-200 text-blue-900 focus:ring-blue-900"
-                                        />
-                                    </div>
-                                    <label htmlFor="notifyEmail" className="text-[10px] font-black text-blue-900 uppercase tracking-[0.2em] cursor-pointer">Dispatch Email</label>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-4 p-5 bg-blue-50/50 rounded-2xl border border-blue-50">
-                                <div className="flex items-center h-5">
-                                    <input
-                                        type="checkbox"
-                                        id="paywall"
-                                        checked={requiresPayment}
-                                        onChange={(e) => setRequiresPayment(e.target.checked)}
-                                        className="w-5 h-5 rounded-lg border-blue-200 text-blue-900 focus:ring-blue-900"
-                                    />
-                                </div>
-                                <label htmlFor="paywall" className="text-[10px] font-black text-blue-900 uppercase tracking-[0.2em] cursor-pointer">Payment Required</label>
-                            </div>
-                            {requiresPayment && (
-                                <div className="space-y-2 animate-in slide-in-from-top-4 duration-300">
-                                    <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Requested Amount (USD)</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        value={amount}
-                                        onChange={(e) => setAmount(e.target.value)}
-                                        placeholder="0.00"
-                                        className="w-full px-6 py-4 bg-blue-50 border border-transparent rounded-2xl text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 outline-none transition-all"
-                                    />
-                                </div>
-                            )}
                             <button
                                 type="submit"
                                 disabled={addStageMutation.isPending || updateStageMutation.isPending}

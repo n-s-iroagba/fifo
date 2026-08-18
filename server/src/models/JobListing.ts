@@ -15,7 +15,9 @@ export class JobListing extends Model {
     declare salary: string | null;
     declare jobType: string;
     declare ticketIds: number[] | null;
+
     declare stages: any[];
+    declare benefits: string | null;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 
@@ -27,11 +29,9 @@ JobListing.init({
         autoIncrement: true,
         primaryKey: true,
     },
-    benefitIds: {
-        type: DataTypes.JSON
-    },
-    conditionIds: {
-        type: DataTypes.JSON
+    benefits: {
+        type: DataTypes.TEXT,
+        allowNull: true,
     },
     ticketIds: {
         type: DataTypes.JSON,

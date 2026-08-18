@@ -6,8 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.adminService = exports.AdminService = void 0;
 const BankAccountRepository_1 = require("../repositories/BankAccountRepository");
 const JobCategoryRepository_1 = require("../repositories/JobCategoryRepository");
-const JobConditionRepository_1 = require("../repositories/JobConditionRepository");
-const JobBenefitRepository_1 = require("../repositories/JobBenefitRepository");
 const UserRepository_1 = require("../repositories/UserRepository");
 const NotificationRepository_1 = require("../repositories/NotificationRepository");
 const email_1 = require("../utils/email");
@@ -88,12 +86,8 @@ class AdminService {
     // ==========================
     async getJobConfigurations() {
         const cats = await JobCategoryRepository_1.jobCategoryRepository.findAll({ limit: 100 });
-        const conds = await JobConditionRepository_1.jobConditionRepository.findAll({ limit: 100 });
-        const bens = await JobBenefitRepository_1.jobBenefitRepository.findAll({ limit: 100 });
         return {
             categories: cats.rows,
-            conditions: conds.rows,
-            benefits: bens.rows,
         };
     }
     async getAllCategories(options = {}) { return JobCategoryRepository_1.jobCategoryRepository.findAll(options); }
@@ -102,20 +96,6 @@ class AdminService {
         if (!category)
             throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
         return category;
-    }
-    async getAllConditions(options = {}) { return JobConditionRepository_1.jobConditionRepository.findAll(options); }
-    async getConditionById(id) {
-        const condition = await JobConditionRepository_1.jobConditionRepository.findById(id);
-        if (!condition)
-            throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        return condition;
-    }
-    async getAllBenefits(options = {}) { return JobBenefitRepository_1.jobBenefitRepository.findAll(options); }
-    async getBenefitById(id) {
-        const benefit = await JobBenefitRepository_1.jobBenefitRepository.findById(id);
-        if (!benefit)
-            throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        return benefit;
     }
     // Category CRUD — STK-ADM-CAT-001
     async createCategory(data) { return JobCategoryRepository_1.jobCategoryRepository.create(data); }
@@ -127,26 +107,6 @@ class AdminService {
         return JobCategoryRepository_1.jobCategoryRepository.findById(id);
     }
     async deleteCategory(id) { await JobCategoryRepository_1.jobCategoryRepository.delete(id); }
-    // Condition CRUD — STK-ADM-COND-001
-    async createCondition(data) { return JobConditionRepository_1.jobConditionRepository.create(data); }
-    async updateCondition(id, data) {
-        const condition = await JobConditionRepository_1.jobConditionRepository.findById(id);
-        if (!condition)
-            throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        await JobConditionRepository_1.jobConditionRepository.update(id, data);
-        return JobConditionRepository_1.jobConditionRepository.findById(id);
-    }
-    async deleteCondition(id) { await JobConditionRepository_1.jobConditionRepository.delete(id); }
-    // Benefit CRUD — STK-ADM-BEN-001
-    async createBenefit(data) { return JobBenefitRepository_1.jobBenefitRepository.create(data); }
-    async updateBenefit(id, data) {
-        const benefit = await JobBenefitRepository_1.jobBenefitRepository.findById(id);
-        if (!benefit)
-            throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        await JobBenefitRepository_1.jobBenefitRepository.update(id, data);
-        return JobBenefitRepository_1.jobBenefitRepository.findById(id);
-    }
-    async deleteBenefit(id) { await JobBenefitRepository_1.jobBenefitRepository.delete(id); }
     // ==========================
     // Admin Communication — STK-ADM-APP-003, STK-ADM-APP-004
     // ==========================

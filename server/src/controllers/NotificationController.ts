@@ -40,17 +40,7 @@ export class NotificationController {
         }
     }
 
-    public async subscribeToPush(req: Request, res: Response): Promise<void> {
-        try {
-            const userId = (req as any).user.id;
-            const subscription = req.body;
-            await notificationService.savePushSubscription(userId, subscription);
-            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true });
-        } catch (error) {
-            console.error('[NotificationController.subscribeToPush]', error);
-            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
+
 }
 
 export const notificationController = new NotificationController();

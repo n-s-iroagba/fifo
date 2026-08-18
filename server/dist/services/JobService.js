@@ -35,15 +35,10 @@ class JobService {
             throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
         return job;
     }
-    // Maps to STK-ADM-JOB-001, STK-ADM-JOB-003
-    async createJob(jobData, benefitsIds, conditionsIds) {
+    async createJob(jobData) {
         const t = await database_1.sequelize.transaction();
         try {
             const job = await JobRepository_1.jobRepository.create(jobData, t);
-            if (benefitsIds && benefitsIds.length > 0)
-                await job.setJobBenefits(benefitsIds, { transaction: t });
-            if (conditionsIds && conditionsIds.length > 0)
-                await job.setJobConditions(conditionsIds, { transaction: t });
             await t.commit();
             return job;
         }
@@ -52,8 +47,7 @@ class JobService {
             throw e;
         }
     }
-    // Maps to STK-ADM-JOB-005
-    async updateJob(id, data, benefitsIds, conditionsIds) {
+    async updateJob(id, data) {
         const t = await database_1.sequelize.transaction();
         try {
             let job = await JobRepository_1.jobRepository.findById(id, t);
@@ -63,10 +57,6 @@ class JobService {
             job = await JobRepository_1.jobRepository.findById(id, t);
             if (!job)
                 throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-            if (benefitsIds)
-                await job.setJobBenefits(benefitsIds, { transaction: t });
-            if (conditionsIds)
-                await job.setJobConditions(conditionsIds, { transaction: t });
             await t.commit();
             return job;
         }

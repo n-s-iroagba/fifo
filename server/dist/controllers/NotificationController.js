@@ -41,18 +41,6 @@ class NotificationController {
             res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
-    async subscribeToPush(req, res) {
-        try {
-            const userId = req.user.id;
-            const subscription = req.body;
-            await NotificationService_1.notificationService.savePushSubscription(userId, subscription);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true });
-        }
-        catch (error) {
-            console.error('[NotificationController.subscribeToPush]', error);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
 }
 exports.NotificationController = NotificationController;
 exports.notificationController = new NotificationController();

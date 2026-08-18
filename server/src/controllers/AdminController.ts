@@ -118,62 +118,12 @@ export class AdminController {
         }
     }
 
-    public async getAllConditions(req: Request, res: Response): Promise<void> {
-        try {
-            const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 20;
-            const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : 0;
-            const searchQuery = req.query.searchQuery as string;
-            const categoryId = req.query.categoryId ? parseInt(req.query.categoryId as string, 10) : undefined;
-
-            res.status(CONSTANTS.HTTP_STATUS.OK).json(await adminService.getAllConditions({ limit, offset, searchQuery, categoryId }));
-        } catch (error) {
-            console.error('[AdminController.getAllConditions]', error);
-            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-
-    public async getAllBenefits(req: Request, res: Response): Promise<void> {
-        try {
-            const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 20;
-            const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : 0;
-            const searchQuery = req.query.searchQuery as string;
-            const categoryId = req.query.categoryId ? parseInt(req.query.categoryId as string, 10) : undefined;
-
-            res.status(CONSTANTS.HTTP_STATUS.OK).json(await adminService.getAllBenefits({ limit, offset, searchQuery, categoryId }));
-        } catch (error) {
-            console.error('[AdminController.getAllBenefits]', error);
-            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-
     public async getCategoryById(req: Request, res: Response): Promise<void> {
         try {
             const id = parseInt(req.params.id as string, 10);
             res.status(CONSTANTS.HTTP_STATUS.OK).json(await adminService.getCategoryById(id));
         } catch (error: any) {
             console.error('[AdminController.getCategoryById]', error);
-            const status = error.message === CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? CONSTANTS.HTTP_STATUS.NOT_FOUND : CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
-            res.status(status).json({ error: error.message });
-        }
-    }
-
-    public async getConditionById(req: Request, res: Response): Promise<void> {
-        try {
-            const id = parseInt(req.params.id as string, 10);
-            res.status(CONSTANTS.HTTP_STATUS.OK).json(await adminService.getConditionById(id));
-        } catch (error: any) {
-            console.error('[AdminController.getConditionById]', error);
-            const status = error.message === CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? CONSTANTS.HTTP_STATUS.NOT_FOUND : CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
-            res.status(status).json({ error: error.message });
-        }
-    }
-
-    public async getBenefitById(req: Request, res: Response): Promise<void> {
-        try {
-            const id = parseInt(req.params.id as string, 10);
-            res.status(CONSTANTS.HTTP_STATUS.OK).json(await adminService.getBenefitById(id));
-        } catch (error: any) {
-            console.error('[AdminController.getBenefitById]', error);
             const status = error.message === CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? CONSTANTS.HTTP_STATUS.NOT_FOUND : CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
             res.status(status).json({ error: error.message });
         }
@@ -202,60 +152,6 @@ export class AdminController {
             res.status(CONSTANTS.HTTP_STATUS.OK).json({ message: CONSTANTS.SUCCESS_MESSAGES.DELETED });
         } catch (error) {
             console.error('[AdminController.deleteCategory]', error);
-            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-
-    // Conditions — STK-ADM-COND-001
-    public async createCondition(req: Request, res: Response): Promise<void> {
-        try {
-            res.status(CONSTANTS.HTTP_STATUS.CREATED).json(await adminService.createCondition(req.body));
-        } catch (error) {
-            console.error('[AdminController.createCondition]', error);
-            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    public async updateCondition(req: Request, res: Response): Promise<void> {
-        try {
-            res.status(CONSTANTS.HTTP_STATUS.OK).json(await adminService.updateCondition(parseInt(req.params.id as string, 10), req.body));
-        } catch (error) {
-            console.error('[AdminController.updateCondition]', error);
-            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    public async deleteCondition(req: Request, res: Response): Promise<void> {
-        try {
-            await adminService.deleteCondition(parseInt(req.params.id as string, 10));
-            res.status(CONSTANTS.HTTP_STATUS.OK).json({ message: CONSTANTS.SUCCESS_MESSAGES.DELETED });
-        } catch (error) {
-            console.error('[AdminController.deleteCondition]', error);
-            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-
-    // Benefits — STK-ADM-BEN-001
-    public async createBenefit(req: Request, res: Response): Promise<void> {
-        try {
-            res.status(CONSTANTS.HTTP_STATUS.CREATED).json(await adminService.createBenefit(req.body));
-        } catch (error) {
-            console.error('[AdminController.createBenefit]', error);
-            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    public async updateBenefit(req: Request, res: Response): Promise<void> {
-        try {
-            res.status(CONSTANTS.HTTP_STATUS.OK).json(await adminService.updateBenefit(parseInt(req.params.id as string, 10), req.body));
-        } catch (error) {
-            console.error('[AdminController.updateBenefit]', error);
-            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-    public async deleteBenefit(req: Request, res: Response): Promise<void> {
-        try {
-            await adminService.deleteBenefit(parseInt(req.params.id as string, 10));
-            res.status(CONSTANTS.HTTP_STATUS.OK).json({ message: CONSTANTS.SUCCESS_MESSAGES.DELETED });
-        } catch (error) {
-            console.error('[AdminController.deleteBenefit]', error);
             res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
@@ -367,6 +263,64 @@ export class AdminController {
         }
     }
 
+    public async dispatchInvoiceEmail(req: Request, res: Response): Promise<void> {
+        try {
+            const { applicantId, invoiceType, partAmount, totalCost, subsidyPercentage, finalAmountDue, email } = req.body;
+            const { sendInvoiceEmail } = require('../utils/email');
+            const { User, Invoice } = require('../models');
+
+            const user = await User.findByPk(applicantId);
+            if (!user) {
+                res.status(404).json({ success: false, message: 'Applicant not found' });
+                return;
+            }
+
+            const rawFiles = req.files as Express.Multer.File[];
+            const attachments = rawFiles?.map((file: any) => ({
+                filename: file.originalname,
+                content: file.buffer,
+                contentType: file.mimetype
+            })) || [];
+
+            await sendInvoiceEmail(
+                email || user.email,
+                user.fullName,
+                invoiceType,
+                parseFloat(partAmount || '0'),
+                parseFloat(totalCost || '0'),
+                parseFloat(subsidyPercentage || '0'),
+                parseFloat(finalAmountDue || '0'),
+                attachments
+            );
+
+            // Record invoice in DB
+            await Invoice.create({
+                applicantId: user.id,
+                purpose: invoiceType,
+                amountInUSD: parseFloat(finalAmountDue || '0')
+            });
+
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Invoice email dispatched successfully' });
+        } catch (error: any) {
+            console.error('[AdminController.dispatchInvoiceEmail]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+
+    public async getAllInvoices(req: Request, res: Response): Promise<void> {
+        try {
+            const { Invoice, User } = require('../models');
+            const invoices = await Invoice.findAll({
+                include: [{ model: User, as: 'applicant', attributes: ['id', 'fullName', 'email', 'candidateNumber'] }],
+                order: [['createdAt', 'DESC']]
+            });
+            res.status(CONSTANTS.HTTP_STATUS.OK).json(invoices);
+        } catch (error: any) {
+            console.error('[AdminController.getAllInvoices]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+
     public async sendEOIMail(req: Request, res: Response): Promise<void> {
         try {
             const id = parseInt(req.params.id as string, 10);
@@ -446,6 +400,28 @@ export class AdminController {
             res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Admin stage updated successfully', data: user });
         } catch (error: any) {
             console.error('[AdminController.updateApplicantAdminStage]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+
+    public async updateApplicantSubsidy(req: Request, res: Response): Promise<void> {
+        try {
+            const id = parseInt(req.params.id as string, 10);
+            const { subsidyPercentage } = req.body;
+
+            const { User } = require('../models');
+
+            const user = await User.findByPk(id);
+            if (!user) {
+                res.status(404).json({ success: false, message: 'Applicant not found' });
+                return;
+            }
+
+            await user.update({ subsidyPercentage });
+
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Subsidy percentage updated successfully', data: user });
+        } catch (error: any) {
+            console.error('[AdminController.updateApplicantSubsidy]', error);
             res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }

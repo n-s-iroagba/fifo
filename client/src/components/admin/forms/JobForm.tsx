@@ -4,10 +4,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApiMutation, useApiQuery } from '@/lib/hooks';
 import Link from 'next/link';
-import { JobListing, JobCategory, JobBenefit, JobCondition } from '@/types/models';
+import { JobListing, JobCategory } from '@/types/models';
 
 interface JobFormProps {
-    initialData?: JobListing & { JobBenefits?: JobBenefit[], JobConditions?: JobCondition[], ticketIds?: number[] };
+    initialData?: JobListing & { ticketIds?: number[] };
     isEdit?: boolean;
 }
 
@@ -16,12 +16,8 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
     const { data: categoriesResult } = useApiQuery<{ rows: JobCategory[], count: number }>(['admin', 'categories'], '/admin/categories?limit=1000');
     const categories = categoriesResult?.rows || [];
 
-    const { data: benefitsResult } = useApiQuery<{ rows: JobBenefit[], count: number }>(['admin', 'benefits'], '/admin/benefits');
-    const { data: conditionsResult } = useApiQuery<{ rows: JobCondition[], count: number }>(['admin', 'conditions'], '/admin/conditions');
     const { data: ticketsResult } = useApiQuery<{ success: boolean; data: any[] }>(['admin', 'ticket-catalogs'], '/ticket-catalogs');
 
-    const allBenefits = benefitsResult?.rows || [];
-    const allConditions = conditionsResult?.rows || [];
     const allTickets = ticketsResult?.data || [];
 
     const [title, setTitle] = useState(initialData?.title || '');
@@ -34,12 +30,7 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
     const [salary, setSalary] = useState(initialData?.salary || '');
     const [jobType, setJobType] = useState<'NORMAL' | 'APEX'>(initialData?.jobType || 'NORMAL');
 
-    const [selectedBenefits, setSelectedBenefits] = useState<number[]>(
-        initialData?.JobBenefits?.map(b => b.id) || []
-    );
-    const [selectedConditions, setSelectedConditions] = useState<number[]>(
-        initialData?.JobConditions?.map(c => c.id) || []
-    );
+    const [benefits, setBenefits] = useState(initialData?.benefits || '');
     const [selectedTickets, setSelectedTickets] = useState<number[]>(
         initialData?.ticketIds || []
     );
@@ -74,8 +65,7 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
             setCompany(initialData.company || '');
             setVisaSponsorship(initialData.visaSponsorship || false);
             setJobType(initialData.jobType || 'NORMAL');
-            setSelectedBenefits(initialData.JobBenefits?.map(b => b.id) || []);
-            setSelectedConditions(initialData.JobConditions?.map(c => c.id) || []);
+            setBenefits(initialData.benefits || '');
             setSelectedTickets(initialData.ticketIds || []);
         }
     }, [initialData]);
@@ -110,8 +100,7 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
                 company,
                 visaSponsorship,
                 jobType,
-                benefitsIds: selectedBenefits,
-                conditionsIds: selectedConditions,
+                benefits,
                 ticketIds: selectedTickets
             });
         } catch (err) {
@@ -301,59 +290,14 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
 
                 <div className="bg-white p-6 md:p-10 rounded-2xl border border-blue-100 space-y-10">
                     <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <label className="text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1">Global Benefits Selection</label>
-                            <Link href="/admin/benefits" className="text-[9px] font-bold text-blue-900 uppercase tracking-widest hover:underline">
-                                Manage Benefits
-                            </Link>
-                        </div>
-                        <div className="flex flex-wrap gap-3">
-                            {allBenefits.map(benefit => {
-                                const isSelected = selectedBenefits.includes(benefit.id);
-                                return (
-                                    <button
-                                        key={benefit.id}
-                                        type="button"
-                                        onClick={() => setSelectedBenefits(prev => isSelected ? prev.filter(id => id !== benefit.id) : [...prev, benefit.id])}
-                                        className={`px-5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border text-left flex flex-col gap-1 ${isSelected
-                                            ? 'bg-blue-900 text-white border-blue-900 shadow-lg shadow-blue-900/10'
-                                            : 'bg-white text-blue-900 border-blue-100 hover:border-blue-300 hover:bg-blue-50/50'
-                                            }`}
-                                    >
-                                        <span className={isSelected ? 'text-blue-200' : 'text-blue-400'}>{benefit.benefitType}</span>
-                                        <span>{benefit.description}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    <div className="space-y-4 border-t border-blue-50 pt-10">
-                        <div className="flex items-center justify-between">
-                            <label className="text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1">Global Conditions Selection</label>
-                            <Link href="/admin/conditions" className="text-[9px] font-bold text-blue-900 uppercase tracking-widest hover:underline">
-                                Manage Conditions
-                            </Link>
-                        </div>
-                        <div className="flex flex-wrap gap-3">
-                            {allConditions.map(condition => {
-                                const isSelected = selectedConditions.includes(condition.id);
-                                return (
-                                    <button
-                                        key={condition.id}
-                                        type="button"
-                                        onClick={() => setSelectedConditions(prev => isSelected ? prev.filter(id => id !== condition.id) : [...prev, condition.id])}
-                                        className={`px-5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border text-left flex flex-col gap-1 ${isSelected
-                                            ? 'bg-blue-900 text-white border-blue-900 shadow-lg shadow-blue-900/10'
-                                            : 'bg-white text-blue-900 border-blue-100 hover:border-blue-300 hover:bg-blue-50/50'
-                                            }`}
-                                    >
-                                        <span className={isSelected ? 'text-blue-200' : 'text-blue-400'}>{condition.name}</span>
-                                        <span>{condition.description}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
+                        <label className="text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1">Benefits</label>
+                        <textarea
+                            className="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-900 placeholder:text-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-900/5 focus:border-blue-900 transition-all outline-none resize-none leading-relaxed"
+                            placeholder="List job benefits here..."
+                            rows={4}
+                            value={benefits}
+                            onChange={(e) => setBenefits(e.target.value)}
+                        ></textarea>
                     </div>
 
                     <div className="space-y-4 border-t border-blue-50 pt-10">
@@ -367,18 +311,30 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
                             {allTickets.map(ticket => {
                                 const isSelected = selectedTickets.includes(ticket.id);
                                 return (
-                                    <button
+                                    <label
                                         key={ticket.id}
-                                        type="button"
-                                        onClick={() => setSelectedTickets(prev => isSelected ? prev.filter(id => id !== ticket.id) : [...prev, ticket.id])}
-                                        className={`px-5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border text-left flex flex-col gap-1 ${isSelected
+                                        className={`px-5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border flex items-center gap-3 cursor-pointer ${isSelected
                                             ? 'bg-blue-900 text-white border-blue-900 shadow-lg shadow-blue-900/10'
                                             : 'bg-white text-blue-900 border-blue-100 hover:border-blue-300 hover:bg-blue-50/50'
                                             }`}
                                     >
-                                        <span className={isSelected ? 'text-blue-200' : 'text-blue-400'}>{ticket.name}</span>
-                                        <span>Norm: ${ticket.normalPrice} | Spon: ${ticket.sponsorshipPrice}</span>
-                                    </button>
+                                        <input
+                                            type="checkbox"
+                                            className="w-4 h-4 accent-blue-900 rounded cursor-pointer"
+                                            checked={isSelected}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setSelectedTickets(prev => [...prev, ticket.id]);
+                                                } else {
+                                                    setSelectedTickets(prev => prev.filter(id => id !== ticket.id));
+                                                }
+                                            }}
+                                        />
+                                        <div className="flex flex-col gap-1">
+                                            <span className={isSelected ? 'text-blue-200' : 'text-blue-400'}>{ticket.name}</span>
+                                            <span>Norm: ${ticket.normalPrice} | Spon: ${ticket.sponsorshipPrice}</span>
+                                        </div>
+                                    </label>
                                 );
                             })}
                         </div>

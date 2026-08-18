@@ -9,15 +9,9 @@ export default function ApplicantDashboard() {
     const { data: summary, isLoading, refetch } = useApiQuery<any>(['applicant', 'dashboard'], '/dashboard');
     const { data: user } = useApiQuery<any>(['auth', 'me'], '/auth/me');
     const [selectedPaymentApp, setSelectedPaymentApp] = useState<any>(null);
-    const [appFilter, setAppFilter] = useState<'All' | 'Active' | 'Completed' | 'Payments'>('All');
+    const hasFinancialActivity = (summary?.allPayments?.length > 0);
 
-    const hasFinancialActivity = (summary?.allPayments?.length > 0) ||
-        (summary?.pendingStages?.some((ap: any) => ap.requiresPayment));
-
-    const availableFilters = ['All', 'Active', 'Payments', 'Completed'].filter(f => {
-        if (f === 'Payments') return hasFinancialActivity;
-        return true;
-    });
+    const availableFilters = ['All', 'Active', 'Completed'];
 
     if (isLoading) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-blue-400 animate-pulse">Loading Dashboard...</div>;
 
@@ -28,8 +22,7 @@ export default function ApplicantDashboard() {
 
     const filteredStages = pendingStages.filter((app: any) => {
         if (appFilter === 'All') return true;
-        if (appFilter === 'Active') return !app.requiresPayment || app.paymentStatus === 'Verified' || app.paymentStatus === 'Paid';
-        if (appFilter === 'Payments') return app.requiresPayment && app.paymentStatus !== 'Verified' && app.paymentStatus !== 'Paid';
+        if (appFilter === 'Active') return !app.isCompleted;
         if (appFilter === 'Completed') return false;
         return true;
     });
@@ -47,48 +40,7 @@ export default function ApplicantDashboard() {
                 <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] mt-2">Overview / Application Status</p>
             </div>
 
-            {/* Applicant Notification Hub */}
-            {pendingStages.some((app: any) => app.requiresPayment && (app.paymentStatus !== 'Verified' && app.paymentStatus !== 'Paid')) && (() => {
-                const payApp = pendingStages.find((app: any) => app.requiresPayment && (app.paymentStatus !== 'Verified' && app.paymentStatus !== 'Paid'));
-                return (
-                    <div className="mb-12 animate-in slide-in-from-top-6 duration-700">
-                        <div className="bg-white border border-red-100 p-6 md:p-10 rounded-[2.5rem] flex flex-col md:flex-row items-center md:items-start lg:items-center justify-between gap-8 shadow-2xl shadow-red-900/5 relative overflow-hidden group">
-                            <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500" />
-                            <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8 w-full">
-                                <div className="w-14 h-14 md:w-16 md:h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center shrink-0 border border-red-100 shadow-inner">
-                                    <span className="material-symbols-outlined font-black text-2xl">payments</span>
-                                </div>
-                                <div className="space-y-3 text-center md:text-left flex-1 min-w-0">
-                                    <div className="max-w-full">
-                                        <h4 className="text-[9px] md:text-[10px] font-black text-red-500 uppercase tracking-[0.3em] mb-1">Action Required</h4>
-                                        <h2 className="text-lg md:text-xl font-black text-blue-900 uppercase tracking-tight leading-none break-words">{payApp?.stageName || 'Recruitment Phase'}</h2>
-                                    </div>
-                                    <p className="text-[10px] md:text-[11px] font-bold text-blue-400 uppercase tracking-widest max-w-lg leading-relaxed opacity-80 italic line-clamp-2 md:line-clamp-none">
-                                        {payApp?.stageDescription}
-                                    </p>
-                                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
-                                        <span className="px-2 py-0.5 md:px-3 md:py-1 bg-red-50 text-red-600 text-[8px] md:text-[9px] font-black uppercase tracking-widest rounded-lg border border-red-100">
-                                            Awaiting Action
-                                        </span>
-                                        <span className="text-[8px] md:text-[10px] font-black text-blue-900 uppercase tracking-tight">
-                                            Complete this step to move forward with your application
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    if (payApp) setSelectedPaymentApp(payApp);
-                                    setAppFilter('Payments');
-                                }}
-                                className="w-full md:w-auto bg-blue-900 text-white px-8 md:px-10 py-4 md:py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-black transition-all shadow-2xl shadow-blue-900/20 active:scale-95 shrink-0"
-                            >
-                                Make Payment
-                            </button>
-                        </div>
-                    </div>
-                );
-            })()}
+
 
             {/* Refund Wallet Section */}
             {user && (
@@ -197,8 +149,8 @@ export default function ApplicantDashboard() {
                                                             <span className="w-1.5 h-1.5 rounded-full bg-blue-900 animate-pulse mt-1.5 sm:mt-0 shrink-0" />
                                                             <span className="text-[10px] font-black text-blue-900 uppercase tracking-[0.2em] break-words">{app.stageName}</span>
                                                         </div>
-                                                        <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border whitespace-nowrap self-start ${app.isCompleted ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : app.requiresPayment ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>
-                                                            {app.isCompleted ? 'Stage Completed' : app.requiresPayment ? 'Payment Required' : 'Under Review'}
+                                                        <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border whitespace-nowrap self-start ${app.isCompleted ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>
+                                                            {app.isCompleted ? 'Stage Completed' : 'Under Review'}
                                                         </span>
                                                     </div>
                                                     <p className="text-[10px] font-bold text-blue-400 uppercase tracking-tight leading-relaxed italic opacity-90 mb-4 whitespace-pre-wrap line-clamp-3">
@@ -207,7 +159,7 @@ export default function ApplicantDashboard() {
                                                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 pt-4 border-t border-blue-100/50">
                                                         <span className="text-[8px] font-black text-blue-300 uppercase tracking-[0.2em]">Application Status:</span>
                                                         <span className="text-[8px] font-bold text-blue-900 uppercase">
-                                                            {app.isCompleted ? 'Awaiting Next Phase' : `Awaiting ${app.requiresPayment && app.paymentStatus !== 'Paid' && app.paymentStatus !== 'Verified' ? 'Your Action' : 'Final Review'}`}
+                                                            {app.isCompleted ? 'Awaiting Next Phase' : 'Awaiting Final Review'}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -219,43 +171,12 @@ export default function ApplicantDashboard() {
 
                                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pt-6 border-t border-blue-50 gap-4">
                                             <div className="flex items-center gap-2">
-                                                {app.requiresPayment ? (
-                                                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border ${app.paymentStatus === 'Verified' || app.paymentStatus === 'Paid' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                        app.paymentStatus === 'Pending' ? 'bg-amber-50 text-amber-600 border-amber-100 animate-pulse' :
-                                                            'bg-amber-50 text-amber-700 border-amber-100'
-                                                        }`}>
-                                                        <span className="material-symbols-outlined text-[14px]">
-                                                            {app.paymentStatus === 'Verified' || app.paymentStatus === 'Paid' ? 'verified' :
-                                                                app.paymentStatus === 'Pending' ? 'hourglass_empty' : 'payments'}
-                                                        </span>
-                                                        <span className="text-[9px] font-black uppercase tracking-widest whitespace-normal sm:whitespace-nowrap leading-tight text-left">
-                                                            {app.paymentStatus === 'Verified' || app.paymentStatus === 'Paid' ? 'Verified' :
-                                                                app.paymentStatus === 'Pending' ? 'Review in Progress' : `Due: $${app.amount}`}
-                                                        </span>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-2 bg-emerald-50/50 text-emerald-600 px-3 py-1.5 rounded-xl border border-emerald-100">
-                                                        <span className="material-symbols-outlined text-[14px]">task_alt</span>
-                                                        <span className="text-[10px] font-bold uppercase tracking-widest leading-none">Complimentary</span>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <div className="flex flex-col sm:flex-row gap-2">
                                                 <Link
                                                     href={`/dashboard/applications/${app.applicationId}`}
                                                     className="px-5 py-2.5 rounded-xl text-[9px] font-black text-blue-400 uppercase tracking-[0.2em] hover:bg-blue-50 hover:text-blue-900 transition-all text-center border border-transparent hover:border-blue-100"
                                                 >
                                                     Details
                                                 </Link>
-                                                {app.requiresPayment && (app.paymentStatus !== 'Verified' && app.paymentStatus !== 'Paid') && (
-                                                    <button
-                                                        onClick={() => setSelectedPaymentApp(app)}
-                                                        className="bg-blue-900 text-white px-6 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all shadow-xl shadow-blue-900/10 active:scale-95 whitespace-nowrap"
-                                                    >
-                                                        {app.paymentStatus === 'Pending' ? 'Update Proof' : 'Process settlement'}
-                                                    </button>
-                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -278,7 +199,7 @@ export default function ApplicantDashboard() {
                 </div>
 
                 <div className="space-y-8">
-                    {((summary?.allPayments?.length > 0) || pendingStages.some((ap: any) => ap.requiresPayment)) && (
+                    {((summary?.allPayments?.length > 0)) && (
                         <section className="bg-white p-6 rounded-[2.5rem] border border-blue-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500">
                             <h2 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-8 pb-4 border-b border-blue-50">Payment History</h2>
                             <div className="space-y-3">

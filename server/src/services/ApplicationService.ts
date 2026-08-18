@@ -1,7 +1,7 @@
 import { sequelize } from '../config/database';
 import { applicationRepository } from '../repositories/ApplicationRepository';
 import { jobRepository } from '../repositories/JobRepository';
-import { paymentRepository } from '../repositories/PaymentRepository';
+
 import { jobStageRepository } from '../repositories/JobStageRepository';
 import { notificationRepository } from '../repositories/NotificationRepository';
 import { CONSTANTS } from '../constants';
@@ -20,18 +20,13 @@ export class ApplicationService {
 
         const pendingStages: any[] = [];
         const unpaidPayments: any[] = [];
+        const allPayments: any[] = [];
         const completedGroups: any[] = [];
 
         for (const app of appsList) {
             // Collect pending stages (active apps with a current stage)
             if (app.status === CONSTANTS.APPLICATION_STATUSES.ACTIVE && app.currentStageId) {
                 const currentStage = await jobStageRepository.findById(app.currentStageId);
-                const currentPaymentResult = await paymentRepository.findAllAdmin({
-                    applicationId: app.id,
-                    stageId: app.currentStageId,
-                });
-                const payment = currentPaymentResult.rows[0];
-
                 pendingStages.push({
                     applicationId: app.id,
                     jobTitle: app.JobListing?.title,
@@ -39,19 +34,19 @@ export class ApplicationService {
                     jobLocation: app.JobListing?.location,
                     jobSalary: app.JobListing?.salary,
                     stageId: app.currentStageId,
-                    requiresPayment: currentStage?.requiresPayment || false,
-                    isCompleted: currentStage?.isCompleted || false,
-                    amount: payment?.amount ?? currentStage?.amount,
-                    currency: payment?.currency ?? currentStage?.currency,
-                    stageName: currentStage?.name,
-                    stageDescription: currentStage?.description,
-                    paymentStatus: payment?.status || 'Unpaid',
+                    requiresPayment: false,
+                    isCompleted: currentStage?.status === 'completed',
+                    amount: 0,
+                    currency: 'USD',
+                    stageName: currentStage?.PrefillStage?.name || 'Unnamed Stage',
+                    stageDescription: null,
+                    paymentStatus: 'Unpaid',
                 });
             }
 
             // Gather completed stages for this application
             const stages = await jobStageRepository.findByApplicationId(app.id);
-            const appCompletedStages = (stages.rows || []).filter((s: any) => s.isCompleted);
+            const appCompletedStages = (stages.rows || []).filter((s: any) => s.status === 'completed');
 
             if (appCompletedStages.length > 0) {
                 completedGroups.push({
@@ -64,26 +59,14 @@ export class ApplicationService {
                     stages: appCompletedStages.map((s: any) => ({
                         stageId: s.id,
                         stageName: s.name,
-                        stageDescription: s.description,
+                        stageDescription: null,
                         completedAt: s.updatedAt
                     }))
                 });
             }
-
-            // STK-APP-DASH-001: current unpaid payments across all applications
-            const unpaidPaymentsResult = await paymentRepository.findAllAdmin({
-                applicationId: app.id,
-                status: CONSTANTS.PAYMENT_STATUSES.UNPAID,
-            });
-            unpaidPayments.push(...unpaidPaymentsResult.rows);
         }
 
-        // Collect all payments for history
-        const allPayments: any[] = [];
-        for (const app of appsList) {
-            const payments = await paymentRepository.findByApplicationId(app.id);
-            allPayments.push(...payments);
-        }
+
 
         const activeJobs = await jobRepository.findAllActive({ limit: 5 });
 
@@ -139,17 +122,13 @@ export class ApplicationService {
                 transaction: t
             });
 
-            const initialStageName = firstApplicantStage ? firstApplicantStage.name : 'under review';
+            const initialStageId = firstApplicantStage ? firstApplicantStage.id : 1;
             
             // Create singular initial stage based on prefill
             const initialStage = await jobStageRepository.create({
                 applicationId: newApp.id,
-                name: initialStageName,
-                description: 'Your application has been received and is currently under review by our recruitment team.',
-                orderPosition: 1,
-                requiresPayment: false,
-                notifyEmail: true,
-                notifyPush: true
+                prefillStageId: initialStageId,
+                status: 'pending'
             }, t);
 
             // Set initial stage pointer
@@ -290,32 +269,14 @@ export class ApplicationService {
                 return updatedApp;
             }
 
-            // Create unpaid payment record when next stage requires payment
             if (nextStageId) {
                 const nextStage = stages.rows.find(s => s.id === nextStageId);
-                if (nextStage && nextStage.requiresPayment) {
-                    const existingPayment = await paymentRepository.findAllAdmin({
-                        applicationId,
-                        stageId: nextStage.id
-                    }, t);
-
-                    if (existingPayment.count === 0) {
-                        await paymentRepository.create({
-                            applicationId,
-                            stageId: nextStage.id,
-                            status: CONSTANTS.PAYMENT_STATUSES.UNPAID,
-                            amount: nextStage.amount,
-                            currency: nextStage.currency,
-                        }, t);
-                    }
-                }
-
                 // Notify if requested
                 if (shouldNotify && nextStage) {
                     await notificationRepository.create({
                         userId: app.userId,
                         subject: 'Application Advanced',
-                        message: `Your application has moved to the next phase: "${nextStage.name}".`,
+                        message: `Your application has moved to the next phase: "${nextStage.PrefillStage?.name || 'Unnamed Phase'}".`,
                         type: 'SYSTEM',
                     }, t);
                 }
@@ -340,15 +301,9 @@ export class ApplicationService {
             const app = await applicationRepository.findById(applicationId, t);
             if (!app) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
 
-            const existingStages = await jobStageRepository.findByApplicationId(applicationId, t);
-            const nextPosition = existingStages.rows.length > 0
-                ? Math.max(...existingStages.rows.map(s => s.orderPosition)) + 1
-                : 1;
-
             const newStage = await jobStageRepository.create({
                 ...rest,
-                applicationId,
-                orderPosition: rest.orderPosition || nextPosition
+                applicationId
             }, t);
 
             if (setAsCurrent) {
@@ -357,19 +312,10 @@ export class ApplicationService {
                     status: CONSTANTS.APPLICATION_STATUSES.ACTIVE
                 }, t);
 
-                // Auto-create payment if required
-                if (newStage.requiresPayment) {
-                    await paymentRepository.create({
-                        applicationId,
-                        stageId: newStage.id,
-                        status: CONSTANTS.PAYMENT_STATUSES.UNPAID,
-                        amount: newStage.amount,
-                        currency: newStage.currency,
-                    }, t);
-                }
+
 
                 const nSubject = 'Process Activation';
-                const nMessage = `A new phase has been activated for your application: "${newStage.name}".`;
+                const nMessage = `A new phase has been activated for your application: "${newStage.PrefillStage?.name || 'Unnamed Phase'}".`;
 
                 if (notifyInApp) {
                     await notificationRepository.create({
@@ -423,36 +369,12 @@ export class ApplicationService {
             });
         }
 
-        // If this stage is (or just became) the current stage and requires payment, ensure payment record exists
-        const isCurrentStage = setAsCurrent || app.currentStageId === stageId;
-        if (isCurrentStage && updatedStage?.requiresPayment) {
-            const existingPayment = await paymentRepository.findAllAdmin({
-                applicationId: app.id,
-                stageId: stageId
-            });
-            if (existingPayment.count === 0) {
-                await paymentRepository.create({
-                    applicationId: app.id,
-                    stageId: stageId,
-                    status: CONSTANTS.PAYMENT_STATUSES.UNPAID,
-                    amount: updatedStage.amount,
-                    currency: updatedStage.currency,
-                });
-            } else {
-                const pendingPayment = existingPayment.rows[0];
-                if (pendingPayment && (pendingPayment.status === CONSTANTS.PAYMENT_STATUSES.UNPAID || pendingPayment.status === CONSTANTS.PAYMENT_STATUSES.PENDING)) {
-                    await paymentRepository.update(pendingPayment.id, {
-                        amount: updatedStage.amount,
-                        currency: updatedStage.currency,
-                    });
-                }
-            }
-        }
+
 
         const nSubject = setAsCurrent ? 'Process Activation' : 'Phase Update';
         const nMessage = setAsCurrent
-            ? `A phase has been activated for your application: "${updatedStage?.name}".`
-            : `Details for your current phase "${updatedStage?.name}" have been updated by administration.`;
+            ? `A phase has been activated for your application: "${updatedStage?.PrefillStage?.name || 'Unnamed Phase'}".`
+            : `Details for your current phase "${updatedStage?.PrefillStage?.name || 'Unnamed Phase'}" have been updated by administration.`;
 
         if (notifyInApp) {
             await notificationRepository.create({
@@ -501,14 +423,14 @@ export class ApplicationService {
         const stage = await jobStageRepository.findById(stageId);
         if (!stage) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
 
-        await jobStageRepository.update(stageId, { isCompleted: true });
+        await jobStageRepository.update(stageId, { status: 'completed' });
 
         const app = await applicationRepository.findById(stage.applicationId);
         if (app) {
             await notificationRepository.create({
                 userId: app.userId,
                 subject: 'Phase Completed',
-                message: `Congratulations, your application phase "${stage.name}" has been marked as complete.`,
+                message: `Congratulations, your application phase "${stage.PrefillStage?.name || 'Unnamed Phase'}" has been marked as complete.`,
                 type: 'SYSTEM'
             });
         }

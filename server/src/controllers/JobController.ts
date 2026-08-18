@@ -69,8 +69,7 @@ export class JobController {
     // Maps to STK-ADM-JOB-001, STK-ADM-JOB-003
     public async createJob(req: Request, res: Response): Promise<void> {
         try {
-            const { benefitsIds, conditionsIds, ...jobData } = req.body;
-            const job = await jobService.createJob(jobData, benefitsIds || [], conditionsIds || []);
+            const job = await jobService.createJob(req.body);
             res.status(CONSTANTS.HTTP_STATUS.CREATED).json(job);
         } catch (error) {
             console.error('[JobController.createJob]', error);
@@ -82,8 +81,7 @@ export class JobController {
     public async updateJob(req: Request, res: Response): Promise<void> {
         try {
             const jobId = parseInt(req.params.id as string, 10);
-            const { benefitsIds, conditionsIds, ...jobData } = req.body;
-            const job = await jobService.updateJob(jobId, jobData, benefitsIds, conditionsIds);
+            const job = await jobService.updateJob(jobId, req.body);
             res.status(CONSTANTS.HTTP_STATUS.OK).json(job);
         } catch (error: any) {
             console.error('[JobController.updateJob]', error);

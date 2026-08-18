@@ -172,16 +172,6 @@ async function seedDatabase() {
                 weight: q.weight
             });
         }
-        // Create Practical Criteria
-        for (const crit of data.course.practicalCriteria) {
-            await models_1.PracticalCriterion.findOrCreate({
-                where: { courseId: course.id, description: crit },
-                defaults: {
-                    title: crit.split(' ').slice(0, 3).join(' '),
-                    isMandatory: true
-                }
-            });
-        }
         // Create Ticket Catalog Entry (both full name and simplified name for easy admin lookup)
         const catalogName = `${data.certificationName} (${course.code})`;
         const [catalogEntry] = await models_1.TicketCatalog.findOrCreate({
@@ -268,33 +258,10 @@ async function seedDatabase() {
                 salary: jobData.salary,
                 visaSponsorship: false,
                 isActive: true,
-                stages: []
+                stages: [],
+                benefits: jobData.benefits.join('\n')
             }
         });
-        // 6. Link Benefits
-        for (const benefitDesc of jobData.benefits) {
-            const [benefit] = await models_1.JobBenefit.findOrCreate({
-                where: { description: benefitDesc },
-                defaults: {
-                    benefitType: 'Employment Benefit',
-                    description: benefitDesc,
-                    categoryId: category.id
-                }
-            });
-            await job.addJobBenefit(benefit);
-        }
-        // 7. Link Conditions
-        for (const condDesc of jobData.requirements) {
-            const [condition] = await models_1.JobCondition.findOrCreate({
-                where: { description: condDesc },
-                defaults: {
-                    name: 'Site Requirement',
-                    description: condDesc,
-                    categoryId: category.id
-                }
-            });
-            await job.addJobCondition(condition);
-        }
     }
     console.log('Idempotent seeding completed successfully!');
 }

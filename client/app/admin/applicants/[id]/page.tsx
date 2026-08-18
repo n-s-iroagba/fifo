@@ -28,6 +28,9 @@ export default function AdminApplicantDetailPage() {
     const [walletAmount, setWalletAmount] = useState('');
     const [isUpdatingWallet, setIsUpdatingWallet] = useState(false);
     const [isUpdatingStage, setIsUpdatingStage] = useState(false);
+    const [isEditingSubsidy, setIsEditingSubsidy] = useState(false);
+    const [subsidyValue, setSubsidyValue] = useState('');
+    const [isUpdatingSubsidy, setIsUpdatingSubsidy] = useState(false);
 
     if (isLoading) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-blue-400">Loading Applicant Profile...</div>;
     if (!user) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-red-500">Applicant Record Not Found</div>;
@@ -56,6 +59,24 @@ export default function AdminApplicantDetailPage() {
             alert(e.response?.data?.error || 'Network error while updating wallet.');
         } finally {
             setIsUpdatingWallet(false);
+        }
+    };
+
+    const handleUpdateSubsidy = async () => {
+        setIsUpdatingSubsidy(true);
+        try {
+            const res = await api.put(`/admin/users/${id}/subsidy-percentage`, { subsidyPercentage: parseInt(subsidyValue) || 0 });
+            if (res.status === 200) {
+                alert('Subsidy percentage updated successfully.');
+                setIsEditingSubsidy(false);
+                refetchUser();
+            } else {
+                alert('Failed to update subsidy.');
+            }
+        } catch (e: any) {
+            alert(e.response?.data?.error || 'Network error while updating subsidy.');
+        } finally {
+            setIsUpdatingSubsidy(false);
         }
     };
 
@@ -216,6 +237,61 @@ export default function AdminApplicantDetailPage() {
                         )}
                     </div>
 
+                    {/* Subsidy Card */}
+                    <div className="bg-white p-10 rounded-[2.5rem] border border-blue-100 shadow-2xl shadow-blue-900/5">
+                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-blue-50">
+                            <div className="flex items-center gap-4">
+                                <span className="material-symbols-outlined text-blue-900">percent</span>
+                                <h3 className="text-[10px] font-black text-blue-900 uppercase tracking-[0.2em]">Subsidy Percentage</h3>
+                            </div>
+                        </div>
+
+                        {!isEditingSubsidy ? (
+                            <div className="flex flex-col items-center">
+                                <span className="text-3xl font-black text-blue-900">{user.subsidyPercentage || 0}%</span>
+                                <button
+                                    onClick={() => {
+                                        setSubsidyValue((user.subsidyPercentage || 0).toString());
+                                        setIsEditingSubsidy(true);
+                                    }}
+                                    className="mt-6 w-full py-3 bg-blue-50 text-blue-900 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-100 transition-all"
+                                >
+                                    Adjust Subsidy
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-4">
+                                <div>
+                                    <label className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-2 block">New Percentage (0-100)</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        value={subsidyValue}
+                                        onChange={(e) => setSubsidyValue(e.target.value)}
+                                        className="w-full px-4 py-3 bg-blue-50 rounded-xl text-blue-900 font-bold border-none outline-none"
+                                        placeholder="0"
+                                    />
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={handleUpdateSubsidy}
+                                        disabled={isUpdatingSubsidy}
+                                        className="flex-1 py-3 bg-blue-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all disabled:opacity-50"
+                                    >
+                                        Save
+                                    </button>
+                                    <button
+                                        onClick={() => setIsEditingSubsidy(false)}
+                                        className="flex-1 py-3 bg-white text-blue-400 border border-blue-100 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-50 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     {/* LMS Access Management */}
                     <LmsAccessPanel 
                         applicantId={id as string} 
@@ -310,6 +386,7 @@ export default function AdminApplicantDetailPage() {
                                         <ApplicationStageManager
                                             applicationId={app.id}
                                             initialStages={app.JobStages}
+                                            prefillStages={prefillStages}
                                             onRefresh={refetchApps}
                                         />
                                     </div>

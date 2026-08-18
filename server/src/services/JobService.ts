@@ -35,16 +35,20 @@ export class JobService {
     public async getJobDetails(id: number) {
         const job = await jobRepository.findById(id);
         if (!job) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        return job;
+        const jobJson = job.toJSON();
+        if (jobJson.RequiredTickets) {
+            jobJson.ticketIds = jobJson.RequiredTickets.map((t: any) => t.id);
+        }
+        return jobJson;
     }
 
-    // Maps to STK-ADM-JOB-001, STK-ADM-JOB-003
-    public async createJob(jobData: any, benefitsIds: number[], conditionsIds: number[]) {
+    public async createJob(jobData: any) {
         const t = await sequelize.transaction();
         try {
             const job = await jobRepository.create(jobData, t);
-            if (benefitsIds && benefitsIds.length > 0) await (job as any).setJobBenefits(benefitsIds, { transaction: t });
-            if (conditionsIds && conditionsIds.length > 0) await (job as any).setJobConditions(conditionsIds, { transaction: t });
+            if (jobData.ticketIds && Array.isArray(jobData.ticketIds)) {
+                await (job as any).setRequiredTickets(jobData.ticketIds, { transaction: t });
+            }
             await t.commit();
             return job;
         } catch (e) {
@@ -53,8 +57,7 @@ export class JobService {
         }
     }
 
-    // Maps to STK-ADM-JOB-005
-    public async updateJob(id: number, data: any, benefitsIds?: number[], conditionsIds?: number[]) {
+    public async updateJob(id: number, data: any) {
         const t = await sequelize.transaction();
         try {
             let job = await jobRepository.findById(id, t);
@@ -65,8 +68,9 @@ export class JobService {
             job = await jobRepository.findById(id, t);
             if (!job) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
 
-            if (benefitsIds) await (job as any).setJobBenefits(benefitsIds, { transaction: t });
-            if (conditionsIds) await (job as any).setJobConditions(conditionsIds, { transaction: t });
+            if (data.ticketIds && Array.isArray(data.ticketIds)) {
+                await (job as any).setRequiredTickets(data.ticketIds, { transaction: t });
+            }
 
             await t.commit();
             return job;

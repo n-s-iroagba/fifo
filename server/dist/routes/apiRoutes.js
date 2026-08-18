@@ -20,9 +20,7 @@ const auditMiddleware_1 = require("../middleware/auditMiddleware");
 const LmsAuthController_1 = require("../controllers/LmsAuthController");
 const CourseController_1 = require("../controllers/CourseController");
 const ExamController_1 = require("../controllers/ExamController");
-const PracticalAssessmentController_1 = require("../controllers/PracticalAssessmentController");
 const ExamAttemptController_1 = require("../controllers/ExamAttemptController");
-const PracticalSessionController_1 = require("../controllers/PracticalSessionController");
 const CertificateController_1 = require("../controllers/CertificateController");
 const TicketController_1 = require("../controllers/TicketController");
 const PrefillStageController_1 = require("../controllers/PrefillStageController");
@@ -98,7 +96,6 @@ router.post('/payments/:id/proof', ...applicantMW, PaymentController_1.paymentCo
 router.get('/notifications', ...applicantMW, NotificationController_1.notificationController.getUserNotifications.bind(NotificationController_1.notificationController));
 router.put('/notifications/mark-all-read', ...applicantMW, NotificationController_1.notificationController.markAllRead.bind(NotificationController_1.notificationController));
 router.put('/notifications/:id/read', ...applicantMW, NotificationController_1.notificationController.markAsRead.bind(NotificationController_1.notificationController));
-router.post('/notifications/subscribe', ...applicantMW, NotificationController_1.notificationController.subscribeToPush.bind(NotificationController_1.notificationController));
 // =======================
 // Admin Routes (requireAuth + ADMIN role) — NFR-SEC-004
 // =======================
@@ -148,21 +145,9 @@ router.delete('/admin/bank-accounts/:id', ...adminMW, AdminController_1.adminCon
 router.get('/admin/jobs/metadata', ...adminMW, AdminController_1.adminController.getJobConfigs.bind(AdminController_1.adminController));
 router.get('/admin/categories', ...adminMW, AdminController_1.adminController.getAllCategories.bind(AdminController_1.adminController));
 router.get('/admin/categories/:id', ...adminMW, AdminController_1.adminController.getCategoryById.bind(AdminController_1.adminController));
-router.get('/admin/conditions', ...adminMW, AdminController_1.adminController.getAllConditions.bind(AdminController_1.adminController));
-router.get('/admin/conditions/:id', ...adminMW, AdminController_1.adminController.getConditionById.bind(AdminController_1.adminController));
-router.get('/admin/benefits', ...adminMW, AdminController_1.adminController.getAllBenefits.bind(AdminController_1.adminController));
-router.get('/admin/benefits/:id', ...adminMW, AdminController_1.adminController.getBenefitById.bind(AdminController_1.adminController));
 router.post('/admin/categories', ...adminMW, AdminController_1.adminController.createCategory.bind(AdminController_1.adminController));
 router.put('/admin/categories/:id', ...adminMW, AdminController_1.adminController.updateCategory.bind(AdminController_1.adminController));
 router.delete('/admin/categories/:id', ...adminMW, AdminController_1.adminController.deleteCategory.bind(AdminController_1.adminController));
-// STK-ADM-COND-001..003
-router.post('/admin/conditions', ...adminMW, AdminController_1.adminController.createCondition.bind(AdminController_1.adminController));
-router.put('/admin/conditions/:id', ...adminMW, AdminController_1.adminController.updateCondition.bind(AdminController_1.adminController));
-router.delete('/admin/conditions/:id', ...adminMW, AdminController_1.adminController.deleteCondition.bind(AdminController_1.adminController));
-// STK-ADM-BEN-001..004
-router.post('/admin/benefits', ...adminMW, AdminController_1.adminController.createBenefit.bind(AdminController_1.adminController));
-router.put('/admin/benefits/:id', ...adminMW, AdminController_1.adminController.updateBenefit.bind(AdminController_1.adminController));
-router.delete('/admin/benefits/:id', ...adminMW, AdminController_1.adminController.deleteBenefit.bind(AdminController_1.adminController));
 // REG-004: admin user management
 router.get('/admin/users/:id', ...adminMW, AdminController_1.adminController.getApplicantById.bind(AdminController_1.adminController));
 router.get('/admin/users', ...adminMW, AdminController_1.adminController.getAllApplicants.bind(AdminController_1.adminController));
@@ -202,12 +187,6 @@ router.post('/admin/users/:userId/verify-full-balance', ...adminMW, TicketContro
 router.get('/admin/users/:userId/payment-milestone', ...adminMW, TicketController_1.ticketController.getPaymentMilestoneStatus.bind(TicketController_1.ticketController));
 // Applicant self-service: view their own payment milestone status
 router.get('/payment-milestone', ...applicantMW, TicketController_1.ticketController.getOwnPaymentMilestoneStatus.bind(TicketController_1.ticketController));
-router.get('/admin/platform-bank', ...adminMW, TicketController_1.ticketController.getPlatformBank.bind(TicketController_1.ticketController));
-router.put('/admin/platform-bank', ...adminMW, TicketController_1.ticketController.updatePlatformBank.bind(TicketController_1.ticketController));
-// Platform multi-bank accounts management
-router.get('/platform-bank-accounts', TicketController_1.ticketController.getPlatformBankAccounts.bind(TicketController_1.ticketController));
-router.get('/admin/platform-bank-accounts', ...adminMW, TicketController_1.ticketController.getPlatformBankAccounts.bind(TicketController_1.ticketController));
-router.put('/admin/platform-bank-accounts', ...adminMW, TicketController_1.ticketController.updatePlatformBankAccounts.bind(TicketController_1.ticketController));
 // Batch Ticket Sponsorship & Invoice Operations
 router.post('/admin/users/:userId/assign-all-tickets', ...adminMW, TicketController_1.ticketController.assignAllTicketsToUser.bind(TicketController_1.ticketController));
 router.post('/tickets/apply-batch-sponsorship', ...applicantMW, TicketController_1.ticketController.applyBatchPackageSponsorship.bind(TicketController_1.ticketController));
@@ -271,24 +250,12 @@ router.post('/exams/courses/:courseId/questions', ...adminMW, ExamController_1.e
 router.put('/exams/questions/:questionId', ...adminMW, ExamController_1.examController.updateQuestion.bind(ExamController_1.examController));
 router.put('/exams/courses/:courseId/settings', ...adminMW, ExamController_1.examController.updateSettings.bind(ExamController_1.examController));
 router.delete('/exams/questions/:questionId', ...adminMW, ExamController_1.examController.deleteQuestion.bind(ExamController_1.examController));
-// Admin Practical Criteria Management
-router.get('/practical-assessments/courses/:courseId/criteria', ...adminMW, PracticalAssessmentController_1.practicalAssessmentController.getCriteria.bind(PracticalAssessmentController_1.practicalAssessmentController));
-router.post('/practical-assessments/courses/:courseId/criteria', ...adminMW, PracticalAssessmentController_1.practicalAssessmentController.addCriterion.bind(PracticalAssessmentController_1.practicalAssessmentController));
-router.put('/practical-assessments/criteria/:criterionId', ...adminMW, PracticalAssessmentController_1.practicalAssessmentController.updateCriterion.bind(PracticalAssessmentController_1.practicalAssessmentController));
-router.delete('/practical-assessments/criteria/:criterionId', ...adminMW, PracticalAssessmentController_1.practicalAssessmentController.deleteCriterion.bind(PracticalAssessmentController_1.practicalAssessmentController));
 // Learner Exam Attempts
 router.get('/exams/attempts/:attemptId', ...applicantMW, ExamAttemptController_1.examAttemptController.getAttemptDetails.bind(ExamAttemptController_1.examAttemptController));
 router.post('/exams/attempts/start', ...applicantMW, ExamAttemptController_1.examAttemptController.startAttempt.bind(ExamAttemptController_1.examAttemptController));
 router.post('/exams/attempts/:attemptId/answers', ...applicantMW, ExamAttemptController_1.examAttemptController.saveAnswers.bind(ExamAttemptController_1.examAttemptController));
 router.post('/exams/attempts/:attemptId/submit', ...applicantMW, ExamAttemptController_1.examAttemptController.submitAttempt.bind(ExamAttemptController_1.examAttemptController));
 router.get('/exams/attempts/:attemptId/result', ...applicantMW, ExamAttemptController_1.examAttemptController.getAttemptResult.bind(ExamAttemptController_1.examAttemptController));
-// Learner/Admin Practical Sessions
-router.get('/practical-sessions/prerequisite-check/:courseId', ...applicantMW, PracticalSessionController_1.practicalSessionController.checkPrerequisites.bind(PracticalSessionController_1.practicalSessionController));
-router.get('/practical-sessions/available-slots', ...applicantMW, PracticalSessionController_1.practicalSessionController.getAvailableSlots.bind(PracticalSessionController_1.practicalSessionController));
-router.post('/practical-sessions/bookings', ...applicantMW, PracticalSessionController_1.practicalSessionController.bookSession.bind(PracticalSessionController_1.practicalSessionController));
-router.delete('/practical-sessions/bookings/:bookingId', ...applicantMW, PracticalSessionController_1.practicalSessionController.cancelBooking.bind(PracticalSessionController_1.practicalSessionController));
-router.get('/practical-sessions/:sessionId/roster', ...adminMW, PracticalSessionController_1.practicalSessionController.getRoster.bind(PracticalSessionController_1.practicalSessionController));
-router.post('/practical-sessions/:sessionId/attendance', ...adminMW, PracticalSessionController_1.practicalSessionController.markAttendance.bind(PracticalSessionController_1.practicalSessionController));
 // Certificates
 router.get('/certificates/learner/me', ...applicantMW, CertificateController_1.certificateController.getMyCertificates.bind(CertificateController_1.certificateController));
 router.post('/certificates/issue', ...adminMW, CertificateController_1.certificateController.issueCertificate.bind(CertificateController_1.certificateController));

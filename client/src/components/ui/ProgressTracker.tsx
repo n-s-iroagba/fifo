@@ -4,7 +4,6 @@ interface Stage {
     id: number;
     name: string;
     status: 'completed' | 'current' | 'upcoming';
-    requiresPayment?: boolean;
 }
 
 export function ProgressTracker({ stages, currentPercent }: { stages: Stage[], currentPercent: number }) {
@@ -38,9 +37,6 @@ export function ProgressTracker({ stages, currentPercent }: { stages: Stage[], c
                             <p className={`text-[10px] font-semibold ${stage.status === 'current' ? 'text-primary' : 'text-text-secondary'}`}>
                                 {stage.name}
                             </p>
-                            {stage.requiresPayment && (
-                                <span className="text-[8px] text-warning font-bold uppercase">$ Required</span>
-                            )}
                         </div>
                     </div>
                 ))}

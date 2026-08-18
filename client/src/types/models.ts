@@ -53,6 +53,7 @@ export interface JobListing {
     isActive: boolean;
     salary: string | null;
     jobType?: 'NORMAL' | 'APEX';
+    benefits?: string;
     createdAt: string;
     updatedAt: string;
     JobCategory?: JobCategory;
@@ -81,18 +82,10 @@ export interface JobStage {
     id: number;
     applicationId: number;
     name: string;
-    description: string;
-    orderPosition: number;
-    requiresPayment: boolean;
-    amount: number | null;
-    currency: string | null;
-    instructions: string | null;
-    deadlineDays: number | null;
-    notifyEmail: boolean;
-    notifyPush: boolean;
-    isCompleted: boolean;
-    feeType?: string | null;
-    refundMessage?: string | null;
+    status: 'pending' | 'completed' | 'failed' | 'approved' | 'rejected';
+    isCurrent: boolean;
+    prefillStageId?: number;
+    PrefillStage?: any;
     createdAt: string;
     updatedAt: string;
 }

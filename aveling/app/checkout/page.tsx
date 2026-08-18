@@ -99,7 +99,7 @@ function CheckoutContent() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (payableAmount > 0 && !receiptRef.trim()) {
-            alert('Please enter the SWIFT Transfer Reference before submitting.');
+            alert('Please enter the USDT Transaction Hash before submitting.');
             return;
         }
         setSubmittingReceipt(true);
@@ -222,17 +222,17 @@ function CheckoutContent() {
                             <div className="bg-white border-2 border-blue-200 rounded-2xl p-8 shadow-sm">
                                 <div className="flex items-center justify-between border-b-2 border-zinc-100 pb-4 mb-4">
                                     <h2 className="text-sm font-black uppercase tracking-widest text-zinc-900 flex items-center gap-2">
-                                        <Building2 className="h-5 w-5 text-blue-600" /> Invoices & SWIFT Instructions
+                                        <Wallet className="h-5 w-5 text-blue-600" /> Crypto Payment Instructions
                                     </h2>
-                                    <span className="text-[10px] font-black uppercase tracking-widest bg-blue-100 text-blue-900 px-2.5 py-1 rounded-full">SENT VIA EMAIL</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest bg-blue-100 text-blue-900 px-2.5 py-1 rounded-full">USDT ONLY</span>
                                 </div>
                                 <div className="bg-blue-50/50 p-5 rounded-xl border border-blue-100 space-y-4">
                                     <p className="text-blue-900 text-sm font-medium">
-                                        Official corporate invoices and assigned bank remittance account details are dispatched directly to your registered candidate email address.
+                                        Official corporate invoices are dispatched directly to your registered candidate email address. All payments must be made in USDT on the Tron (TRC-20) network.
                                     </p>
                                     <div className="flex items-start gap-3 bg-white p-4 rounded-xl border-2 border-blue-200 text-sm font-bold text-blue-900">
                                         <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
-                                        <p>Please inspect your email inbox for your assigned SWIFT remittance invoice, then submit your transaction reference code and receipt proof below.</p>
+                                        <p>Please inspect your email inbox for your assigned invoice and our USDT wallet address. Once paid, submit your Transaction Hash below.</p>
                                     </div>
                                 </div>
                             </div>
@@ -242,26 +242,26 @@ function CheckoutContent() {
                         <form onSubmit={handleSubmit} className="bg-white border-2 border-zinc-200 rounded-2xl p-8 shadow-sm">
                             <h2 className="text-sm font-black uppercase tracking-widest text-zinc-900 flex items-center gap-2 mb-6 border-b-2 border-zinc-100 pb-4">
                                 {payableAmount === 0 ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <Upload className="h-5 w-5 text-zinc-400" />}
-                                {payableAmount === 0 ? 'Full Payment Covered by Wallet' : 'Upload SWIFT Payment Receipt'}
+                                {payableAmount === 0 ? 'Full Payment Covered by Wallet' : 'Submit Crypto Payment'}
                             </h2>
                             {payableAmount > 0 && (
                                 <div className="space-y-5 mb-6">
                                     <div>
                                         <label className="block text-xs font-black uppercase tracking-widest text-zinc-700 mb-2">
-                                            SWIFT Transfer Reference / Transaction ID <span className="text-rose-500">*</span>
+                                            USDT (TRC-20) Transaction Hash <span className="text-rose-500">*</span>
                                         </label>
                                         <input
                                             type="text"
                                             value={receiptRef}
                                             onChange={e => setReceiptRef(e.target.value)}
-                                            placeholder="e.g. N10928841-XYZ or Bank Reference Code"
+                                            placeholder="e.g. 5d5...2c"
                                             className="w-full bg-zinc-50 border-2 border-zinc-200 p-4 rounded-xl text-sm font-bold text-zinc-900 outline-none focus:border-[#FFC700] transition-all"
                                             required
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-xs font-black uppercase tracking-widest text-zinc-700 mb-2">
-                                            Attach SWIFT Payment Receipt (Image or PDF)
+                                            Attach Screenshot (Optional)
                                         </label>
                                         <input
                                             type="file"

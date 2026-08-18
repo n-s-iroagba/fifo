@@ -2,7 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CertificateService = void 0;
 const Certificate_1 = require("../models/Certificate");
-const CertificationGap_1 = require("../models/CertificationGap");
+const Ticket_1 = require("../models/Ticket");
+const CertificationType_1 = require("../models/CertificationType");
 const uuid_1 = require("uuid");
 class CertificateService {
     static async getLearnerCertificates(userId) {
@@ -25,13 +26,17 @@ class CertificateService {
             status: 'Valid',
             downloadUrl: 'https://example.com/cert.pdf'
         });
-        // Update gap
-        const gap = await CertificationGap_1.CertificationGap.findOne({
-            where: { userId, certificationTypeId, status: 'Missing' }
-        });
-        if (gap) {
-            gap.status = 'Valid';
-            await gap.save();
+        // Update ticket if exists
+        const certType = await CertificationType_1.CertificationType.findByPk(certificationTypeId);
+        if (certType) {
+            const ticket = await Ticket_1.Ticket.findOne({
+                where: { userId, ticketType: certType.name, status: 'not_possessed' }
+            });
+            if (ticket) {
+                ticket.status = 'possessed';
+                ticket.ticketSponsorship = 'ticket_issued';
+                await ticket.save();
+            }
         }
         return cert;
     }

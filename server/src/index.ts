@@ -9,7 +9,7 @@ import { seedDatabase } from './seedDatabase';
 import { run } from './runMigration';
 import { migrateStageManagement } from './migrations/stage_management_migration';
 import { migratePaymentMilestone } from './migrations/payment_milestone_migration';
-
+import { migrateAccountingAndSubsidy } from './migrations/accounting_migration';
 
 
 const PORT = process.env.PORT || 5000;
@@ -24,6 +24,8 @@ const startServer = async () => {
             // Run heavy seeding and migrations in the background so Fly.io health checks don't timeout
             try {
                 migratePaymentMilestone().then(() => {
+                    return migrateAccountingAndSubsidy();
+                }).then(() => {
                     return seedDatabase();
                 }).then(() => {
                     logger.info('Database seeded successfully in background.');

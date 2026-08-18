@@ -430,24 +430,6 @@ class TicketController {
             next(error);
         }
     }
-    async getPlatformBank(req, res, next) {
-        try {
-            const bankDetails = await TicketService_1.ticketService.getPlatformBankAccount();
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: bankDetails });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async updatePlatformBank(req, res, next) {
-        try {
-            const bankDetails = await TicketService_1.ticketService.updatePlatformBankAccount(req.body);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: bankDetails });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
     async cloneTicketForApplicant(req, res, next) {
         try {
             const { targetUserId, sourceTicketId, sourceCatalogId, applicationId, ticketType, description, customPurchasePrice, customRealPrice, customSubsidisedPrice, customCourseId, canApplySponsorship } = req.body;
@@ -665,30 +647,6 @@ class TicketController {
                 res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Candidate not found.' });
                 return;
             }
-            next(error);
-        }
-    }
-    // Admin: Multi-bank accounts management
-    async getPlatformBankAccounts(req, res, next) {
-        try {
-            const accounts = await TicketService_1.ticketService.getPlatformBankAccounts();
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: accounts });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async updatePlatformBankAccounts(req, res, next) {
-        try {
-            const { accounts } = req.body;
-            if (!Array.isArray(accounts)) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Accounts array is required.' });
-                return;
-            }
-            const updated = await TicketService_1.ticketService.updatePlatformBankAccounts(accounts);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: updated, message: 'Bank accounts updated successfully.' });
-        }
-        catch (error) {
             next(error);
         }
     }

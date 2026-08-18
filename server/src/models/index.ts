@@ -3,32 +3,27 @@ import { User } from './User';
 import { BankAccount } from './BankAccount';
 import { JobCategory } from './JobCategory';
 import { JobListing } from './JobListing';
-import { JobBenefit } from './JobBenefit';
-import { JobCondition } from './JobCondition';
 import { JobStage } from './JobStage';
 import { Application } from './Application';
-import { Payment } from './Payment';
+import { Invoice } from './Invoice';
+import { Receipt } from './Receipt';
 import { Notification } from './Notification';
 import { Interest } from './Interest';
-import { PushSubscription } from './PushSubscription';
 import { LmsCredential } from './LmsCredential';
 import { CertificationType } from './CertificationType';
 import { Course } from './Course';
 import { CourseModule } from './CourseModule';
 import { ExamConfig } from './ExamConfig';
 import { ExamQuestion } from './ExamQuestion';
-import { PracticalCriterion } from './PracticalCriterion';
-import { CertificationGap } from './CertificationGap';
-import { CourseSubsidy } from './CourseSubsidy';
+
+
 import { Enrollment } from './Enrollment';
-import { PracticalSession } from './PracticalSession';
-import { PracticalBooking } from './PracticalBooking';
 import { ExamAttempt } from './ExamAttempt';
 import { Certificate } from './Certificate';
 import { Ticket } from './Ticket';
 import { TicketCatalog } from './TicketCatalog';
 import { PrefillStage } from './PrefillStage';
-import { PlatformSetting } from './PlatformSetting';
+
 import { PsychometricAttempt } from './PsychometricAttempt';
 
 // User <-> Ticket
@@ -47,33 +42,21 @@ Interest.belongsTo(User, { foreignKey: 'userId' });
 PrefillStage.hasMany(User, { foreignKey: 'adminStageId', as: 'Users' });
 User.belongsTo(PrefillStage, { foreignKey: 'adminStageId', as: 'AdminStage' });
 
-// User <-> PushSubscription
-User.hasMany(PushSubscription, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
-PushSubscription.belongsTo(User, { foreignKey: 'userId' });
+// PrefillStage <-> JobStage
+PrefillStage.hasMany(JobStage, { foreignKey: 'prefillStageId', as: 'JobStages' });
+JobStage.belongsTo(PrefillStage, { foreignKey: 'prefillStageId', as: 'PrefillStage' });
+
+
 
 // Job Category <-> Job Listing
 JobCategory.hasMany(JobListing, { foreignKey: 'categoryId' });
 JobListing.belongsTo(JobCategory, { foreignKey: 'categoryId' });
 
-// Job Category <-> Job Benefit
-JobCategory.hasMany(JobBenefit, { foreignKey: 'categoryId' });
-JobBenefit.belongsTo(JobCategory, { foreignKey: 'categoryId' });
-
-// Job Category <-> Job Condition
-JobCategory.hasMany(JobCondition, { foreignKey: 'categoryId' });
-JobCondition.belongsTo(JobCategory, { foreignKey: 'categoryId' });
-
 // Application <-> Job Stage
 Application.hasMany(JobStage, { foreignKey: 'applicationId', as: 'JobStages', onDelete: 'CASCADE', hooks: true });
 JobStage.belongsTo(Application, { foreignKey: 'applicationId' });
 
-// JobListing <-> JobBenefit (M:N)
-JobListing.belongsToMany(JobBenefit, { through: 'ListingBenefits', foreignKey: 'jobId', otherKey: 'benefitId' });
-JobBenefit.belongsToMany(JobListing, { through: 'ListingBenefits', foreignKey: 'benefitId', otherKey: 'jobId' });
 
-// JobListing <-> JobCondition (M:N)
-JobListing.belongsToMany(JobCondition, { through: 'ListingConditions', foreignKey: 'jobId', otherKey: 'conditionId' });
-JobCondition.belongsToMany(JobListing, { through: 'ListingConditions', foreignKey: 'conditionId', otherKey: 'jobId' });
 
 // User <-> Application
 User.hasMany(Application, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
@@ -83,22 +66,24 @@ Application.belongsTo(User, { foreignKey: 'userId' });
 JobListing.hasMany(Application, { foreignKey: 'jobId' });
 Application.belongsTo(JobListing, { foreignKey: 'jobId' });
 
+// JobListing <-> TicketCatalog (M:M)
+JobListing.belongsToMany(TicketCatalog, { through: 'job_ticket_requirements', foreignKey: 'jobId', otherKey: 'ticketCatalogId', as: 'RequiredTickets' });
+TicketCatalog.belongsToMany(JobListing, { through: 'job_ticket_requirements', foreignKey: 'ticketCatalogId', otherKey: 'jobId', as: 'Jobs' });
+
 // JobListing <-> JobStage (Template Stages)
 
-// Application <-> Payment
-Application.hasMany(Payment, { foreignKey: 'applicationId', onDelete: 'CASCADE', hooks: true });
-Payment.belongsTo(Application, { foreignKey: 'applicationId' });
+// Invoice <-> Receipt
+Invoice.hasOne(Receipt, { foreignKey: 'invoiceId', onDelete: 'CASCADE', hooks: true });
+Receipt.belongsTo(Invoice, { foreignKey: 'invoiceId' });
 
-// JobStage <-> Payment
-JobStage.hasMany(Payment, { foreignKey: 'stageId', onDelete: 'CASCADE', hooks: true });
-Payment.belongsTo(JobStage, { foreignKey: 'stageId' });
+// User <-> Invoice
+User.hasMany(Invoice, { foreignKey: 'applicantId', onDelete: 'CASCADE', hooks: true });
+Invoice.belongsTo(User, { foreignKey: 'applicantId' });
 // User <-> Notification
 User.hasMany(Notification, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
 Notification.belongsTo(User, { foreignKey: 'userId' });
 
-// Admin who verified payment
-User.hasMany(Payment, { foreignKey: 'verifiedById', as: 'VerifiedPayments' });
-Payment.belongsTo(User, { foreignKey: 'verifiedById', as: 'Verifier' });
+
 
 // =======================
 // LMS MODULE ASSOCIATIONS
@@ -124,23 +109,10 @@ ExamConfig.belongsTo(Course, { foreignKey: 'courseId' });
 Course.hasMany(ExamQuestion, { foreignKey: 'courseId', onDelete: 'CASCADE', hooks: true });
 ExamQuestion.belongsTo(Course, { foreignKey: 'courseId' });
 
-// Course <-> PracticalCriterion
-Course.hasMany(PracticalCriterion, { foreignKey: 'courseId', onDelete: 'CASCADE', hooks: true });
-PracticalCriterion.belongsTo(Course, { foreignKey: 'courseId' });
 
-// User <-> CertificationGap
-User.hasMany(CertificationGap, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
-CertificationGap.belongsTo(User, { foreignKey: 'userId' });
-CertificationType.hasMany(CertificationGap, { foreignKey: 'certificationTypeId', onDelete: 'CASCADE', hooks: true });
-CertificationGap.belongsTo(CertificationType, { foreignKey: 'certificationTypeId' });
-User.hasMany(CertificationGap, { foreignKey: 'assignedByAdminId', as: 'AssignedGaps' });
-CertificationGap.belongsTo(User, { foreignKey: 'assignedByAdminId', as: 'Assigner' });
 
-// CourseSubsidy
-User.hasMany(CourseSubsidy, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
-CourseSubsidy.belongsTo(User, { foreignKey: 'userId' });
-Course.hasMany(CourseSubsidy, { foreignKey: 'courseId', onDelete: 'CASCADE', hooks: true });
-CourseSubsidy.belongsTo(Course, { foreignKey: 'courseId' });
+
+
 
 // Enrollment
 User.hasMany(Enrollment, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
@@ -148,17 +120,7 @@ Enrollment.belongsTo(User, { foreignKey: 'userId' });
 Course.hasMany(Enrollment, { foreignKey: 'courseId', onDelete: 'CASCADE', hooks: true });
 Enrollment.belongsTo(Course, { foreignKey: 'courseId' });
 
-// PracticalSession
-Course.hasMany(PracticalSession, { foreignKey: 'courseId', onDelete: 'CASCADE', hooks: true });
-PracticalSession.belongsTo(Course, { foreignKey: 'courseId' });
-User.hasMany(PracticalSession, { foreignKey: 'instructorId' });
-PracticalSession.belongsTo(User, { foreignKey: 'instructorId' });
 
-// PracticalBooking
-PracticalSession.hasMany(PracticalBooking, { foreignKey: 'sessionId', onDelete: 'CASCADE', hooks: true });
-PracticalBooking.belongsTo(PracticalSession, { foreignKey: 'sessionId' });
-User.hasMany(PracticalBooking, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
-PracticalBooking.belongsTo(User, { foreignKey: 'userId' });
 
 // ExamAttempt
 User.hasMany(ExamAttempt, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
@@ -182,31 +144,25 @@ export {
     BankAccount,
     JobCategory,
     JobListing,
-    JobBenefit,
-    JobCondition,
     JobStage,
     Application,
-    Payment,
+    Invoice,
+    Receipt,
     Notification,
     Interest,
-    PushSubscription,
     LmsCredential,
     CertificationType,
     Course,
     CourseModule,
     ExamConfig,
     ExamQuestion,
-    PracticalCriterion,
-    CertificationGap,
-    CourseSubsidy,
+
+
     Enrollment,
-    PracticalSession,
-    PracticalBooking,
     ExamAttempt,
     Certificate,
     Ticket,
     TicketCatalog,
     PrefillStage,
-    PlatformSetting,
     PsychometricAttempt
 };

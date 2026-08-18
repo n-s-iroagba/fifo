@@ -20,50 +20,6 @@ JobStage.init({
         type: sequelize_1.DataTypes.STRING,
         allowNull: false,
     },
-    description: {
-        type: sequelize_1.DataTypes.TEXT,
-        allowNull: true,
-    },
-    orderPosition: {
-        type: sequelize_1.DataTypes.INTEGER,
-        allowNull: false,
-    },
-    requiresPayment: {
-        type: sequelize_1.DataTypes.BOOLEAN,
-        defaultValue: false,
-    },
-    amount: {
-        type: sequelize_1.DataTypes.DECIMAL(10, 2),
-        allowNull: true,
-    },
-    currency: {
-        type: sequelize_1.DataTypes.STRING,
-        defaultValue: 'USD',
-    },
-    feeType: {
-        type: sequelize_1.DataTypes.STRING,
-        defaultValue: 'Free',
-    },
-    refundMessage: {
-        type: sequelize_1.DataTypes.TEXT,
-        allowNull: true,
-    },
-    instructions: {
-        type: sequelize_1.DataTypes.TEXT,
-        allowNull: true,
-    },
-    deadlineDays: {
-        type: sequelize_1.DataTypes.INTEGER,
-        allowNull: true,
-    },
-    notifyEmail: {
-        type: sequelize_1.DataTypes.BOOLEAN,
-        defaultValue: true,
-    },
-    notifyPush: {
-        type: sequelize_1.DataTypes.BOOLEAN,
-        defaultValue: true,
-    },
     isCompleted: {
         type: sequelize_1.DataTypes.BOOLEAN,
         defaultValue: false,

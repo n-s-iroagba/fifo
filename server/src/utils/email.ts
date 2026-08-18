@@ -15,7 +15,10 @@ const createTransporter = (user: string | undefined, pass: string | undefined) =
 
 const authTransporter = createTransporter(process.env.SMTP_AUTH_USER, process.env.SMTP_AUTH_PASS);
 const infoTransporter = createTransporter(process.env.SMTP_INFO_USER, process.env.SMTP_INFO_PASS);
-const avelingTransporter = createTransporter(process.env.AV_SMTP_INFO_USER, process.env.AV_SMTP_INFO_PASS);
+const avelingTransporter = createTransporter(
+    'examinations@aveling.online',
+    '97Chocho@'
+);
 
 // Self-Diagnostic: Verify connection on startup
 authTransporter.verify((error, success) => {
@@ -61,9 +64,9 @@ const getStandardEmailTemplate = (subject: string, content: string, fromType: 'a
         return content;
     }
     const cleanedContent = cleanHtmlContent(content);
-    
+
     const isAveling = fromType === 'aveling';
-    const logoUrl = isAveling ? `${process.env.AVELING_URL || 'http://localhost:3002'}/favicon.ico` : `${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg`;
+    const logoUrl = isAveling ? `${process.env.AVELING_URL || 'http://localhost:3002'}/aveling-favicon.png` : `${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg`;
     const headerBgColor = isAveling ? '#FFC700' : '#0b3486';
     const primaryColor = isAveling ? '#000000' : '#0b3486';
     const altText = isAveling ? 'Aveling LMS Training' : 'BlueCollar Curated Career';
@@ -267,3 +270,158 @@ export const sendWelcomeEmail = async (to: string, userName: string): Promise<vo
 // Backward compatibility or generic usage
 export const sendEmail = sendInfoEmail;
 
+// 1. Nomination Email Templates
+export const sendMultipleRolesNominationEmail = async (
+    to: string, 
+    candidateName: string, 
+    totalApplicants: number, 
+    companyName: string, 
+    requiredApplicants: number
+): Promise<void> => {
+    const subject = `Official Nomination Notification: ${companyName}`;
+    const content = `
+        <p>Dear ${candidateName},</p>
+        <p>We are pleased to inform you that you have been officially nominated for multiple potential roles at <strong>${companyName}</strong>.</p>
+        <p><strong>Nomination Details:</strong></p>
+        <ul>
+            <li>Target Company: ${companyName}</li>
+            <li>Required Applicants: ${requiredApplicants}</li>
+            <li>Total Pool Size: ${totalApplicants}</li>
+        </ul>
+        <p>Please log in to your dashboard for further instructions on how to proceed.</p>
+    `;
+    await sendInfoEmail(to, subject, content);
+};
+
+export const sendSingleRoleNominationEmail = async (
+    to: string, 
+    candidateName: string, 
+    totalApplicants: number, 
+    companyName: string, 
+    roleTitle: string, 
+    requiredApplicants: number
+): Promise<void> => {
+    const subject = `Official Nomination Notification: ${roleTitle} at ${companyName}`;
+    const content = `
+        <p>Dear ${candidateName},</p>
+        <p>We are pleased to inform you that you have been officially nominated for the position of <strong>${roleTitle}</strong> at <strong>${companyName}</strong>.</p>
+        <p><strong>Nomination Details:</strong></p>
+        <ul>
+            <li>Target Company: ${companyName}</li>
+            <li>Role: ${roleTitle}</li>
+            <li>Required Applicants: ${requiredApplicants}</li>
+            <li>Total Pool Size: ${totalApplicants}</li>
+        </ul>
+        <p>Please log in to your dashboard for further instructions on how to proceed.</p>
+    `;
+    await sendInfoEmail(to, subject, content);
+};
+
+// 2. Contract Email Template
+export const sendContractEmail = async (
+    to: string,
+    candidateName: string,
+    subsidyPercentage: number,
+    nominationDetails: string,
+    currentDate: string,
+    attachments: any[] = []
+): Promise<void> => {
+    const subject = `Your Training and Ticket Acquisition Contract`;
+    const content = `
+        <p>Dear ${candidateName},</p>
+        <p>Following your successful nomination, please find attached your official contract.</p>
+        <p><strong>Contract Summary:</strong></p>
+        <ul>
+            <li>Date: ${currentDate}</li>
+            <li>Nomination Details: ${nominationDetails}</li>
+            <li>Approved Subsidy: ${subsidyPercentage}%</li>
+        </ul>
+        <p>Please review, sign, and return the attached contract document within the stipulated timeframe.</p>
+    `;
+    await sendInfoEmail(to, subject, content, attachments);
+};
+
+// 3. Invoice Email Template
+export const sendInvoiceEmail = async (
+    to: string,
+    candidateName: string,
+    invoiceType: 'aveling-partial' | 'aveling-complete-after-partial' | 'aveling-complete' | 'second-attempt' | 'visa-blue-collar',
+    partAmount: number,
+    totalCost: number,
+    subsidyPercentage: number,
+    finalAmountDue: number,
+    attachments: any[] = []
+): Promise<void> => {
+    let typeDescription = '';
+    let emailServer: 'aveling' | 'info' = 'aveling';
+    
+    switch (invoiceType) {
+        case 'aveling-partial':
+            typeDescription = 'Partial Aveling Training Invoice';
+            break;
+        case 'aveling-complete-after-partial':
+            typeDescription = 'Full Aveling Training Invoice (After Partial)';
+            break;
+        case 'aveling-complete':
+            typeDescription = 'Full Aveling Training Invoice (10% Discount Applied)';
+            break;
+        case 'second-attempt':
+            typeDescription = 'Aveling Second Attempt Invoice';
+            break;
+        case 'visa-blue-collar':
+            typeDescription = 'Visa & Blue Collar Processing Invoice';
+            emailServer = 'info';
+            break;
+    }
+
+    const subject = `Invoice for ${typeDescription}`;
+    const content = `
+        <p>Dear ${candidateName},</p>
+        <p>Please find the details of your invoice for <strong>${typeDescription}</strong>.</p>
+        <p><strong>Financial Breakdown:</strong></p>
+        <ul>
+            <li>Total Cost: $${totalCost.toFixed(2)}</li>
+            <li>Approved Subsidy: ${subsidyPercentage}%</li>
+            <li>Part/Adjusted Amount: $${partAmount.toFixed(2)}</li>
+            <li><strong>Final Amount Due: $${finalAmountDue.toFixed(2)}</strong></li>
+        </ul>
+        <p>Please arrange for payment at your earliest convenience to avoid delays in your processing.</p>
+    `;
+
+    if (emailServer === 'aveling') {
+        await sendAvelingEmail(to, subject, content, attachments);
+    } else {
+        await sendInfoEmail(to, subject, content, attachments);
+    }
+};
+
+// 4. Receipt Email Template
+export const sendReceiptEmail = async (
+    to: string,
+    candidateName: string,
+    receiptType: 'aveling' | 'blue-collar',
+    amountPaid: number,
+    invoiceId: number,
+    attachments: any[] = []
+): Promise<void> => {
+    const emailServer: 'aveling' | 'info' = receiptType === 'aveling' ? 'aveling' : 'info';
+    const subject = `Payment Receipt - Invoice #${invoiceId}`;
+    
+    const content = `
+        <p>Dear ${candidateName},</p>
+        <p>We have successfully received your payment.</p>
+        <p><strong>Receipt Details:</strong></p>
+        <ul>
+            <li>Linked Invoice ID: #${invoiceId}</li>
+            <li>Amount Paid: $${amountPaid.toFixed(2)}</li>
+            <li>Category: ${receiptType === 'aveling' ? 'Aveling LMS Training' : 'BlueCollar Infrastructure'}</li>
+        </ul>
+        <p>Thank you for your prompt payment.</p>
+    `;
+
+    if (emailServer === 'aveling') {
+        await sendAvelingEmail(to, subject, content, attachments);
+    } else {
+        await sendInfoEmail(to, subject, content, attachments);
+    }
+};

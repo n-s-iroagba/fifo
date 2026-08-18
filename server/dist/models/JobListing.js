@@ -12,11 +12,9 @@ JobListing.init({
         autoIncrement: true,
         primaryKey: true,
     },
-    benefitIds: {
-        type: sequelize_1.DataTypes.JSON
-    },
-    conditionIds: {
-        type: sequelize_1.DataTypes.JSON
+    benefits: {
+        type: sequelize_1.DataTypes.TEXT,
+        allowNull: true,
     },
     ticketIds: {
         type: sequelize_1.DataTypes.JSON,

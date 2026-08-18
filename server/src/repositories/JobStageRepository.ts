@@ -1,18 +1,22 @@
 import { Transaction } from 'sequelize';
-import { JobStage } from '../models';
+import { JobStage, PrefillStage } from '../models';
 
 export class JobStageRepository {
 
     public async findByApplicationId(applicationId: number, transaction?: Transaction): Promise<{ rows: JobStage[], count: number }> {
         return JobStage.findAndCountAll({
             where: { applicationId },
-            order: [['orderPosition', 'ASC']],
+            include: [{ model: PrefillStage, as: 'PrefillStage' }],
+            order: [['createdAt', 'ASC']],
             transaction
         });
     }
 
     public async findById(id: number, transaction?: Transaction): Promise<JobStage | null> {
-        return JobStage.findByPk(id, { transaction });
+        return JobStage.findByPk(id, { 
+            include: [{ model: PrefillStage, as: 'PrefillStage' }],
+            transaction 
+        });
     }
 
     // Maps to STK-ADM-STAGE-001, STK-ADM-STAGE-002, SCR-ADM-STAGEFORM-001

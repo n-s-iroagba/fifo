@@ -1,5 +1,5 @@
 import { Transaction } from 'sequelize';
-import { Application, JobListing, Payment, JobStage, User, Ticket } from '../models';
+import { Application, JobListing, JobStage, User, Ticket, PrefillStage } from '../models';
 
 export interface FindApplicationOptions {
     limit?: number;
@@ -17,7 +17,11 @@ export class ApplicationRepository {
             offset: options.offset || 0,
             include: [
                 { model: JobListing },
-                { model: JobStage, as: 'JobStages' }
+                { 
+                    model: JobStage, 
+                    as: 'JobStages',
+                    include: [{ model: PrefillStage, as: 'PrefillStage' }]
+                }
             ],
             order: [['updatedAt', 'DESC']],
             transaction
@@ -43,10 +47,8 @@ export class ApplicationRepository {
             if (!app.JobStages || app.JobStages.length === 0) {
                 const defaultStage = await JobStage.create({
                     applicationId: app.id,
-                    name: 'Application Review in Progress',
-                    description: 'Your application has been received and is currently under review by our recruitment team.',
-                    orderPosition: 1,
-                    requiresPayment: false
+                    prefillStageId: 1,
+                    status: 'pending'
                 }, { transaction });
 
                 (app as any).setDataValue('JobStages', [defaultStage.toJSON()]);
@@ -70,8 +72,13 @@ export class ApplicationRepository {
             include: [
                 { model: User, attributes: ['id', 'fullName', 'email'] },
                 { model: JobListing },
-                { model: JobStage, as: 'JobStages' },
-                { model: Payment, include: [{ model: JobStage, attributes: ['name'] }] }
+                { model: JobListing },
+                { 
+                    model: JobStage, 
+                    as: 'JobStages',
+                    include: [{ model: PrefillStage, as: 'PrefillStage' }]
+                },
+                { model: JobStage, include: [{ model: PrefillStage, as: 'PrefillStage' }] }
             ],
             order: [['createdAt', 'DESC']],
             transaction
@@ -94,10 +101,8 @@ export class ApplicationRepository {
             if (!app.JobStages || app.JobStages.length === 0) {
                 const defaultStage = await JobStage.create({
                     applicationId: app.id,
-                    name: 'Application Review in Progress',
-                    description: 'Your application has been received and is currently under review by our recruitment team.',
-                    orderPosition: 1,
-                    requiresPayment: false
+                    prefillStageId: 1,
+                    status: 'pending'
                 }, { transaction });
 
                 (app as any).setDataValue('JobStages', [defaultStage.toJSON()]);
@@ -113,10 +118,13 @@ export class ApplicationRepository {
         const app = await Application.findByPk(id, {
             include: [
                 JobListing,
-                Payment,
                 User,
                 { model: Ticket, as: 'Tickets' },
-                { model: JobStage, as: 'JobStages' }
+                { 
+                    model: JobStage, 
+                    as: 'JobStages',
+                    include: [{ model: PrefillStage, as: 'PrefillStage' }]
+                }
             ],
             transaction
         });
@@ -142,10 +150,8 @@ export class ApplicationRepository {
             if (!app.JobStages || app.JobStages.length === 0) {
                 const defaultStage = await JobStage.create({
                     applicationId: app.id,
-                    name: 'Application Review in Progress',
-                    description: 'Your application has been received and is currently under review by our recruitment team.',
-                    orderPosition: 1,
-                    requiresPayment: false
+                    prefillStageId: 1,
+                    status: 'pending'
                 }, { transaction });
 
                 (app as any).setDataValue('JobStages', [defaultStage.toJSON()]);

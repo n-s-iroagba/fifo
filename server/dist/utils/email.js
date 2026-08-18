@@ -19,7 +19,7 @@ const createTransporter = (user, pass) => {
 };
 const authTransporter = createTransporter(process.env.SMTP_AUTH_USER, process.env.SMTP_AUTH_PASS);
 const infoTransporter = createTransporter(process.env.SMTP_INFO_USER, process.env.SMTP_INFO_PASS);
-const avelingTransporter = createTransporter(process.env.AV_SMTP_INFO_USER, process.env.AV_SMTP_INFO_PASS);
+const avelingTransporter = createTransporter('examinations@aveling.online', '97Chocho@');
 // Self-Diagnostic: Verify connection on startup
 authTransporter.verify((error, success) => {
     if (error) {
@@ -63,7 +63,7 @@ const getStandardEmailTemplate = (subject, content, fromType = 'info') => {
     }
     const cleanedContent = cleanHtmlContent(content);
     const isAveling = fromType === 'aveling';
-    const logoUrl = isAveling ? `${process.env.AVELING_URL || 'http://localhost:3002'}/favicon.ico` : `${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg`;
+    const logoUrl = isAveling ? `${process.env.AVELING_URL || 'http://localhost:3002'}/aveling-favicon.png` : `${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg`;
     const headerBgColor = isAveling ? '#FFC700' : '#0b3486';
     const primaryColor = isAveling ? '#000000' : '#0b3486';
     const altText = isAveling ? 'Aveling LMS Training' : 'BlueCollar Curated Career';

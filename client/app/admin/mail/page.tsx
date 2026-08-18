@@ -19,6 +19,7 @@ function MailComposerContent() {
     const [fromType, setFromType] = useState<'auth' | 'info' | 'aveling'>('info');
     const searchParams = useSearchParams();
     const [to, setTo] = useState(searchParams.get('to') || '');
+    const applicantId = searchParams.get('applicantId');
     const [subject, setSubject] = useState('');
     const [body, setBody] = useState('');
     const [attachments, setAttachments] = useState<File[]>([]);
@@ -27,6 +28,12 @@ function MailComposerContent() {
     const [editorMode, setEditorMode] = useState<'rich' | 'html'>('rich');
 
     const { mutateAsync: sendMail, isPending: sending } = useApiMutation<any, any>('post', '/admin/mail');
+    
+    const { data: applicant } = useApiQuery<any>(
+        ['admin', 'user', applicantId],
+        `/admin/users/${applicantId}`,
+        { enabled: !!applicantId }
+    );
 
     // Disable activity query as backend doesn't support it yet
     const recentActivity: any[] = [];
@@ -68,15 +75,22 @@ function MailComposerContent() {
     };
 
     const applyTemplate = (tmplSubject: string, tmplBody: string) => {
+        let finalBody = tmplBody;
+        if (applicant) {
+            finalBody = finalBody.replace(/\[Insert Username\]/g, applicant.fullName || applicant.email);
+            finalBody = finalBody.replace(/\[Insert Username\/Email\]/g, applicant.email);
+            finalBody = finalBody.replace(/\[Insert Password\]/g, '********');
+        }
+
         setSubject(tmplSubject);
-        if (!/<[a-z][\s\S]*>/i.test(tmplBody)) {
-            const formatted = tmplBody
+        if (!/<[a-z][\s\S]*>/i.test(finalBody)) {
+            const formatted = finalBody
                 .split('\n\n')
                 .map(para => `<p>${para.replace(/\n/g, '<br />')}</p>`)
                 .join('');
             setBody(formatted);
         } else {
-            setBody(tmplBody);
+            setBody(finalBody);
         }
     };
 
