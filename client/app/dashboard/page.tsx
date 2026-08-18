@@ -9,6 +9,7 @@ export default function ApplicantDashboard() {
     const { data: summary, isLoading, refetch } = useApiQuery<any>(['applicant', 'dashboard'], '/dashboard');
     const { data: user } = useApiQuery<any>(['auth', 'me'], '/auth/me');
     const [selectedPaymentApp, setSelectedPaymentApp] = useState<any>(null);
+    const [appFilter, setAppFilter] = useState('All');
     const hasFinancialActivity = (summary?.allPayments?.length > 0);
 
     const availableFilters = ['All', 'Active', 'Completed'];
