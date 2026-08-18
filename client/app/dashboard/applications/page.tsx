@@ -11,7 +11,7 @@ interface Application {
     currentStageId?: number | null;
     updatedAt: string;
     JobListing: { title: string; visaSponsorship: boolean };
-    JobStages?: Array<{ id: number; name: string }>;
+    JobStages?: Array<{ id: number; name: string; PrefillStage?: { name: string } }>;
 }
 
 interface ApplicationsResponse {

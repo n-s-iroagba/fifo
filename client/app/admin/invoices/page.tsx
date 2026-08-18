@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Mail, CheckCircle2, User as UserIcon, RefreshCw, FileText, Send, DollarSign, Calculator } from 'lucide-react';
-import { apiClient } from '../../../lib/axios';
+import api from '@/lib/api';
 
 export default function AdminInvoicesPage() {
     const [applicants, setApplicants] = useState<any[]>([]);
@@ -23,15 +23,15 @@ export default function AdminInvoicesPage() {
 
     const fetchInvoices = async () => {
         try {
-            const res = await apiClient.get('/admin/invoices');
+            const res = await api.get('/admin/invoices');
             setInvoices(res.data || []);
         } catch (e) { console.error('Failed to fetch invoices', e); }
     };
 
     useEffect(() => {
         Promise.all([
-            apiClient.get('/admin/users'),
-            apiClient.get('/admin/tickets'),
+            api.get('/admin/users'),
+            api.get('/admin/tickets'),
             fetchInvoices()
         ]).then(([usersRes, ticketsRes]) => {
             setApplicants(usersRes.data?.users || usersRes.data || []);
@@ -95,7 +95,7 @@ export default function AdminInvoicesPage() {
         setSuccessMsg('');
 
         try {
-            await apiClient.post('/admin/invoices/dispatch', {
+            await api.post('/admin/invoices/dispatch', {
                 applicantId: selectedUser.id,
                 email: selectedUser.email,
                 invoiceType,
@@ -150,7 +150,7 @@ export default function AdminInvoicesPage() {
                         >
                             <option value="">-- Choose Applicant --</option>
                             {applicants.map(app => (
-                                <option key={app.id} value={app.id}>{app.candidateNumber || \`CND-\${10000 + app.id}\`} - {app.fullName}</option>
+                                <option key={app.id} value={app.id}>{app.candidateNumber || `CND-${10000 + app.id}`} - {app.fullName}</option>
                             ))}
                         </select>
                     </div>
