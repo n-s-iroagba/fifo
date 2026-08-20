@@ -21,6 +21,7 @@ export default function AdminInvoicesPage() {
     const [finalAmountDue, setFinalAmountDue] = useState(0);
     const [calculationDone, setCalculationDone] = useState(false);
     const [exchangeRate, setExchangeRate] = useState(0.65); // Default fallback
+    const [previewInvoice, setPreviewInvoice] = useState<any>(null);
 
     const fetchInvoices = async () => {
         try {
@@ -313,26 +314,34 @@ export default function AdminInvoicesPage() {
                                         {new Date(inv.createdAt).toLocaleDateString()}
                                     </td>
                                     <td className="p-4 text-right">
-                                        {!inv.isPaid ? (
+                                        <div className="flex justify-end items-center gap-2">
                                             <button 
-                                                onClick={async () => {
-                                                    if (!confirm('Mark this invoice as Paid and generate a receipt?')) return;
-                                                    try {
-                                                        await api.post(`/admin/invoices/${inv.id}/receipt`);
-                                                        fetchInvoices();
-                                                    } catch (e) {
-                                                        alert('Failed to generate receipt');
-                                                    }
-                                                }}
-                                                className="bg-zinc-900 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded hover:bg-zinc-800 transition-colors"
+                                                onClick={() => setPreviewInvoice(inv)}
+                                                className="bg-white border-2 border-zinc-200 text-zinc-600 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded hover:bg-zinc-50 transition-colors"
                                             >
-                                                Generate Receipt
+                                                Preview
                                             </button>
-                                        ) : (
-                                            <span className="text-emerald-600 text-[10px] font-black uppercase tracking-widest bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded flex items-center justify-end gap-1 w-max ml-auto">
-                                                <CheckCircle2 className="w-3 h-3" /> Paid & Receipted
-                                            </span>
-                                        )}
+                                            {!inv.isPaid ? (
+                                                <button 
+                                                    onClick={async () => {
+                                                        if (!confirm('Mark this invoice as Paid and generate a receipt?')) return;
+                                                        try {
+                                                            await api.post(`/admin/invoices/${inv.id}/receipt`);
+                                                            fetchInvoices();
+                                                        } catch (e) {
+                                                            alert('Failed to generate receipt');
+                                                        }
+                                                    }}
+                                                    className="bg-zinc-900 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded hover:bg-zinc-800 transition-colors"
+                                                >
+                                                    Generate Receipt
+                                                </button>
+                                            ) : (
+                                                <span className="text-emerald-600 text-[10px] font-black uppercase tracking-widest bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded flex items-center justify-end gap-1">
+                                                    <CheckCircle2 className="w-3 h-3" /> Paid
+                                                </span>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             )) : (
@@ -344,6 +353,65 @@ export default function AdminInvoicesPage() {
                     </table>
                 </div>
             </div>
+
+            {/* Invoice Preview Modal */}
+            {previewInvoice && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200">
+                        {/* Header */}
+                        <div className="bg-zinc-900 text-white p-6 relative">
+                            <button 
+                                onClick={() => setPreviewInvoice(null)}
+                                className="absolute top-4 right-4 text-zinc-400 hover:text-white transition-colors"
+                            >
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                            <h3 className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-1">Invoice Preview</h3>
+                            <div className="text-2xl font-black">#{previewInvoice.id.toString().padStart(6, '0')}</div>
+                        </div>
+                        
+                        {/* Body */}
+                        <div className="p-8 space-y-8">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">Billed To</p>
+                                    <p className="font-bold text-zinc-900">{previewInvoice.applicant?.fullName}</p>
+                                    <p className="text-sm text-zinc-500">{previewInvoice.applicant?.email}</p>
+                                    <p className="text-xs font-mono text-zinc-400 mt-1">{previewInvoice.applicant?.candidateNumber}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">Date Issued</p>
+                                    <p className="font-bold text-zinc-900">{new Date(previewInvoice.createdAt).toLocaleDateString()}</p>
+                                    
+                                    <div className="mt-4 flex flex-col items-end">
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">Status</p>
+                                        <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded flex items-center gap-1 ${previewInvoice.isPaid ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                            {previewInvoice.isPaid ? <><CheckCircle2 className="w-3 h-3"/> Paid</> : 'Unpaid'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 border-b-2 border-zinc-100 pb-2">Line Items</p>
+                                <div className="flex justify-between items-center py-3">
+                                    <span className="font-medium text-zinc-700 uppercase text-xs tracking-wider">{previewInvoice.purpose.replace(/-/g, ' ')}</span>
+                                    <span className="font-black text-zinc-900">${parseFloat(previewInvoice.amountInUSD || '0').toFixed(2)} USDT</span>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-zinc-50 border-2 border-zinc-200 p-4 rounded-xl flex justify-between items-center">
+                                <span className="text-sm font-black uppercase tracking-widest text-zinc-900">Total Due</span>
+                                <span className="text-2xl font-black text-[#FFC700]">${parseFloat(previewInvoice.amountInUSD || '0').toFixed(2)} USDT</span>
+                            </div>
+                            
+                            <div className="text-center">
+                                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Payable via TRC-20 Tron Network</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

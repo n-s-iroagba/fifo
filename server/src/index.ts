@@ -23,7 +23,9 @@ const startServer = async () => {
 
             // Run heavy seeding and migrations in the background so Fly.io health checks don't timeout
             try {
-                migratePaymentMilestone().then(() => {
+                migrateStageManagement().then(() => {
+                    return migratePaymentMilestone();
+                }).then(() => {
                     return migrateAccountingAndSubsidy();
                 }).then(() => {
                     return seedDatabase();

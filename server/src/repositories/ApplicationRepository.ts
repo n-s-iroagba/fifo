@@ -48,7 +48,7 @@ export class ApplicationRepository {
                 const defaultStage = await JobStage.create({
                     applicationId: app.id,
                     prefillStageId: 1,
-                    status: 'pending'
+                    status: 'not started'
                 }, { transaction });
 
                 (app as any).setDataValue('JobStages', [defaultStage.toJSON()]);
@@ -100,7 +100,7 @@ export class ApplicationRepository {
                 const defaultStage = await JobStage.create({
                     applicationId: app.id,
                     prefillStageId: 1,
-                    status: 'pending'
+                    status: 'not started'
                 }, { transaction });
 
                 (app as any).setDataValue('JobStages', [defaultStage.toJSON()]);
@@ -149,7 +149,7 @@ export class ApplicationRepository {
                 const defaultStage = await JobStage.create({
                     applicationId: app.id,
                     prefillStageId: 1,
-                    status: 'pending'
+                    status: 'not started'
                 }, { transaction });
 
                 (app as any).setDataValue('JobStages', [defaultStage.toJSON()]);

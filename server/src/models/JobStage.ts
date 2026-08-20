@@ -5,7 +5,7 @@ export class JobStage extends Model {
     declare id: number;
     declare applicationId: number;
     declare prefillStageId: number;
-    declare status: 'pending' | 'completed' | 'failed' | 'approved' | 'rejected';
+    declare status: 'not started' | 'pending' | 'completed' | 'failed' | 'approved' | 'rejected';
     declare isCurrent: boolean;
 
     // Associations
@@ -26,6 +26,10 @@ JobStage.init({
     prefillStageId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+    },
+    status: {
+        type: DataTypes.STRING,
+        defaultValue: 'not started',
     },
     isCompleted: {
         type: DataTypes.BOOLEAN,
