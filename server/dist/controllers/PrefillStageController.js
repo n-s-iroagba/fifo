@@ -24,7 +24,7 @@ class PrefillStageController {
             let newOrderIndex = orderIndex;
             if (newOrderIndex !== undefined && newOrderIndex !== null) {
                 newOrderIndex = parseInt(newOrderIndex, 10);
-                await database_1.sequelize.query(`UPDATE prefill_stages SET orderIndex = orderIndex + 1 WHERE orderIndex >= :newOrderIndex`, { replacements: { newOrderIndex } });
+                await database_1.sequelize.query(`UPDATE prefill_stages SET orderIndex = orderIndex + 1 WHERE orderIndex >= :newOrderIndex AND type = :type`, { replacements: { newOrderIndex, type } });
             }
             else {
                 const count = await PrefillStage_1.PrefillStage.count({ where: { type } });
@@ -57,12 +57,7 @@ class PrefillStageController {
             if (newOrderIndex !== undefined && newOrderIndex !== null) {
                 newOrderIndex = parseInt(newOrderIndex, 10);
                 if (newOrderIndex !== stage.orderIndex) {
-                    if (newOrderIndex < stage.orderIndex) {
-                        await database_1.sequelize.query(`UPDATE prefill_stages SET orderIndex = orderIndex + 1 WHERE orderIndex >= :newOrderIndex AND orderIndex < :oldOrderIndex AND id != :id`, { replacements: { newOrderIndex, oldOrderIndex: stage.orderIndex, id: stage.id } });
-                    }
-                    else {
-                        await database_1.sequelize.query(`UPDATE prefill_stages SET orderIndex = orderIndex - 1 WHERE orderIndex <= :newOrderIndex AND orderIndex > :oldOrderIndex AND id != :id`, { replacements: { newOrderIndex, oldOrderIndex: stage.orderIndex, id: stage.id } });
-                    }
+                    await database_1.sequelize.query(`UPDATE prefill_stages SET orderIndex = orderIndex + 1 WHERE orderIndex >= :newOrderIndex AND id != :id AND type = :type`, { replacements: { newOrderIndex, id: stage.id, type: stage.type } });
                 }
             }
             await stage.update({ name, type, adminDisplay, applicantDisplay, orderIndex: newOrderIndex !== undefined ? newOrderIndex : stage.orderIndex });

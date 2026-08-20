@@ -25,8 +25,8 @@ export class PrefillStageController {
             if (newOrderIndex !== undefined && newOrderIndex !== null) {
                 newOrderIndex = parseInt(newOrderIndex, 10);
                 await sequelize.query(
-                    `UPDATE prefill_stages SET orderIndex = orderIndex + 1 WHERE orderIndex >= :newOrderIndex`,
-                    { replacements: { newOrderIndex } }
+                    `UPDATE prefill_stages SET orderIndex = orderIndex + 1 WHERE orderIndex >= :newOrderIndex AND type = :type`,
+                    { replacements: { newOrderIndex, type } }
                 );
             } else {
                 const count = await PrefillStage.count({ where: { type } });
@@ -62,17 +62,10 @@ export class PrefillStageController {
             if (newOrderIndex !== undefined && newOrderIndex !== null) {
                 newOrderIndex = parseInt(newOrderIndex, 10);
                 if (newOrderIndex !== stage.orderIndex) {
-                    if (newOrderIndex < stage.orderIndex) {
-                        await sequelize.query(
-                            `UPDATE prefill_stages SET orderIndex = orderIndex + 1 WHERE orderIndex >= :newOrderIndex AND orderIndex < :oldOrderIndex AND id != :id`,
-                            { replacements: { newOrderIndex, oldOrderIndex: stage.orderIndex, id: stage.id } }
-                        );
-                    } else {
-                        await sequelize.query(
-                            `UPDATE prefill_stages SET orderIndex = orderIndex - 1 WHERE orderIndex <= :newOrderIndex AND orderIndex > :oldOrderIndex AND id != :id`,
-                            { replacements: { newOrderIndex, oldOrderIndex: stage.orderIndex, id: stage.id } }
-                        );
-                    }
+                    await sequelize.query(
+                        `UPDATE prefill_stages SET orderIndex = orderIndex + 1 WHERE orderIndex >= :newOrderIndex AND id != :id AND type = :type`,
+                        { replacements: { newOrderIndex, id: stage.id, type: stage.type } }
+                    );
                 }
             }
 
