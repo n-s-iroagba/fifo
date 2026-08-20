@@ -15,6 +15,9 @@ export default function PrefillStagesPage() {
     const [editingStage, setEditingStage] = useState<any>(null);
     const [name, setName] = useState('');
     const [type, setType] = useState('applicant_display');
+    const [adminDisplay, setAdminDisplay] = useState('');
+    const [applicantDisplay, setApplicantDisplay] = useState('');
+    const [orderIndex, setOrderIndex] = useState<number | ''>('');
     const [showModal, setShowModal] = useState(false);
 
     // Reorder State
@@ -29,15 +32,25 @@ export default function PrefillStagesPage() {
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            const payload = {
+                name,
+                type,
+                adminDisplay,
+                applicantDisplay,
+                orderIndex: orderIndex !== '' ? Number(orderIndex) : undefined
+            };
             if (editingStage) {
-                await api.put(`/admin/prefill-stages/${editingStage.id}`, { name, type });
+                await api.put(`/admin/prefill-stages/${editingStage.id}`, payload);
             } else {
-                await api.post('/admin/prefill-stages', { name, type });
+                await api.post('/admin/prefill-stages', payload);
             }
             setShowModal(false);
             setEditingStage(null);
             setName('');
             setType('applicant_display');
+            setAdminDisplay('');
+            setApplicantDisplay('');
+            setOrderIndex('');
             refetch();
         } catch (error: any) {
             alert(error.response?.data?.message || 'Error saving stage');
@@ -112,7 +125,15 @@ export default function PrefillStagesPage() {
                         Save Stage Order
                     </button>
                     <button
-                        onClick={() => { setEditingStage(null); setName(''); setType('applicant_display'); setShowModal(true); }}
+                        onClick={() => {
+                            setEditingStage(null);
+                            setName('');
+                            setType('applicant_display');
+                            setAdminDisplay('');
+                            setApplicantDisplay('');
+                            setOrderIndex(items.length + 1);
+                            setShowModal(true);
+                        }}
                         className="bg-blue-900 text-white px-6 py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all shadow-xl shadow-blue-900/20 active:scale-95"
                     >
                         Add New Stage
@@ -137,15 +158,40 @@ export default function PrefillStagesPage() {
                             <div className="flex items-center gap-6">
                                 <span className="material-symbols-outlined text-blue-300">drag_indicator</span>
                                 <div>
-                                    <h4 className="text-sm font-black text-blue-900 uppercase tracking-tight">{stage.name}</h4>
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-xs font-bold text-blue-400 bg-blue-50 px-2 py-1 rounded-md">#{stage.orderIndex}</span>
+                                        <h4 className="text-sm font-black text-blue-900 uppercase tracking-tight">{stage.name}</h4>
+                                    </div>
                                     <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border mt-2 inline-block ${stage.type === 'admin_display' ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
                                         {stage.type === 'admin_display' ? 'Admin Display' : 'Applicant Display'}
                                     </span>
+                                    <div className="mt-3 grid grid-cols-2 gap-4 text-[10px]">
+                                        {stage.adminDisplay && (
+                                            <div>
+                                                <span className="font-bold text-blue-400 uppercase">Admin: </span>
+                                                <span className="text-blue-700">{stage.adminDisplay.substring(0, 50)}{stage.adminDisplay.length > 50 ? '...' : ''}</span>
+                                            </div>
+                                        )}
+                                        {stage.applicantDisplay && (
+                                            <div>
+                                                <span className="font-bold text-blue-400 uppercase">Applicant: </span>
+                                                <span className="text-blue-700">{stage.applicantDisplay.substring(0, 50)}{stage.applicantDisplay.length > 50 ? '...' : ''}</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
-                                    onClick={() => { setEditingStage(stage); setName(stage.name); setType(stage.type); setShowModal(true); }}
+                                    onClick={() => {
+                                        setEditingStage(stage);
+                                        setName(stage.name);
+                                        setType(stage.type);
+                                        setAdminDisplay(stage.adminDisplay || '');
+                                        setApplicantDisplay(stage.applicantDisplay || '');
+                                        setOrderIndex(stage.orderIndex);
+                                        setShowModal(true);
+                                    }}
                                     className="p-2 rounded-xl text-blue-600 bg-blue-50 hover:bg-blue-100 transition-all text-[10px] font-black uppercase tracking-widest"
                                 >
                                     Edit
@@ -182,16 +228,30 @@ export default function PrefillStagesPage() {
                             </button>
                         </div>
                         <form onSubmit={handleSave} className="p-10 space-y-8 overflow-y-auto custom-scrollbar">
-                            <div className="space-y-2">
-                                <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Stage Name</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    placeholder="e.g. Technical Interview"
-                                    className="w-full px-6 py-4 bg-blue-50 border border-transparent rounded-2xl text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 outline-none transition-all placeholder:text-blue-200"
-                                />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Stage Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        placeholder="e.g. Technical Interview"
+                                        className="w-full px-6 py-4 bg-blue-50 border border-transparent rounded-2xl text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 outline-none transition-all placeholder:text-blue-200"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Order Index</label>
+                                    <input
+                                        type="number"
+                                        required
+                                        min="1"
+                                        value={orderIndex}
+                                        onChange={(e) => setOrderIndex(e.target.value ? parseInt(e.target.value, 10) : '')}
+                                        placeholder="e.g. 1"
+                                        className="w-full px-6 py-4 bg-blue-50 border border-transparent rounded-2xl text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 outline-none transition-all placeholder:text-blue-200"
+                                    />
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Display Type</label>
@@ -204,6 +264,26 @@ export default function PrefillStagesPage() {
                                     <option value="applicant_display">Applicant Display (Visible to User)</option>
                                     <option value="admin_display">Admin Display (Internal Tracking)</option>
                                 </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Admin Education Display</label>
+                                <textarea
+                                    value={adminDisplay}
+                                    onChange={(e) => setAdminDisplay(e.target.value)}
+                                    placeholder="Instructions or info for admins at this stage..."
+                                    rows={3}
+                                    className="w-full px-6 py-4 bg-blue-50 border border-transparent rounded-2xl text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 outline-none transition-all placeholder:text-blue-200 resize-none"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Applicant Display Details</label>
+                                <textarea
+                                    value={applicantDisplay}
+                                    onChange={(e) => setApplicantDisplay(e.target.value)}
+                                    placeholder="Message or status info visible to the applicant..."
+                                    rows={3}
+                                    className="w-full px-6 py-4 bg-blue-50 border border-transparent rounded-2xl text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 outline-none transition-all placeholder:text-blue-200 resize-none"
+                                />
                             </div>
                             <button
                                 type="submit"

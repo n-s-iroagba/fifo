@@ -5,6 +5,8 @@ export class PrefillStage extends Model {
     declare id: number;
     declare name: string;
     declare type: 'admin_display' | 'applicant_display';
+    declare adminDisplay: string;
+    declare applicantDisplay: string;
     declare orderIndex: number;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
@@ -23,6 +25,14 @@ PrefillStage.init({
     type: {
         type: DataTypes.ENUM('admin_display', 'applicant_display'),
         allowNull: false,
+    },
+    adminDisplay: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+    },
+    applicantDisplay: {
+        type: DataTypes.TEXT,
+        allowNull: true,
     },
     orderIndex: {
         type: DataTypes.INTEGER,

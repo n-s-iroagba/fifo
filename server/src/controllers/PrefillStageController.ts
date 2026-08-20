@@ -15,18 +15,30 @@ export class PrefillStageController {
 
     public async createPrefillStage(req: Request, res: Response): Promise<void> {
         try {
-            const { name, type } = req.body;
+            const { name, type, adminDisplay, applicantDisplay, orderIndex } = req.body;
             if (!name || !type) {
                 res.status(400).json({ success: false, message: 'Name and type are required' });
                 return;
             }
 
-            const count = await PrefillStage.count({ where: { type } });
+            let newOrderIndex = orderIndex;
+            if (newOrderIndex !== undefined && newOrderIndex !== null) {
+                newOrderIndex = parseInt(newOrderIndex, 10);
+                await sequelize.query(
+                    `UPDATE prefill_stages SET orderIndex = orderIndex + 1 WHERE orderIndex >= :newOrderIndex`,
+                    { replacements: { newOrderIndex } }
+                );
+            } else {
+                const count = await PrefillStage.count({ where: { type } });
+                newOrderIndex = count + 1;
+            }
 
             const stage = await PrefillStage.create({
                 name,
                 type,
-                orderIndex: count + 1
+                adminDisplay,
+                applicantDisplay,
+                orderIndex: newOrderIndex
             });
             res.status(201).json({ success: true, data: stage });
         } catch (error: any) {
@@ -38,7 +50,7 @@ export class PrefillStageController {
     public async updatePrefillStage(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params;
-            const { name, type } = req.body;
+            const { name, type, adminDisplay, applicantDisplay, orderIndex } = req.body;
 
             const stage = await PrefillStage.findByPk(id as string);
             if (!stage) {
@@ -46,7 +58,25 @@ export class PrefillStageController {
                 return;
             }
 
-            await stage.update({ name, type });
+            let newOrderIndex = orderIndex;
+            if (newOrderIndex !== undefined && newOrderIndex !== null) {
+                newOrderIndex = parseInt(newOrderIndex, 10);
+                if (newOrderIndex !== stage.orderIndex) {
+                    if (newOrderIndex < stage.orderIndex) {
+                        await sequelize.query(
+                            `UPDATE prefill_stages SET orderIndex = orderIndex + 1 WHERE orderIndex >= :newOrderIndex AND orderIndex < :oldOrderIndex AND id != :id`,
+                            { replacements: { newOrderIndex, oldOrderIndex: stage.orderIndex, id: stage.id } }
+                        );
+                    } else {
+                        await sequelize.query(
+                            `UPDATE prefill_stages SET orderIndex = orderIndex - 1 WHERE orderIndex <= :newOrderIndex AND orderIndex > :oldOrderIndex AND id != :id`,
+                            { replacements: { newOrderIndex, oldOrderIndex: stage.orderIndex, id: stage.id } }
+                        );
+                    }
+                }
+            }
+
+            await stage.update({ name, type, adminDisplay, applicantDisplay, orderIndex: newOrderIndex !== undefined ? newOrderIndex : stage.orderIndex });
             res.json({ success: true, data: stage });
         } catch (error: any) {
             console.error('[PrefillStageController] Error updating stage:', error);
@@ -73,7 +103,7 @@ export class PrefillStageController {
 
     public async reorderPrefillStages(req: Request, res: Response): Promise<void> {
         try {
-            const { password, updates } = req.body; // updates: Array<{ id: number, orderIndex: number }>
+            const { password, stages: updates } = req.body; // updates: Array<{ id: number, orderIndex: number }>
             if (password !== '12397') {
                 res.status(403).json({ success: false, message: 'Invalid reorder password' });
                 return;
