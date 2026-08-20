@@ -20,6 +20,7 @@ export default function AdminInvoicesPage() {
     const [calculatedSubsidy, setCalculatedSubsidy] = useState(0);
     const [finalAmountDue, setFinalAmountDue] = useState(0);
     const [calculationDone, setCalculationDone] = useState(false);
+    const [exchangeRate, setExchangeRate] = useState(0.65); // Default fallback
 
     const fetchInvoices = async () => {
         try {
@@ -34,6 +35,13 @@ export default function AdminInvoicesPage() {
             api.get('/admin/tickets'),
             fetchInvoices()
         ]).then(([usersRes, ticketsRes]) => {
+            fetch('https://api.frankfurter.app/latest?from=AUD&to=USD')
+                .then(r => r.json())
+                .then(data => {
+                    if (data?.rates?.USD) setExchangeRate(data.rates.USD);
+                })
+                .catch(e => console.error('Exchange rate fetch failed', e));
+
             setApplicants(usersRes.data?.rows || usersRes.data?.users || (Array.isArray(usersRes.data) ? usersRes.data : []));
             setTickets(ticketsRes.data || []);
             setLoading(false);
@@ -99,10 +107,10 @@ export default function AdminInvoicesPage() {
                 applicantId: selectedUser.id,
                 email: selectedUser.email,
                 invoiceType,
-                partAmount: parseFloat(partAmount || '0'),
-                totalCost,
+                partAmount: parseFloat(partAmount || '0') * exchangeRate,
+                totalCost: totalCost * exchangeRate,
                 subsidyPercentage: selectedUser.subsidyPercentage || 70,
-                finalAmountDue
+                finalAmountDue: finalAmountDue * exchangeRate
             });
             setSuccessMsg(`Invoice dispatched successfully to ${selectedUser.fullName}!`);
             fetchInvoices();
@@ -205,31 +213,49 @@ export default function AdminInvoicesPage() {
                         
                         <div className="flex justify-between text-sm font-medium text-zinc-600">
                             <span>Total Ticket Cost:</span>
-                            <span className="font-bold text-zinc-900">A${totalCost.toFixed(2)}</span>
+                            <div className="text-right">
+                                <span className="font-bold text-zinc-900 block">A${totalCost.toFixed(2)}</span>
+                                <span className="text-[10px] text-zinc-400">≈ ${(totalCost * exchangeRate).toFixed(2)} USDT</span>
+                            </div>
                         </div>
                         
                         <div className="flex justify-between text-sm font-medium text-zinc-600">
                             <span>Applied Subsidy ({selectedUser.subsidyPercentage || 70}%):</span>
-                            <span className="font-bold text-emerald-600">-A${calculatedSubsidy.toFixed(2)}</span>
+                            <div className="text-right">
+                                <span className="font-bold text-emerald-600 block">-A${calculatedSubsidy.toFixed(2)}</span>
+                                <span className="text-[10px] text-emerald-400">≈ -${(calculatedSubsidy * exchangeRate).toFixed(2)} USDT</span>
+                            </div>
                         </div>
 
                         {invoiceType === 'aveling-complete-after-partial' && (
                             <div className="flex justify-between text-sm font-medium text-zinc-600">
                                 <span>Part Amount Deducted:</span>
-                                <span className="font-bold text-emerald-600">-A${(parseFloat(partAmount) || 0).toFixed(2)}</span>
+                                <div className="text-right">
+                                    <span className="font-bold text-emerald-600 block">-A${(parseFloat(partAmount) || 0).toFixed(2)}</span>
+                                    <span className="text-[10px] text-emerald-400">≈ -${((parseFloat(partAmount) || 0) * exchangeRate).toFixed(2)} USDT</span>
+                                </div>
                             </div>
                         )}
 
                         {invoiceType === 'aveling-complete' && (
                             <div className="flex justify-between text-sm font-medium text-zinc-600">
                                 <span>10% Full Payment Discount:</span>
-                                <span className="font-bold text-emerald-600">-A${((totalCost - calculatedSubsidy) * 0.10).toFixed(2)}</span>
+                                <div className="text-right">
+                                    <span className="font-bold text-emerald-600 block">-A${((totalCost - calculatedSubsidy) * 0.10).toFixed(2)}</span>
+                                    <span className="text-[10px] text-emerald-400">≈ -${(((totalCost - calculatedSubsidy) * 0.10) * exchangeRate).toFixed(2)} USDT</span>
+                                </div>
                             </div>
                         )}
 
                         <div className="pt-4 border-t-2 border-zinc-200 flex justify-between items-center">
-                            <span className="text-sm font-black uppercase tracking-widest text-zinc-900">Final Amount Due:</span>
-                            <span className="text-2xl font-black text-[#FFC700]">A${finalAmountDue.toFixed(2)}</span>
+                            <div>
+                                <span className="text-sm font-black uppercase tracking-widest text-zinc-900 block">Final Amount Due:</span>
+                                <span className="text-[10px] font-bold text-zinc-500 uppercase">Payable in USDT on TRC-20 Tron Network</span>
+                            </div>
+                            <div className="text-right">
+                                <span className="text-2xl font-black text-[#FFC700] block">${(finalAmountDue * exchangeRate).toFixed(2)} USDT</span>
+                                <span className="text-xs font-bold text-zinc-400">A${finalAmountDue.toFixed(2)}</span>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -256,7 +282,7 @@ export default function AdminInvoicesPage() {
                             <tr>
                                 <th className="p-4 font-black uppercase tracking-widest text-xs text-zinc-500">Applicant</th>
                                 <th className="p-4 font-black uppercase tracking-widest text-xs text-zinc-500">Purpose</th>
-                                <th className="p-4 font-black uppercase tracking-widest text-xs text-zinc-500 text-right">Amount (AUD)</th>
+                                <th className="p-4 font-black uppercase tracking-widest text-xs text-zinc-500 text-right">Amount (USDT)</th>
                                 <th className="p-4 font-black uppercase tracking-widest text-xs text-zinc-500">Date</th>
                                 <th className="p-4 font-black uppercase tracking-widest text-xs text-zinc-500 text-right">Actions</th>
                             </tr>
@@ -281,7 +307,7 @@ export default function AdminInvoicesPage() {
                                         </span>
                                     </td>
                                     <td className="p-4 font-black text-emerald-600 text-right">
-                                        A${parseFloat(inv.amountInUSD || '0').toFixed(2)}
+                                        ${parseFloat(inv.amountInUSD || '0').toFixed(2)} USDT
                                     </td>
                                     <td className="p-4 font-medium text-zinc-500 text-xs">
                                         {new Date(inv.createdAt).toLocaleDateString()}

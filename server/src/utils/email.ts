@@ -408,13 +408,17 @@ export const sendInvoiceEmail = async (
     const content = `
         <p>Dear ${candidateName},</p>
         <p>Please find the details of your invoice for <strong>${typeDescription}</strong>.</p>
-        <p><strong>Financial Breakdown:</strong></p>
+        <p><strong>Financial Breakdown (USDT):</strong></p>
         <ul>
             <li>Total Cost: $${totalCost.toFixed(2)}</li>
             <li>Approved Subsidy: ${subsidyPercentage}%</li>
             <li>Part/Adjusted Amount: $${partAmount.toFixed(2)}</li>
-            <li><strong>Final Amount Due: $${finalAmountDue.toFixed(2)}</strong></li>
+            <li><strong>Final Amount Due: $${finalAmountDue.toFixed(2)} USDT</strong></li>
         </ul>
+        <div style="background-color: #f8fafc; padding: 15px; border-left: 4px solid #FFC700; margin: 20px 0;">
+            <p style="margin: 0;"><strong>Payment Instructions:</strong><br>
+            Please send the Final Amount Due as <strong>USDT on the TRC-20 Tron network</strong>. Ensure you use the TRC-20 network to avoid loss of funds.</p>
+        </div>
         <p>Please arrange for payment at your earliest convenience to avoid delays in your processing.</p>
     `;
 

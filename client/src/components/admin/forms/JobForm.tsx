@@ -332,7 +332,7 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
                                         />
                                         <div className="flex flex-col gap-1">
                                             <span className={isSelected ? 'text-blue-200' : 'text-blue-400'}>{ticket.name}</span>
-                                            <span>Norm: ${ticket.normalPrice} | Spon: ${ticket.sponsorshipPrice}</span>
+                                            <span>Price: ${ticket.normalPrice}</span>
                                         </div>
                                     </label>
                                 );

@@ -72,13 +72,11 @@ export class ApplicationRepository {
             include: [
                 { model: User, attributes: ['id', 'fullName', 'email'] },
                 { model: JobListing },
-                { model: JobListing },
                 { 
                     model: JobStage, 
                     as: 'JobStages',
                     include: [{ model: PrefillStage, as: 'PrefillStage' }]
-                },
-                { model: JobStage, include: [{ model: PrefillStage, as: 'PrefillStage' }] }
+                }
             ],
             order: [['createdAt', 'DESC']],
             transaction
