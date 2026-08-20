@@ -60,6 +60,15 @@ export async function seedDatabase() {
     }
 
     try {
+        await sequelize.query("ALTER TABLE invoices ADD COLUMN isPaid BOOLEAN NOT NULL DEFAULT false;");
+        console.log("Safely patched invoices table with isPaid.");
+    } catch (e: any) {
+        if (e.original && e.original.code !== 'ER_DUP_FIELDNAME') {
+            console.log("Notice: Column might already exist or could not be added:", e.message);
+        }
+    }
+
+    try {
         await sequelize.query("ALTER TABLE job_listings ADD COLUMN benefits TEXT DEFAULT NULL;");
         console.log("Safely patched job_listings table with benefits.");
     } catch (e: any) {
@@ -259,6 +268,10 @@ export async function seedDatabase() {
         }
         categoryMap[sector.name] = cat;
     }
+    const allTickets = await TicketCatalog.findAll();
+    const standard11 = allTickets.find((t: any) => t.name.includes('Standard 11'));
+    const whiteCard = allTickets.find((t: any) => t.name.includes('White Card'));
+    
     console.log(`Checking/Importing ${fifoJobs.length} FIFO jobs...`);
 
     for (const jobData of fifoJobs) {
@@ -287,6 +300,36 @@ export async function seedDatabase() {
             }
         });
 
+        // Determine relevant tickets based on title and category
+        let assignedTickets: any[] = [];
+        
+        // Everyone needs a White Card as a baseline in construction/mining
+        if (whiteCard) assignedTickets.push(whiteCard);
+
+        if (jobData.category.includes('Mining') || jobData.title.includes('Mine')) {
+            if (standard11 && !assignedTickets.includes(standard11)) assignedTickets.push(standard11);
+        }
+
+        const reqsString = jobData.requirements.join(' ').toLowerCase();
+        const titleString = jobData.title.toLowerCase();
+
+        for (const ticket of allTickets) {
+            const ticketName = ticket.name.toLowerCase();
+            if (
+                !assignedTickets.includes(ticket) &&
+                (reqsString.includes(ticketName.split(' ')[0]) || titleString.includes(ticketName.split(' ')[0]))
+            ) {
+                assignedTickets.push(ticket);
+            }
+        }
+
+        const ticketIds = assignedTickets.map(t => t.id);
+
+        // Update Job with tickets to ensure no breaking changes (both JSON array and Relational table)
+        await job.update({ ticketIds });
+        if ((job as any).setRequiredTickets) {
+            await (job as any).setRequiredTickets(ticketIds);
+        }
     }
 
     console.log('Idempotent seeding completed successfully!');

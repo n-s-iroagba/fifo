@@ -371,7 +371,7 @@ export const sendContractEmail = async (
 export const sendInvoiceEmail = async (
     to: string,
     candidateName: string,
-    invoiceType: 'aveling-partial' | 'aveling-complete-after-partial' | 'aveling-complete' | 'second-attempt' | 'visa-blue-collar',
+    invoiceType: 'aveling-partial' | 'aveling-complete-after-partial' | 'aveling-complete' | 'second-attempt' | 'visa-blue-collar' | 'shipping',
     partAmount: number,
     totalCost: number,
     subsidyPercentage: number,
@@ -396,6 +396,10 @@ export const sendInvoiceEmail = async (
             break;
         case 'visa-blue-collar':
             typeDescription = 'Visa & Blue Collar Processing Invoice';
+            emailServer = 'info';
+            break;
+        case 'shipping':
+            typeDescription = 'Shipping Invoice';
             emailServer = 'info';
             break;
     }
@@ -450,4 +454,197 @@ export const sendReceiptEmail = async (
     } else {
         await sendInfoEmail(to, subject, content, attachments);
     }
+};
+
+// 5. Verify Email (Auth)
+export const sendVerificationEmail = async (to: string, userName: string, verifyLink: string): Promise<void> => {
+    const subject = 'Verify your BlueCollar Account';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Please verify your email address by clicking the link below:</p>
+        <div class="cta-block">
+            <a href="${verifyLink}" class="button">Verify Email</a>
+        </div>
+    `;
+    await sendAuthEmail(to, subject, content);
+};
+
+// 6. Welcome Email - Application found (INFO BLUE)
+export const sendWelcomeApplicationFoundEmail = async (to: string, userName: string): Promise<void> => {
+    const subject = 'Welcome to BlueCollar - Active Application Found';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Welcome to BlueCollar! We detected an active application associated with your profile.</p>
+        <p>You can track the progress of your application on your dashboard.</p>
+    `;
+    await sendInfoEmail(to, subject, content);
+};
+
+// 7. Eoi received Email (INFO BLUE)
+export const sendEOIReceivedEmail = async (to: string, userName: string): Promise<void> => {
+    const subject = 'Expression of Interest Received';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>We have successfully received your Expression of Interest. Our team will review your profile against our unlisted registry.</p>
+    `;
+    await sendInfoEmail(to, subject, content);
+};
+
+// 8. EoI Addressed Email (INFO BLUE)
+export const sendEOIAddressedEmail = async (to: string, userName: string): Promise<void> => {
+    const subject = 'Expression of Interest Processed';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Your Expression of Interest has been processed, and our team has taken the necessary next steps.</p>
+    `;
+    await sendInfoEmail(to, subject, content);
+};
+
+// 9. CV upload Email (INFO BLUE)
+export const sendCVUploadEmail = async (to: string, userName: string): Promise<void> => {
+    const subject = 'CV Successfully Uploaded';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Your CV has been successfully uploaded and is now being analyzed by our automated screening system.</p>
+    `;
+    await sendInfoEmail(to, subject, content);
+};
+
+// 10. Bio received Email (INFO BLUE)
+export const sendBioReceivedEmail = async (to: string, userName: string): Promise<void> => {
+    const subject = 'Biodata Successfully Received';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Your biodata form has been successfully received and added to your profile.</p>
+    `;
+    await sendInfoEmail(to, subject, content);
+};
+
+// 11. psychometric module 1 passed mail (INFO BLUE)
+export const sendPsychoMod1PassedEmail = async (to: string, userName: string): Promise<void> => {
+    const subject = 'Psychometric Module 1 Completed Successfully';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Congratulations! You have successfully passed Psychometric Module 1.</p>
+        <p>Please log in to your dashboard to proceed to the next module.</p>
+    `;
+    await sendInfoEmail(to, subject, content);
+};
+
+// 12. psychometric module 2 submitted email (INFO BLUE)
+export const sendPsychoMod2SubmittedEmail = async (to: string, userName: string): Promise<void> => {
+    const subject = 'Psychometric Module 2 Submitted';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>We have received your submission for Psychometric Module 2. Our team is currently reviewing your results.</p>
+    `;
+    await sendInfoEmail(to, subject, content);
+};
+
+// 13. psychometric module 2 passed (INFO BLUE)
+export const sendPsychoMod2PassedEmail = async (to: string, userName: string): Promise<void> => {
+    const subject = 'Psychometric Module 2 Completed Successfully';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Congratulations! You have successfully passed Psychometric Module 2. You have now completed the psychometric evaluation phase.</p>
+    `;
+    await sendInfoEmail(to, subject, content);
+};
+
+// 14. Application submitted mail ( Application in review) (INFO BLUE)
+export const sendApplicationSubmittedEmail = async (to: string, userName: string): Promise<void> => {
+    const subject = 'Application Submitted - Under Review';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Your application has been successfully submitted and is currently under review by our team.</p>
+        <p>We will notify you once an update is available.</p>
+    `;
+    await sendInfoEmail(to, subject, content);
+};
+
+// 15. Application Accepted mail (INFO BLUE)
+export const sendApplicationAcceptedEmail = async (to: string, userName: string): Promise<void> => {
+    const subject = 'Application Accepted';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Congratulations! Your application has been accepted into our pipeline.</p>
+        <p>Please log in to your dashboard for your next steps.</p>
+    `;
+    await sendInfoEmail(to, subject, content);
+};
+
+// 16. Notification/Nomination form mail (INFO BLUE)
+export const sendNominationFormEmail = async (to: string, userName: string): Promise<void> => {
+    const subject = 'Official Nomination Form Issued';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Your Official Nomination Form has been issued and is available on your dashboard.</p>
+        <p>Please review, sign, and upload the document to proceed.</p>
+    `;
+    await sendInfoEmail(to, subject, content);
+};
+
+// 17. Contract form mail (INFO BLUE)
+export const sendContractFormEmail = async (to: string, userName: string): Promise<void> => {
+    const subject = 'Employment Contract Issued';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Your employment contract has been generated and is now available on your dashboard.</p>
+        <p>Please review, sign, and upload the contract to proceed.</p>
+    `;
+    await sendInfoEmail(to, subject, content);
+};
+
+// 18. Payment Proof reception Acknowledgement
+export const sendPaymentProofReceivedEmail = async (
+    to: string, 
+    userName: string, 
+    typeDescription: string,
+    isAveling: boolean = false
+): Promise<void> => {
+    const subject = 'Payment Proof Received';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>We have successfully received your proof of payment for <strong>${typeDescription}</strong>.</p>
+        <p>Our finance team will review and verify this transaction shortly.</p>
+    `;
+    
+    if (isAveling) {
+        await sendAvelingEmail(to, subject, content);
+    } else {
+        await sendInfoEmail(to, subject, content);
+    }
+};
+
+// 19. Apply for Ticket Sponsorship And Upload Possed Tickets Mail (Blue Collar INFO)
+export const sendTicketSponsorshipEmail = async (to: string, userName: string): Promise<void> => {
+    const subject = 'Ticket Sponsorship Application Received';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>We have received your application for Ticket Sponsorship along with your uploaded tickets.</p>
+        <p>Our team is reviewing your eligibility. We will notify you once the assessment is complete.</p>
+    `;
+    await sendInfoEmail(to, subject, content);
+};
+
+// 20. Aveling Candidateship Notice (AVELING INFO)
+export const sendAvelingCandidateshipNotice = async (to: string, userName: string): Promise<void> => {
+    const subject = 'Aveling Candidateship Notice';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>This is an official notice regarding your Aveling LMS Candidateship.</p>
+        <p>Your profile is now being processed for Aveling training integration. Please check your dashboard for pending training modules.</p>
+    `;
+    await sendAvelingEmail(to, subject, content);
+};
+
+// 21. Aveling Notice OF Payment (AVELING INFO)
+export const sendAvelingNoticeOfPayment = async (to: string, userName: string): Promise<void> => {
+    const subject = 'Aveling Notice of Payment';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>This is a formal notice regarding payment for your Aveling Training modules.</p>
+        <p>Please ensure all outstanding invoices are cleared to avoid disruption to your training schedule.</p>
+    `;
+    await sendAvelingEmail(to, subject, content);
 };
