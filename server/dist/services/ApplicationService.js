@@ -4,7 +4,6 @@ exports.applicationService = exports.ApplicationService = void 0;
 const database_1 = require("../config/database");
 const ApplicationRepository_1 = require("../repositories/ApplicationRepository");
 const JobRepository_1 = require("../repositories/JobRepository");
-const PaymentRepository_1 = require("../repositories/PaymentRepository");
 const JobStageRepository_1 = require("../repositories/JobStageRepository");
 const NotificationRepository_1 = require("../repositories/NotificationRepository");
 const constants_1 = require("../constants");
@@ -20,16 +19,12 @@ class ApplicationService {
         const appsList = applications.rows ?? applications;
         const pendingStages = [];
         const unpaidPayments = [];
+        const allPayments = [];
         const completedGroups = [];
         for (const app of appsList) {
             // Collect pending stages (active apps with a current stage)
             if (app.status === constants_1.CONSTANTS.APPLICATION_STATUSES.ACTIVE && app.currentStageId) {
                 const currentStage = await JobStageRepository_1.jobStageRepository.findById(app.currentStageId);
-                const currentPaymentResult = await PaymentRepository_1.paymentRepository.findAllAdmin({
-                    applicationId: app.id,
-                    stageId: app.currentStageId,
-                });
-                const payment = currentPaymentResult.rows[0];
                 pendingStages.push({
                     applicationId: app.id,
                     jobTitle: app.JobListing?.title,
@@ -39,11 +34,11 @@ class ApplicationService {
                     stageId: app.currentStageId,
                     requiresPayment: false,
                     isCompleted: currentStage?.status === 'completed',
-                    amount: payment?.amount ?? 0,
-                    currency: payment?.currency ?? 'USD',
-                    stageName: currentStage?.name,
+                    amount: 0,
+                    currency: 'USD',
+                    stageName: currentStage?.PrefillStage?.name || 'Unnamed Stage',
                     stageDescription: null,
-                    paymentStatus: payment?.status || 'Unpaid',
+                    paymentStatus: 'Unpaid',
                 });
             }
             // Gather completed stages for this application
@@ -65,18 +60,6 @@ class ApplicationService {
                     }))
                 });
             }
-            // STK-APP-DASH-001: current unpaid payments across all applications
-            const unpaidPaymentsResult = await PaymentRepository_1.paymentRepository.findAllAdmin({
-                applicationId: app.id,
-                status: constants_1.CONSTANTS.PAYMENT_STATUSES.UNPAID,
-            });
-            unpaidPayments.push(...unpaidPaymentsResult.rows);
-        }
-        // Collect all payments for history
-        const allPayments = [];
-        for (const app of appsList) {
-            const payments = await PaymentRepository_1.paymentRepository.findByApplicationId(app.id);
-            allPayments.push(...payments);
         }
         const activeJobs = await JobRepository_1.jobRepository.findAllActive({ limit: 5 });
         return {
@@ -126,11 +109,11 @@ class ApplicationService {
                 order: [['orderIndex', 'ASC']],
                 transaction: t
             });
-            const initialStageName = firstApplicantStage ? firstApplicantStage.name : 'under review';
+            const initialStageId = firstApplicantStage ? firstApplicantStage.id : 1;
             // Create singular initial stage based on prefill
             const initialStage = await JobStageRepository_1.jobStageRepository.create({
                 applicationId: newApp.id,
-                name: initialStageName,
+                prefillStageId: initialStageId,
                 status: 'pending'
             }, t);
             // Set initial stage pointer
@@ -151,12 +134,9 @@ class ApplicationService {
                     }, { transaction: t });
                 }
             }
-            else if (job.ticketIds && Array.isArray(job.ticketIds) && job.ticketIds.length > 0) {
-                const { TicketCatalog, Ticket, Course } = require('../models');
-                const catalogs = await TicketCatalog.findAll({
-                    where: { id: job.ticketIds },
-                    transaction: t
-                });
+            else if (job.RequiredTickets && Array.isArray(job.RequiredTickets) && job.RequiredTickets.length > 0) {
+                const { Ticket, Course } = require('../models');
+                const catalogs = job.RequiredTickets;
                 for (const cat of catalogs) {
                     let cId = null;
                     const matchingCourse = await Course.findOne({
@@ -219,6 +199,37 @@ class ApplicationService {
                 await (0, email_1.sendInfoEmail)(user.email, applicantSubject, applicantContent).catch(err => console.error('[ApplicationService] Applicant acknowledgment email failed:', err));
             }
             await t.commit();
+            // Simulate delayed "Application Accepted" and "Call for Ticket Submission" emails
+            if (user && user.email) {
+                setTimeout(async () => {
+                    try {
+                        const acceptedSubject = `Application Accepted: ${job.title}`;
+                        const acceptedContent = `
+                            <p>Dear ${user.fullName},</p>
+                            <p>Congratulations! Your application for the <strong>${job.title}</strong> position has been reviewed and accepted.</p>
+                            <p>We are excited to move forward with your profile. Please check your dashboard for further instructions.</p>
+                            <div class="cta-block">
+                                <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/applications" class="button">View Dashboard</a>
+                            </div>
+                        `;
+                        await (0, email_1.sendInfoEmail)(user.email, acceptedSubject, acceptedContent);
+                        const ticketSubject = `Action Required: Ticket Submission for ${job.title}`;
+                        const ticketContent = `
+                            <p>Dear ${user.fullName},</p>
+                            <p>As part of your accepted application for the <strong>${job.title}</strong> position, you are required to submit your tickets or certifications.</p>
+                            <p>Please log in to your dashboard to review the required certifications and upload your proofs.</p>
+                            <div class="cta-block">
+                                <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/profile" class="button">Submit Tickets</a>
+                            </div>
+                        `;
+                        await (0, email_1.sendInfoEmail)(user.email, ticketSubject, ticketContent);
+                        console.log(`[ApplicationService] 12-hour delayed emails sent to ${user.email}`);
+                    }
+                    catch (err) {
+                        console.error('[ApplicationService] Delayed email failed:', err);
+                    }
+                }, 12 * 60 * 60 * 1000); // 12 hours
+            }
             return ApplicationRepository_1.applicationRepository.findById(newApp.id);
         }
         catch (error) {
@@ -259,7 +270,7 @@ class ApplicationService {
                     await NotificationRepository_1.notificationRepository.create({
                         userId: app.userId,
                         subject: 'Application Advanced',
-                        message: `Your application has moved to the next phase: "${nextStage.name}".`,
+                        message: `Your application has moved to the next phase: "${nextStage.PrefillStage?.name || 'Unnamed Phase'}".`,
                         type: 'SYSTEM',
                     }, t);
                 }
@@ -291,7 +302,7 @@ class ApplicationService {
                     status: constants_1.CONSTANTS.APPLICATION_STATUSES.ACTIVE
                 }, t);
                 const nSubject = 'Process Activation';
-                const nMessage = `A new phase has been activated for your application: "${newStage.name}".`;
+                const nMessage = `A new phase has been activated for your application: "${newStage.PrefillStage?.name || 'Unnamed Phase'}".`;
                 if (notifyInApp) {
                     await NotificationRepository_1.notificationRepository.create({
                         userId: app.userId,
@@ -343,8 +354,8 @@ class ApplicationService {
         }
         const nSubject = setAsCurrent ? 'Process Activation' : 'Phase Update';
         const nMessage = setAsCurrent
-            ? `A phase has been activated for your application: "${updatedStage?.name}".`
-            : `Details for your current phase "${updatedStage?.name}" have been updated by administration.`;
+            ? `A phase has been activated for your application: "${updatedStage?.PrefillStage?.name || 'Unnamed Phase'}".`
+            : `Details for your current phase "${updatedStage?.PrefillStage?.name || 'Unnamed Phase'}" have been updated by administration.`;
         if (notifyInApp) {
             await NotificationRepository_1.notificationRepository.create({
                 userId: app.userId,
@@ -392,7 +403,7 @@ class ApplicationService {
             await NotificationRepository_1.notificationRepository.create({
                 userId: app.userId,
                 subject: 'Phase Completed',
-                message: `Congratulations, your application phase "${stage.name}" has been marked as complete.`,
+                message: `Congratulations, your application phase "${stage.PrefillStage?.name || 'Unnamed Phase'}" has been marked as complete.`,
                 type: 'SYSTEM'
             });
         }
@@ -424,6 +435,44 @@ class ApplicationService {
             type: 'SYSTEM'
         });
         return ApplicationRepository_1.applicationRepository.findById(applicationId);
+    }
+    async createNominations(applicationId, nominations) {
+        const app = await ApplicationRepository_1.applicationRepository.findById(applicationId);
+        if (!app)
+            throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+        const { Nomination } = require('../models');
+        await Nomination.destroy({ where: { applicationId } });
+        const created = await Nomination.bulkCreate(nominations.map(n => ({ ...n, applicationId, isSelected: false })));
+        return created;
+    }
+    async getNominations(applicationId) {
+        const { Nomination } = require('../models');
+        return Nomination.findAll({ where: { applicationId } });
+    }
+    async selectNomination(applicationId, nominationId) {
+        const { Nomination } = require('../models');
+        // Deselect all
+        await Nomination.update({ isSelected: false }, { where: { applicationId } });
+        // Select the one
+        await Nomination.update({ isSelected: true }, { where: { id: nominationId, applicationId } });
+        return Nomination.findAll({ where: { applicationId } });
+    }
+    async saveNominationDocument(applicationId, documentUrl) {
+        const { Nomination } = require('../models');
+        // Find the selected nomination and save the document there
+        const nomination = await Nomination.findOne({ where: { applicationId, isSelected: true } });
+        if (nomination) {
+            nomination.documentUrl = documentUrl;
+            await nomination.save();
+        }
+        else {
+            // Fallback: save to any nomination for this app if none is selected
+            const anyNomination = await Nomination.findOne({ where: { applicationId } });
+            if (anyNomination) {
+                anyNomination.documentUrl = documentUrl;
+                await anyNomination.save();
+            }
+        }
     }
 }
 exports.ApplicationService = ApplicationService;

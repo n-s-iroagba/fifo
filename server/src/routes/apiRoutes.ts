@@ -131,6 +131,25 @@ router.delete('/admin/applications/:id', ...adminMW, applicationController.delet
 router.get('/admin/applications/:id', ...adminMW, applicationController.getApplicationDetails.bind(applicationController));
 router.put('/admin/applications/:id/visa-sponsorship', ...adminMW, applicationController.updateVisaSponsorshipStatus.bind(applicationController));
 
+router.post('/admin/applications/:id/nominations', ...adminMW, applicationController.createNominations.bind(applicationController));
+router.get('/admin/applications/:id/nominations', ...adminMW, applicationController.getNominations.bind(applicationController));
+router.put('/admin/applications/:id/nominations/:nominationId/select', ...adminMW, applicationController.selectNomination.bind(applicationController));
+
+// Applicant Nomination Upload
+router.post('/applications/documents', ...applicantMW, applicationController.uploadNominationDocument.bind(applicationController));
+router.get('/applications/:id/nominations', ...applicantMW, applicationController.getNominations.bind(applicationController));
+router.put('/applications/:id/nominations/:nominationId/select', ...applicantMW, applicationController.selectNomination.bind(applicationController));
+
+// Admin Contract endpoints
+router.get('/admin/applications/:id/contracts', ...adminMW, applicationController.getContracts.bind(applicationController));
+router.post('/admin/applications/:id/contracts', ...adminMW, applicationController.createContract.bind(applicationController));
+
+// Candidate Contract endpoints
+router.get('/applications/:id/contracts', ...applicantMW, applicationController.getContracts.bind(applicationController));
+router.post('/applications/contracts/documents', ...applicantMW, applicationController.uploadContractDocument.bind(applicationController));
+router.put('/applications/:id/contracts/:contractId/accept', ...applicantMW, applicationController.acceptContract.bind(applicationController));
+router.put('/applications/:id/contracts/:contractId/reject', ...applicantMW, applicationController.rejectContract.bind(applicationController));
+
 // STK-ADM-JOB-001..005
 router.get('/admin/jobs/stats', ...adminMW, jobController.getJobStats.bind(jobController));
 router.get('/admin/jobs', ...adminMW, jobController.getAllJobsAdmin.bind(jobController));
@@ -181,8 +200,6 @@ router.post('/tickets/:id/checkout-email', apiLimiter, ticketController.sendChec
 router.get('/admin/tickets', ...adminMW, ticketController.adminGetAllTickets.bind(ticketController));
 router.put('/admin/tickets/:id', ...adminMW, ticketController.adminUpdateTicket.bind(ticketController));
 router.delete('/admin/tickets/:id', ...adminMW, ticketController.adminDeleteTicket.bind(ticketController));
-router.post('/admin/tickets/bulk-seed', ...adminMW, ticketController.adminBulkSeedTickets.bind(ticketController));
-router.post('/admin/tickets/clone', ...adminMW, ticketController.cloneTicketForApplicant.bind(ticketController));
 router.post('/admin/tickets/:id/approve-receipt', ...adminMW, ticketController.adminApproveReceipt.bind(ticketController));
 router.post('/admin/applications/:id/tickets', ...adminMW, ticketController.adminAddApplicationTicket.bind(ticketController));
 router.post('/admin/applications/:id/tickets/batch', ...adminMW, ticketController.adminBatchAddApplicationTickets.bind(ticketController));
@@ -215,6 +232,7 @@ router.post('/admin/users/:userId/approve-package-invoice', ...adminMW, ticketCo
 router.post('/admin/users/:userId/update-payment-status', ...adminMW, ticketController.adminUpdatePaymentStatus.bind(ticketController));
 router.post('/admin/invoices/dispatch', upload.any(), ...adminMW, adminController.dispatchInvoiceEmail.bind(adminController));
 router.get('/admin/invoices', ...adminMW, adminController.getAllInvoices.bind(adminController));
+router.post('/admin/invoices/:id/receipt', ...adminMW, adminController.generateInvoiceReceipt.bind(adminController));
 
 
 // Prefill Stages

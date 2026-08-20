@@ -236,6 +236,162 @@ export class ApplicationController {
             res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
+
+    public async createNominations(req: Request, res: Response): Promise<void> {
+        try {
+            const id = parseInt(req.params.id as string, 10);
+            const { nominations } = req.body;
+            const created = await applicationService.createNominations(id, nominations);
+            res.status(CONSTANTS.HTTP_STATUS.CREATED).json(created);
+        } catch (error: any) {
+            console.error('[ApplicationController.createNominations]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+
+    public async getNominations(req: Request, res: Response): Promise<void> {
+        try {
+            const id = parseInt(req.params.id as string, 10);
+            const nominations = await applicationService.getNominations(id);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json(nominations);
+        } catch (error: any) {
+            console.error('[ApplicationController.getNominations]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+
+    public async selectNomination(req: Request, res: Response): Promise<void> {
+        try {
+            const id = parseInt(req.params.id as string, 10);
+            const nominationId = parseInt(req.params.nominationId as string, 10);
+            const nominations = await applicationService.selectNomination(id, nominationId);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json(nominations);
+        } catch (error: any) {
+            console.error('[ApplicationController.selectNomination]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+
+    public async uploadNominationDocument(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = (req as any).user.id;
+            const { documentUrl, documentType, applicationId } = req.body;
+
+            if (!documentUrl || !applicationId) {
+                res.status(400).json({ error: 'documentUrl and applicationId are required' });
+                return;
+            }
+
+            await applicationService.saveNominationDocument(applicationId, documentUrl);
+
+            const { sendInfoEmail } = require('../utils/email');
+            
+            // Send the document to the admin
+            const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
+            const subject = `New Signed Nomination Form Uploaded (User ID: ${userId})`;
+            const content = `
+                <p>Hello Admin,</p>
+                <p>A candidate has uploaded their signed nomination form.</p>
+                <ul>
+                    <li><strong>Candidate User ID:</strong> ${userId}</li>
+                    <li><strong>Application ID:</strong> ${applicationId}</li>
+                    <li><strong>Document Type:</strong> ${documentType || 'Nomination Form'}</li>
+                    <li><strong>Document URL:</strong> <a href="${documentUrl}">View Document</a></li>
+                </ul>
+            `;
+
+            await sendInfoEmail(adminEmail, subject, content);
+
+            res.status(200).json({ message: 'Document uploaded successfully and sent to admin.' });
+        } catch (error: any) {
+            console.error('[ApplicationController.uploadNominationDocument]', error);
+            res.status(500).json({ error: 'Failed to upload document' });
+        }
+    }
+
+    public async getContracts(req: Request, res: Response): Promise<void> {
+        try {
+            const id = parseInt(req.params.id as string, 10);
+            const contracts = await applicationService.getContracts(id);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json(contracts);
+        } catch (error: any) {
+            console.error('[ApplicationController.getContracts]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+
+    public async createContract(req: Request, res: Response): Promise<void> {
+        try {
+            const id = parseInt(req.params.id as string, 10);
+            const { company, role } = req.body;
+            const contract = await applicationService.createContract(id, company, role);
+            res.status(CONSTANTS.HTTP_STATUS.CREATED).json(contract);
+        } catch (error: any) {
+            console.error('[ApplicationController.createContract]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+
+    public async acceptContract(req: Request, res: Response): Promise<void> {
+        try {
+            const id = parseInt(req.params.id as string, 10);
+            const contractId = parseInt(req.params.contractId as string, 10);
+            const contract = await applicationService.updateContractStatus(id, contractId, 'accepted');
+            res.status(CONSTANTS.HTTP_STATUS.OK).json(contract);
+        } catch (error: any) {
+            console.error('[ApplicationController.acceptContract]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+
+    public async rejectContract(req: Request, res: Response): Promise<void> {
+        try {
+            const id = parseInt(req.params.id as string, 10);
+            const contractId = parseInt(req.params.contractId as string, 10);
+            const contract = await applicationService.updateContractStatus(id, contractId, 'rejected');
+            res.status(CONSTANTS.HTTP_STATUS.OK).json(contract);
+        } catch (error: any) {
+            console.error('[ApplicationController.rejectContract]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+
+    public async uploadContractDocument(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = (req as any).user.id;
+            const { documentUrl, documentType, applicationId, contractId } = req.body;
+
+            if (!documentUrl || !applicationId || !contractId) {
+                res.status(400).json({ error: 'documentUrl, applicationId, and contractId are required' });
+                return;
+            }
+
+            await applicationService.saveContractDocument(applicationId, contractId, documentUrl);
+
+            const { sendInfoEmail } = require('../utils/email');
+            
+            // Send the document to the admin
+            const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
+            const subject = `New Signed Contract Uploaded (User ID: ${userId})`;
+            const content = `
+                <p>Hello Admin,</p>
+                <p>A candidate has uploaded their signed contract.</p>
+                <ul>
+                    <li><strong>Candidate User ID:</strong> ${userId}</li>
+                    <li><strong>Application ID:</strong> ${applicationId}</li>
+                    <li><strong>Contract ID:</strong> ${contractId}</li>
+                    <li><strong>Document URL:</strong> <a href="${documentUrl}">View Document</a></li>
+                </ul>
+            `;
+
+            await sendInfoEmail(adminEmail, subject, content);
+
+            res.status(200).json({ message: 'Document uploaded successfully and sent to admin.' });
+        } catch (error: any) {
+            console.error('[ApplicationController.uploadContractDocument]', error);
+            res.status(500).json({ error: 'Failed to upload document' });
+        }
+    }
 }
 
 export const applicationController = new ApplicationController();

@@ -33,12 +33,19 @@ class JobService {
         const job = await JobRepository_1.jobRepository.findById(id);
         if (!job)
             throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        return job;
+        const jobJson = job.toJSON();
+        if (jobJson.RequiredTickets) {
+            jobJson.ticketIds = jobJson.RequiredTickets.map((t) => t.id);
+        }
+        return jobJson;
     }
     async createJob(jobData) {
         const t = await database_1.sequelize.transaction();
         try {
             const job = await JobRepository_1.jobRepository.create(jobData, t);
+            if (jobData.ticketIds && Array.isArray(jobData.ticketIds)) {
+                await job.setRequiredTickets(jobData.ticketIds, { transaction: t });
+            }
             await t.commit();
             return job;
         }
@@ -57,6 +64,9 @@ class JobService {
             job = await JobRepository_1.jobRepository.findById(id, t);
             if (!job)
                 throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+            if (data.ticketIds && Array.isArray(data.ticketIds)) {
+                await job.setRequiredTickets(data.ticketIds, { transaction: t });
+            }
             await t.commit();
             return job;
         }

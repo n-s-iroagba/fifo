@@ -347,6 +347,36 @@ export default function AdminApplicantDetailPage() {
                         </div>
                     )}
 
+                    {/* Tickets Overview */}
+                    <div className="bg-white p-10 rounded-[2.5rem] border border-blue-100 shadow-2xl shadow-blue-900/5">
+                        <div className="flex items-center gap-4 mb-10 pb-4 border-b border-blue-50">
+                            <span className="material-symbols-outlined text-blue-900">confirmation_number</span>
+                            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-900">Tickets & Certifications</h2>
+                        </div>
+                        
+                        <div className="space-y-6">
+                            {user.Tickets && user.Tickets.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {user.Tickets.map((ticket: any) => (
+                                        <div key={ticket.id} className="p-4 border rounded-2xl flex flex-col gap-2 relative overflow-hidden group">
+                                            <div className="flex items-center justify-between">
+                                                <h4 className="font-black text-sm uppercase text-blue-900">{ticket.ticketType}</h4>
+                                                <span className={`px-2 py-1 text-[8px] font-black uppercase tracking-widest rounded ${ticket.status === 'possessed' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
+                                                    {ticket.status === 'possessed' ? 'Possessed' : 'Not Possessed'}
+                                                </span>
+                                            </div>
+                                            {ticket.status === 'possessed' && ticket.ticketNumber && (
+                                                <p className="text-xs font-bold text-blue-400"># {ticket.ticketNumber}</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-blue-400 text-center py-4">No tickets recorded for this applicant.</p>
+                            )}
+                        </div>
+                    </div>
+
                     {/* Application History - Active Applications */}
                     <div className="bg-white p-10 rounded-[2.5rem] border border-blue-100 shadow-2xl shadow-blue-900/5">
                         <div className="flex items-center gap-4 mb-10 pb-4 border-b border-blue-50">

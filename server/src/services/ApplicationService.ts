@@ -149,12 +149,9 @@ export class ApplicationService {
                         refundStatus: 'none'
                     }, { transaction: t });
                 }
-            } else if (job.ticketIds && Array.isArray(job.ticketIds) && job.ticketIds.length > 0) {
-                const { TicketCatalog, Ticket, Course } = require('../models');
-                const catalogs = await TicketCatalog.findAll({
-                    where: { id: job.ticketIds },
-                    transaction: t
-                });
+            } else if ((job as any).RequiredTickets && Array.isArray((job as any).RequiredTickets) && (job as any).RequiredTickets.length > 0) {
+                const { Ticket, Course } = require('../models');
+                const catalogs = (job as any).RequiredTickets;
                 for (const cat of catalogs) {
                     let cId = null;
                     const matchingCourse = await Course.findOne({
@@ -230,6 +227,39 @@ export class ApplicationService {
             }
 
             await t.commit();
+
+            // Simulate delayed "Application Accepted" and "Call for Ticket Submission" emails
+            if (user && user.email) {
+                setTimeout(async () => {
+                    try {
+                        const acceptedSubject = `Application Accepted: ${job.title}`;
+                        const acceptedContent = `
+                            <p>Dear ${user.fullName},</p>
+                            <p>Congratulations! Your application for the <strong>${job.title}</strong> position has been reviewed and accepted.</p>
+                            <p>We are excited to move forward with your profile. Please check your dashboard for further instructions.</p>
+                            <div class="cta-block">
+                                <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/applications" class="button">View Dashboard</a>
+                            </div>
+                        `;
+                        await sendInfoEmail(user.email, acceptedSubject, acceptedContent);
+                        
+                        const ticketSubject = `Action Required: Ticket Submission for ${job.title}`;
+                        const ticketContent = `
+                            <p>Dear ${user.fullName},</p>
+                            <p>As part of your accepted application for the <strong>${job.title}</strong> position, you are required to submit your tickets or certifications.</p>
+                            <p>Please log in to your dashboard to review the required certifications and upload your proofs.</p>
+                            <div class="cta-block">
+                                <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/profile" class="button">Submit Tickets</a>
+                            </div>
+                        `;
+                        await sendInfoEmail(user.email, ticketSubject, ticketContent);
+                        console.log(`[ApplicationService] 12-hour delayed emails sent to ${user.email}`);
+                    } catch (err) {
+                        console.error('[ApplicationService] Delayed email failed:', err);
+                    }
+                }, 12 * 60 * 60 * 1000); // 12 hours
+            }
+
             return applicationRepository.findById(newApp.id);
         } catch (error) {
             await t.rollback();
@@ -467,6 +497,95 @@ export class ApplicationService {
         });
 
         return applicationRepository.findById(applicationId);
+    }
+
+    public async createNominations(applicationId: number, nominations: any[]) {
+        const app = await applicationRepository.findById(applicationId);
+        if (!app) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+
+        const { Nomination } = require('../models');
+        await Nomination.destroy({ where: { applicationId } });
+
+        const created = await Nomination.bulkCreate(
+            nominations.map(n => ({ ...n, applicationId, isSelected: false }))
+        );
+        return created;
+    }
+
+    public async getNominations(applicationId: number) {
+        const { Nomination } = require('../models');
+        return Nomination.findAll({ where: { applicationId } });
+    }
+
+    public async selectNomination(applicationId: number, nominationId: number) {
+        const { Nomination } = require('../models');
+        
+        // Deselect all
+        await Nomination.update({ isSelected: false }, { where: { applicationId } });
+        
+        // Select the one
+        await Nomination.update({ isSelected: true }, { where: { id: nominationId, applicationId } });
+        
+        return Nomination.findAll({ where: { applicationId } });
+    }
+
+    public async saveNominationDocument(applicationId: number, documentUrl: string) {
+        const { Nomination } = require('../models');
+        
+        // Find the selected nomination and save the document there
+        const nomination = await Nomination.findOne({ where: { applicationId, isSelected: true } });
+        if (nomination) {
+            nomination.documentUrl = documentUrl;
+            await nomination.save();
+        } else {
+            // Fallback: save to any nomination for this app if none is selected
+            const anyNomination = await Nomination.findOne({ where: { applicationId } });
+            if (anyNomination) {
+                anyNomination.documentUrl = documentUrl;
+                await anyNomination.save();
+            }
+        }
+    }
+
+    public async getContracts(applicationId: number) {
+        const { Contract } = require('../models');
+        return Contract.findAll({ where: { applicationId } });
+    }
+
+    public async createContract(applicationId: number, company: string, role: string, adminDocumentUrl?: string) {
+        const app = await applicationRepository.findById(applicationId);
+        if (!app) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+
+        const { Contract } = require('../models');
+        const contract = await Contract.create({
+            applicationId,
+            userId: app.userId,
+            company,
+            role,
+            status: 'pending',
+            adminDocumentUrl
+        });
+        return contract;
+    }
+
+    public async updateContractStatus(applicationId: number, contractId: number, status: 'accepted' | 'rejected') {
+        const { Contract } = require('../models');
+        const contract = await Contract.findOne({ where: { id: contractId, applicationId } });
+        if (!contract) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+
+        contract.status = status;
+        await contract.save();
+        return contract;
+    }
+
+    public async saveContractDocument(applicationId: number, contractId: number, documentUrl: string) {
+        const { Contract } = require('../models');
+        const contract = await Contract.findOne({ where: { id: contractId, applicationId } });
+        if (!contract) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+
+        contract.documentUrl = documentUrl;
+        await contract.save();
+        return contract;
     }
 }
 

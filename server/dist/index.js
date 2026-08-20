@@ -11,6 +11,7 @@ const logger_1 = require("./utils/logger");
 require("./models");
 const seedDatabase_1 = require("./seedDatabase");
 const payment_milestone_migration_1 = require("./migrations/payment_milestone_migration");
+const accounting_migration_1 = require("./migrations/accounting_migration");
 const PORT = process.env.PORT || 5000;
 const startServer = async () => {
     try {
@@ -20,6 +21,8 @@ const startServer = async () => {
             // Run heavy seeding and migrations in the background so Fly.io health checks don't timeout
             try {
                 (0, payment_milestone_migration_1.migratePaymentMilestone)().then(() => {
+                    return (0, accounting_migration_1.migrateAccountingAndSubsidy)();
+                }).then(() => {
                     return (0, seedDatabase_1.seedDatabase)();
                 }).then(() => {
                     logger_1.logger.info('Database seeded successfully in background.');

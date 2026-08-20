@@ -69,6 +69,13 @@ export default function AdminApplicationsPage() {
                                             >
                                                 View Details
                                             </Link>
+                                            <Link
+                                                href={`/admin/mail?to=${app.User?.email}&applicantId=${app.userId}`}
+                                                className="p-2.5 text-blue-300 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                                                title="Send Mail"
+                                            >
+                                                <span className="material-symbols-outlined text-lg">mail</span>
+                                            </Link>
                                             <button
                                                 onClick={async () => {
                                                     if (confirm('Are you sure you want to permanently delete this application? This will also remove all associated stages and payments.')) {

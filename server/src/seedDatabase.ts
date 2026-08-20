@@ -59,6 +59,15 @@ export async function seedDatabase() {
         }
     }
 
+    try {
+        await sequelize.query("ALTER TABLE job_listings ADD COLUMN benefits TEXT DEFAULT NULL;");
+        console.log("Safely patched job_listings table with benefits.");
+    } catch (e: any) {
+        if (e.original && e.original.code !== 'ER_DUP_FIELDNAME') {
+            console.log("Notice: benefits column might already exist or could not be added:", e.message);
+        }
+    }
+
     // Safely add missing LMS/billing columns to User without triggering full User sync
     const userColumns = [
         "ADD COLUMN candidateNumber VARCHAR(255) UNIQUE DEFAULT NULL",

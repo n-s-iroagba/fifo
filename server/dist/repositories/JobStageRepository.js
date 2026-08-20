@@ -6,12 +6,16 @@ class JobStageRepository {
     async findByApplicationId(applicationId, transaction) {
         return models_1.JobStage.findAndCountAll({
             where: { applicationId },
-            order: [['orderPosition', 'ASC']],
+            include: [{ model: models_1.PrefillStage, as: 'PrefillStage' }],
+            order: [['createdAt', 'ASC']],
             transaction
         });
     }
     async findById(id, transaction) {
-        return models_1.JobStage.findByPk(id, { transaction });
+        return models_1.JobStage.findByPk(id, {
+            include: [{ model: models_1.PrefillStage, as: 'PrefillStage' }],
+            transaction
+        });
     }
     // Maps to STK-ADM-STAGE-001, STK-ADM-STAGE-002, SCR-ADM-STAGEFORM-001
     async create(data, transaction) {

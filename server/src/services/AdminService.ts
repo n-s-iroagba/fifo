@@ -163,7 +163,10 @@ export class AdminService {
         if (!user || user.role !== CONSTANTS.ROLES.APPLICANT) {
             throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
         }
-        return user;
+        const { Ticket } = require('../models');
+        const tickets = await Ticket.findAll({ where: { userId: id } });
+        const userJson = user.toJSON();
+        return { ...userJson, Tickets: tickets };
     }
 
     public async getAllApplicants(limit?: number, offset?: number) {

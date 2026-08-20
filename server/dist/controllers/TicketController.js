@@ -62,7 +62,7 @@ class TicketController {
             if (!bankName || !accountNumber || !accountName) {
                 res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({
                     code: 400,
-                    message: 'Please carefully provide complete bank account details for refund processing.'
+                    message: 'Please carefully provide complete USDT TRC-20 wallet details for refund processing.'
                 });
                 return;
             }
@@ -612,7 +612,7 @@ class TicketController {
             }
             const { bankName, accountNumber, accountName } = req.body;
             if (!bankName || !accountNumber || !accountName) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Complete bank account details are required.' });
+                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Complete USDT TRC-20 wallet details are required.' });
                 return;
             }
             const result = await TicketService_1.ticketService.applyBatchPackageSponsorship(userId, { bankName, accountNumber, accountName });
@@ -636,7 +636,7 @@ class TicketController {
                 return;
             }
             if (!bankAccount || !bankAccount.bankName || !bankAccount.accountNumber) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Bank account details are required.' });
+                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'USDT TRC-20 wallet details are required.' });
                 return;
             }
             const result = await TicketService_1.ticketService.approvePackageAndSendInvoice(userId, bankAccount, adminNotes);

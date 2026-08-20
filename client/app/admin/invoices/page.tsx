@@ -258,6 +258,7 @@ export default function AdminInvoicesPage() {
                                 <th className="p-4 font-black uppercase tracking-widest text-xs text-zinc-500">Purpose</th>
                                 <th className="p-4 font-black uppercase tracking-widest text-xs text-zinc-500 text-right">Amount (AUD)</th>
                                 <th className="p-4 font-black uppercase tracking-widest text-xs text-zinc-500">Date</th>
+                                <th className="p-4 font-black uppercase tracking-widest text-xs text-zinc-500 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-100">
@@ -285,10 +286,32 @@ export default function AdminInvoicesPage() {
                                     <td className="p-4 font-medium text-zinc-500 text-xs">
                                         {new Date(inv.createdAt).toLocaleDateString()}
                                     </td>
+                                    <td className="p-4 text-right">
+                                        {!inv.isPaid ? (
+                                            <button 
+                                                onClick={async () => {
+                                                    if (!confirm('Mark this invoice as Paid and generate a receipt?')) return;
+                                                    try {
+                                                        await api.post(`/admin/invoices/${inv.id}/receipt`);
+                                                        fetchInvoices();
+                                                    } catch (e) {
+                                                        alert('Failed to generate receipt');
+                                                    }
+                                                }}
+                                                className="bg-zinc-900 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded hover:bg-zinc-800 transition-colors"
+                                            >
+                                                Generate Receipt
+                                            </button>
+                                        ) : (
+                                            <span className="text-emerald-600 text-[10px] font-black uppercase tracking-widest bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded flex items-center justify-end gap-1 w-max ml-auto">
+                                                <CheckCircle2 className="w-3 h-3" /> Paid & Receipted
+                                            </span>
+                                        )}
+                                    </td>
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan={4} className="p-8 text-center text-zinc-500 font-medium text-sm">No invoices have been generated yet.</td>
+                                    <td colSpan={5} className="p-8 text-center text-zinc-500 font-medium text-sm">No invoices have been generated yet.</td>
                                 </tr>
                             )}
                         </tbody>

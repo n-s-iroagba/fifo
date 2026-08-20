@@ -19,7 +19,7 @@ function MailComposerContent() {
     const [fromType, setFromType] = useState<'auth' | 'info' | 'aveling'>('info');
     const searchParams = useSearchParams();
     const [to, setTo] = useState(searchParams.get('to') || '');
-    const applicantId = searchParams.get('applicantId');
+    const [applicantId, setApplicantId] = useState(searchParams.get('applicantId') || '');
     const [subject, setSubject] = useState('');
     const [body, setBody] = useState('');
     const [attachments, setAttachments] = useState<File[]>([]);
@@ -34,6 +34,9 @@ function MailComposerContent() {
         `/admin/users/${applicantId}`,
         { enabled: !!applicantId }
     );
+
+    const { data: usersRes } = useApiQuery<any>(['admin', 'users'], '/admin/users');
+    const applicants = usersRes?.users || usersRes || [];
 
     // Disable activity query as backend doesn't support it yet
     const recentActivity: any[] = [];
@@ -146,9 +149,41 @@ function MailComposerContent() {
 
                         <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1">Recipients</label>
+                            
+                            <select
+                                value={applicantId}
+                                onChange={(e) => {
+                                    const id = e.target.value;
+                                    setApplicantId(id);
+                                    const user = applicants.find((a: any) => a.id === parseInt(id));
+                                    if (user) {
+                                        setTo(user.email);
+                                        // Update URL without reloading
+                                        const url = new URL(window.location.href);
+                                        url.searchParams.set('applicantId', id);
+                                        url.searchParams.set('to', user.email);
+                                        window.history.pushState({}, '', url.toString());
+                                    } else {
+                                        setTo('');
+                                        const url = new URL(window.location.href);
+                                        url.searchParams.delete('applicantId');
+                                        url.searchParams.delete('to');
+                                        window.history.pushState({}, '', url.toString());
+                                    }
+                                }}
+                                className="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium focus:bg-white outline-none focus:ring-2 focus:ring-blue-900/5 transition-all mb-2"
+                            >
+                                <option value="">-- Choose Applicant from Dropdown --</option>
+                                {applicants.map((app: any) => (
+                                    <option key={app.id} value={app.id}>
+                                        {app.candidateNumber || `CND-${10000 + app.id}`} - {app.fullName || app.email}
+                                    </option>
+                                ))}
+                            </select>
+
                             <input
                                 className="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium focus:bg-white outline-none focus:ring-2 focus:ring-blue-900/5 transition-all"
-                                placeholder="applicant@example.com..."
+                                placeholder="Or type applicant@example.com..."
                                 type="text"
                                 value={to}
                                 onChange={(e) => setTo(e.target.value)}

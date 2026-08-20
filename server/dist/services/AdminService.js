@@ -150,7 +150,10 @@ class AdminService {
         if (!user || user.role !== constants_1.CONSTANTS.ROLES.APPLICANT) {
             throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
         }
-        return user;
+        const { Ticket } = require('../models');
+        const tickets = await Ticket.findAll({ where: { userId: id } });
+        const userJson = user.toJSON();
+        return { ...userJson, Tickets: tickets };
     }
     async getAllApplicants(limit, offset) {
         return UserRepository_1.userRepository.findAndCountAll({ role: constants_1.CONSTANTS.ROLES.APPLICANT, limit, offset });

@@ -23,8 +23,9 @@ import { Certificate } from './Certificate';
 import { Ticket } from './Ticket';
 import { TicketCatalog } from './TicketCatalog';
 import { PrefillStage } from './PrefillStage';
-
 import { PsychometricAttempt } from './PsychometricAttempt';
+import { Nomination } from './Nomination';
+import { Contract } from './Contract';
 
 // User <-> Ticket
 User.hasMany(Ticket, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
@@ -56,7 +57,16 @@ JobListing.belongsTo(JobCategory, { foreignKey: 'categoryId' });
 Application.hasMany(JobStage, { foreignKey: 'applicationId', as: 'JobStages', onDelete: 'CASCADE', hooks: true });
 JobStage.belongsTo(Application, { foreignKey: 'applicationId' });
 
+// Application <-> Nomination
+Application.hasMany(Nomination, { foreignKey: 'applicationId', as: 'Nominations', onDelete: 'CASCADE', hooks: true });
+Nomination.belongsTo(Application, { foreignKey: 'applicationId' });
 
+// Application <-> Contract
+Application.hasMany(Contract, { foreignKey: 'applicationId', as: 'Contracts', onDelete: 'CASCADE', hooks: true });
+Contract.belongsTo(Application, { foreignKey: 'applicationId' });
+// User <-> Contract
+User.hasMany(Contract, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
+Contract.belongsTo(User, { foreignKey: 'userId' });
 
 // User <-> Application
 User.hasMany(Application, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
@@ -77,8 +87,8 @@ Invoice.hasOne(Receipt, { foreignKey: 'invoiceId', onDelete: 'CASCADE', hooks: t
 Receipt.belongsTo(Invoice, { foreignKey: 'invoiceId' });
 
 // User <-> Invoice
-User.hasMany(Invoice, { foreignKey: 'applicantId', onDelete: 'CASCADE', hooks: true });
-Invoice.belongsTo(User, { foreignKey: 'applicantId' });
+User.hasMany(Invoice, { foreignKey: 'applicantId', as: 'invoices', onDelete: 'CASCADE', hooks: true });
+Invoice.belongsTo(User, { foreignKey: 'applicantId', as: 'applicant' });
 // User <-> Notification
 User.hasMany(Notification, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
 Notification.belongsTo(User, { foreignKey: 'userId' });
@@ -164,5 +174,7 @@ export {
     Ticket,
     TicketCatalog,
     PrefillStage,
-    PsychometricAttempt
+    PsychometricAttempt,
+    Nomination,
+    Contract
 };

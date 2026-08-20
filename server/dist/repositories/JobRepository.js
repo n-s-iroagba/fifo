@@ -96,7 +96,7 @@ class JobRepository {
             where: whereClause,
             limit: options.limit || 20,
             offset: options.offset || 0,
-            include: [models_1.JobCategory],
+            include: [models_1.JobCategory, { model: models_1.TicketCatalog, as: 'RequiredTickets' }],
             order,
             subQuery: false
         });
@@ -104,7 +104,7 @@ class JobRepository {
     // Maps to STK-APP-APPLY-001, STK-APP-PAY-001
     async findById(id, transaction) {
         return models_1.JobListing.findByPk(id, {
-            include: [models_1.JobCategory],
+            include: [models_1.JobCategory, { model: models_1.TicketCatalog, as: 'RequiredTickets' }],
             transaction
         });
     }

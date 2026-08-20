@@ -7,7 +7,6 @@ const express_1 = require("express");
 const AuthController_1 = require("../controllers/AuthController");
 const JobController_1 = require("../controllers/JobController");
 const ApplicationController_1 = require("../controllers/ApplicationController");
-const PaymentController_1 = require("../controllers/PaymentController");
 const AdminController_1 = require("../controllers/AdminController");
 const NotificationController_1 = require("../controllers/NotificationController");
 const CvController_1 = require("../controllers/CvController");
@@ -87,11 +86,6 @@ router.post('/tickets/:id/refund-choice', ...applicantMW, TicketController_1.tic
 router.post('/tickets/:id/pay-aveling', ...applicantMW, TicketController_1.ticketController.payTicketOnAveling.bind(TicketController_1.ticketController));
 router.post('/tickets/:id/exam-outcome', ...applicantMW, TicketController_1.ticketController.recordExamOutcome.bind(TicketController_1.ticketController));
 router.post('/tickets/:id/set-review-awaiting', ...applicantMW, TicketController_1.ticketController.setExamReviewAwaiting.bind(TicketController_1.ticketController));
-// STK-APP-PAY-001: payment details with bank account routing
-router.get('/payments/me', ...applicantMW, PaymentController_1.paymentController.getMyAvelingInvoices.bind(PaymentController_1.paymentController));
-router.get('/payments/:id', ...applicantMW, PaymentController_1.paymentController.getPaymentDetails.bind(PaymentController_1.paymentController));
-// STK-APP-PAY-002, STK-APP-PAY-003: upload proof
-router.post('/payments/:id/proof', ...applicantMW, PaymentController_1.paymentController.uploadProof.bind(PaymentController_1.paymentController));
 // STK-APP-NOTIF-001..003, TRUST-008: notifications
 router.get('/notifications', ...applicantMW, NotificationController_1.notificationController.getUserNotifications.bind(NotificationController_1.notificationController));
 router.put('/notifications/mark-all-read', ...applicantMW, NotificationController_1.notificationController.markAllRead.bind(NotificationController_1.notificationController));
@@ -118,12 +112,11 @@ router.post('/admin/applications/:id/complete', ...adminMW, ApplicationControlle
 router.delete('/admin/applications/:id', ...adminMW, ApplicationController_1.applicationController.deleteApplication.bind(ApplicationController_1.applicationController));
 router.get('/admin/applications/:id', ...adminMW, ApplicationController_1.applicationController.getApplicationDetails.bind(ApplicationController_1.applicationController));
 router.put('/admin/applications/:id/visa-sponsorship', ...adminMW, ApplicationController_1.applicationController.updateVisaSponsorshipStatus.bind(ApplicationController_1.applicationController));
-// STK-ADM-PAY-003: unpaid payments view
-router.get('/admin/payments/unpaid', ...adminMW, PaymentController_1.paymentController.getPendingPaymentsAdmin.bind(PaymentController_1.paymentController));
-// STK-ADM-PAY-004: unverified payments (screenshot uploaded, not confirmed)
-router.get('/admin/payments/unverified', ...adminMW, PaymentController_1.paymentController.getUnverifiedPaymentsAdmin.bind(PaymentController_1.paymentController));
-// STK-ADM-PAY-001, STK-ADM-PAY-002: verify payment
-router.post('/admin/payments/:id/verify', ...adminMW, PaymentController_1.paymentController.verifyPayment.bind(PaymentController_1.paymentController));
+router.post('/admin/applications/:id/nominations', ...adminMW, ApplicationController_1.applicationController.createNominations.bind(ApplicationController_1.applicationController));
+router.get('/admin/applications/:id/nominations', ...adminMW, ApplicationController_1.applicationController.getNominations.bind(ApplicationController_1.applicationController));
+router.put('/admin/applications/:id/nominations/:nominationId/select', ...adminMW, ApplicationController_1.applicationController.selectNomination.bind(ApplicationController_1.applicationController));
+// Applicant Nomination Upload
+router.post('/applications/documents', ...applicantMW, ApplicationController_1.applicationController.uploadNominationDocument.bind(ApplicationController_1.applicationController));
 // STK-ADM-JOB-001..005
 router.get('/admin/jobs/stats', ...adminMW, JobController_1.jobController.getJobStats.bind(JobController_1.jobController));
 router.get('/admin/jobs', ...adminMW, JobController_1.jobController.getAllJobsAdmin.bind(JobController_1.jobController));
@@ -157,6 +150,7 @@ router.post('/admin/users/:id/eoi-mail', ...adminMW, AdminController_1.adminCont
 router.put('/admin/users/:id/wallet', ...adminMW, AdminController_1.adminController.updateApplicantWallet.bind(AdminController_1.adminController));
 router.put('/admin/users/:id/aveling-credentials', ...adminMW, AdminController_1.adminController.updateAvelingCredentials.bind(AdminController_1.adminController));
 router.put('/admin/users/:id/admin-stage', ...adminMW, AdminController_1.adminController.updateApplicantAdminStage.bind(AdminController_1.adminController));
+router.put('/admin/users/:id/subsidy-percentage', ...adminMW, AdminController_1.adminController.updateApplicantSubsidy.bind(AdminController_1.adminController));
 router.put('/admin/applicants/:id/aveling-credentials', ...adminMW, AdminController_1.adminController.updateAvelingCredentials.bind(AdminController_1.adminController));
 // Candidate Portal Lookup & Payment Email Routes
 router.post('/candidate/lookup', rateLimiter_1.apiLimiter, TicketController_1.ticketController.candidateLookup.bind(TicketController_1.ticketController));
@@ -165,8 +159,6 @@ router.post('/tickets/:id/checkout-email', rateLimiter_1.apiLimiter, TicketContr
 router.get('/admin/tickets', ...adminMW, TicketController_1.ticketController.adminGetAllTickets.bind(TicketController_1.ticketController));
 router.put('/admin/tickets/:id', ...adminMW, TicketController_1.ticketController.adminUpdateTicket.bind(TicketController_1.ticketController));
 router.delete('/admin/tickets/:id', ...adminMW, TicketController_1.ticketController.adminDeleteTicket.bind(TicketController_1.ticketController));
-router.post('/admin/tickets/bulk-seed', ...adminMW, TicketController_1.ticketController.adminBulkSeedTickets.bind(TicketController_1.ticketController));
-router.post('/admin/tickets/clone', ...adminMW, TicketController_1.ticketController.cloneTicketForApplicant.bind(TicketController_1.ticketController));
 router.post('/admin/tickets/:id/approve-receipt', ...adminMW, TicketController_1.ticketController.adminApproveReceipt.bind(TicketController_1.ticketController));
 router.post('/admin/applications/:id/tickets', ...adminMW, TicketController_1.ticketController.adminAddApplicationTicket.bind(TicketController_1.ticketController));
 router.post('/admin/applications/:id/tickets/batch', ...adminMW, TicketController_1.ticketController.adminBatchAddApplicationTickets.bind(TicketController_1.ticketController));
@@ -193,8 +185,9 @@ router.post('/tickets/apply-batch-sponsorship', ...applicantMW, TicketController
 router.post('/admin/users/:userId/approve-package-invoice', ...adminMW, TicketController_1.ticketController.approvePackageAndSendInvoice.bind(TicketController_1.ticketController));
 // Payment status milestone (partial / complete) & Custom Invoicing
 router.post('/admin/users/:userId/update-payment-status', ...adminMW, TicketController_1.ticketController.adminUpdatePaymentStatus.bind(TicketController_1.ticketController));
-router.post('/admin/invoices/create-and-send', ...adminMW, TicketController_1.ticketController.createAndSendCustomInvoice.bind(TicketController_1.ticketController));
-router.get('/admin/users/:userId/aveling-invoices', ...adminMW, PaymentController_1.paymentController.getUserAvelingInvoices.bind(PaymentController_1.paymentController));
+router.post('/admin/invoices/dispatch', upload.any(), ...adminMW, AdminController_1.adminController.dispatchInvoiceEmail.bind(AdminController_1.adminController));
+router.get('/admin/invoices', ...adminMW, AdminController_1.adminController.getAllInvoices.bind(AdminController_1.adminController));
+router.post('/admin/invoices/:id/receipt', ...adminMW, AdminController_1.adminController.generateInvoiceReceipt.bind(AdminController_1.adminController));
 // Prefill Stages
 router.get('/admin/prefill-stages', ...adminMW, prefillStageController.getPrefillStages.bind(prefillStageController));
 router.post('/admin/prefill-stages', ...adminMW, prefillStageController.createPrefillStage.bind(prefillStageController));

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendEmail = exports.sendWelcomeEmail = exports.sendEOIEmail = exports.sendApexInvitationEmail = exports.sendEmailFrom = exports.sendAvelingEmail = exports.sendInfoEmail = exports.sendAuthEmail = void 0;
+exports.sendReceiptEmail = exports.sendInvoiceEmail = exports.sendContractEmail = exports.sendSingleRoleNominationEmail = exports.sendMultipleRolesNominationEmail = exports.sendEmail = exports.sendWelcomeEmail = exports.sendEOIEmail = exports.sendApexInvitationEmail = exports.sendEmailFrom = exports.sendAvelingEmail = exports.sendInfoEmail = exports.sendAuthEmail = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const path_1 = __importDefault(require("path"));
 const createTransporter = (user, pass) => {
@@ -265,3 +265,120 @@ const sendWelcomeEmail = async (to, userName) => {
 exports.sendWelcomeEmail = sendWelcomeEmail;
 // Backward compatibility or generic usage
 exports.sendEmail = exports.sendInfoEmail;
+// 1. Nomination Email Templates
+const sendMultipleRolesNominationEmail = async (to, candidateName, totalApplicants, companyName, requiredApplicants) => {
+    const subject = `Official Nomination Notification: ${companyName}`;
+    const content = `
+        <p>Dear ${candidateName},</p>
+        <p>We are pleased to inform you that you have been officially nominated for multiple potential roles at <strong>${companyName}</strong>.</p>
+        <p><strong>Nomination Details:</strong></p>
+        <ul>
+            <li>Target Company: ${companyName}</li>
+            <li>Required Applicants: ${requiredApplicants}</li>
+            <li>Total Pool Size: ${totalApplicants}</li>
+        </ul>
+        <p>Please log in to your dashboard for further instructions on how to proceed.</p>
+    `;
+    await (0, exports.sendInfoEmail)(to, subject, content);
+};
+exports.sendMultipleRolesNominationEmail = sendMultipleRolesNominationEmail;
+const sendSingleRoleNominationEmail = async (to, candidateName, totalApplicants, companyName, roleTitle, requiredApplicants) => {
+    const subject = `Official Nomination Notification: ${roleTitle} at ${companyName}`;
+    const content = `
+        <p>Dear ${candidateName},</p>
+        <p>We are pleased to inform you that you have been officially nominated for the position of <strong>${roleTitle}</strong> at <strong>${companyName}</strong>.</p>
+        <p><strong>Nomination Details:</strong></p>
+        <ul>
+            <li>Target Company: ${companyName}</li>
+            <li>Role: ${roleTitle}</li>
+            <li>Required Applicants: ${requiredApplicants}</li>
+            <li>Total Pool Size: ${totalApplicants}</li>
+        </ul>
+        <p>Please log in to your dashboard for further instructions on how to proceed.</p>
+    `;
+    await (0, exports.sendInfoEmail)(to, subject, content);
+};
+exports.sendSingleRoleNominationEmail = sendSingleRoleNominationEmail;
+// 2. Contract Email Template
+const sendContractEmail = async (to, candidateName, subsidyPercentage, nominationDetails, currentDate, attachments = []) => {
+    const subject = `Your Training and Ticket Acquisition Contract`;
+    const content = `
+        <p>Dear ${candidateName},</p>
+        <p>Following your successful nomination, please find attached your official contract.</p>
+        <p><strong>Contract Summary:</strong></p>
+        <ul>
+            <li>Date: ${currentDate}</li>
+            <li>Nomination Details: ${nominationDetails}</li>
+            <li>Approved Subsidy: ${subsidyPercentage}%</li>
+        </ul>
+        <p>Please review, sign, and return the attached contract document within the stipulated timeframe.</p>
+    `;
+    await (0, exports.sendInfoEmail)(to, subject, content, attachments);
+};
+exports.sendContractEmail = sendContractEmail;
+// 3. Invoice Email Template
+const sendInvoiceEmail = async (to, candidateName, invoiceType, partAmount, totalCost, subsidyPercentage, finalAmountDue, attachments = []) => {
+    let typeDescription = '';
+    let emailServer = 'aveling';
+    switch (invoiceType) {
+        case 'aveling-partial':
+            typeDescription = 'Partial Aveling Training Invoice';
+            break;
+        case 'aveling-complete-after-partial':
+            typeDescription = 'Full Aveling Training Invoice (After Partial)';
+            break;
+        case 'aveling-complete':
+            typeDescription = 'Full Aveling Training Invoice (10% Discount Applied)';
+            break;
+        case 'second-attempt':
+            typeDescription = 'Aveling Second Attempt Invoice';
+            break;
+        case 'visa-blue-collar':
+            typeDescription = 'Visa & Blue Collar Processing Invoice';
+            emailServer = 'info';
+            break;
+    }
+    const subject = `Invoice for ${typeDescription}`;
+    const content = `
+        <p>Dear ${candidateName},</p>
+        <p>Please find the details of your invoice for <strong>${typeDescription}</strong>.</p>
+        <p><strong>Financial Breakdown:</strong></p>
+        <ul>
+            <li>Total Cost: $${totalCost.toFixed(2)}</li>
+            <li>Approved Subsidy: ${subsidyPercentage}%</li>
+            <li>Part/Adjusted Amount: $${partAmount.toFixed(2)}</li>
+            <li><strong>Final Amount Due: $${finalAmountDue.toFixed(2)}</strong></li>
+        </ul>
+        <p>Please arrange for payment at your earliest convenience to avoid delays in your processing.</p>
+    `;
+    if (emailServer === 'aveling') {
+        await (0, exports.sendAvelingEmail)(to, subject, content, attachments);
+    }
+    else {
+        await (0, exports.sendInfoEmail)(to, subject, content, attachments);
+    }
+};
+exports.sendInvoiceEmail = sendInvoiceEmail;
+// 4. Receipt Email Template
+const sendReceiptEmail = async (to, candidateName, receiptType, amountPaid, invoiceId, attachments = []) => {
+    const emailServer = receiptType === 'aveling' ? 'aveling' : 'info';
+    const subject = `Payment Receipt - Invoice #${invoiceId}`;
+    const content = `
+        <p>Dear ${candidateName},</p>
+        <p>We have successfully received your payment.</p>
+        <p><strong>Receipt Details:</strong></p>
+        <ul>
+            <li>Linked Invoice ID: #${invoiceId}</li>
+            <li>Amount Paid: $${amountPaid.toFixed(2)}</li>
+            <li>Category: ${receiptType === 'aveling' ? 'Aveling LMS Training' : 'BlueCollar Infrastructure'}</li>
+        </ul>
+        <p>Thank you for your prompt payment.</p>
+    `;
+    if (emailServer === 'aveling') {
+        await (0, exports.sendAvelingEmail)(to, subject, content, attachments);
+    }
+    else {
+        await (0, exports.sendInfoEmail)(to, subject, content, attachments);
+    }
+};
+exports.sendReceiptEmail = sendReceiptEmail;

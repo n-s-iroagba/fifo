@@ -238,6 +238,72 @@ class ApplicationController {
             res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
+    async createNominations(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const { nominations } = req.body;
+            const created = await ApplicationService_1.applicationService.createNominations(id, nominations);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json(created);
+        }
+        catch (error) {
+            console.error('[ApplicationController.createNominations]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async getNominations(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const nominations = await ApplicationService_1.applicationService.getNominations(id);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(nominations);
+        }
+        catch (error) {
+            console.error('[ApplicationController.getNominations]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async selectNomination(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const nominationId = parseInt(req.params.nominationId, 10);
+            const nominations = await ApplicationService_1.applicationService.selectNomination(id, nominationId);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(nominations);
+        }
+        catch (error) {
+            console.error('[ApplicationController.selectNomination]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async uploadNominationDocument(req, res) {
+        try {
+            const userId = req.user.id;
+            const { documentUrl, documentType, applicationId } = req.body;
+            if (!documentUrl || !applicationId) {
+                res.status(400).json({ error: 'documentUrl and applicationId are required' });
+                return;
+            }
+            await ApplicationService_1.applicationService.saveNominationDocument(applicationId, documentUrl);
+            const { sendInfoEmail } = require('../utils/email');
+            // Send the document to the admin
+            const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
+            const subject = `New Signed Nomination Form Uploaded (User ID: ${userId})`;
+            const content = `
+                <p>Hello Admin,</p>
+                <p>A candidate has uploaded their signed nomination form.</p>
+                <ul>
+                    <li><strong>Candidate User ID:</strong> ${userId}</li>
+                    <li><strong>Application ID:</strong> ${applicationId}</li>
+                    <li><strong>Document Type:</strong> ${documentType || 'Nomination Form'}</li>
+                    <li><strong>Document URL:</strong> <a href="${documentUrl}">View Document</a></li>
+                </ul>
+            `;
+            await sendInfoEmail(adminEmail, subject, content);
+            res.status(200).json({ message: 'Document uploaded successfully and sent to admin.' });
+        }
+        catch (error) {
+            console.error('[ApplicationController.uploadNominationDocument]', error);
+            res.status(500).json({ error: 'Failed to upload document' });
+        }
+    }
 }
 exports.ApplicationController = ApplicationController;
 exports.applicationController = new ApplicationController();

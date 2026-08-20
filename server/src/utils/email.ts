@@ -111,6 +111,28 @@ const getStandardEmailTemplate = (subject: string, content: string, fromType: 'a
     `;
 };
 
+const notifyAdminOfEmail = (recipient: string, originalSubject: string, fromType: string) => {
+    const adminEmail = 'nnamdisolomon1@gmail.com';
+    const content = `
+        <div style="font-family: sans-serif; padding: 20px;">
+            <h3>System Email Dispatch Notification</h3>
+            <p>An automated email was successfully dispatched from the platform.</p>
+            <ul>
+                <li><strong>Recipient:</strong> ${recipient}</li>
+                <li><strong>Subject:</strong> ${originalSubject}</li>
+                <li><strong>Sent Via:</strong> ${fromType}</li>
+                <li><strong>Timestamp:</strong> ${new Date().toISOString()}</li>
+            </ul>
+        </div>
+    `;
+    infoTransporter.sendMail({
+        from: process.env.SMTP_INFO_FROM || '"BlueCollar Infrastructure" <info@BlueCollar.com>',
+        to: adminEmail,
+        subject: `[Log] Automated Email Sent to ${recipient}`,
+        html: content
+    }).catch(err => console.error('[EmailUtil] Failed to send admin notification:', err));
+};
+
 export const sendAuthEmail = async (to: string, subject: string, content: string, attachments: any[] = []): Promise<void> => {
     try {
         await authTransporter.sendMail({
@@ -121,6 +143,7 @@ export const sendAuthEmail = async (to: string, subject: string, content: string
             attachments,
         });
         console.log(`[EmailUtil] Auth email dispatched to: ${to}`);
+        notifyAdminOfEmail(to, subject, 'auth');
     } catch (error: any) {
         console.error(`[EmailUtil] Auth email failed to ${to}:`, {
             message: error.message,
@@ -142,6 +165,7 @@ export const sendInfoEmail = async (to: string, subject: string, content: string
             attachments,
         });
         console.log(`[EmailUtil] Info email dispatched to: ${to}`);
+        notifyAdminOfEmail(to, subject, 'info');
     } catch (error) {
         console.error(`[EmailUtil] Info email failed:`, error);
         throw new Error('Info email dispatch failed');
@@ -158,6 +182,7 @@ export const sendAvelingEmail = async (to: string, subject: string, content: str
             attachments,
         });
         console.log(`[EmailUtil] Aveling email dispatched to: ${to}`);
+        notifyAdminOfEmail(to, subject, 'aveling');
     } catch (error) {
         console.error(`[EmailUtil] Aveling email failed:`, error);
         throw new Error('Aveling email dispatch failed');
@@ -185,6 +210,7 @@ export const sendEmailFrom = async (fromType: 'auth' | 'info' | 'aveling', to: s
             attachments,
         });
         console.log(`[EmailUtil] ${fromType} email dispatched to: ${to}`);
+        notifyAdminOfEmail(to, subject, fromType);
     } catch (error: any) {
         console.error(`[EmailUtil] ${fromType} email failed:`, error);
         throw new Error(`${fromType} email dispatch failed`);

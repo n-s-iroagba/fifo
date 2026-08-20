@@ -38,7 +38,6 @@ export const CONSTANTS = {
             NEW_APPS: '/admin/applications/new',
             DRAFTS: '/admin/applications/drafts',
             UNPAID: '/admin/payments/unpaid',
-            UNVERIFIED: '/admin/payments/unverified',
             MAIL: '/admin/mail',
             REGISTER: '/register/admin',
         }

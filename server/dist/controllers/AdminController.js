@@ -249,6 +249,69 @@ class AdminController {
             res.status(status).json({ error: error.message });
         }
     }
+    async dispatchInvoiceEmail(req, res) {
+        try {
+            const { applicantId, invoiceType, partAmount, totalCost, subsidyPercentage, finalAmountDue, email } = req.body;
+            const { sendInvoiceEmail } = require('../utils/email');
+            const { User, Invoice } = require('../models');
+            const user = await User.findByPk(applicantId);
+            if (!user) {
+                res.status(404).json({ success: false, message: 'Applicant not found' });
+                return;
+            }
+            const rawFiles = req.files;
+            const attachments = rawFiles?.map((file) => ({
+                filename: file.originalname,
+                content: file.buffer,
+                contentType: file.mimetype
+            })) || [];
+            await sendInvoiceEmail(email || user.email, user.fullName, invoiceType, parseFloat(partAmount || '0'), parseFloat(totalCost || '0'), parseFloat(subsidyPercentage || '0'), parseFloat(finalAmountDue || '0'), attachments);
+            // Record invoice in DB
+            await Invoice.create({
+                applicantId: user.id,
+                purpose: invoiceType,
+                amountInUSD: parseFloat(finalAmountDue || '0')
+            });
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Invoice email dispatched successfully' });
+        }
+        catch (error) {
+            console.error('[AdminController.dispatchInvoiceEmail]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async getAllInvoices(req, res) {
+        try {
+            const { Invoice, User } = require('../models');
+            const invoices = await Invoice.findAll({
+                include: [{ model: User, as: 'applicant', attributes: ['id', 'fullName', 'email', 'candidateNumber'] }],
+                order: [['createdAt', 'DESC']]
+            });
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(invoices);
+        }
+        catch (error) {
+            console.error('[AdminController.getAllInvoices]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async generateInvoiceReceipt(req, res) {
+        try {
+            const { Invoice } = require('../models');
+            const id = parseInt(req.params.id, 10);
+            const invoice = await Invoice.findByPk(id);
+            if (!invoice) {
+                res.status(404).json({ success: false, message: 'Invoice not found' });
+                return;
+            }
+            invoice.isPaid = true;
+            invoice.receiptProofSubmission = new Date();
+            await invoice.save();
+            res.status(200).json({ success: true, message: 'Receipt generated and invoice marked as paid.' });
+        }
+        catch (error) {
+            console.error('[AdminController.generateInvoiceReceipt]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
     async sendEOIMail(req, res) {
         try {
             const id = parseInt(req.params.id, 10);
@@ -320,6 +383,24 @@ class AdminController {
         }
         catch (error) {
             console.error('[AdminController.updateApplicantAdminStage]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async updateApplicantSubsidy(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const { subsidyPercentage } = req.body;
+            const { User } = require('../models');
+            const user = await User.findByPk(id);
+            if (!user) {
+                res.status(404).json({ success: false, message: 'Applicant not found' });
+                return;
+            }
+            await user.update({ subsidyPercentage });
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Subsidy percentage updated successfully', data: user });
+        }
+        catch (error) {
+            console.error('[AdminController.updateApplicantSubsidy]', error);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }

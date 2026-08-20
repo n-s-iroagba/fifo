@@ -170,6 +170,15 @@ User.init({
         type: sequelize_1.DataTypes.DATE,
         allowNull: true,
     },
+    subsidyPercentage: {
+        type: sequelize_1.DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 70,
+        validate: {
+            min: 0,
+            max: 100
+        }
+    }
 }, {
     sequelize: database_1.sequelize,
     tableName: 'users',

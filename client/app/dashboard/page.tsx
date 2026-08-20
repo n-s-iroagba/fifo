@@ -4,6 +4,7 @@ import { PaymentUpload } from '@/components/ui/PaymentUpload';
 import { useApiQuery } from '@/lib/hooks';
 import Link from 'next/link';
 import { useState } from 'react';
+import { NominationUpload } from '@/components/ui/NominationUpload';
 
 export default function ApplicantDashboard() {
     const { data: summary, isLoading, refetch } = useApiQuery<any>(['applicant', 'dashboard'], '/dashboard');
@@ -164,6 +165,10 @@ export default function ApplicantDashboard() {
                                                         </span>
                                                     </div>
                                                 </div>
+
+                                                {app.stageName?.toLowerCase().includes('nomination') && !app.isCompleted && (
+                                                    <NominationUpload applicationId={app.applicationId} />
+                                                )}
                                             </div>
 
                                         </div>

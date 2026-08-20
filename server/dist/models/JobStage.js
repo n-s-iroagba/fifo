@@ -16,8 +16,8 @@ JobStage.init({
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
     },
-    name: {
-        type: sequelize_1.DataTypes.STRING,
+    prefillStageId: {
+        type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
     },
     isCompleted: {

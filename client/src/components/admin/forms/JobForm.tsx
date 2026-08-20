@@ -303,7 +303,7 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
                     <div className="space-y-4 border-t border-blue-50 pt-10">
                         <div className="flex items-center justify-between">
                             <label className="text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1">Ticket Sponsorship Selection</label>
-                            <Link href="/admin/tickets" className="text-[9px] font-bold text-blue-900 uppercase tracking-widest hover:underline">
+                            <Link href="/admin/ticket-catalogs" className="text-[9px] font-bold text-blue-900 uppercase tracking-widest hover:underline">
                                 Manage Tickets
                             </Link>
                         </div>

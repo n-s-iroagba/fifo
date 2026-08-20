@@ -8,6 +8,7 @@ export class Invoice extends Model {
     public amountInUSD!: number;
     public date!: Date;
     public receiptProofSubmission!: Date | null;
+    public isPaid!: boolean;
     
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
@@ -39,6 +40,11 @@ Invoice.init({
     receiptProofSubmission: {
         type: DataTypes.DATE,
         allowNull: true
+    },
+    isPaid: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
     }
 }, {
     sequelize,

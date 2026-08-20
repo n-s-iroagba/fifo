@@ -1350,13 +1350,11 @@ class TicketService {
                 </div>
 
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-top: 20px;">
-                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #1e3a8a; text-transform: uppercase;">Corporate Remittance Details (Selected Bank Account)</h4>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Bank Name:</strong> ${bankAccount.bankName}</p>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>BSB Number:</strong> ${bankAccount.bsb}</p>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account Number:</strong> ${bankAccount.accountNumber}</p>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account Name:</strong> ${bankAccount.accountName}</p>
-                    ${bankAccount.swiftCode ? `<p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>SWIFT / BIC Code:</strong> ${bankAccount.swiftCode}</p>` : ''}
-                    <p style="margin: 3px 0; font-size: 11px; color: #1e3a8a;"><strong>Payment Reference:</strong> ${invoiceNumber} (${candidateNumber})</p>
+                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #1e3a8a; text-transform: uppercase;">Corporate Payment Details (USDT TRC-20)</h4>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Asset / Network:</strong> USDT on TRON (TRC-20)</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Wallet Address:</strong> ${bankAccount.accountNumber}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Wallet Entity:</strong> ${bankAccount.accountName || bankAccount.bankName}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #1e3a8a; margin-top: 6px;"><strong>Payment Reference:</strong> ${invoiceNumber} (${candidateNumber})</p>
                 </div>
 
                 <div style="margin-top: 24px; text-align: center;">

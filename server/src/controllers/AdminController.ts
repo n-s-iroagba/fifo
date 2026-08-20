@@ -321,6 +321,28 @@ export class AdminController {
         }
     }
 
+    public async generateInvoiceReceipt(req: Request, res: Response): Promise<void> {
+        try {
+            const { Invoice } = require('../models');
+            const id = parseInt(req.params.id as string, 10);
+            
+            const invoice = await Invoice.findByPk(id);
+            if (!invoice) {
+                res.status(404).json({ success: false, message: 'Invoice not found' });
+                return;
+            }
+
+            invoice.isPaid = true;
+            invoice.receiptProofSubmission = new Date();
+            await invoice.save();
+
+            res.status(200).json({ success: true, message: 'Receipt generated and invoice marked as paid.' });
+        } catch (error: any) {
+            console.error('[AdminController.generateInvoiceReceipt]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+
     public async sendEOIMail(req: Request, res: Response): Promise<void> {
         try {
             const id = parseInt(req.params.id as string, 10);
