@@ -18,6 +18,7 @@ interface JobDetail {
     JobCategory: { name: string };
     JobBenefits: { benefitType: string; description: string }[];
     JobConditions: { name: string; description: string }[];
+    RequiredTickets: { id: number; name: string; description: string; normalPrice: number; sponsorshipPrice: number }[];
     visaSponsorship: boolean;
 }
 
@@ -165,6 +166,43 @@ export default function JobDetailPage() {
                             <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400">Position Overview</h2>
                             <div className="text-blue-500 font-medium leading-relaxed text-sm md:text-base whitespace-pre-wrap">{job.description}</div>
                         </section>
+
+                        {job.RequiredTickets?.length > 0 && (
+                            <section className="space-y-8 pt-12 border-t border-blue-50">
+                                <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400">Required Certifications</h2>
+                                <div className="p-6 bg-blue-50/50 border border-blue-100 rounded-[2rem] space-y-6">
+                                    <div className="flex items-start gap-4 mb-8">
+                                        <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
+                                            <span className="material-symbols-outlined text-blue-900">school</span>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-sm font-black text-blue-900 uppercase tracking-widest mb-2">Training & Sponsorship Available</h3>
+                                            <p className="text-xs text-blue-500 font-medium leading-relaxed">
+                                                Do not have these tickets? We provide full training and partial sponsorship for required certifications. You can still apply without them!
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {job.RequiredTickets.map((ticket, i) => (
+                                            <div key={i} className="bg-white p-5 rounded-2xl border border-blue-50 hover:border-blue-200 transition-colors">
+                                                <div className="flex flex-col h-full justify-between gap-4">
+                                                    <div>
+                                                        <h4 className="text-xs font-black text-blue-900 uppercase tracking-widest mb-1">{ticket.name}</h4>
+                                                        {ticket.description && (
+                                                            <p className="text-[10px] text-blue-400 font-medium line-clamp-2">{ticket.description}</p>
+                                                        )}
+                                                    </div>
+                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest w-fit border border-emerald-100">
+                                                        <span className="material-symbols-outlined text-[10px]">stars</span>
+                                                        Over 50% sponsorship available depending on role
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+                        )}
                     </div>
 
                     {/* Sidebar Area */}

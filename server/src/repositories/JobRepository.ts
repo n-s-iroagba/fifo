@@ -24,7 +24,6 @@ export class JobRepository {
             const orConditions: any[] = [
                 { title: { [Op.like]: searchPattern } },
                 { location: { [Op.like]: searchPattern } },
-                { company: { [Op.like]: searchPattern } },
                 { description: { [Op.like]: searchPattern } },
                 { employmentType: { [Op.like]: searchPattern } },
                 { salary: { [Op.like]: searchPattern } },
@@ -85,7 +84,6 @@ export class JobRepository {
             const orConditions: any[] = [
                 { title: { [Op.like]: searchPattern } },
                 { location: { [Op.like]: searchPattern } },
-                { company: { [Op.like]: searchPattern } },
                 { description: { [Op.like]: searchPattern } },
                 { employmentType: { [Op.like]: searchPattern } },
                 { salary: { [Op.like]: searchPattern } },

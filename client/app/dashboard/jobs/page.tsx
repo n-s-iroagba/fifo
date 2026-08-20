@@ -11,7 +11,6 @@ interface Job {
     salary: string;
     type: string;
     description: string;
-    company: string;
     visaSponsorship: boolean;
     JobCategory?: { name: string };
 }
@@ -186,10 +185,6 @@ export default function BrowseJobsPage() {
                                             <div className="flex items-center gap-2">
                                                 <span className="material-symbols-outlined text-sm">work</span>
                                                 {job.type}
-                                            </div>
-                                            <div className="flex items-center gap-2 text-blue-600">
-                                                <span className="material-symbols-outlined text-sm">corporate_fare</span>
-                                                {job.company}
                                             </div>
                                         </div>
                                     </div>

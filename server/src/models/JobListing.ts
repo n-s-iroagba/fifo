@@ -43,7 +43,8 @@ JobListing.init({
     },
     company: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
+        defaultValue: 'BlueCollar Recruitment'
     },
     visaSponsorship: {
         type: DataTypes.BOOLEAN,

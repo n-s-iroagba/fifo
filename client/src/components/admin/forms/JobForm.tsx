@@ -35,7 +35,6 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
         initialData?.ticketIds || []
     );
 
-    const [company, setCompany] = useState(initialData?.company || '');
     const [visaSponsorship, setVisaSponsorship] = useState(initialData?.visaSponsorship ?? true);
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -62,7 +61,6 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
             setRequirements(initialData.requirements || '');
             setIsActive(initialData.isActive);
             setSalary(initialData.salary || '');
-            setCompany(initialData.company || '');
             setVisaSponsorship(initialData.visaSponsorship || false);
             setJobType(initialData.jobType || 'NORMAL');
             setBenefits(initialData.benefits || '');
@@ -97,7 +95,6 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
                 requirements,
                 isActive,
                 salary,
-                company,
                 visaSponsorship,
                 jobType,
                 benefits,
