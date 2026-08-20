@@ -34,7 +34,7 @@ export default function AdminInvoicesPage() {
             api.get('/admin/tickets'),
             fetchInvoices()
         ]).then(([usersRes, ticketsRes]) => {
-            setApplicants(usersRes.data?.users || usersRes.data || []);
+            setApplicants(usersRes.data?.rows || usersRes.data?.users || (Array.isArray(usersRes.data) ? usersRes.data : []));
             setTickets(ticketsRes.data || []);
             setLoading(false);
         }).catch(err => {
