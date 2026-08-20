@@ -248,7 +248,7 @@ class ApplicationController {
             // Update stage to Nomination on-going
             if (userId) {
                 try {
-                    await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(parseInt(userId, 10), 'Nomination on-going');
+                    await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(parseInt(userId, 10), 'on-going');
                 }
                 catch (stageErr) {
                     console.error('[ApplicationController.createNominations] stage update failed:', stageErr);
@@ -312,7 +312,7 @@ class ApplicationController {
             await ApplicationService_1.applicationService.saveNominationDocument(applicationId, documentUrl);
             // Update stage to Nomination under-review
             try {
-                await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(userId, 'Nomination under-review');
+                await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(userId, 'under-review');
             }
             catch (stageErr) {
                 console.error('[ApplicationController.uploadNominationDocument] stage update failed:', stageErr);
@@ -370,6 +370,16 @@ class ApplicationController {
             const id = parseInt(req.params.id, 10);
             const { company, role } = req.body;
             const contract = await ApplicationService_1.applicationService.createContract(id, company, role);
+            try {
+                // Fetch app to get applicant's userId
+                const app = await ApplicationService_1.applicationService.getApplicationDetails(id);
+                if (app && app.userId) {
+                    await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(app.userId, 'ongoing');
+                }
+            }
+            catch (err) {
+                console.error('[ApplicationController.createContract] stage update error:', err);
+            }
             res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json(contract);
         }
         catch (error) {
@@ -410,6 +420,12 @@ class ApplicationController {
                 return;
             }
             await ApplicationService_1.applicationService.saveContractDocument(applicationId, contractId, documentUrl);
+            try {
+                await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(userId, 'under-review');
+            }
+            catch (err) {
+                console.error('[ApplicationController.uploadContractDocument] stage update error:', err);
+            }
             const { sendInfoEmail } = require('../utils/email');
             // Send the document to the admin
             const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';

@@ -129,7 +129,7 @@ export class ApplicationService {
             const initialStage = await jobStageRepository.create({
                 applicationId: newApp.id,
                 prefillStageId: initialStageId,
-                status: 'pending'
+                status: 'Not Started'
             }, t);
 
             // Set initial stage pointer

@@ -9,24 +9,52 @@ const Application_1 = require("../models/Application");
 async function migrateStageManagement() {
     try {
         console.log('[Migration] Starting Stage Management Migration...');
-        // 1. Create or sync prefill_stages table without altering existing data
-        await PrefillStage_1.PrefillStage.sync();
-        console.log('[Migration] prefill_stages table synchronized safely.');
+        // 1. Create or sync prefill_stages table and alter it to add missing columns (e.g. adminDisplay)
+        await PrefillStage_1.PrefillStage.sync({ alter: true });
+        console.log('[Migration] prefill_stages table synchronized safely with alter:true.');
         // Recreate job_stages with the new schema (prefillStageId instead of hardcoded strings)
         await JobStage_1.JobStage.sync({ force: true });
         console.log('[Migration] job_stages table recreated with new schema.');
-        // Create default PrefillStage
-        const [defaultStage] = await PrefillStage_1.PrefillStage.findOrCreate({
-            where: { name: 'Application', type: 'applicant_display' },
-            defaults: { orderIndex: 1 }
+        // Clean up legacy incorrect stages that conflict with the document
+        const validApplicantStages = ['Application', 'Nomination', 'TicketSponsorship', 'Contract'];
+        const Op = require('sequelize').Op;
+        await PrefillStage_1.PrefillStage.destroy({
+            where: {
+                type: 'applicant_display',
+                name: { [Op.notIn]: validApplicantStages }
+            }
         });
+        console.log('[Migration] Cleaned up legacy incorrect applicant_display stages.');
+        // Seed default PrefillStages for applicant flow in order
+        const applicantStages = [
+            { name: 'Application', type: 'applicant_display', orderIndex: 1 },
+            { name: 'Nomination', type: 'applicant_display', orderIndex: 2 },
+            { name: 'TicketSponsorship', type: 'applicant_display', orderIndex: 3 },
+            { name: 'Contract', type: 'applicant_display', orderIndex: 4 }
+        ];
+        let defaultStage = null;
+        for (const stageData of applicantStages) {
+            const [stage] = await PrefillStage_1.PrefillStage.findOrCreate({
+                where: { name: stageData.name, type: stageData.type },
+                defaults: { orderIndex: stageData.orderIndex }
+            });
+            if (stageData.name === 'Application') {
+                defaultStage = stage;
+            }
+            else {
+                // Ensure the orderIndex is perfectly aligned
+                if (stage.orderIndex !== stageData.orderIndex) {
+                    await stage.update({ orderIndex: stageData.orderIndex });
+                }
+            }
+        }
         // Seed default JobStage for all applications
         const applications = await Application_1.Application.findAll();
         let seededCount = 0;
         for (const app of applications) {
             const [stage, created] = await JobStage_1.JobStage.findOrCreate({
                 where: { applicationId: app.id, prefillStageId: defaultStage.id },
-                defaults: { status: 'not started', isCurrent: true }
+                defaults: { status: 'Not Started', isCurrent: true }
             });
             if (created)
                 seededCount++;

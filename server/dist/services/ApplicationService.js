@@ -115,7 +115,7 @@ class ApplicationService {
             const initialStage = await JobStageRepository_1.jobStageRepository.create({
                 applicationId: newApp.id,
                 prefillStageId: initialStageId,
-                status: 'pending'
+                status: 'Not Started'
             }, t);
             // Set initial stage pointer
             await ApplicationRepository_1.applicationRepository.update(newApp.id, {

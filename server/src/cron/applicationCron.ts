@@ -45,7 +45,7 @@ export async function runApplicationApprovalCron(): Promise<void> {
 
             try {
                 // Update stage to accepted
-                await stage.update({ status: 'accepted' });
+                await stage.update({ status: 'Accepted' });
 
                 // Send Application Accepted Mail to candidate
                 const user = await User.findByPk(userId);

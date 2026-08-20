@@ -45,7 +45,7 @@ async function runApplicationApprovalCron() {
             const userId = application.userId;
             try {
                 // Update stage to accepted
-                await stage.update({ status: 'accepted' });
+                await stage.update({ status: 'Accepted' });
                 // Send Application Accepted Mail to candidate
                 const user = await models_1.User.findByPk(userId);
                 if (user) {

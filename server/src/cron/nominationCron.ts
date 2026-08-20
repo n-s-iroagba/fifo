@@ -65,7 +65,7 @@ export async function runNominationFollowupCron(): Promise<void> {
                 // Advance to TicketSponsorship stage
                 await applicationService.addStageToApplication(application.id, {
                     prefillStageId: ticketStagePrefill.id,
-                    status: 'not started',
+                    status: 'Not Started',
                     setAsCurrent: true,
                     notifyInApp: true,
                     notifyEmail: false // We send a custom email below
