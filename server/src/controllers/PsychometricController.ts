@@ -6,6 +6,7 @@ import { psychometricModule1Questions } from '../data/psychometricModule1Questio
 import { psychometricModule2Questions } from '../data/psychometricModule2Questions';
 import { Op } from 'sequelize';
 import { sendAvelingEmail } from '../utils/email';
+import { applicationService } from '../services/ApplicationService';
 
 export class PsychometricController {
     public async getStatus(req: Request, res: Response): Promise<void> {
@@ -181,16 +182,18 @@ export class PsychometricController {
                 await user.save();
                 try {
                     await sendAvelingEmail(user.email, 'Psychometric Module 1 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 1.</p><p>Please log in to your dashboard to proceed to the next module.</p>`);
+                    await applicationService.updateLatestApplicationStageStatus(userId, 'Psychometric Test Module 1 passed');
                 } catch (e) {
-                    console.error('[PsychometricController] Error sending Module 1 email:', e);
+                    console.error('[PsychometricController] Error with Module 1 post-processing:', e);
                 }
             } else {
                 score = 0;
                 passed = false;
                 try {
                     await sendAvelingEmail(user.email, 'Psychometric Module 2 Submitted', `<p>Dear ${user.fullName},</p><p>We have received your submission for Psychometric Module 2. Our team is currently reviewing your results.</p>`);
+                    await applicationService.updateLatestApplicationStageStatus(userId, 'Psychometric Test Module 2 under-review');
                 } catch (e) {
-                    console.error('[PsychometricController] Error sending Module 2 email:', e);
+                    console.error('[PsychometricController] Error with Module 2 post-processing:', e);
                 }
             }
 
@@ -278,8 +281,9 @@ export class PsychometricController {
                 user.psychometricModule2Passed = true;
                 try {
                     await sendAvelingEmail(user.email, 'Psychometric Module 2 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 2. You have now completed the psychometric evaluation phase.</p>`);
+                    await applicationService.updateLatestApplicationStageStatus(user.id, 'Psychometric Test Module 2 passed');
                 } catch (e) {
-                    console.error('[PsychometricController] Error sending Module 2 approval email:', e);
+                    console.error('[PsychometricController] Error with Module 2 approval post-processing:', e);
                 }
             }
 

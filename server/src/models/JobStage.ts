@@ -5,7 +5,7 @@ export class JobStage extends Model {
     declare id: number;
     declare applicationId: number;
     declare prefillStageId: number;
-    declare status: 'not started' | 'pending' | 'completed' | 'failed' | 'approved' | 'rejected';
+    declare status: string;
     declare isCurrent: boolean;
 
     // Associations

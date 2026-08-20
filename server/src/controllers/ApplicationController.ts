@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { applicationService } from '../services/ApplicationService';
 import { CONSTANTS } from '../constants';
+import { sendInfoEmail } from '../utils/email';
+import { User } from '../models/User';
 
 export class ApplicationController {
     // Maps to STK-APP-APPLY-001, TRUST-009
@@ -240,8 +242,35 @@ export class ApplicationController {
     public async createNominations(req: Request, res: Response): Promise<void> {
         try {
             const id = parseInt(req.params.id as string, 10);
-            const { nominations } = req.body;
+            const { nominations, userId, candidateName, candidateEmail, documentUrl, totalApplicants } = req.body;
             const created = await applicationService.createNominations(id, nominations);
+
+            // Update stage to Nomination on-going
+            if (userId) {
+                try {
+                    await applicationService.updateLatestApplicationStageStatus(parseInt(userId, 10), 'Nomination on-going');
+                } catch (stageErr) {
+                    console.error('[ApplicationController.createNominations] stage update failed:', stageErr);
+                }
+            }
+
+            // Send NominationPresentationMail with document attachment
+            if (candidateEmail && documentUrl) {
+                try {
+                    const subject = 'Your Official Nomination – Action Required Within 48 Hours';
+                    const content = `
+                        <p>Dear ${candidateName || 'Candidate'},</p>
+                        <p>Blue Collar Recruitment Pty Limited is pleased to present your Official Notice of Nomination &amp; Trade Selection.</p>
+                        <p>Please find your nomination document attached. Kindly review the available options, select exactly <strong>one (1) option</strong>, sign the document, and return it within <strong>forty-eight (48) hours</strong>.</p>
+                        <p>You may also download, sign, and upload the signed document through your dashboard nominations page.</p>
+                        <p>Yours sincerely,<br>Troy Latuff<br>Chief Executive Officer<br>Blue Collar Recruitment Pty Ltd</p>
+                    `;
+                    await sendInfoEmail(candidateEmail, subject, content, documentUrl);
+                } catch (mailErr) {
+                    console.error('[ApplicationController.createNominations] email failed:', mailErr);
+                }
+            }
+
             res.status(CONSTANTS.HTTP_STATUS.CREATED).json(created);
         } catch (error: any) {
             console.error('[ApplicationController.createNominations]', error);
@@ -284,25 +313,45 @@ export class ApplicationController {
 
             await applicationService.saveNominationDocument(applicationId, documentUrl);
 
-            const { sendInfoEmail } = require('../utils/email');
-            
-            // Send the document to the admin
+            // Update stage to Nomination under-review
+            try {
+                await applicationService.updateLatestApplicationStageStatus(userId, 'Nomination under-review');
+            } catch (stageErr) {
+                console.error('[ApplicationController.uploadNominationDocument] stage update failed:', stageErr);
+            }
+
+            // Send confirmation email to candidate
+            try {
+                const user = await User.findByPk(userId);
+                if (user) {
+                    const candidateSubject = 'Nomination Document Received – Under Review';
+                    const candidateContent = `
+                        <p>Dear ${user.fullName},</p>
+                        <p>We have successfully received your signed Nomination Document.</p>
+                        <p>Your nomination is currently under review by our team. You will be notified once a decision has been made.</p>
+                        <p>Yours sincerely,<br>Blue Collar Recruitment Pty Ltd</p>
+                    `;
+                    await sendInfoEmail(user.email, candidateSubject, candidateContent);
+                }
+            } catch (mailErr) {
+                console.error('[ApplicationController.uploadNominationDocument] candidate email failed:', mailErr);
+            }
+
+            // Notify admin
             const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
-            const subject = `New Signed Nomination Form Uploaded (User ID: ${userId})`;
+            const subject = `Signed Nomination Uploaded – User ID: ${userId}`;
             const content = `
                 <p>Hello Admin,</p>
                 <p>A candidate has uploaded their signed nomination form.</p>
                 <ul>
                     <li><strong>Candidate User ID:</strong> ${userId}</li>
                     <li><strong>Application ID:</strong> ${applicationId}</li>
-                    <li><strong>Document Type:</strong> ${documentType || 'Nomination Form'}</li>
                     <li><strong>Document URL:</strong> <a href="${documentUrl}">View Document</a></li>
                 </ul>
             `;
+            await sendInfoEmail(adminEmail, subject, content).catch(e => console.error('[uploadNominationDocument] admin email:', e));
 
-            await sendInfoEmail(adminEmail, subject, content);
-
-            res.status(200).json({ message: 'Document uploaded successfully and sent to admin.' });
+            res.status(200).json({ message: 'Document uploaded successfully. Your nomination is now under review.' });
         } catch (error: any) {
             console.error('[ApplicationController.uploadNominationDocument]', error);
             res.status(500).json({ error: 'Failed to upload document' });

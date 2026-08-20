@@ -5,6 +5,7 @@ import { CONSTANTS } from '../constants';
 import { sendAuthEmail, sendInfoEmail } from '../utils/email';
 import crypto from 'crypto';
 import path from 'path';
+import { applicationService } from './ApplicationService';
 
 
 export class AuthService {
@@ -392,6 +393,23 @@ ps: Another ticket would be taken immediately if it's necessary as a requirement
         if (!user) {
             throw new Error(CONSTANTS.ERROR_MESSAGES.USER_NOT_FOUND);
         }
+
+        // Update stage to 'Bio Updated'
+        try {
+            await applicationService.updateLatestApplicationStageStatus(userId, 'Bio Updated');
+        } catch (err) {
+            console.error('[AuthService] Failed to update stage to Bio Updated:', err);
+        }
+
+        // Send Bio Updated mail
+        const subject = 'Profile Bio Updated';
+        const content = `
+            <p>Dear ${user.fullName},</p>
+            <p>Your profile biodata has been successfully updated on our platform.</p>
+            <p>This information will be used to process your application and nominations.</p>
+        `;
+        await sendInfoEmail(user.email, subject, content).catch(err => console.error('[AuthService] Bio Updated email failed:', err));
+
         return user;
     }
 

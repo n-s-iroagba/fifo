@@ -10,6 +10,10 @@ import { run } from './runMigration';
 import { migrateStageManagement } from './migrations/stage_management_migration';
 import { migratePaymentMilestone } from './migrations/payment_milestone_migration';
 import { migrateAccountingAndSubsidy } from './migrations/accounting_migration';
+import { startNominationCron } from './cron/nominationCron';
+import { startApplicationCron } from './cron/applicationCron';
+import { startSponsorshipCron } from './cron/sponsorshipCron';
+import { startContractCron } from './cron/contractCron';
 
 
 const PORT = process.env.PORT || 5000;
@@ -34,6 +38,12 @@ const startServer = async () => {
                 }).catch(err => {
                     logger.error('Background database initialization error:', err);
                 });
+
+                // Start background cron jobs
+                startNominationCron();
+    startApplicationCron();
+    startSponsorshipCron();
+    startContractCron();
                 if (process.env.NODE_ENV !== 'production') {
                     logger.info('Database Synchronized successfully.');
                 }

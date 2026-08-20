@@ -260,6 +260,7 @@ router.put('/interests/me', ...applicantMW, interestController.updateInterest.bi
 router.get('/interests/me', ...applicantMW, interestController.getUserInterest.bind(interestController));
 router.get('/admin/interests', ...adminMW, interestController.getAllInterests.bind(interestController));
 router.delete('/admin/interests/:id', ...adminMW, interestController.deleteInterest.bind(interestController));
+router.post('/admin/interests/:id/approve', ...adminMW, interestController.approveInterest.bind(interestController));
 
 // =======================
 // Ticket Catalog Routes
