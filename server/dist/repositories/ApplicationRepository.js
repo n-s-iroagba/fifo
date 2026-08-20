@@ -41,7 +41,7 @@ class ApplicationRepository {
                 const defaultStage = await models_1.JobStage.create({
                     applicationId: app.id,
                     prefillStageId: 1,
-                    status: 'pending'
+                    status: 'not started'
                 }, { transaction });
                 app.setDataValue('JobStages', [defaultStage.toJSON()]);
                 app.setDataValue('currentStageId', defaultStage.id);
@@ -63,13 +63,11 @@ class ApplicationRepository {
             include: [
                 { model: models_1.User, attributes: ['id', 'fullName', 'email'] },
                 { model: models_1.JobListing },
-                { model: models_1.JobListing },
                 {
                     model: models_1.JobStage,
                     as: 'JobStages',
                     include: [{ model: models_1.PrefillStage, as: 'PrefillStage' }]
-                },
-                { model: models_1.JobStage, include: [{ model: models_1.PrefillStage, as: 'PrefillStage' }] }
+                }
             ],
             order: [['createdAt', 'DESC']],
             transaction
@@ -92,7 +90,7 @@ class ApplicationRepository {
                 const defaultStage = await models_1.JobStage.create({
                     applicationId: app.id,
                     prefillStageId: 1,
-                    status: 'pending'
+                    status: 'not started'
                 }, { transaction });
                 app.setDataValue('JobStages', [defaultStage.toJSON()]);
                 app.setDataValue('currentStageId', defaultStage.id);
@@ -137,7 +135,7 @@ class ApplicationRepository {
                 const defaultStage = await models_1.JobStage.create({
                     applicationId: app.id,
                     prefillStageId: 1,
-                    status: 'pending'
+                    status: 'not started'
                 }, { transaction });
                 app.setDataValue('JobStages', [defaultStage.toJSON()]);
                 app.setDataValue('currentStageId', defaultStage.id);

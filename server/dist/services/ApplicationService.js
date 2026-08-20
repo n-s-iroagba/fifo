@@ -39,6 +39,7 @@ class ApplicationService {
                     stageName: currentStage?.PrefillStage?.name || 'Unnamed Stage',
                     stageDescription: null,
                     paymentStatus: 'Unpaid',
+                    stageStatus: currentStage?.status,
                 });
             }
             // Gather completed stages for this application
@@ -199,37 +200,6 @@ class ApplicationService {
                 await (0, email_1.sendInfoEmail)(user.email, applicantSubject, applicantContent).catch(err => console.error('[ApplicationService] Applicant acknowledgment email failed:', err));
             }
             await t.commit();
-            // Simulate delayed "Application Accepted" and "Call for Ticket Submission" emails
-            if (user && user.email) {
-                setTimeout(async () => {
-                    try {
-                        const acceptedSubject = `Application Accepted: ${job.title}`;
-                        const acceptedContent = `
-                            <p>Dear ${user.fullName},</p>
-                            <p>Congratulations! Your application for the <strong>${job.title}</strong> position has been reviewed and accepted.</p>
-                            <p>We are excited to move forward with your profile. Please check your dashboard for further instructions.</p>
-                            <div class="cta-block">
-                                <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/applications" class="button">View Dashboard</a>
-                            </div>
-                        `;
-                        await (0, email_1.sendInfoEmail)(user.email, acceptedSubject, acceptedContent);
-                        const ticketSubject = `Action Required: Ticket Submission for ${job.title}`;
-                        const ticketContent = `
-                            <p>Dear ${user.fullName},</p>
-                            <p>As part of your accepted application for the <strong>${job.title}</strong> position, you are required to submit your tickets or certifications.</p>
-                            <p>Please log in to your dashboard to review the required certifications and upload your proofs.</p>
-                            <div class="cta-block">
-                                <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/profile" class="button">Submit Tickets</a>
-                            </div>
-                        `;
-                        await (0, email_1.sendInfoEmail)(user.email, ticketSubject, ticketContent);
-                        console.log(`[ApplicationService] 12-hour delayed emails sent to ${user.email}`);
-                    }
-                    catch (err) {
-                        console.error('[ApplicationService] Delayed email failed:', err);
-                    }
-                }, 12 * 60 * 60 * 1000); // 12 hours
-            }
             return ApplicationRepository_1.applicationRepository.findById(newApp.id);
         }
         catch (error) {
@@ -472,6 +442,57 @@ class ApplicationService {
                 anyNomination.documentUrl = documentUrl;
                 await anyNomination.save();
             }
+        }
+    }
+    async getContracts(applicationId) {
+        const { Contract } = require('../models');
+        return Contract.findAll({ where: { applicationId } });
+    }
+    async createContract(applicationId, company, role, adminDocumentUrl) {
+        const app = await ApplicationRepository_1.applicationRepository.findById(applicationId);
+        if (!app)
+            throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+        const { Contract } = require('../models');
+        const contract = await Contract.create({
+            applicationId,
+            userId: app.userId,
+            company,
+            role,
+            status: 'pending',
+            adminDocumentUrl
+        });
+        return contract;
+    }
+    async updateContractStatus(applicationId, contractId, status) {
+        const { Contract } = require('../models');
+        const contract = await Contract.findOne({ where: { id: contractId, applicationId } });
+        if (!contract)
+            throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+        contract.status = status;
+        await contract.save();
+        return contract;
+    }
+    async saveContractDocument(applicationId, contractId, documentUrl) {
+        const { Contract } = require('../models');
+        const contract = await Contract.findOne({ where: { id: contractId, applicationId } });
+        if (!contract)
+            throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+        contract.documentUrl = documentUrl;
+        await contract.save();
+        return contract;
+    }
+    async updateLatestApplicationStageStatus(userId, newStatus) {
+        // Fetch the user's applications
+        const result = await ApplicationRepository_1.applicationRepository.findByUserId(userId, { limit: 1 });
+        if (result.rows.length === 0)
+            return;
+        const latestApp = result.rows[0];
+        // Ensure there is a current stage
+        if (latestApp.currentStageId) {
+            await JobStageRepository_1.jobStageRepository.update(latestApp.currentStageId, {
+                status: newStatus
+            });
+            console.log(`[ApplicationService] Updated stage for application ${latestApp.id} to '${newStatus}'`);
         }
     }
 }

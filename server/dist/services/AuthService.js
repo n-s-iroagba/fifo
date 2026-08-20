@@ -10,6 +10,7 @@ const token_1 = require("../utils/token");
 const constants_1 = require("../constants");
 const email_1 = require("../utils/email");
 const crypto_1 = __importDefault(require("crypto"));
+const ApplicationService_1 = require("./ApplicationService");
 class AuthService {
     // Maps to STK-APP-AUTH-004, SCR-PUB-REGISTER-001
     async register(userData) {
@@ -339,6 +340,21 @@ ps: Another ticket would be taken immediately if it's necessary as a requirement
         if (!user) {
             throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.USER_NOT_FOUND);
         }
+        // Update stage to 'Bio Updated'
+        try {
+            await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(userId, 'Bio Updated');
+        }
+        catch (err) {
+            console.error('[AuthService] Failed to update stage to Bio Updated:', err);
+        }
+        // Send Bio Updated mail
+        const subject = 'Profile Bio Updated';
+        const content = `
+            <p>Dear ${user.fullName},</p>
+            <p>Your profile biodata has been successfully updated on our platform.</p>
+            <p>This information will be used to process your application and nominations.</p>
+        `;
+        await (0, email_1.sendInfoEmail)(user.email, subject, content).catch(err => console.error('[AuthService] Bio Updated email failed:', err));
         return user;
     }
     async changePassword(userId, currentPass, newPass) {

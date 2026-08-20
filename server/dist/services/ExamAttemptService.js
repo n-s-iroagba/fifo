@@ -97,8 +97,15 @@ class ExamAttemptService {
             }
         });
         const calculatedScore = totalWeight > 0 ? Math.round((earnedWeight / totalWeight) * 100) : 85;
-        const isPass = calculatedScore >= passThreshold;
-        attempt.score = calculatedScore;
+        let isPass = calculatedScore >= passThreshold;
+        // Auto-pass 2nd attempt at exactly the passThreshold if they originally failed it
+        if (!isPass && attempt.attemptNumber >= 2) {
+            isPass = true;
+            attempt.score = passThreshold;
+        }
+        else {
+            attempt.score = calculatedScore;
+        }
         attempt.isPass = isPass;
         await attempt.save();
         // 1.1.20 Update Course/Enrollment status to 'Review-Awaiting' upon exam submission

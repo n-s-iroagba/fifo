@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.applicationController = exports.ApplicationController = void 0;
 const ApplicationService_1 = require("../services/ApplicationService");
 const constants_1 = require("../constants");
+const email_1 = require("../utils/email");
+const User_1 = require("../models/User");
 class ApplicationController {
     // Maps to STK-APP-APPLY-001, TRUST-009
     async startApplication(req, res) {
@@ -241,8 +243,34 @@ class ApplicationController {
     async createNominations(req, res) {
         try {
             const id = parseInt(req.params.id, 10);
-            const { nominations } = req.body;
+            const { nominations, userId, candidateName, candidateEmail, documentUrl, totalApplicants } = req.body;
             const created = await ApplicationService_1.applicationService.createNominations(id, nominations);
+            // Update stage to Nomination on-going
+            if (userId) {
+                try {
+                    await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(parseInt(userId, 10), 'Nomination on-going');
+                }
+                catch (stageErr) {
+                    console.error('[ApplicationController.createNominations] stage update failed:', stageErr);
+                }
+            }
+            // Send NominationPresentationMail with document attachment
+            if (candidateEmail && documentUrl) {
+                try {
+                    const subject = 'Your Official Nomination – Action Required Within 48 Hours';
+                    const content = `
+                        <p>Dear ${candidateName || 'Candidate'},</p>
+                        <p>Blue Collar Recruitment Pty Limited is pleased to present your Official Notice of Nomination &amp; Trade Selection.</p>
+                        <p>Please find your nomination document attached. Kindly review the available options, select exactly <strong>one (1) option</strong>, sign the document, and return it within <strong>forty-eight (48) hours</strong>.</p>
+                        <p>You may also download, sign, and upload the signed document through your dashboard nominations page.</p>
+                        <p>Yours sincerely,<br>Troy Latuff<br>Chief Executive Officer<br>Blue Collar Recruitment Pty Ltd</p>
+                    `;
+                    await (0, email_1.sendInfoEmail)(candidateEmail, subject, content, documentUrl);
+                }
+                catch (mailErr) {
+                    console.error('[ApplicationController.createNominations] email failed:', mailErr);
+                }
+            }
             res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json(created);
         }
         catch (error) {
@@ -282,17 +310,117 @@ class ApplicationController {
                 return;
             }
             await ApplicationService_1.applicationService.saveNominationDocument(applicationId, documentUrl);
-            const { sendInfoEmail } = require('../utils/email');
-            // Send the document to the admin
+            // Update stage to Nomination under-review
+            try {
+                await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(userId, 'Nomination under-review');
+            }
+            catch (stageErr) {
+                console.error('[ApplicationController.uploadNominationDocument] stage update failed:', stageErr);
+            }
+            // Send confirmation email to candidate
+            try {
+                const user = await User_1.User.findByPk(userId);
+                if (user) {
+                    const candidateSubject = 'Nomination Document Received – Under Review';
+                    const candidateContent = `
+                        <p>Dear ${user.fullName},</p>
+                        <p>We have successfully received your signed Nomination Document.</p>
+                        <p>Your nomination is currently under review by our team. You will be notified once a decision has been made.</p>
+                        <p>Yours sincerely,<br>Blue Collar Recruitment Pty Ltd</p>
+                    `;
+                    await (0, email_1.sendInfoEmail)(user.email, candidateSubject, candidateContent);
+                }
+            }
+            catch (mailErr) {
+                console.error('[ApplicationController.uploadNominationDocument] candidate email failed:', mailErr);
+            }
+            // Notify admin
             const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
-            const subject = `New Signed Nomination Form Uploaded (User ID: ${userId})`;
+            const subject = `Signed Nomination Uploaded – User ID: ${userId}`;
             const content = `
                 <p>Hello Admin,</p>
                 <p>A candidate has uploaded their signed nomination form.</p>
                 <ul>
                     <li><strong>Candidate User ID:</strong> ${userId}</li>
                     <li><strong>Application ID:</strong> ${applicationId}</li>
-                    <li><strong>Document Type:</strong> ${documentType || 'Nomination Form'}</li>
+                    <li><strong>Document URL:</strong> <a href="${documentUrl}">View Document</a></li>
+                </ul>
+            `;
+            await (0, email_1.sendInfoEmail)(adminEmail, subject, content).catch(e => console.error('[uploadNominationDocument] admin email:', e));
+            res.status(200).json({ message: 'Document uploaded successfully. Your nomination is now under review.' });
+        }
+        catch (error) {
+            console.error('[ApplicationController.uploadNominationDocument]', error);
+            res.status(500).json({ error: 'Failed to upload document' });
+        }
+    }
+    async getContracts(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const contracts = await ApplicationService_1.applicationService.getContracts(id);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(contracts);
+        }
+        catch (error) {
+            console.error('[ApplicationController.getContracts]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async createContract(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const { company, role } = req.body;
+            const contract = await ApplicationService_1.applicationService.createContract(id, company, role);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json(contract);
+        }
+        catch (error) {
+            console.error('[ApplicationController.createContract]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async acceptContract(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const contractId = parseInt(req.params.contractId, 10);
+            const contract = await ApplicationService_1.applicationService.updateContractStatus(id, contractId, 'accepted');
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(contract);
+        }
+        catch (error) {
+            console.error('[ApplicationController.acceptContract]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async rejectContract(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const contractId = parseInt(req.params.contractId, 10);
+            const contract = await ApplicationService_1.applicationService.updateContractStatus(id, contractId, 'rejected');
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(contract);
+        }
+        catch (error) {
+            console.error('[ApplicationController.rejectContract]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async uploadContractDocument(req, res) {
+        try {
+            const userId = req.user.id;
+            const { documentUrl, documentType, applicationId, contractId } = req.body;
+            if (!documentUrl || !applicationId || !contractId) {
+                res.status(400).json({ error: 'documentUrl, applicationId, and contractId are required' });
+                return;
+            }
+            await ApplicationService_1.applicationService.saveContractDocument(applicationId, contractId, documentUrl);
+            const { sendInfoEmail } = require('../utils/email');
+            // Send the document to the admin
+            const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
+            const subject = `New Signed Contract Uploaded (User ID: ${userId})`;
+            const content = `
+                <p>Hello Admin,</p>
+                <p>A candidate has uploaded their signed contract.</p>
+                <ul>
+                    <li><strong>Candidate User ID:</strong> ${userId}</li>
+                    <li><strong>Application ID:</strong> ${applicationId}</li>
+                    <li><strong>Contract ID:</strong> ${contractId}</li>
                     <li><strong>Document URL:</strong> <a href="${documentUrl}">View Document</a></li>
                 </ul>
             `;
@@ -300,7 +428,7 @@ class ApplicationController {
             res.status(200).json({ message: 'Document uploaded successfully and sent to admin.' });
         }
         catch (error) {
-            console.error('[ApplicationController.uploadNominationDocument]', error);
+            console.error('[ApplicationController.uploadContractDocument]', error);
             res.status(500).json({ error: 'Failed to upload document' });
         }
     }

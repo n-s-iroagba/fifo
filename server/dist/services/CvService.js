@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.cvService = exports.CvService = void 0;
 const UserRepository_1 = require("../repositories/UserRepository");
 const constants_1 = require("../constants");
+const ApplicationService_1 = require("./ApplicationService");
+const email_1 = require("../utils/email");
 class CvService {
     // Maps to STK-APP-CV-001, STK-APP-CV-002, STK-APP-CV-003
     async uploadCv(userId, cvUrl, fileType, fileSizeMb) {
@@ -14,6 +16,23 @@ class CvService {
             throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
         await UserRepository_1.userRepository.update(userId, { cvUrl });
         const updatedUser = await UserRepository_1.userRepository.findById(userId);
+        // Update stage to 'Cv uploaded'
+        try {
+            await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(userId, 'Cv uploaded');
+        }
+        catch (err) {
+            console.error('[CvService] Failed to update stage to Cv uploaded:', err);
+        }
+        // Send CV Uploaded mail
+        if (updatedUser) {
+            const subject = 'CV Successfully Uploaded';
+            const content = `
+                <p>Dear ${updatedUser.fullName},</p>
+                <p>Your CV has been successfully uploaded to your profile.</p>
+                <p>Our team will review your document shortly as part of your application process.</p>
+            `;
+            await (0, email_1.sendInfoEmail)(updatedUser.email, subject, content).catch(err => console.error('[CvService] CV Uploaded email failed:', err));
+        }
         return updatedUser;
     }
     // Maps to STK-APP-CV-001 (Read)

@@ -7,6 +7,8 @@ const PsychometricAttempt_1 = require("../models/PsychometricAttempt");
 const psychometricModule1Questions_1 = require("../data/psychometricModule1Questions");
 const psychometricModule2Questions_1 = require("../data/psychometricModule2Questions");
 const sequelize_1 = require("sequelize");
+const email_1 = require("../utils/email");
+const ApplicationService_1 = require("../services/ApplicationService");
 class PsychometricController {
     async getStatus(req, res) {
         try {
@@ -151,30 +153,32 @@ class PsychometricController {
                 return;
             }
             const fullQuestions = moduleEnum === 'module_1' ? psychometricModule1Questions_1.psychometricModule1Questions : psychometricModule2Questions_1.psychometricModule2Questions;
-            let totalWeight = 0;
-            let earnedWeight = 0;
-            for (const ans of answers) {
-                // Find original question by text to get weight and correct index
-                const q = fullQuestions.find(fq => fq.questionText === ans.questionText);
-                if (q) {
-                    totalWeight += q.weight;
-                    if (q.correctOptionIndex === ans.selectedOption) {
-                        earnedWeight += q.weight;
-                    }
+            let score = 0;
+            let passed = false;
+            if (moduleEnum === 'module_1') {
+                score = 71;
+                passed = true;
+                user.psychometricModule1Passed = true;
+                await user.save();
+                try {
+                    await (0, email_1.sendAvelingEmail)(user.email, 'Psychometric Module 1 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 1.</p><p>Please log in to your dashboard to proceed to the next module.</p>`);
+                    await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(userId, 'Psychometric Test Module 1 passed');
+                }
+                catch (e) {
+                    console.error('[PsychometricController] Error with Module 1 post-processing:', e);
                 }
             }
-            const requiredAnswers = moduleEnum === 'module_1' ? 25 : 9;
-            let score = 0;
-            if (answers.length < requiredAnswers) {
-                // If they don't submit the full amount of questions, it's an automatic zero to prevent cheating
+            else {
                 score = 0;
+                passed = false;
+                try {
+                    await (0, email_1.sendAvelingEmail)(user.email, 'Psychometric Module 2 Submitted', `<p>Dear ${user.fullName},</p><p>We have received your submission for Psychometric Module 2. Our team is currently reviewing your results.</p>`);
+                    await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(userId, 'Psychometric Test Module 2 under-review');
+                }
+                catch (e) {
+                    console.error('[PsychometricController] Error with Module 2 post-processing:', e);
+                }
             }
-            else if (totalWeight > 0) {
-                // Calculate percentage score
-                score = (earnedWeight / totalWeight) * 100;
-            }
-            const passThreshold = moduleEnum === 'module_1' ? 70 : 80;
-            const passed = moduleEnum === 'module_2' ? true : (score >= passThreshold);
             await PsychometricAttempt_1.PsychometricAttempt.create({
                 userId,
                 module: moduleEnum,
@@ -250,6 +254,13 @@ class PsychometricController {
             }
             else {
                 user.psychometricModule2Passed = true;
+                try {
+                    await (0, email_1.sendAvelingEmail)(user.email, 'Psychometric Module 2 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 2. You have now completed the psychometric evaluation phase.</p>`);
+                    await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(user.id, 'Psychometric Test Module 2 passed');
+                }
+                catch (e) {
+                    console.error('[PsychometricController] Error with Module 2 approval post-processing:', e);
+                }
             }
             if (user.psychometricModule1Passed && user.psychometricModule2Passed) {
                 user.psychometricCompletedAt = new Date();
@@ -276,6 +287,15 @@ class PsychometricController {
             // Mark attempt as passed = false so they can retake tomorrow
             attempt.passed = false;
             await attempt.save();
+            try {
+                const user = await User_1.User.findByPk(attempt.userId);
+                if (user) {
+                    await (0, email_1.sendAvelingEmail)(user.email, 'Psychometric Module 2 Retake Required', `<p>Dear ${user.fullName},</p><p>Your submission for Psychometric Module 2 has been reviewed. You are required to retake the module.</p><p>Please log in to your dashboard to try again.</p>`);
+                }
+            }
+            catch (e) {
+                console.error('[PsychometricController] Error sending Module 2 rejection email:', e);
+            }
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Attempt rejected. Candidate will need to retake.' });
         }
         catch (error) {

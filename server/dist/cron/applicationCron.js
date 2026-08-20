@@ -1,54 +1,53 @@
-import { Op } from 'sequelize';
-import { JobStage, Application, User, PrefillStage } from '../models';
-import { sendInfoEmail } from '../utils/email';
-import cron from 'node-cron';
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.runApplicationApprovalCron = runApplicationApprovalCron;
+exports.startApplicationCron = startApplicationCron;
+const sequelize_1 = require("sequelize");
+const models_1 = require("../models");
+const email_1 = require("../utils/email");
+const node_cron_1 = __importDefault(require("node-cron"));
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
-
-export async function runApplicationApprovalCron(): Promise<void> {
+async function runApplicationApprovalCron() {
     try {
         console.log('[ApplicationCron] Running application auto-acceptance check...');
-
         const cutoff = new Date(Date.now() - SIX_HOURS_MS);
-
         // Find applications where the 'Application' stage is 'under-review' for > 6 hours
-        const pendingStages = await JobStage.findAll({
+        const pendingStages = await models_1.JobStage.findAll({
             where: {
                 status: 'under-review',
-                updatedAt: { [Op.lte]: cutoff }
+                updatedAt: { [sequelize_1.Op.lte]: cutoff }
             },
             include: [
                 {
-                    model: PrefillStage,
+                    model: models_1.PrefillStage,
                     as: 'PrefillStage',
                     where: { name: 'Application' },
                     required: true
                 },
                 {
-                    model: Application,
+                    model: models_1.Application,
                     where: {
-                        currentStageId: { [Op.col]: 'JobStage.id' }
+                        currentStageId: { [sequelize_1.Op.col]: 'JobStage.id' }
                     },
                     required: true
                 }
             ]
         });
-
         console.log(`[ApplicationCron] Found ${pendingStages.length} applications pending auto-acceptance.`);
-
         for (const stage of pendingStages) {
-            const application = (stage as any).Application as Application;
-            if (!application) continue;
-
+            const application = stage.Application;
+            if (!application)
+                continue;
             const userId = application.userId;
-
             try {
                 // Update stage to accepted
                 await stage.update({ status: 'accepted' });
-
                 // Send Application Accepted Mail to candidate
-                const user = await User.findByPk(userId);
+                const user = await models_1.User.findByPk(userId);
                 if (user) {
                     const subject = 'Your Application Has Been Accepted 🎉';
                     const content = `
@@ -57,24 +56,22 @@ export async function runApplicationApprovalCron(): Promise<void> {
                         <p>You have now progressed to the nomination stage of our recruitment process. Please log in to your dashboard to view your new status and any further instructions.</p>
                         <p>Yours sincerely,<br>Gary Nexon Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>
                     `;
-                    await sendInfoEmail(user.email, subject, content).catch(err =>
-                        console.error(`[ApplicationCron] Email failed for user ${userId}:`, err)
-                    );
+                    await (0, email_1.sendInfoEmail)(user.email, subject, content).catch(err => console.error(`[ApplicationCron] Email failed for user ${userId}:`, err));
                 }
-
                 console.log(`[ApplicationCron] Auto-accepted application ${application.id}.`);
-            } catch (innerErr) {
+            }
+            catch (innerErr) {
                 console.error(`[ApplicationCron] Error processing application ${application.id}:`, innerErr);
             }
         }
-    } catch (err) {
+    }
+    catch (err) {
         console.error('[ApplicationCron] Fatal error:', err);
     }
 }
-
-export function startApplicationCron(): void {
+function startApplicationCron() {
     console.log('[ApplicationCron] Starting application auto-acceptance cron (every hour).');
-    cron.schedule('0 * * * *', () => {
+    node_cron_1.default.schedule('0 * * * *', () => {
         runApplicationApprovalCron();
     });
     // Run immediately on startup to catch up any missed during redeploy

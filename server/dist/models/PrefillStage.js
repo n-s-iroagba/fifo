@@ -20,6 +20,14 @@ PrefillStage.init({
         type: sequelize_1.DataTypes.ENUM('admin_display', 'applicant_display'),
         allowNull: false,
     },
+    adminDisplay: {
+        type: sequelize_1.DataTypes.TEXT,
+        allowNull: true,
+    },
+    applicantDisplay: {
+        type: sequelize_1.DataTypes.TEXT,
+        allowNull: true,
+    },
     orderIndex: {
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,

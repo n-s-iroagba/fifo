@@ -26,7 +26,8 @@ JobListing.init({
     },
     company: {
         type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
+        defaultValue: 'BlueCollar Recruitment'
     },
     visaSponsorship: {
         type: sequelize_1.DataTypes.BOOLEAN,

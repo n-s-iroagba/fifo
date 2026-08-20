@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Nomination = void 0;
+exports.Contract = void 0;
 const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
-class Nomination extends sequelize_1.Model {
+class Contract extends sequelize_1.Model {
 }
-exports.Nomination = Nomination;
-Nomination.init({
+exports.Contract = Contract;
+Contract.init({
     id: {
         type: sequelize_1.DataTypes.INTEGER,
         autoIncrement: true,
@@ -16,25 +16,21 @@ Nomination.init({
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
     },
-    tradeStream: {
+    userId: {
+        type: sequelize_1.DataTypes.INTEGER,
+        allowNull: false,
+    },
+    company: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: false,
     },
-    hostEmployer: {
+    role: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: false,
     },
-    vacancies: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
-    },
-    competitors: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
-    },
-    isSelected: {
-        type: sequelize_1.DataTypes.BOOLEAN,
-        defaultValue: false,
+    status: {
+        type: sequelize_1.DataTypes.ENUM('pending', 'accepted', 'rejected'),
+        defaultValue: 'pending',
         allowNull: false,
     },
     documentUrl: {
@@ -47,6 +43,6 @@ Nomination.init({
     }
 }, {
     sequelize: database_1.sequelize,
-    tableName: 'nominations',
+    tableName: 'contracts',
     timestamps: true,
 });

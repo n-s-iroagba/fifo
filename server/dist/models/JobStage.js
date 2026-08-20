@@ -20,6 +20,10 @@ JobStage.init({
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
     },
+    status: {
+        type: sequelize_1.DataTypes.STRING,
+        defaultValue: 'not started',
+    },
     isCompleted: {
         type: sequelize_1.DataTypes.BOOLEAN,
         defaultValue: false,

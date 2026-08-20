@@ -17,7 +17,6 @@ class JobRepository {
             const orConditions = [
                 { title: { [sequelize_1.Op.like]: searchPattern } },
                 { location: { [sequelize_1.Op.like]: searchPattern } },
-                { company: { [sequelize_1.Op.like]: searchPattern } },
                 { description: { [sequelize_1.Op.like]: searchPattern } },
                 { employmentType: { [sequelize_1.Op.like]: searchPattern } },
                 { salary: { [sequelize_1.Op.like]: searchPattern } },
@@ -72,7 +71,6 @@ class JobRepository {
             const orConditions = [
                 { title: { [sequelize_1.Op.like]: searchPattern } },
                 { location: { [sequelize_1.Op.like]: searchPattern } },
-                { company: { [sequelize_1.Op.like]: searchPattern } },
                 { description: { [sequelize_1.Op.like]: searchPattern } },
                 { employmentType: { [sequelize_1.Op.like]: searchPattern } },
                 { salary: { [sequelize_1.Op.like]: searchPattern } },

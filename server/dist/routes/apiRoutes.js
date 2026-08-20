@@ -117,6 +117,16 @@ router.get('/admin/applications/:id/nominations', ...adminMW, ApplicationControl
 router.put('/admin/applications/:id/nominations/:nominationId/select', ...adminMW, ApplicationController_1.applicationController.selectNomination.bind(ApplicationController_1.applicationController));
 // Applicant Nomination Upload
 router.post('/applications/documents', ...applicantMW, ApplicationController_1.applicationController.uploadNominationDocument.bind(ApplicationController_1.applicationController));
+router.get('/applications/:id/nominations', ...applicantMW, ApplicationController_1.applicationController.getNominations.bind(ApplicationController_1.applicationController));
+router.put('/applications/:id/nominations/:nominationId/select', ...applicantMW, ApplicationController_1.applicationController.selectNomination.bind(ApplicationController_1.applicationController));
+// Admin Contract endpoints
+router.get('/admin/applications/:id/contracts', ...adminMW, ApplicationController_1.applicationController.getContracts.bind(ApplicationController_1.applicationController));
+router.post('/admin/applications/:id/contracts', ...adminMW, ApplicationController_1.applicationController.createContract.bind(ApplicationController_1.applicationController));
+// Candidate Contract endpoints
+router.get('/applications/:id/contracts', ...applicantMW, ApplicationController_1.applicationController.getContracts.bind(ApplicationController_1.applicationController));
+router.post('/applications/contracts/documents', ...applicantMW, ApplicationController_1.applicationController.uploadContractDocument.bind(ApplicationController_1.applicationController));
+router.put('/applications/:id/contracts/:contractId/accept', ...applicantMW, ApplicationController_1.applicationController.acceptContract.bind(ApplicationController_1.applicationController));
+router.put('/applications/:id/contracts/:contractId/reject', ...applicantMW, ApplicationController_1.applicationController.rejectContract.bind(ApplicationController_1.applicationController));
 // STK-ADM-JOB-001..005
 router.get('/admin/jobs/stats', ...adminMW, JobController_1.jobController.getJobStats.bind(JobController_1.jobController));
 router.get('/admin/jobs', ...adminMW, JobController_1.jobController.getAllJobsAdmin.bind(JobController_1.jobController));
@@ -208,6 +218,7 @@ router.put('/interests/me', ...applicantMW, InterestController_1.interestControl
 router.get('/interests/me', ...applicantMW, InterestController_1.interestController.getUserInterest.bind(InterestController_1.interestController));
 router.get('/admin/interests', ...adminMW, InterestController_1.interestController.getAllInterests.bind(InterestController_1.interestController));
 router.delete('/admin/interests/:id', ...adminMW, InterestController_1.interestController.deleteInterest.bind(InterestController_1.interestController));
+router.post('/admin/interests/:id/approve', ...adminMW, InterestController_1.interestController.approveInterest.bind(InterestController_1.interestController));
 // =======================
 // Ticket Catalog Routes
 // =======================
