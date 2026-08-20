@@ -1,12 +1,12 @@
 import { DataTypes, Model } from 'sequelize';
 import { sequelize } from '../config/database';
-import { CONSTANTS } from '../constants';
+
 
 export class Application extends Model {
     declare id: number;
     declare userId: number;
     declare jobId: number;
-
+    declare currentStageId: number | null;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
     declare visaSponsorshipStatus: string | null;
@@ -22,6 +22,10 @@ Application.init({
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
+    },
+    currentStageId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
     },
     userId: {
         type: DataTypes.INTEGER,
