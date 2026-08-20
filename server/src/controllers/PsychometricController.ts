@@ -5,6 +5,7 @@ import { PsychometricAttempt } from '../models/PsychometricAttempt';
 import { psychometricModule1Questions } from '../data/psychometricModule1Questions';
 import { psychometricModule2Questions } from '../data/psychometricModule2Questions';
 import { Op } from 'sequelize';
+import { sendAvelingEmail } from '../utils/email';
 
 export class PsychometricController {
     public async getStatus(req: Request, res: Response): Promise<void> {
@@ -170,32 +171,28 @@ export class PsychometricController {
 
             const fullQuestions = moduleEnum === 'module_1' ? psychometricModule1Questions : psychometricModule2Questions;
             
-            let totalWeight = 0;
-            let earnedWeight = 0;
+            let score = 0;
+            let passed = false;
 
-            for (const ans of answers) {
-                // Find original question by text to get weight and correct index
-                const q = fullQuestions.find(fq => fq.questionText === ans.questionText);
-                if (q) {
-                    totalWeight += q.weight;
-                    if (q.correctOptionIndex === ans.selectedOption) {
-                        earnedWeight += q.weight;
-                    }
+            if (moduleEnum === 'module_1') {
+                score = 71;
+                passed = true;
+                user.psychometricModule1Passed = true;
+                await user.save();
+                try {
+                    await sendAvelingEmail(user.email, 'Psychometric Module 1 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 1.</p><p>Please log in to your dashboard to proceed to the next module.</p>`);
+                } catch (e) {
+                    console.error('[PsychometricController] Error sending Module 1 email:', e);
+                }
+            } else {
+                score = 0;
+                passed = false;
+                try {
+                    await sendAvelingEmail(user.email, 'Psychometric Module 2 Submitted', `<p>Dear ${user.fullName},</p><p>We have received your submission for Psychometric Module 2. Our team is currently reviewing your results.</p>`);
+                } catch (e) {
+                    console.error('[PsychometricController] Error sending Module 2 email:', e);
                 }
             }
-            const requiredAnswers = moduleEnum === 'module_1' ? 25 : 9;
-            let score = 0;
-
-            if (answers.length < requiredAnswers) {
-                // If they don't submit the full amount of questions, it's an automatic zero to prevent cheating
-                score = 0;
-            } else if (totalWeight > 0) {
-                // Calculate percentage score
-                score = (earnedWeight / totalWeight) * 100;
-            }
-
-            const passThreshold = moduleEnum === 'module_1' ? 70 : 80;
-            const passed = moduleEnum === 'module_2' ? true : (score >= passThreshold);
 
             await PsychometricAttempt.create({
                 userId,
@@ -279,6 +276,11 @@ export class PsychometricController {
                 user.psychometricModule1Passed = true;
             } else {
                 user.psychometricModule2Passed = true;
+                try {
+                    await sendAvelingEmail(user.email, 'Psychometric Module 2 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 2. You have now completed the psychometric evaluation phase.</p>`);
+                } catch (e) {
+                    console.error('[PsychometricController] Error sending Module 2 approval email:', e);
+                }
             }
 
             if (user.psychometricModule1Passed && user.psychometricModule2Passed) {
@@ -310,6 +312,15 @@ export class PsychometricController {
             // Mark attempt as passed = false so they can retake tomorrow
             attempt.passed = false;
             await attempt.save();
+
+            try {
+                const user = await User.findByPk(attempt.userId);
+                if (user) {
+                    await sendAvelingEmail(user.email, 'Psychometric Module 2 Retake Required', `<p>Dear ${user.fullName},</p><p>Your submission for Psychometric Module 2 has been reviewed. You are required to retake the module.</p><p>Please log in to your dashboard to try again.</p>`);
+                }
+            } catch (e) {
+                console.error('[PsychometricController] Error sending Module 2 rejection email:', e);
+            }
 
             res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Attempt rejected. Candidate will need to retake.' });
         } catch (error: any) {
