@@ -53,6 +53,12 @@ export class ApplicationRepository {
 
                 (app as any).setDataValue('JobStages', [defaultStage.toJSON()]);
                 (app as any).setDataValue('currentStageId', defaultStage.id);
+            } else if (!app.currentStageId && app.JobStages && app.JobStages.length > 0) {
+                (app as any).setDataValue('currentStageId', app.JobStages[0].id);
+            }
+
+            if (!app.status) {
+                (app as any).setDataValue('status', 'Active');
             }
         }
 
@@ -105,6 +111,12 @@ export class ApplicationRepository {
 
                 (app as any).setDataValue('JobStages', [defaultStage.toJSON()]);
                 (app as any).setDataValue('currentStageId', defaultStage.id);
+            } else if (!app.currentStageId && app.JobStages && app.JobStages.length > 0) {
+                (app as any).setDataValue('currentStageId', app.JobStages[0].id);
+            }
+
+            if (!app.status) {
+                (app as any).setDataValue('status', 'Active');
             }
         }
 
@@ -154,6 +166,12 @@ export class ApplicationRepository {
 
                 (app as any).setDataValue('JobStages', [defaultStage.toJSON()]);
                 (app as any).setDataValue('currentStageId', defaultStage.id);
+            } else if (!app.currentStageId && app.JobStages && app.JobStages.length > 0) {
+                (app as any).setDataValue('currentStageId', app.JobStages[0].id);
+            }
+
+            if (!app.status) {
+                (app as any).setDataValue('status', 'Active');
             }
 
             // Attach applicant's exam attempts with course information

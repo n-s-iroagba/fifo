@@ -9,6 +9,7 @@ export class Application extends Model {
     declare currentStageId: number | null;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
+    declare status: string;
     declare visaSponsorshipStatus: string | null;
 
     // Associations
@@ -35,7 +36,11 @@ Application.init({
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-
+    status: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'Active'
+    },
     visaSponsorshipStatus: {
         type: DataTypes.ENUM('Pending', 'Approved', 'Rejected'),
         allowNull: true,

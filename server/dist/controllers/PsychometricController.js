@@ -187,11 +187,15 @@ class PsychometricController {
                 answers
             });
             const fullyCompleted = user.psychometricModule1Passed && user.psychometricModule2Passed;
+            const responseMessage = moduleEnum === 'module_1'
+                ? `Congratulations! You have passed Psychometric Module 1 with a score of ${score}%.`
+                : 'Your results have been submitted and will be reviewed within 24 hours. You will be notified via email.';
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({
-                message: 'Your results have been submitted and will be reviewed within 24 hours. You will be notified via email.',
+                message: responseMessage,
                 module1Passed: user.psychometricModule1Passed,
                 module2Passed: user.psychometricModule2Passed,
-                fullyCompleted
+                fullyCompleted,
+                score
             });
         }
         catch (error) {

@@ -24,6 +24,11 @@ Application.init({
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
     },
+    status: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'Active'
+    },
     visaSponsorshipStatus: {
         type: sequelize_1.DataTypes.ENUM('Pending', 'Approved', 'Rejected'),
         allowNull: true,

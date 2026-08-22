@@ -59,6 +59,15 @@ async function seedDatabase() {
         }
     }
     try {
+        await models_1.sequelize.query("ALTER TABLE applications ADD COLUMN status VARCHAR(255) NOT NULL DEFAULT 'Active';");
+        console.log("Safely patched applications table with status.");
+    }
+    catch (e) {
+        if (e.original && e.original.code !== 'ER_DUP_FIELDNAME') {
+            console.log("Notice: status column might already exist or could not be added:", e.message);
+        }
+    }
+    try {
         await models_1.sequelize.query("ALTER TABLE invoices ADD COLUMN isPaid BOOLEAN NOT NULL DEFAULT false;");
         console.log("Safely patched invoices table with isPaid.");
     }

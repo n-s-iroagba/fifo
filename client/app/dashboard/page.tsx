@@ -19,8 +19,13 @@ export default function ApplicantDashboard() {
 
     const pendingStages = summary?.pendingStages || [];
     const activeJobs = summary?.activeJobs?.rows || summary?.activeJobs || [];
-
     const completedGroups = summary?.completedGroups || [];
+    const applicationCount = summary?.applicationCount || 0;
+
+    // If the backend reports active applications but pendingStages is empty
+    // (e.g. status column missing from DB), synthesize a fallback card so
+    // the user can always see their application.
+    const hasApplicationsWithNoStages = applicationCount > 0 && pendingStages.length === 0 && completedGroups.length === 0;
 
     const filteredStages = pendingStages.filter((app: any) => {
         if (appFilter === 'All') return true;
@@ -188,7 +193,7 @@ export default function ApplicantDashboard() {
                                     </div>
                                 )))}
 
-                            {(appFilter === 'Completed' ? completedGroups.length === 0 : filteredStages.length === 0) && (
+                            {(appFilter === 'Completed' ? completedGroups.length === 0 : filteredStages.length === 0) && !hasApplicationsWithNoStages && (
                                 <div className="py-20 text-center bg-blue-50/50 rounded-[3rem] border-2 border-dashed border-blue-100">
                                     <span className="material-symbols-outlined text-4xl text-blue-200 mb-4">clinical_notes</span>
                                     <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">No applications found in this filter</p>
@@ -198,6 +203,45 @@ export default function ApplicantDashboard() {
                                     >
                                         View All Applications
                                     </button>
+                                </div>
+                            )}
+
+                            {/* Fallback: backend confirms application exists but stages not yet loaded */}
+                            {hasApplicationsWithNoStages && appFilter !== 'Completed' && (
+                                <div className="bg-white p-6 rounded-[2rem] border border-blue-100 shadow-sm transition-all hover:shadow-xl hover:shadow-blue-900/5 hover:border-blue-900/20">
+                                    <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
+                                        <div className="flex-1">
+                                            <div className="flex flex-wrap items-center gap-3 mb-2">
+                                                <span className="text-[9px] font-black text-blue-300 uppercase tracking-widest bg-blue-50 px-2 py-1 rounded">Active Application</span>
+                                                <span className="text-[9px] font-black text-amber-600 uppercase tracking-widest bg-amber-50 px-2 py-1 rounded border border-amber-100">In Progress</span>
+                                            </div>
+                                            <h3 className="text-xl font-bold text-blue-900 tracking-tight leading-tight mb-2">Your Application is Being Processed</h3>
+                                            <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">
+                                                Your application has been submitted and is currently under review by our recruitment team. You will be notified of any stage updates.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="bg-blue-50/50 p-6 rounded-[2rem] border border-blue-50 mb-6 border-l-4 border-l-blue-900">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-900 animate-pulse shrink-0" />
+                                            <span className="text-[10px] font-black text-blue-900 uppercase tracking-[0.2em]">Application Under Review</span>
+                                        </div>
+                                        <p className="text-[9px] font-bold text-blue-400 uppercase tracking-tight leading-relaxed italic opacity-90">
+                                            Our team is reviewing your submission. Please check back soon for stage updates.
+                                        </p>
+                                        <div className="flex items-center gap-3 pt-4 border-t border-blue-100/50 mt-4">
+                                            <span className="text-[8px] font-black text-blue-300 uppercase tracking-[0.2em]">Status:</span>
+                                            <span className="text-[8px] font-bold text-blue-900 uppercase">Awaiting Review</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center pt-4 border-t border-blue-50">
+                                        <Link
+                                            href="/dashboard/applications"
+                                            className="px-5 py-2.5 rounded-xl text-[9px] font-black text-blue-400 uppercase tracking-[0.2em] hover:bg-blue-50 hover:text-blue-900 transition-all border border-transparent hover:border-blue-100"
+                                        >
+                                            View Application Details
+                                        </Link>
+                                    </div>
                                 </div>
                             )}
                         </div>

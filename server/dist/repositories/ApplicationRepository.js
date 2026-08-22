@@ -46,6 +46,12 @@ class ApplicationRepository {
                 app.setDataValue('JobStages', [defaultStage.toJSON()]);
                 app.setDataValue('currentStageId', defaultStage.id);
             }
+            else if (!app.currentStageId && app.JobStages && app.JobStages.length > 0) {
+                app.setDataValue('currentStageId', app.JobStages[0].id);
+            }
+            if (!app.status) {
+                app.setDataValue('status', 'Active');
+            }
         }
         return result;
     }
@@ -95,6 +101,12 @@ class ApplicationRepository {
                 app.setDataValue('JobStages', [defaultStage.toJSON()]);
                 app.setDataValue('currentStageId', defaultStage.id);
             }
+            else if (!app.currentStageId && app.JobStages && app.JobStages.length > 0) {
+                app.setDataValue('currentStageId', app.JobStages[0].id);
+            }
+            if (!app.status) {
+                app.setDataValue('status', 'Active');
+            }
         }
         return result;
     }
@@ -139,6 +151,12 @@ class ApplicationRepository {
                 }, { transaction });
                 app.setDataValue('JobStages', [defaultStage.toJSON()]);
                 app.setDataValue('currentStageId', defaultStage.id);
+            }
+            else if (!app.currentStageId && app.JobStages && app.JobStages.length > 0) {
+                app.setDataValue('currentStageId', app.JobStages[0].id);
+            }
+            if (!app.status) {
+                app.setDataValue('status', 'Active');
             }
             // Attach applicant's exam attempts with course information
             try {
