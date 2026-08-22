@@ -261,8 +261,10 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
                                     });
 
                                     return (
-                                        <label
+                                        <div
                                             key={cat.id}
+                                            role="button"
+                                            tabIndex={0}
                                             onClick={() => !isAlreadyAssigned && toggleCatalogSelection(cat.id)}
                                             className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
                                                 isAlreadyAssigned
@@ -272,13 +274,6 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
                                                     : 'bg-white border-blue-100 hover:border-blue-300 text-blue-900'
                                             }`}
                                         >
-                                            <input
-                                                type="checkbox"
-                                                checked={isChecked || isAlreadyAssigned}
-                                                disabled={isAlreadyAssigned}
-                                                onChange={() => {}}
-                                                className="sr-only"
-                                            />
                                             <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
                                                 isAlreadyAssigned
                                                     ? 'bg-slate-300 border-slate-300 text-slate-600'
@@ -322,7 +317,7 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
                                                     )}
                                                 </div>
                                             </div>
-                                        </label>
+                                        </div>
                                     );
                                 })
                             )}

@@ -13,7 +13,7 @@ export const forkliftModules = [
         sequenceOrder: 2,
         contentType: 'TEXT',
         contentUrl: 'local-content',
-        content: 'Forklift stability is governed by the Stability Triangle — the three-point suspension created by the two front wheels and the rear pivot point. Learn: load centre concept (standard 500mm load centre), how load weight and distance from the forks affect safe load capacity (refer to data plate), the danger of exceeding rated capacity. Study safe load handling: correctly entering the pallet, travelling at correct tilt and height (forks 150–300mm from ground), turning safely with a load, operating on ramps (load uphill), and stacking to correct heights. Understand the legal obligation to never exceed the forklift's rated capacity under any circumstances.',
+        content: `Forklift stability is governed by the Stability Triangle — the three-point suspension created by the two front wheels and the rear pivot point. Learn: load centre concept (standard 500mm load centre), how load weight and distance from the forks affect safe load capacity (refer to data plate), the danger of exceeding rated capacity. Study safe load handling: correctly entering the pallet, travelling at correct tilt and height (forks 150–300mm from ground), turning safely with a load, operating on ramps (load uphill), and stacking to correct heights. Understand the legal obligation to never exceed the forklift's rated capacity under any circumstances.`,
     },
     {
         title: 'Module 3: Pedestrian Safety, Refuelling & LPG Handling',

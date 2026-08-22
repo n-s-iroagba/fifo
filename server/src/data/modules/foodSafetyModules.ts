@@ -29,6 +29,6 @@ export const foodSafetyModules = [
         sequenceOrder: 4,
         contentType: 'TEXT',
         contentUrl: 'local-content',
-        content: 'As FSS, you bear legal responsibility for your food business's compliance under the Food Standards Code Standard 3.2.2A. This module covers the 14 FSANZ declarable allergens: gluten-containing cereals, crustaceans, eggs, fish, peanuts, soybeans, milk, tree nuts, sesame, sulphites, lupin, molluscs, bee pollen, and royal jelly. Learn allergen risk management: maintaining an allergen register, staff training requirements, correct labelling of bulk and pre-packaged foods, and customer communication protocols. Understand FSS certificate renewal — required every 5 years or when changing food businesses.',
+        content: `As FSS, you bear legal responsibility for your food business's compliance under the Food Standards Code Standard 3.2.2A. This module covers the 14 FSANZ declarable allergens: gluten-containing cereals, crustaceans, eggs, fish, peanuts, soybeans, milk, tree nuts, sesame, sulphites, lupin, molluscs, bee pollen, and royal jelly. Learn allergen risk management: maintaining an allergen register, staff training requirements, correct labelling of bulk and pre-packaged foods, and customer communication protocols. Understand FSS certificate renewal — required every 5 years or when changing food businesses.`,
     },
 ];
