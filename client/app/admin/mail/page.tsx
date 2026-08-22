@@ -36,7 +36,13 @@ function MailComposerContent() {
     );
 
     const { data: usersRes } = useApiQuery<any>(['admin', 'users'], '/admin/users');
-    const applicants = usersRes?.users || usersRes || [];
+    const applicants = Array.isArray(usersRes?.rows)
+        ? usersRes.rows
+        : Array.isArray(usersRes?.users)
+        ? usersRes.users
+        : Array.isArray(usersRes)
+        ? usersRes
+        : [];
 
     // Disable activity query as backend doesn't support it yet
     const recentActivity: any[] = [];

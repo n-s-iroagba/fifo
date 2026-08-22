@@ -111,6 +111,7 @@ export class AuthService {
         const welcomeSubject = 'Welcome to BlueCollar - Account Verified';
         const welcomeContent = `
             <p>Your account has been successfully verified. Welcome to the BlueCollar Recruitment Platform!</p>
+            <p><strong>Blue Collar Recruitment specializes in hiring and sponsoring foreign applicants to work FIFO in Australia.</strong></p>
             <p>To successfully secure your next FIFO role, please follow the 6 steps of our recruitment and placement process:</p>
             
             <ol style="margin-bottom: 20px;">

@@ -262,6 +262,7 @@ export const sendWelcomeEmail = async (to: string, userName: string): Promise<vo
     const content = `
         <p>Dear ${userName},</p>
         <p>Welcome to the BlueCollar recruitment ecosystem. Your account has been successfully verified.</p>
+        <p><strong>Blue Collar Recruitment specializes in hiring and sponsoring foreign applicants to work FIFO in Australia.</strong></p>
         <p>To ensure you are matched with the most relevant high-impact roles, please complete the following steps:</p>
         <ol>
             <li><strong>Complete your Biodata:</strong> Log in and fill all fields in your profile dashboard.</li>
@@ -478,7 +479,7 @@ export const sendWelcomeApplicationFoundEmail = async (to: string, userName: str
     const subject = 'Welcome to BlueCollar - Active Application Found';
     const content = `
         <p>Dear ${userName},</p>
-        <p>Welcome to BlueCollar! We detected an active application associated with your profile.</p>
+        <p>Welcome to BlueCollar! Blue Collar Recruitment specializes in hiring and sponsoring foreign applicants to work FIFO in Australia. We detected an active application associated with your profile.</p>
         <p>You can track the progress of your application on your dashboard.</p>
     `;
     await sendInfoEmail(to, subject, content);

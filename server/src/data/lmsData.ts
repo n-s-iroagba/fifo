@@ -28,7 +28,7 @@ import { forkliftModules } from './modules/forkliftModules';
 
 export const lmsSeedData = [
     {
-        certificationName: 'EEHA Certification',
+        certificationName: 'UEERL0004 EEHA Certification',
         description: 'Electrical Equipment in Hazardous Areas (EEHA) advanced trade prerequisite for hazardous mining and energy environments.',
         course: {
             title: 'UEERL0004 Conduct testing and maintenance of electrical equipment in hazardous areas',
@@ -53,7 +53,7 @@ export const lmsSeedData = [
         }
     },
     {
-        certificationName: 'Standard 11 Mining Induction',
+        certificationName: 'STD11 Standard 11 Surface Mining Safety Induction',
         description: 'Mandatory core surface site safety induction for Western Australia and Queensland mining environments.',
         course: {
             title: 'STD11 Standard 11 Surface Mining Safety Induction',
@@ -78,7 +78,7 @@ export const lmsSeedData = [
         }
     },
     {
-        certificationName: 'White Card WA',
+        certificationName: 'CPCWHS1001 White Card WA',
         description: 'Mandatory General Construction Induction certification required before entering any Australian construction or FIFO resource work site under WHS Regulations 2022.',
         course: {
             title: 'CPCWHS1001 Prepare to work safely in the construction industry',
@@ -102,7 +102,7 @@ export const lmsSeedData = [
         }
     },
     {
-        certificationName: 'Working at Heights',
+        certificationName: 'RIIWHS204E Work safely at heights',
         description: 'Required for any FIFO/mining role operating at heights under Australian WHS Regulations 2022.',
         course: {
             title: 'RIIWHS204E Work safely at heights',
@@ -129,7 +129,7 @@ export const lmsSeedData = [
         }
     },
     {
-        certificationName: 'Confined Space Entry',
+        certificationName: 'RIIWHS202E Enter and work in confined spaces',
         description: 'Required for roles that involve entering or working in confined spaces under AS 2865.',
         course: {
             title: 'RIIWHS202E Enter and work in confined spaces',
@@ -154,7 +154,7 @@ export const lmsSeedData = [
         }
     },
     {
-        certificationName: 'Gas Test Atmospheres',
+        certificationName: 'MSMWHS217 Conduct gas test atmospheres',
         description: 'Critical mining hazard module for testing and monitoring toxic and flammable atmospheres on WA resource sites. Delivered online with practical competency validation.',
         course: {
             title: 'MSMWHS217 Conduct gas test atmospheres',
@@ -179,7 +179,7 @@ export const lmsSeedData = [
         }
     },
     {
-        certificationName: 'Provide First Aid',
+        certificationName: 'HLTAID011 Provide First Aid',
         description: 'Workplace medical foundation for emergency response on remote FIFO sites. Meets Australian Resuscitation Council (ARC) 2023 guidelines.',
         course: {
             title: 'HLTAID011 Provide First Aid',
@@ -205,7 +205,7 @@ export const lmsSeedData = [
         }
     },
     {
-        certificationName: 'National Police Clearance',
+        certificationName: 'NPC National Police Clearance',
         description: 'Official document confirming no disclosable court outcomes (NDCO) — mandatory for FIFO site access and visa sponsorship eligibility.',
         course: {
             title: 'NPC National Police Clearance — Requirements & Submission',
@@ -224,7 +224,7 @@ export const lmsSeedData = [
         }
     },
     {
-        certificationName: 'Australian Drivers Licence (Class C)',
+        certificationName: 'DL-C Australian Drivers Licence (Class C)',
         description: 'Current Class C licence (manual or automatic) — required for all FIFO roles involving light vehicle operation on camp and mine access roads.',
         course: {
             title: 'DL-C Australian Class C Drivers Licence — FIFO Requirements',
@@ -243,7 +243,7 @@ export const lmsSeedData = [
         }
     },
     {
-        certificationName: 'Certificate III in Commercial Cookery',
+        certificationName: 'SIT30821 Certificate III in Commercial Cookery',
         description: 'Code SIT30821 — Baseline formal culinary qualification for professional chef roles in FIFO camp catering.',
         course: {
             title: 'SIT30821 Certificate III in Commercial Cookery',
@@ -267,7 +267,7 @@ export const lmsSeedData = [
         }
     },
     {
-        certificationName: 'Food Safety Supervisor',
+        certificationName: 'SITXFSA005/SITXFSA006 Food Safety Supervisor',
         description: 'Codes SITXFSA005/SITXFSA006 — Required by FSANZ Standard 3.2.2A for supervisory roles in FIFO camp catering kitchens.',
         course: {
             title: 'SITXFSA005 Use Hygienic Practices for Food Safety & SITXFSA006 Participate in Safe Food Handling Practices',
@@ -291,7 +291,7 @@ export const lmsSeedData = [
         }
     },
     {
-        certificationName: 'Responsible Service of Alcohol (RSA)',
+        certificationName: 'SITHFAB021 Responsible Service of Alcohol (RSA)',
         description: 'Code SITHFAB021 — Mandatory for any role serving or supervising alcohol on a licensed FIFO camp social club or bar.',
         course: {
             title: 'SITHFAB021 Responsible Service of Alcohol',
@@ -314,7 +314,7 @@ export const lmsSeedData = [
         }
     },
     {
-        certificationName: 'Forklift Licence (LF)',
+        certificationName: 'TLILIC2001 Licence to operate a forklift truck',
         description: 'Code TLILIC2001 — High Risk Work Licence (LF class) required for forklift operation in FIFO warehouses and laydown areas.',
         course: {
             title: 'TLILIC2001 Licence to operate a forklift truck',

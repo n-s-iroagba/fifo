@@ -672,6 +672,18 @@ class TicketService {
                 courseId = matched.id;
             }
         }
+        // Avoid duplicate ticket gap for the same application and ticket type
+        if (ticketType) {
+            const existingTicket = await models_1.Ticket.findOne({
+                where: {
+                    applicationId,
+                    ticketType
+                }
+            });
+            if (existingTicket) {
+                return existingTicket;
+            }
+        }
         const ticket = await models_1.Ticket.create({
             userId: application.userId,
             applicationId: applicationId,

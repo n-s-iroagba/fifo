@@ -122,6 +122,45 @@ export async function seedDatabase() {
     // per unique key. Runs idempotently before every seed pass.
     console.log('[Migration] Deduplicating LMS tables...');
     try {
+        // Delete legacy un-coded ticket_catalogs when a coded catalog item exists or matches un-coded plain names
+        const legacyPlainNames = [
+            'EEHA Certification',
+            'Standard 11 Mining Induction',
+            'White Card WA',
+            'Working at Heights',
+            'Confined Space Entry',
+            'Gas Test Atmospheres',
+            'Provide First Aid',
+            'National Police Clearance',
+            'Australian Drivers Licence (Class C)',
+            'Certificate III in Commercial Cookery',
+            'Food Safety Supervisor',
+            'Responsible Service of Alcohol (RSA)',
+            'Forklift Licence (LF)'
+        ];
+
+        for (const plainName of legacyPlainNames) {
+            // Delete un-coded ticket catalog entry if a coded counterpart exists
+            await sequelize.query(`
+                DELETE FROM ticket_catalogs
+                WHERE name = :plainName
+                AND EXISTS (
+                    SELECT 1 FROM (SELECT * FROM ticket_catalogs) tc2
+                    WHERE tc2.name LIKE CONCAT('%', :plainName) AND tc2.name != :plainName
+                );
+            `, { replacements: { plainName } });
+
+            // Delete un-coded certification_types if a coded counterpart exists
+            await sequelize.query(`
+                DELETE FROM certification_types
+                WHERE name = :plainName
+                AND EXISTS (
+                    SELECT 1 FROM (SELECT * FROM certification_types) ct2
+                    WHERE ct2.name LIKE CONCAT('%', :plainName) AND ct2.name != :plainName
+                );
+            `, { replacements: { plainName } });
+        }
+
         // Deduplicate certification_types by name
         await sequelize.query(`
             DELETE ct FROM certification_types ct

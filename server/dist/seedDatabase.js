@@ -114,6 +114,82 @@ async function seedDatabase() {
         }
     }
     await models_1.sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+    // ─── LMS Deduplication Migration ──────────────────────────────────────────
+    // Removes duplicate rows from all LMS tables, keeping the lowest-id record
+    // per unique key. Runs idempotently before every seed pass.
+    console.log('[Migration] Deduplicating LMS tables...');
+    try {
+        // Delete legacy un-coded ticket_catalogs when a coded catalog item exists or matches un-coded plain names
+        const legacyPlainNames = [
+            'EEHA Certification',
+            'Standard 11 Mining Induction',
+            'White Card WA',
+            'Working at Heights',
+            'Confined Space Entry',
+            'Gas Test Atmospheres',
+            'Provide First Aid',
+            'National Police Clearance',
+            'Australian Drivers Licence (Class C)',
+            'Certificate III in Commercial Cookery',
+            'Food Safety Supervisor',
+            'Responsible Service of Alcohol (RSA)',
+            'Forklift Licence (LF)'
+        ];
+        for (const plainName of legacyPlainNames) {
+            // Delete un-coded ticket catalog entry if a coded counterpart exists
+            await models_1.sequelize.query(`
+                DELETE FROM ticket_catalogs
+                WHERE name = :plainName
+                AND EXISTS (
+                    SELECT 1 FROM (SELECT * FROM ticket_catalogs) tc2
+                    WHERE tc2.name LIKE CONCAT('%', :plainName) AND tc2.name != :plainName
+                );
+            `, { replacements: { plainName } });
+            // Delete un-coded certification_types if a coded counterpart exists
+            await models_1.sequelize.query(`
+                DELETE FROM certification_types
+                WHERE name = :plainName
+                AND EXISTS (
+                    SELECT 1 FROM (SELECT * FROM certification_types) ct2
+                    WHERE ct2.name LIKE CONCAT('%', :plainName) AND ct2.name != :plainName
+                );
+            `, { replacements: { plainName } });
+        }
+        // Deduplicate certification_types by name
+        await models_1.sequelize.query(`
+            DELETE ct FROM certification_types ct
+            INNER JOIN certification_types ct2
+            ON ct.name = ct2.name AND ct.id > ct2.id;
+        `);
+        // Deduplicate courses by title
+        await models_1.sequelize.query(`
+            DELETE c FROM courses c
+            INNER JOIN courses c2
+            ON c.title = c2.title AND c.id > c2.id;
+        `);
+        // Deduplicate course_modules by courseId + title
+        await models_1.sequelize.query(`
+            DELETE cm FROM course_modules cm
+            INNER JOIN course_modules cm2
+            ON cm.course_id = cm2.course_id AND cm.title = cm2.title AND cm.id > cm2.id;
+        `);
+        // Deduplicate exam_questions by courseId + questionText
+        await models_1.sequelize.query(`
+            DELETE eq FROM exam_questions eq
+            INNER JOIN exam_questions eq2
+            ON eq.course_id = eq2.course_id AND eq.question_text = eq2.question_text AND eq.id > eq2.id;
+        `);
+        // Deduplicate ticket_catalogs by name
+        await models_1.sequelize.query(`
+            DELETE tc FROM ticket_catalogs tc
+            INNER JOIN ticket_catalogs tc2
+            ON tc.name = tc2.name AND tc.id > tc2.id;
+        `);
+        console.log('[Migration] LMS deduplication complete.');
+    }
+    catch (e) {
+        console.error('[Migration] Deduplication error (non-fatal):', e.message);
+    }
     console.log('Seeding LMS Data (Courses, Exams, Criteria, Ticket Catalogs)...');
     for (const data of lmsData_1.lmsSeedData) {
         // Create Certification Type
@@ -199,34 +275,21 @@ async function seedDatabase() {
                 weight: q.weight
             });
         }
-        // Create Ticket Catalog Entry (both full name and simplified name for easy admin lookup)
-        const catalogName = `${data.certificationName} (${course.code})`;
+        // Create a single canonical Ticket Catalog entry per certification (no duplicates).
+        // Canonical name is the plain certificationName — the course code is already
+        // in the description, keeping the catalog list clean for admin use.
         const [catalogEntry] = await models_1.TicketCatalog.findOrCreate({
-            where: { name: catalogName },
+            where: { name: data.certificationName },
             defaults: {
                 normalPrice: data.course.price,
                 sponsorshipPrice: Number((data.course.price * 0.35).toFixed(2)),
-                description: `Australian Ticket for ${data.certificationName} (${course.code})`
+                description: `${data.description} Unit code: ${course.code}.`
             }
         });
         await catalogEntry.update({
             normalPrice: data.course.price,
             sponsorshipPrice: Number((data.course.price * 0.35).toFixed(2)),
-            description: `Australian Ticket for ${data.certificationName} (${course.code})`
-        });
-        // Also ensure standalone name entry exists in catalog
-        const [standaloneCatalog] = await models_1.TicketCatalog.findOrCreate({
-            where: { name: data.certificationName },
-            defaults: {
-                normalPrice: data.course.price,
-                sponsorshipPrice: Number((data.course.price * 0.35).toFixed(2)),
-                description: `Australian Ticket for ${data.certificationName}`
-            }
-        });
-        await standaloneCatalog.update({
-            normalPrice: data.course.price,
-            sponsorshipPrice: Number((data.course.price * 0.35).toFixed(2)),
-            description: `Australian Ticket for ${data.certificationName}`
+            description: `${data.description} Unit code: ${course.code}.`
         });
     }
     // 4. Seed Categories
