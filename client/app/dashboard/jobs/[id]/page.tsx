@@ -23,8 +23,17 @@ export default function JobDetailPage() {
     });
 
     const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
-    const [tickets, setTickets] = useState<{ ticketType: string }[]>([]);
+    // possessedIds = set of ticket catalog IDs the user says they already hold
+    const [possessedIds, setPossessedIds] = useState<Set<number>>(new Set());
 
+    const togglePossessed = (ticketId: number) => {
+        setPossessedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(ticketId)) next.delete(ticketId);
+            else next.add(ticketId);
+            return next;
+        });
+    };
     const handleInitialApplyClick = () => {
         const user = userData?.user;
         const isBiodataComplete = !!(user?.fullName && user?.phoneNumber && user?.nationality);
@@ -55,22 +64,31 @@ export default function JobDetailPage() {
         setIsApplyModalOpen(true);
     };
 
-    const handleAddTicket = () => setTickets([...tickets, { ticketType: '' }]);
+    const [customTickets, setCustomTickets] = useState<{ ticketType: string }[]>([]);
+
+    const handleAddTicket = () => setCustomTickets([...customTickets, { ticketType: '' }]);
     const handleTicketChange = (index: number, val: string) => {
-        const newT = [...tickets];
+        const newT = [...customTickets];
         newT[index].ticketType = val;
-        setTickets(newT);
+        setCustomTickets(newT);
     };
     const handleRemoveTicket = (index: number) => {
-        const newT = [...tickets];
+        const newT = [...customTickets];
         newT.splice(index, 1);
-        setTickets(newT);
+        setCustomTickets(newT);
     };
 
     const handleFinalSubmit = () => {
-        // filter out empty tickets
-        const validTickets = tickets.filter(t => t.ticketType.trim() !== '');
-        applyMutation.mutate({ jobId: parseInt(jobId, 10), tickets: validTickets });
+        const requiredTickets: any[] = job?.RequiredTickets || [];
+        const possessedTickets = requiredTickets
+            .filter((t: any) => possessedIds.has(t.id))
+            .map((t: any) => ({ ticketType: t.name, status: 'possessed' }));
+
+        const extraTickets = customTickets
+            .filter((t) => t.ticketType.trim().length > 0)
+            .map((t) => ({ ticketType: t.ticketType.trim(), status: 'possessed' }));
+
+        applyMutation.mutate({ jobId: parseInt(jobId, 10), tickets: [...possessedTickets, ...extraTickets] });
         setIsApplyModalOpen(false);
     };
 
@@ -344,24 +362,59 @@ export default function JobDetailPage() {
                             </p>
                         </div>
 
-                        <div className="space-y-4 mb-8 max-h-[40vh] overflow-y-auto pr-2">
-                            {tickets.map((t, idx) => (
-                                <div key={idx} className="flex gap-4 items-center">
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. Working at Heights"
-                                        className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        value={t.ticketType}
-                                        onChange={e => handleTicketChange(idx, e.target.value)}
-                                    />
-                                    <button onClick={() => handleRemoveTicket(idx)} className="text-red-400 hover:text-red-600 p-2">
-                                        <span className="material-symbols-outlined">delete</span>
-                                    </button>
+                        <div className="space-y-6 mb-8 max-h-[50vh] overflow-y-auto pr-2">
+                            {job.RequiredTickets?.length > 0 && (
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-blue-900 block">
+                                        Required Certifications (Check if you already possess)
+                                    </label>
+                                    <div className="space-y-2">
+                                        {job.RequiredTickets.map((ticket: any) => {
+                                            const isChecked = possessedIds.has(ticket.id);
+                                            return (
+                                                <label key={ticket.id} className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all cursor-pointer ${isChecked ? 'bg-blue-50/80 border-blue-300' : 'bg-slate-50 border-slate-200 hover:border-slate-300'}`}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isChecked}
+                                                        onChange={() => togglePossessed(ticket.id)}
+                                                        className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300"
+                                                    />
+                                                    <div className="flex-1">
+                                                        <span className="text-xs font-bold text-blue-900 block">{ticket.name}</span>
+                                                        {ticket.description && <span className="text-[10px] text-slate-500 block">{ticket.description}</span>}
+                                                    </div>
+                                                    <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg ${isChecked ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
+                                                        {isChecked ? 'Possessed' : 'Training Gap'}
+                                                    </span>
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                            ))}
-                            <button onClick={handleAddTicket} className="text-[10px] font-black uppercase tracking-widest text-blue-600 flex items-center gap-2 hover:text-blue-900">
-                                <span className="material-symbols-outlined text-sm">add</span> Add Ticket
-                            </button>
+                            )}
+
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-blue-900 block">
+                                    Additional Certifications You Possess
+                                </label>
+                                {customTickets.map((t, idx) => (
+                                    <div key={idx} className="flex gap-4 items-center">
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Working at Heights"
+                                            className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            value={t.ticketType}
+                                            onChange={e => handleTicketChange(idx, e.target.value)}
+                                        />
+                                        <button onClick={() => handleRemoveTicket(idx)} className="text-red-400 hover:text-red-600 p-2">
+                                            <span className="material-symbols-outlined">delete</span>
+                                        </button>
+                                    </div>
+                                ))}
+                                <button onClick={handleAddTicket} className="text-[10px] font-black uppercase tracking-widest text-blue-600 flex items-center gap-2 hover:text-blue-900">
+                                    <span className="material-symbols-outlined text-sm">add</span> Add Extra Certification
+                                </button>
+                            </div>
                         </div>
 
                         <div className="flex gap-4">

@@ -847,6 +847,19 @@ export class TicketService {
             }
         }
 
+        // Avoid duplicate ticket gap for the same application and ticket type
+        if (ticketType) {
+            const existingTicket = await Ticket.findOne({
+                where: {
+                    applicationId,
+                    ticketType
+                }
+            });
+            if (existingTicket) {
+                return existingTicket;
+            }
+        }
+
         const ticket = await Ticket.create({
             userId: application.userId,
             applicationId: applicationId,

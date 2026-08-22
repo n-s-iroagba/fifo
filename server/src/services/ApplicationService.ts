@@ -125,11 +125,11 @@ export class ApplicationService {
 
             const initialStageId = firstApplicantStage ? firstApplicantStage.id : 1;
             
-            // Create singular initial stage based on prefill
+            // ── Stage: Application submitted → under-review (spec step 4) ──
             const initialStage = await jobStageRepository.create({
                 applicationId: newApp.id,
                 prefillStageId: initialStageId,
-                status: 'Not Started'
+                status: 'under-review'
             }, t);
 
             // Set initial stage pointer
@@ -137,50 +137,76 @@ export class ApplicationService {
                 currentStageId: initialStage.id
             }, t);
 
-            // Create associated tickets
-            if (ticketsData && ticketsData.length > 0) {
-                const { Ticket } = require('../models');
-                for (const ticket of ticketsData) {
-                    await Ticket.create({
-                        ...ticket,
-                        userId,
-                        applicationId: newApp.id,
-                        status: ticket.status || 'not_possessed',
-                        ticketSponsorship: 'no_application',
-                        refundStatus: 'none'
-                    }, { transaction: t });
-                }
-            } else if ((job as any).RequiredTickets && Array.isArray((job as any).RequiredTickets) && (job as any).RequiredTickets.length > 0) {
-                const { Ticket, Course } = require('../models');
-                const catalogs = (job as any).RequiredTickets;
-                for (const cat of catalogs) {
-                    let cId = null;
-                    const matchingCourse = await Course.findOne({
-                        where: {
-                            [require('sequelize').Op.or]: [
-                                { code: 'RIIWHS204E' },
-                                { title: { [require('sequelize').Op.like]: `%${cat.name}%` } }
-                            ]
-                        },
-                        transaction: t
-                    });
-                    if (matchingCourse) cId = matchingCourse.id;
+            // ── Ticket Copying (Spec Step 2) ──────────────────────────────────
+            // All RequiredTickets from the job are copied as applicant ticket gaps.
+            // If the user declared they already possess some tickets in ticketsData,
+            // those are marked 'possessed'; the rest default to 'not_possessed'.
+            const { Ticket, Course } = require('../models');
+            const { Op } = require('sequelize');
 
-                    await Ticket.create({
-                        userId,
-                        applicationId: newApp.id,
-                        ticketType: cat.name,
-                        status: 'not_possessed',
-                        ticketSponsorship: 'no_application',
-                        refundStatus: 'none',
-                        description: cat.description,
-                        realPrice: cat.normalPrice,
-                        subsidisedPrice: cat.sponsorshipPrice,
-                        purchasePrice: cat.sponsorshipPrice ?? cat.normalPrice ?? 0,
-                        canApplySponsorship: true,
-                        courseId: cId
-                    }, { transaction: t });
-                }
+            // Build a Set of possessed ticket names declared by the applicant
+            const possessedNames = new Set(
+                (ticketsData || []).map((td: any) => (td.ticketType || '').toLowerCase().trim())
+            );
+
+            // Collect source: RequiredTickets from the job listing (canonical gaps)
+            const catalogTickets: any[] = (job as any).RequiredTickets && Array.isArray((job as any).RequiredTickets)
+                ? (job as any).RequiredTickets
+                : [];
+
+            // Also include any user-declared possessed tickets not already in the job catalog
+            const extraPossessedTickets = (ticketsData || []).filter((td: any) => {
+                const name = (td.ticketType || '').toLowerCase().trim();
+                return !catalogTickets.some((c: any) => c.name.toLowerCase() === name);
+            });
+
+            // Create ticket rows
+            for (const cat of catalogTickets) {
+                // Match linked course by catalog name
+                const catNameLower = (cat.name || '').toLowerCase();
+                const matchingCourse = await Course.findOne({
+                    where: {
+                        [Op.or]: [
+                            { title: { [Op.like]: `%${cat.name}%` } },
+                            // match on first significant word in cat name
+                            ...(catNameLower.split(' ')
+                                .filter((w: string) => w.length > 4)
+                                .slice(0, 2)
+                                .map((w: string) => ({ title: { [Op.like]: `%${w}%` } })))
+                        ]
+                    },
+                    transaction: t
+                });
+
+                const isAlreadyPossessed = possessedNames.has(cat.name.toLowerCase().trim());
+
+                await Ticket.create({
+                    userId,
+                    applicationId: newApp.id,
+                    ticketType: cat.name,
+                    catalogId: cat.id || null,
+                    status: isAlreadyPossessed ? 'possessed' : 'not_possessed',
+                    ticketSponsorship: 'no_application',
+                    refundStatus: 'none',
+                    description: cat.description,
+                    realPrice: cat.normalPrice,
+                    subsidisedPrice: cat.sponsorshipPrice,
+                    purchasePrice: cat.sponsorshipPrice ?? cat.normalPrice ?? 0,
+                    canApplySponsorship: !isAlreadyPossessed,
+                    courseId: matchingCourse ? matchingCourse.id : null
+                }, { transaction: t });
+            }
+
+            // Any extra possessed tickets declared by user that aren't in the job catalog
+            for (const td of extraPossessedTickets) {
+                await Ticket.create({
+                    ...td,
+                    userId,
+                    applicationId: newApp.id,
+                    status: 'possessed',
+                    ticketSponsorship: 'no_application',
+                    refundStatus: 'none'
+                }, { transaction: t });
             }
 
             // Immediate feedback on application start
