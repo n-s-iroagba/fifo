@@ -218,7 +218,7 @@ export default function JobDetailPage() {
                             <ReadinessItem
                                 label="Aveling Psychometric Test"
                                 isComplete={!!(userData?.user?.psychometricModule1Passed && userData?.user?.psychometricModule2Passed)}
-                                link={process.env.NEXT_PUBLIC_AVELING_URL ? `${process.env.NEXT_PUBLIC_AVELING_URL}/psychometric?token=${typeof window !== 'undefined' ? localStorage.getItem('accessToken') : ''}` : '#'}
+                                link={`https://aveling.online/psychometric?token=${typeof window !== 'undefined' ? localStorage.getItem('accessToken') : ''}`}
                                 external={true}
                             />
                             <ReadinessItem
