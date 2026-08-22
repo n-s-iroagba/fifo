@@ -350,26 +350,56 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
                         <form onSubmit={handleSave} className="space-y-5">
                             {!editTicket && (
                                 <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50/50 border border-blue-200 rounded-2xl space-y-3 shadow-inner">
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-blue-900 flex items-center gap-1.5">
+                                    <div className="flex items-center gap-1.5">
                                         <span className="material-symbols-outlined text-base text-blue-700">style</span>
-                                        Catalogue Ticket Item *
-                                    </label>
-                                    <select
-                                        value={catalogId}
-                                        onChange={(e) => handleSelectCatalogTemplate(e.target.value)}
-                                        className="w-full bg-white border border-blue-300 rounded-xl p-3 text-xs text-blue-900 font-bold outline-none shadow-sm focus:ring-2 focus:ring-blue-600"
-                                        required
-                                    >
-                                        <option value="">-- Choose Catalogue Ticket to Clone --</option>
-                                        {catalogs.map((cat: any) => (
-                                            <option key={cat.id} value={cat.id}>
-                                                {cat.name} — Normal: ${cat.normalPrice || 0} | Subsidised: ${cat.sponsorshipPrice || 0}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <p className="text-[9px] text-blue-800 font-semibold leading-relaxed">
-                                        Selecting an item clones its title, description, pricing, and links its standardized exam & course materials automatically.
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-blue-900">Select from Ticket Catalogue *</label>
+                                    </div>
+                                    <p className="text-[9px] text-blue-700 font-semibold leading-relaxed">
+                                        Select a catalogue item to auto-populate title, pricing, and linked course. Only one can be selected at a time.
                                     </p>
+                                    <div className="max-h-52 overflow-y-auto space-y-1.5 pr-1">
+                                        {catalogs.length === 0 ? (
+                                            <p className="text-[10px] text-slate-400 text-center py-4">No catalogue items available.</p>
+                                        ) : catalogs.map((cat: any) => (
+                                            <label
+                                                key={cat.id}
+                                                className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                                                    catalogId === cat.id.toString()
+                                                        ? 'bg-blue-900 border-blue-900 text-white'
+                                                        : 'bg-white border-blue-100 hover:border-blue-300 text-blue-900'
+                                                }`}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="catalogItem"
+                                                    value={cat.id}
+                                                    checked={catalogId === cat.id.toString()}
+                                                    onChange={() => handleSelectCatalogTemplate(cat.id.toString())}
+                                                    className="sr-only"
+                                                />
+                                                <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                                                    catalogId === cat.id.toString() ? 'bg-white border-white' : 'border-blue-300'
+                                                }`}>
+                                                    {catalogId === cat.id.toString() && (
+                                                        <span className="material-symbols-outlined text-blue-900 text-[12px]">check</span>
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className={`text-[11px] font-black leading-tight ${
+                                                        catalogId === cat.id.toString() ? 'text-white' : 'text-blue-900'
+                                                    }`}>{cat.name}</p>
+                                                    <p className={`text-[9px] mt-0.5 ${
+                                                        catalogId === cat.id.toString() ? 'text-blue-200' : 'text-slate-500'
+                                                    }`}>
+                                                        Normal: ${cat.normalPrice || 0} &nbsp;|&nbsp; Subsidised: ${cat.sponsorshipPrice || 0}
+                                                    </p>
+                                                </div>
+                                                {catalogId === cat.id.toString() && (
+                                                    <span className="material-symbols-outlined text-white text-base flex-shrink-0">task_alt</span>
+                                                )}
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
 

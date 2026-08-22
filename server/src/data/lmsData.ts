@@ -5,6 +5,12 @@ import { workingAtHeightsQuestions } from './questions/workingAtHeightsQuestions
 import { confinedSpaceQuestions } from './questions/confinedSpaceQuestions';
 import { gasTestQuestions } from './questions/gasTestQuestions';
 import { firstAidQuestions } from './questions/firstAidQuestions';
+import { policeClearanceQuestions } from './questions/policeClearanceQuestions';
+import { driversLicenceQuestions } from './questions/driversLicenceQuestions';
+import { commercialCookeryQuestions } from './questions/commercialCookeryQuestions';
+import { foodSafetyQuestions } from './questions/foodSafetyQuestions';
+import { rsaQuestions } from './questions/rsaQuestions';
+import { forkliftQuestions } from './questions/forkliftQuestions';
 
 import { eehaModules } from './modules/eehaModules';
 import { std11Modules } from './modules/std11Modules';
@@ -13,6 +19,12 @@ import { workingAtHeightsModules } from './modules/workingAtHeightsModules';
 import { confinedSpaceModules } from './modules/confinedSpaceModules';
 import { gasTestModules } from './modules/gasTestModules';
 import { firstAidModules } from './modules/firstAidModules';
+import { policeClearanceModules } from './modules/policeClearanceModules';
+import { driversLicenceModules } from './modules/driversLicenceModules';
+import { commercialCookeryModules } from './modules/commercialCookeryModules';
+import { foodSafetyModules } from './modules/foodSafetyModules';
+import { rsaModules } from './modules/rsaModules';
+import { forkliftModules } from './modules/forkliftModules';
 
 export const lmsSeedData = [
     {
@@ -191,5 +203,139 @@ export const lmsSeedData = [
                 'Perform structured casualty handover to simulated emergency services (who, what, when, where, why)'
             ]
         }
-    }
+    },
+    {
+        certificationName: 'National Police Clearance',
+        description: 'Official document confirming no disclosable court outcomes (NDCO) — mandatory for FIFO site access and visa sponsorship eligibility.',
+        course: {
+            title: 'NPC National Police Clearance — Requirements & Submission',
+            description: 'Awareness course covering the purpose, application process, and submission requirements for an Australian National Police Clearance (NPC) issued by state police or the ACIC. Covers identification requirements, processing times, document validity windows (3–12 months), employer submission standards, and NDCO interpretation.',
+            format: 'Online',
+            price: 0,
+            duration: 1,
+            capacity: 999,
+            modules: policeClearanceModules,
+            examConfig: {
+                passThreshold: 80,
+                maxAttempts: 3
+            },
+            questions: policeClearanceQuestions,
+            practicalCriteria: []
+        }
+    },
+    {
+        certificationName: 'Australian Drivers Licence (Class C)',
+        description: 'Current Class C licence (manual or automatic) — required for all FIFO roles involving light vehicle operation on camp and mine access roads.',
+        course: {
+            title: 'DL-C Australian Class C Drivers Licence — FIFO Requirements',
+            description: 'Awareness course covering Australian Class C licence classes, FIFO site mobility requirements, document verification standards, international licence acceptance periods, and correct submission procedure for employment screening.',
+            format: 'Online',
+            price: 0,
+            duration: 1,
+            capacity: 999,
+            modules: driversLicenceModules,
+            examConfig: {
+                passThreshold: 80,
+                maxAttempts: 3
+            },
+            questions: driversLicenceQuestions,
+            practicalCriteria: []
+        }
+    },
+    {
+        certificationName: 'Certificate III in Commercial Cookery',
+        description: 'Code SIT30821 — Baseline formal culinary qualification for professional chef roles in FIFO camp catering.',
+        course: {
+            title: 'SIT30821 Certificate III in Commercial Cookery',
+            description: 'Nationally Recognised Qualification SIT30821 Certificate III in Commercial Cookery. Covers kitchen operations, mise en place, dry/moist/combination cookery methods, HACCP-based food safety, allergen management, dietary needs for large workforces, and commercial-grade equipment operation for FIFO camp catering environments.',
+            format: 'Mixed',
+            price: 3200.00,
+            duration: 400,
+            capacity: 12,
+            modules: commercialCookeryModules,
+            examConfig: {
+                passThreshold: 75,
+                maxAttempts: 2
+            },
+            questions: commercialCookeryQuestions,
+            practicalCriteria: [
+                'Demonstrate mise en place for a 3-course menu within time constraints',
+                'Cook a primary protein to the correct safe internal temperature and verify with a probe thermometer',
+                'Complete a HACCP-based cooling log for a batch of cooked food',
+                'Identify and correctly label all 14 FSANZ declarable allergens present in a dish'
+            ]
+        }
+    },
+    {
+        certificationName: 'Food Safety Supervisor',
+        description: 'Codes SITXFSA005/SITXFSA006 — Required by FSANZ Standard 3.2.2A for supervisory roles in FIFO camp catering kitchens.',
+        course: {
+            title: 'SITXFSA005 Use Hygienic Practices for Food Safety & SITXFSA006 Participate in Safe Food Handling Practices',
+            description: 'Food Safety Supervisor (FSS) certification covering HACCP principles, personal hygiene obligations, temperature danger zone controls (5°C–60°C), the 2-hour/4-hour rule, probe thermometer calibration, allergen management under FSANZ Standard 1.2.3, cross-contamination prevention, and FSS legal responsibilities under Standard 3.2.2A.',
+            format: 'Mixed',
+            price: 195.00,
+            duration: 8,
+            capacity: 20,
+            modules: foodSafetyModules,
+            examConfig: {
+                passThreshold: 80,
+                maxAttempts: 2
+            },
+            questions: foodSafetyQuestions,
+            practicalCriteria: [
+                'Calibrate a probe thermometer using the ice slurry method (0°C ±1°C)',
+                'Demonstrate correct 6-step hand-washing technique within 45 seconds',
+                'Identify 3 cross-contamination risks in a scenario kitchen and state the correct control for each',
+                'Complete a HACCP temperature log entry for a meal service including corrective action for an out-of-range reading'
+            ]
+        }
+    },
+    {
+        certificationName: 'Responsible Service of Alcohol (RSA)',
+        description: 'Code SITHFAB021 — Mandatory for any role serving or supervising alcohol on a licensed FIFO camp social club or bar.',
+        course: {
+            title: 'SITHFAB021 Responsible Service of Alcohol',
+            description: 'Nationally Recognised Unit of Competency SITHFAB021 Responsible Service of Alcohol. Covers Australian liquor licensing legislation, duty of care obligations, identifying intoxication, BAC and contributing factors, responsible service strategies, refusal of service techniques, de-escalation of aggressive patrons, and legal consequences for breaches. Required for all staff serving or supervising alcohol on FIFO licensed premises.',
+            format: 'Online',
+            price: 120.00,
+            duration: 4,
+            capacity: 30,
+            modules: rsaModules,
+            examConfig: {
+                passThreshold: 80,
+                maxAttempts: 2
+            },
+            questions: rsaQuestions,
+            practicalCriteria: [
+                'Demonstrate correct RSA refusal-of-service technique using role-play scenario',
+                'Correctly identify 5 visible signs of intoxication from a case study scenario',
+                'Demonstrate de-escalation of an aggressive patron using verbal and spatial techniques'
+            ]
+        }
+    },
+    {
+        certificationName: 'Forklift Licence (LF)',
+        description: 'Code TLILIC2001 — High Risk Work Licence (LF class) required for forklift operation in FIFO warehouses and laydown areas.',
+        course: {
+            title: 'TLILIC2001 Licence to operate a forklift truck',
+            description: 'High Risk Work Licence (LF class) covering forklift types, major mechanical components, pre-operational checklists, the Stability Triangle, load centre and data plate interpretation, safe load handling, ramp operation, pedestrian safety, blind spot awareness, LPG cylinder changeover, and electric battery charging safety. Issued under WHS Regulations 2011.',
+            format: 'Mixed',
+            price: 450.00,
+            duration: 16,
+            capacity: 8,
+            modules: forkliftModules,
+            examConfig: {
+                passThreshold: 80,
+                maxAttempts: 2
+            },
+            questions: forkliftQuestions,
+            practicalCriteria: [
+                'Complete documented pre-operational inspection identifying at least 2 simulated faults',
+                'Demonstrate correct load pick-up, travel posture, and stacking to height on marked bays',
+                'Demonstrate ramp operation with load uphill in both ascending and descending directions',
+                'Demonstrate correct LPG cylinder changeover procedure from valve-off to seal-check',
+                'Navigate a pedestrian/forklift shared zone using horn at every blind intersection'
+            ]
+        }
+    },
 ];
