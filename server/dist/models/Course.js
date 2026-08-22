@@ -26,7 +26,7 @@ Course.init({
         allowNull: false
     },
     format: {
-        type: sequelize_1.DataTypes.ENUM('Theory', 'Practical', 'Mixed'),
+        type: sequelize_1.DataTypes.ENUM('Theory', 'Practical', 'Mixed', 'Online'),
         allowNull: false
     },
     certificationTypeId: {

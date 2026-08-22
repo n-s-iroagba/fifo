@@ -6,7 +6,7 @@ export class Course extends Model {
   public title!: string;
   public code!: string;
   public description!: string;
-  public format!: 'Theory' | 'Practical' | 'Mixed';
+  public format!: 'Theory' | 'Practical' | 'Mixed' | 'Online';
   public certificationTypeId!: string;
   public price!: number;
   public capacity!: number;
@@ -35,7 +35,7 @@ Course.init({
     allowNull: false
   },
   format: {
-    type: DataTypes.ENUM('Theory', 'Practical', 'Mixed'),
+    type: DataTypes.ENUM('Theory', 'Practical', 'Mixed', 'Online'),
     allowNull: false
   },
   certificationTypeId: {

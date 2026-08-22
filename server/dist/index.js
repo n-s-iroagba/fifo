@@ -13,6 +13,7 @@ const seedDatabase_1 = require("./seedDatabase");
 const stage_management_migration_1 = require("./migrations/stage_management_migration");
 const payment_milestone_migration_1 = require("./migrations/payment_milestone_migration");
 const accounting_migration_1 = require("./migrations/accounting_migration");
+const course_format_migration_1 = require("./migrations/course_format_migration");
 const nominationCron_1 = require("./cron/nominationCron");
 const applicationCron_1 = require("./cron/applicationCron");
 const sponsorshipCron_1 = require("./cron/sponsorshipCron");
@@ -28,6 +29,8 @@ const startServer = async () => {
                 return (0, payment_milestone_migration_1.migratePaymentMilestone)();
             }).then(() => {
                 return (0, accounting_migration_1.migrateAccountingAndSubsidy)();
+            }).then(() => {
+                return (0, course_format_migration_1.migrateCourseFormatEnum)();
             }).then(() => {
                 return (0, seedDatabase_1.seedDatabase)();
             }).then(() => {

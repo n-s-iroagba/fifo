@@ -63,7 +63,7 @@ const getStandardEmailTemplate = (subject, content, fromType = 'info') => {
     }
     const cleanedContent = cleanHtmlContent(content);
     const isAveling = fromType === 'aveling';
-    const logoUrl = isAveling ? `${process.env.AVELING_URL || 'http://localhost:3002'}/aveling-favicon.png` : `${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg`;
+    const logoUrl = isAveling ? `${process.env.AVELING_URL || 'https://aveling.online'}/aveling-favicon.png` : `${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg`;
     const headerBgColor = isAveling ? '#FFC700' : '#0b3486';
     const primaryColor = isAveling ? '#000000' : '#0b3486';
     const altText = isAveling ? 'Aveling LMS Training' : 'BlueCollar Curated Career';

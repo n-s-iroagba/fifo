@@ -66,7 +66,7 @@ const getStandardEmailTemplate = (subject: string, content: string, fromType: 'a
     const cleanedContent = cleanHtmlContent(content);
 
     const isAveling = fromType === 'aveling';
-    const logoUrl = isAveling ? `${process.env.AVELING_URL || 'http://localhost:3002'}/aveling-favicon.png` : `${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg`;
+    const logoUrl = isAveling ? `${process.env.AVELING_URL || 'https://aveling.online'}/aveling-favicon.png` : `${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg`;
     const headerBgColor = isAveling ? '#FFC700' : '#0b3486';
     const primaryColor = isAveling ? '#000000' : '#0b3486';
     const altText = isAveling ? 'Aveling LMS Training' : 'BlueCollar Curated Career';
@@ -299,10 +299,10 @@ export const sendEmail = sendInfoEmail;
 
 // 1. Nomination Email Templates
 export const sendMultipleRolesNominationEmail = async (
-    to: string, 
-    candidateName: string, 
-    totalApplicants: number, 
-    companyName: string, 
+    to: string,
+    candidateName: string,
+    totalApplicants: number,
+    companyName: string,
     requiredApplicants: number
 ): Promise<void> => {
     const subject = `Official Nomination Notification: ${companyName}`;
@@ -321,11 +321,11 @@ export const sendMultipleRolesNominationEmail = async (
 };
 
 export const sendSingleRoleNominationEmail = async (
-    to: string, 
-    candidateName: string, 
-    totalApplicants: number, 
-    companyName: string, 
-    roleTitle: string, 
+    to: string,
+    candidateName: string,
+    totalApplicants: number,
+    companyName: string,
+    roleTitle: string,
     requiredApplicants: number
 ): Promise<void> => {
     const subject = `Official Nomination Notification: ${roleTitle} at ${companyName}`;
@@ -381,7 +381,7 @@ export const sendInvoiceEmail = async (
 ): Promise<void> => {
     let typeDescription = '';
     let emailServer: 'aveling' | 'info' = 'aveling';
-    
+
     switch (invoiceType) {
         case 'aveling-partial':
             typeDescription = 'Partial Aveling Training Invoice';
@@ -441,7 +441,7 @@ export const sendReceiptEmail = async (
 ): Promise<void> => {
     const emailServer: 'aveling' | 'info' = receiptType === 'aveling' ? 'aveling' : 'info';
     const subject = `Payment Receipt - Invoice #${invoiceId}`;
-    
+
     const content = `
         <p>Dear ${candidateName},</p>
         <p>We have successfully received your payment.</p>
@@ -602,8 +602,8 @@ export const sendContractFormEmail = async (to: string, userName: string): Promi
 
 // 18. Payment Proof reception Acknowledgement
 export const sendPaymentProofReceivedEmail = async (
-    to: string, 
-    userName: string, 
+    to: string,
+    userName: string,
     typeDescription: string,
     isAveling: boolean = false
 ): Promise<void> => {
@@ -613,7 +613,7 @@ export const sendPaymentProofReceivedEmail = async (
         <p>We have successfully received your proof of payment for <strong>${typeDescription}</strong>.</p>
         <p>Our finance team will review and verify this transaction shortly.</p>
     `;
-    
+
     if (isAveling) {
         await sendAvelingEmail(to, subject, content);
     } else {

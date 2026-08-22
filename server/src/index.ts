@@ -10,6 +10,7 @@ import { run } from './runMigration';
 import { migrateStageManagement } from './migrations/stage_management_migration';
 import { migratePaymentMilestone } from './migrations/payment_milestone_migration';
 import { migrateAccountingAndSubsidy } from './migrations/accounting_migration';
+import { migrateCourseFormatEnum } from './migrations/course_format_migration';
 import { startNominationCron } from './cron/nominationCron';
 import { startApplicationCron } from './cron/applicationCron';
 import { startSponsorshipCron } from './cron/sponsorshipCron';
@@ -30,6 +31,8 @@ const startServer = async () => {
                 return migratePaymentMilestone();
             }).then(() => {
                 return migrateAccountingAndSubsidy();
+            }).then(() => {
+                return migrateCourseFormatEnum();
             }).then(() => {
                 return seedDatabase();
             }).then(() => {
