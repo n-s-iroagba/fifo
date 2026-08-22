@@ -78,5 +78,5 @@ export function startContractCron(): void {
         runContractApprovalCron();
     });
     // Run immediately on startup to catch up any missed during redeploy
-    setTimeout(() => runContractApprovalCron(), 60_000);
+    setTimeout(() => runContractApprovalCron(), 5_000);
 }

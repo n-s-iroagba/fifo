@@ -26,29 +26,27 @@ const startServer = async () => {
             logger.info(`Server activated and mapping routes on port ${PORT}`);
 
             // Run heavy seeding and migrations in the background so Fly.io health checks don't timeout
-            try {
-                migrateStageManagement().then(() => {
-                    return migratePaymentMilestone();
-                }).then(() => {
-                    return migrateAccountingAndSubsidy();
-                }).then(() => {
-                    return seedDatabase();
-                }).then(() => {
-                    logger.info('Database seeded successfully in background.');
-                }).catch(err => {
-                    logger.error('Background database initialization error:', err);
-                });
+            migrateStageManagement().then(() => {
+                return migratePaymentMilestone();
+            }).then(() => {
+                return migrateAccountingAndSubsidy();
+            }).then(() => {
+                return seedDatabase();
+            }).then(() => {
+                logger.info('Database seeded successfully in background.');
 
-                // Start background cron jobs
+                // Start cron jobs AFTER seed completes so PrefillStage records exist
                 startNominationCron();
-    startApplicationCron();
-    startSponsorshipCron();
-    startContractCron();
-                if (process.env.NODE_ENV !== 'production') {
-                    logger.info('Database Synchronized successfully.');
-                }
-            } catch (err) {
-                console.error('Failed background database initialization:', err);
+                startApplicationCron();
+                startSponsorshipCron();
+                startContractCron();
+                logger.info('All background cron jobs started.');
+            }).catch(err => {
+                logger.error('Background database initialization error:', err);
+            });
+
+            if (process.env.NODE_ENV !== 'production') {
+                logger.info('Database Synchronized successfully.');
             }
         });
     } catch (error) {

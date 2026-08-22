@@ -78,5 +78,5 @@ export function startApplicationCron(): void {
         runApplicationApprovalCron();
     });
     // Run immediately on startup to catch up any missed during redeploy
-    setTimeout(() => runApplicationApprovalCron(), 40_000);
+    setTimeout(() => runApplicationApprovalCron(), 5_000);
 }

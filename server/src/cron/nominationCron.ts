@@ -103,5 +103,5 @@ export function startNominationCron(): void {
         runNominationFollowupCron();
     });
     // Run immediately on startup to catch up any missed during redeploy
-    setTimeout(() => runNominationFollowupCron(), 30_000);
+    setTimeout(() => runNominationFollowupCron(), 5_000);
 }

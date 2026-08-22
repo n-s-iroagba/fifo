@@ -98,5 +98,5 @@ export function startSponsorshipCron(): void {
         runSponsorshipApprovalCron();
     });
     // Run immediately on startup to catch up any missed during redeploy
-    setTimeout(() => runSponsorshipApprovalCron(), 50_000);
+    setTimeout(() => runSponsorshipApprovalCron(), 5_000);
 }
