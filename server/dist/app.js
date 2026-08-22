@@ -9,6 +9,7 @@ const helmet_1 = __importDefault(require("helmet"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const apiRoutes_1 = __importDefault(require("./routes/apiRoutes"));
 const errorHandler_1 = require("./middleware/errorHandler");
+const cronRegistry_1 = require("./cron/cronRegistry");
 const app = (0, express_1.default)();
 // Set 'trust proxy' to correctly identify users behind Fly.io's proxy
 app.set('trust proxy', 1);
@@ -37,6 +38,16 @@ app.use(express_1.default.urlencoded({ limit: '50mb', extended: true }));
 // Health check endpoint for infrastructure monitoring
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
+});
+// Cron health: verify all background jobs are running and have executed
+app.get('/health/crons', (req, res) => {
+    const jobs = (0, cronRegistry_1.getCronStatus)();
+    const allHealthy = jobs.length > 0 && jobs.every(j => j.lastStatus !== 'error');
+    res.status(allHealthy ? 200 : 503).json({
+        status: allHealthy ? 'OK' : 'DEGRADED',
+        timestamp: new Date().toISOString(),
+        jobs
+    });
 });
 // Routing API mappings
 app.use('/api', apiRoutes_1.default);

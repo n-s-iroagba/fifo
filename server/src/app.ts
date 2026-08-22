@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import apiRoutes from './routes/apiRoutes';
 import { errorHandler } from './middleware/errorHandler';
+import { getCronStatus } from './cron/cronRegistry';
 
 const app = express();
 
@@ -37,6 +38,17 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // Health check endpoint for infrastructure monitoring
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
+});
+
+// Cron health: verify all background jobs are running and have executed
+app.get('/health/crons', (req, res) => {
+    const jobs = getCronStatus();
+    const allHealthy = jobs.length > 0 && jobs.every(j => j.lastStatus !== 'error');
+    res.status(allHealthy ? 200 : 503).json({
+        status: allHealthy ? 'OK' : 'DEGRADED',
+        timestamp: new Date().toISOString(),
+        jobs
+    });
 });
 
 // Routing API mappings

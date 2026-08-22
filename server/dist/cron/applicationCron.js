@@ -9,6 +9,8 @@ const sequelize_1 = require("sequelize");
 const models_1 = require("../models");
 const email_1 = require("../utils/email");
 const node_cron_1 = __importDefault(require("node-cron"));
+const cronRegistry_1 = require("./cronRegistry");
+const CRON_NAME = 'ApplicationAutoAcceptance';
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
 async function runApplicationApprovalCron() {
@@ -64,16 +66,19 @@ async function runApplicationApprovalCron() {
                 console.error(`[ApplicationCron] Error processing application ${application.id}:`, innerErr);
             }
         }
+        (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'ok');
     }
     catch (err) {
         console.error('[ApplicationCron] Fatal error:', err);
+        (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'error', String(err));
     }
 }
 function startApplicationCron() {
+    (0, cronRegistry_1.registerCron)(CRON_NAME);
     console.log('[ApplicationCron] Starting application auto-acceptance cron (every hour).');
     node_cron_1.default.schedule('0 * * * *', () => {
         runApplicationApprovalCron();
     });
     // Run immediately on startup to catch up any missed during redeploy
-    setTimeout(() => runApplicationApprovalCron(), 40_000);
+    setTimeout(() => runApplicationApprovalCron(), 5_000);
 }

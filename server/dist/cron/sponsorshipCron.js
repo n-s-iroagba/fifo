@@ -9,6 +9,8 @@ const sequelize_1 = require("sequelize");
 const models_1 = require("../models");
 const email_1 = require("../utils/email");
 const node_cron_1 = __importDefault(require("node-cron"));
+const cronRegistry_1 = require("./cronRegistry");
+const CRON_NAME = 'SponsorshipAutoApproval';
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
 async function runSponsorshipApprovalCron() {
@@ -79,16 +81,19 @@ async function runSponsorshipApprovalCron() {
                 console.error(`[SponsorshipCron] Error processing application ${application.id}:`, innerErr);
             }
         }
+        (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'ok');
     }
     catch (err) {
         console.error('[SponsorshipCron] Fatal error:', err);
+        (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'error', String(err));
     }
 }
 function startSponsorshipCron() {
+    (0, cronRegistry_1.registerCron)(CRON_NAME);
     console.log('[SponsorshipCron] Starting ticket sponsorship auto-approval cron (every hour).');
     node_cron_1.default.schedule('0 * * * *', () => {
         runSponsorshipApprovalCron();
     });
     // Run immediately on startup to catch up any missed during redeploy
-    setTimeout(() => runSponsorshipApprovalCron(), 50_000);
+    setTimeout(() => runSponsorshipApprovalCron(), 5_000);
 }

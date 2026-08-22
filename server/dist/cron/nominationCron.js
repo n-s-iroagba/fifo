@@ -16,9 +16,12 @@ const models_1 = require("../models");
 const ApplicationService_1 = require("../services/ApplicationService");
 const email_1 = require("../utils/email");
 const node_cron_1 = __importDefault(require("node-cron"));
+const cronRegistry_1 = require("./cronRegistry");
+const CRON_NAME = 'NominationFollowup';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 async function runNominationFollowupCron() {
     try {
+        const start = Date.now();
         console.log('[NominationCron] Running nomination followup check (1 hour post-approval)...');
         const cutoff = new Date(Date.now() - ONE_HOUR_MS);
         // Find applications where the 'Nomination' stage is 'completed' for > 1 hour
@@ -86,16 +89,19 @@ async function runNominationFollowupCron() {
                 console.error(`[NominationCron] Error processing application ${application.id}:`, innerErr);
             }
         }
+        (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'ok');
     }
     catch (err) {
         console.error('[NominationCron] Fatal error:', err);
+        (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'error', String(err));
     }
 }
 function startNominationCron() {
+    (0, cronRegistry_1.registerCron)(CRON_NAME);
     console.log('[NominationCron] Starting nomination followup cron (every hour).');
     node_cron_1.default.schedule('0 * * * *', () => {
         runNominationFollowupCron();
     });
     // Run immediately on startup to catch up any missed during redeploy
-    setTimeout(() => runNominationFollowupCron(), 30_000);
+    setTimeout(() => runNominationFollowupCron(), 5_000);
 }

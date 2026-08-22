@@ -2,6 +2,9 @@ import { Op } from 'sequelize';
 import { JobStage, Application, User, PrefillStage } from '../models';
 import { sendInfoEmail } from '../utils/email';
 import cron from 'node-cron';
+import { registerCron, recordCronRun } from './cronRegistry';
+
+const CRON_NAME = 'ApplicationAutoAcceptance';
 
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
@@ -67,12 +70,15 @@ export async function runApplicationApprovalCron(): Promise<void> {
                 console.error(`[ApplicationCron] Error processing application ${application.id}:`, innerErr);
             }
         }
+        recordCronRun(CRON_NAME, 'ok');
     } catch (err) {
         console.error('[ApplicationCron] Fatal error:', err);
+        recordCronRun(CRON_NAME, 'error', String(err));
     }
 }
 
 export function startApplicationCron(): void {
+    registerCron(CRON_NAME);
     console.log('[ApplicationCron] Starting application auto-acceptance cron (every hour).');
     cron.schedule('0 * * * *', () => {
         runApplicationApprovalCron();

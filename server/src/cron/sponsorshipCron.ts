@@ -2,6 +2,9 @@ import { Op } from 'sequelize';
 import { JobStage, Application, Ticket, User, PrefillStage } from '../models';
 import { sendInfoEmail } from '../utils/email';
 import cron from 'node-cron';
+import { registerCron, recordCronRun } from './cronRegistry';
+
+const CRON_NAME = 'SponsorshipAutoApproval';
 
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
@@ -87,12 +90,15 @@ export async function runSponsorshipApprovalCron(): Promise<void> {
                 console.error(`[SponsorshipCron] Error processing application ${application.id}:`, innerErr);
             }
         }
+        recordCronRun(CRON_NAME, 'ok');
     } catch (err) {
         console.error('[SponsorshipCron] Fatal error:', err);
+        recordCronRun(CRON_NAME, 'error', String(err));
     }
 }
 
 export function startSponsorshipCron(): void {
+    registerCron(CRON_NAME);
     console.log('[SponsorshipCron] Starting ticket sponsorship auto-approval cron (every hour).');
     cron.schedule('0 * * * *', () => {
         runSponsorshipApprovalCron();

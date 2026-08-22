@@ -2,6 +2,9 @@ import { Op } from 'sequelize';
 import { JobStage, Application, User, PrefillStage } from '../models';
 import { sendInfoEmail } from '../utils/email';
 import cron from 'node-cron';
+import { registerCron, recordCronRun } from './cronRegistry';
+
+const CRON_NAME = 'ContractAutoApproval';
 
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
@@ -67,12 +70,15 @@ export async function runContractApprovalCron(): Promise<void> {
                 console.error(`[ContractCron] Error processing application ${application.id}:`, innerErr);
             }
         }
+        recordCronRun(CRON_NAME, 'ok');
     } catch (err) {
         console.error('[ContractCron] Fatal error:', err);
+        recordCronRun(CRON_NAME, 'error', String(err));
     }
 }
 
 export function startContractCron(): void {
+    registerCron(CRON_NAME);
     console.log('[ContractCron] Starting contract auto-approval cron (every hour).');
     cron.schedule('0 * * * *', () => {
         runContractApprovalCron();

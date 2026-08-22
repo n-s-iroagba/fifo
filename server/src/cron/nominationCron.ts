@@ -10,11 +10,15 @@ import { JobStage, Application, User, PrefillStage } from '../models';
 import { applicationService } from '../services/ApplicationService';
 import { sendInfoEmail } from '../utils/email';
 import cron from 'node-cron';
+import { registerCron, recordCronRun } from './cronRegistry';
+
+const CRON_NAME = 'NominationFollowup';
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 export async function runNominationFollowupCron(): Promise<void> {
     try {
+        const start = Date.now();
         console.log('[NominationCron] Running nomination followup check (1 hour post-approval)...');
 
         const cutoff = new Date(Date.now() - ONE_HOUR_MS);
@@ -92,12 +96,15 @@ export async function runNominationFollowupCron(): Promise<void> {
                 console.error(`[NominationCron] Error processing application ${application.id}:`, innerErr);
             }
         }
+        recordCronRun(CRON_NAME, 'ok');
     } catch (err) {
         console.error('[NominationCron] Fatal error:', err);
+        recordCronRun(CRON_NAME, 'error', String(err));
     }
 }
 
 export function startNominationCron(): void {
+    registerCron(CRON_NAME);
     console.log('[NominationCron] Starting nomination followup cron (every hour).');
     cron.schedule('0 * * * *', () => {
         runNominationFollowupCron();

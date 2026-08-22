@@ -12,7 +12,7 @@ const navItems = [
     { label: 'Applicants', href: '/admin/applicants', icon: 'groups' },
     { label: 'Psychometric Reviews', href: '/admin/psychometric', icon: 'psychiatry' },
     { label: 'Interests', href: '/admin/interests', icon: 'psychology' },
-    { label: 'Payments', href: CONSTANTS.ROUTES.ADMIN.UNPAID, icon: 'receipt_long' },
+    { label: 'Receipts', href: '/admin/receipts', icon: 'receipt_long' },
     { label: 'Invoices', href: '/admin/invoices', icon: 'request_quote' },
     { label: 'Jobs', href: CONSTANTS.ROUTES.ADMIN.JOBS, icon: 'business_center' },
     { label: 'Mail', href: CONSTANTS.ROUTES.ADMIN.MAIL, icon: 'mail' },
