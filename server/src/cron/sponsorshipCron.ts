@@ -1,5 +1,5 @@
-import { Op } from 'sequelize';
-import { JobStage, Application, Ticket, User, PrefillStage } from '../models';
+import { Op, literal } from 'sequelize';
+import { JobStage, Application, Ticket, User, PrefillStage, JobListing } from '../models';
 import { sendInfoEmail } from '../utils/email';
 import cron from 'node-cron';
 import { registerCron, recordCronRun } from './cronRegistry';
@@ -30,10 +30,16 @@ export async function runSponsorshipApprovalCron(): Promise<void> {
                 },
                 {
                     model: Application,
-                    where: {
-                        currentStageId: { [Op.col]: 'JobStage.id' }
-                    },
-                    required: true
+                    where: literal('`Application`.`currentStageId` = `JobStage`.`id`'),
+                    required: true,
+                    include: [
+                        {
+                            model: JobListing,
+                            as: 'JobListing',
+                            attributes: ['title', 'company'],
+                            required: false
+                        }
+                    ]
                 }
             ]
         });

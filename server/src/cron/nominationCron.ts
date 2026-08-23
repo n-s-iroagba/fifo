@@ -5,8 +5,8 @@
  * It advances the application to the 'TicketSponsorship' stage and sends the email.
  */
 
-import { Op } from 'sequelize';
-import { JobStage, Application, User, PrefillStage } from '../models';
+import { Op, literal } from 'sequelize';
+import { JobStage, Application, User, PrefillStage, JobListing } from '../models';
 import { applicationService } from '../services/ApplicationService';
 import { sendInfoEmail } from '../utils/email';
 import cron from 'node-cron';
@@ -39,10 +39,16 @@ export async function runNominationFollowupCron(): Promise<void> {
                 },
                 {
                     model: Application,
-                    where: {
-                        currentStageId: { [Op.col]: 'JobStage.id' }
-                    },
-                    required: true
+                    where: literal('`Application`.`currentStageId` = `JobStage`.`id`'),
+                    required: true,
+                    include: [
+                        {
+                            model: JobListing,
+                            as: 'JobListing',
+                            attributes: ['title', 'company'],
+                            required: false
+                        }
+                    ]
                 }
             ]
         });

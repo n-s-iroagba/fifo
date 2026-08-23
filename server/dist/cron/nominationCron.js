@@ -40,10 +40,16 @@ async function runNominationFollowupCron() {
                 },
                 {
                     model: models_1.Application,
-                    where: {
-                        currentStageId: { [sequelize_1.Op.col]: 'JobStage.id' }
-                    },
-                    required: true
+                    where: (0, sequelize_1.literal)('`Application`.`currentStageId` = `JobStage`.`id`'),
+                    required: true,
+                    include: [
+                        {
+                            model: models_1.JobListing,
+                            as: 'JobListing',
+                            attributes: ['title', 'company'],
+                            required: false
+                        }
+                    ]
                 }
             ]
         });
