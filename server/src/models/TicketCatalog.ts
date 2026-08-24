@@ -5,7 +5,6 @@ export class TicketCatalog extends Model {
     declare id: number;
     declare name: string;
     declare normalPrice: number;
-    declare sponsorshipPrice: number;
     declare description: string;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
@@ -22,11 +21,6 @@ TicketCatalog.init({
         allowNull: false,
     },
     normalPrice: {
-        type: DataTypes.FLOAT,
-        allowNull: false,
-        defaultValue: 0,
-    },
-    sponsorshipPrice: {
         type: DataTypes.FLOAT,
         allowNull: false,
         defaultValue: 0,

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Contract = exports.Nomination = exports.PsychometricAttempt = exports.PrefillStage = exports.TicketCatalog = exports.Ticket = exports.Certificate = exports.ExamAttempt = exports.Enrollment = exports.ExamQuestion = exports.ExamConfig = exports.CourseModule = exports.Course = exports.CertificationType = exports.LmsCredential = exports.Interest = exports.Notification = exports.Receipt = exports.Invoice = exports.Application = exports.JobStage = exports.JobListing = exports.JobCategory = exports.BankAccount = exports.User = exports.sequelize = void 0;
+exports.Contract = exports.Nomination = exports.PsychometricAttempt = exports.TicketCatalog = exports.Ticket = exports.Certificate = exports.ExamAttempt = exports.Enrollment = exports.ExamQuestion = exports.ExamConfig = exports.CourseModule = exports.Course = exports.CertificationType = exports.LmsCredential = exports.Interest = exports.Notification = exports.Receipt = exports.Invoice = exports.Application = exports.JobStage = exports.JobListing = exports.JobCategory = exports.BankAccount = exports.User = exports.sequelize = void 0;
 const database_1 = require("../config/database");
 Object.defineProperty(exports, "sequelize", { enumerable: true, get: function () { return database_1.sequelize; } });
 const User_1 = require("./User");
@@ -45,8 +45,6 @@ const Ticket_1 = require("./Ticket");
 Object.defineProperty(exports, "Ticket", { enumerable: true, get: function () { return Ticket_1.Ticket; } });
 const TicketCatalog_1 = require("./TicketCatalog");
 Object.defineProperty(exports, "TicketCatalog", { enumerable: true, get: function () { return TicketCatalog_1.TicketCatalog; } });
-const PrefillStage_1 = require("./PrefillStage");
-Object.defineProperty(exports, "PrefillStage", { enumerable: true, get: function () { return PrefillStage_1.PrefillStage; } });
 const PsychometricAttempt_1 = require("./PsychometricAttempt");
 Object.defineProperty(exports, "PsychometricAttempt", { enumerable: true, get: function () { return PsychometricAttempt_1.PsychometricAttempt; } });
 const Nomination_1 = require("./Nomination");
@@ -62,12 +60,6 @@ Ticket_1.Ticket.belongsTo(Application_1.Application, { foreignKey: 'applicationI
 // User <-> Interest
 User_1.User.hasMany(Interest_1.Interest, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
 Interest_1.Interest.belongsTo(User_1.User, { foreignKey: 'userId' });
-// PrefillStage <-> User
-PrefillStage_1.PrefillStage.hasMany(User_1.User, { foreignKey: 'adminStageId', as: 'Users' });
-User_1.User.belongsTo(PrefillStage_1.PrefillStage, { foreignKey: 'adminStageId', as: 'AdminStage' });
-// PrefillStage <-> JobStage
-PrefillStage_1.PrefillStage.hasMany(JobStage_1.JobStage, { foreignKey: 'prefillStageId', as: 'JobStages' });
-JobStage_1.JobStage.belongsTo(PrefillStage_1.PrefillStage, { foreignKey: 'prefillStageId', as: 'PrefillStage' });
 // Job Category <-> Job Listing
 JobCategory_1.JobCategory.hasMany(JobListing_1.JobListing, { foreignKey: 'categoryId' });
 JobListing_1.JobListing.belongsTo(JobCategory_1.JobCategory, { foreignKey: 'categoryId' });

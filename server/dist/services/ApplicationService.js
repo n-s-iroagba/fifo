@@ -36,7 +36,7 @@ class ApplicationService {
                     isCompleted: currentStage?.status === 'completed',
                     amount: 0,
                     currency: 'USD',
-                    stageName: currentStage?.PrefillStage?.name || 'Unnamed Stage',
+                    stageName: currentStage?.name || 'Unnamed Stage',
                     stageDescription: null,
                     paymentStatus: 'Unpaid',
                     stageStatus: currentStage?.status,
@@ -104,17 +104,10 @@ class ApplicationService {
                 status: constants_1.CONSTANTS.APPLICATION_STATUSES.ACTIVE,
                 currentStageId: null
             }, t);
-            const { PrefillStage } = require('../models');
-            const firstApplicantStage = await PrefillStage.findOne({
-                where: { type: 'applicant_display' },
-                order: [['orderIndex', 'ASC']],
-                transaction: t
-            });
-            const initialStageId = firstApplicantStage ? firstApplicantStage.id : 1;
             // ── Stage: Application submitted → under-review (spec step 4) ──
             const initialStage = await JobStageRepository_1.jobStageRepository.create({
                 applicationId: newApp.id,
-                prefillStageId: initialStageId,
+                name: 'Application',
                 status: 'under-review'
             }, t);
             // Set initial stage pointer
@@ -156,6 +149,11 @@ class ApplicationService {
                     transaction: t
                 });
                 const isAlreadyPossessed = possessedNames.has(cat.name.toLowerCase().trim());
+                const { User } = require('../models');
+                const applicant = await User.findByPk(userId, { transaction: t });
+                const subsidyPct = applicant?.subsidyPercentage ?? 70;
+                const normalPrice = cat.normalPrice || 0;
+                const calcSubsidisedPrice = Number((normalPrice * (1 - subsidyPct / 100)).toFixed(2));
                 await Ticket.create({
                     userId,
                     applicationId: newApp.id,
@@ -165,9 +163,9 @@ class ApplicationService {
                     ticketSponsorship: 'no_application',
                     refundStatus: 'none',
                     description: cat.description,
-                    realPrice: cat.normalPrice,
-                    subsidisedPrice: cat.sponsorshipPrice,
-                    purchasePrice: cat.sponsorshipPrice ?? cat.normalPrice ?? 0,
+                    realPrice: normalPrice,
+                    subsidisedPrice: calcSubsidisedPrice,
+                    purchasePrice: calcSubsidisedPrice,
                     canApplySponsorship: !isAlreadyPossessed,
                     courseId: matchingCourse ? matchingCourse.id : null
                 }, { transaction: t });
@@ -256,7 +254,7 @@ class ApplicationService {
                     await NotificationRepository_1.notificationRepository.create({
                         userId: app.userId,
                         subject: 'Application Advanced',
-                        message: `Your application has moved to the next phase: "${nextStage.PrefillStage?.name || 'Unnamed Phase'}".`,
+                        message: `Your application has moved to the next phase: "${nextStage.name || 'Unnamed Phase'}".`,
                         type: 'SYSTEM',
                     }, t);
                 }
@@ -288,7 +286,7 @@ class ApplicationService {
                     status: constants_1.CONSTANTS.APPLICATION_STATUSES.ACTIVE
                 }, t);
                 const nSubject = 'Process Activation';
-                const nMessage = `A new phase has been activated for your application: "${newStage.PrefillStage?.name || 'Unnamed Phase'}".`;
+                const nMessage = `A new phase has been activated for your application: "${newStage.name || 'Unnamed Phase'}".`;
                 if (notifyInApp) {
                     await NotificationRepository_1.notificationRepository.create({
                         userId: app.userId,
@@ -340,8 +338,8 @@ class ApplicationService {
         }
         const nSubject = setAsCurrent ? 'Process Activation' : 'Phase Update';
         const nMessage = setAsCurrent
-            ? `A phase has been activated for your application: "${updatedStage?.PrefillStage?.name || 'Unnamed Phase'}".`
-            : `Details for your current phase "${updatedStage?.PrefillStage?.name || 'Unnamed Phase'}" have been updated by administration.`;
+            ? `A phase has been activated for your application: "${updatedStage?.name || 'Unnamed Phase'}".`
+            : `Details for your current phase "${updatedStage?.name || 'Unnamed Phase'}" have been updated by administration.`;
         if (notifyInApp) {
             await NotificationRepository_1.notificationRepository.create({
                 userId: app.userId,
@@ -389,7 +387,7 @@ class ApplicationService {
             await NotificationRepository_1.notificationRepository.create({
                 userId: app.userId,
                 subject: 'Phase Completed',
-                message: `Congratulations, your application phase "${stage.PrefillStage?.name || 'Unnamed Phase'}" has been marked as complete.`,
+                message: `Congratulations, your application phase "${stage.name || 'Unnamed Phase'}" has been marked as complete.`,
                 type: 'SYSTEM'
             });
         }

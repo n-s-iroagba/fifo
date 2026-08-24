@@ -21,11 +21,6 @@ TicketCatalog.init({
         allowNull: false,
         defaultValue: 0,
     },
-    sponsorshipPrice: {
-        type: sequelize_1.DataTypes.FLOAT,
-        allowNull: false,
-        defaultValue: 0,
-    },
     description: {
         type: sequelize_1.DataTypes.TEXT,
         allowNull: true,

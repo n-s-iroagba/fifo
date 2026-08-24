@@ -303,9 +303,9 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
                                                     </p>
                                                 )}
                                                 <div className="flex items-center gap-3 mt-1.5 flex-wrap text-[9px]">
-                                                    <span className={`font-bold ${isChecked && !isAlreadyAssigned ? 'text-blue-100' : 'text-blue-900'}`}>
-                                                        Normal: ${cat.normalPrice || 0} AUD &nbsp;|&nbsp; Subsidised: ${cat.sponsorshipPrice || 0} AUD
-                                                    </span>
+                                                     <span className={`font-bold ${isChecked && !isAlreadyAssigned ? 'text-blue-100' : 'text-blue-900'}`}>
+                                                         Normal Price: ${cat.normalPrice || 0} AUD (Applicant subsidy applies)
+                                                     </span>
                                                     {matchedCourse && (
                                                         <span className={`px-2 py-0.5 rounded font-black text-[8px] uppercase tracking-wider ${
                                                             isChecked && !isAlreadyAssigned

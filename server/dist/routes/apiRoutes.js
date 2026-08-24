@@ -22,10 +22,8 @@ const ExamController_1 = require("../controllers/ExamController");
 const ExamAttemptController_1 = require("../controllers/ExamAttemptController");
 const CertificateController_1 = require("../controllers/CertificateController");
 const TicketController_1 = require("../controllers/TicketController");
-const PrefillStageController_1 = require("../controllers/PrefillStageController");
-const PsychometricController_1 = require("../controllers/PsychometricController");
 // Removed requirePsychometricClear import
-const prefillStageController = new PrefillStageController_1.PrefillStageController();
+const PsychometricController_1 = require("../controllers/PsychometricController");
 const upload = (0, multer_1.default)({
     storage: multer_1.default.memoryStorage(),
     limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit per file
@@ -159,7 +157,6 @@ router.post('/admin/users/:id/welcome-mail', ...adminMW, AdminController_1.admin
 router.post('/admin/users/:id/eoi-mail', ...adminMW, AdminController_1.adminController.sendEOIMail.bind(AdminController_1.adminController));
 router.put('/admin/users/:id/wallet', ...adminMW, AdminController_1.adminController.updateApplicantWallet.bind(AdminController_1.adminController));
 router.put('/admin/users/:id/aveling-credentials', ...adminMW, AdminController_1.adminController.updateAvelingCredentials.bind(AdminController_1.adminController));
-router.put('/admin/users/:id/admin-stage', ...adminMW, AdminController_1.adminController.updateApplicantAdminStage.bind(AdminController_1.adminController));
 router.put('/admin/users/:id/subsidy-percentage', ...adminMW, AdminController_1.adminController.updateApplicantSubsidy.bind(AdminController_1.adminController));
 router.put('/admin/applicants/:id/aveling-credentials', ...adminMW, AdminController_1.adminController.updateAvelingCredentials.bind(AdminController_1.adminController));
 // Candidate Portal Lookup & Payment Email Routes
@@ -198,12 +195,7 @@ router.post('/admin/users/:userId/update-payment-status', ...adminMW, TicketCont
 router.post('/admin/invoices/dispatch', upload.any(), ...adminMW, AdminController_1.adminController.dispatchInvoiceEmail.bind(AdminController_1.adminController));
 router.get('/admin/invoices', ...adminMW, AdminController_1.adminController.getAllInvoices.bind(AdminController_1.adminController));
 router.post('/admin/invoices/:id/receipt', ...adminMW, AdminController_1.adminController.generateInvoiceReceipt.bind(AdminController_1.adminController));
-// Prefill Stages
-router.get('/admin/prefill-stages', ...adminMW, prefillStageController.getPrefillStages.bind(prefillStageController));
-router.post('/admin/prefill-stages', ...adminMW, prefillStageController.createPrefillStage.bind(prefillStageController));
-router.put('/admin/prefill-stages/:id', ...adminMW, prefillStageController.updatePrefillStage.bind(prefillStageController));
-router.delete('/admin/prefill-stages/:id', ...adminMW, prefillStageController.deletePrefillStage.bind(prefillStageController));
-router.post('/admin/prefill-stages/reorder', ...adminMW, prefillStageController.reorderPrefillStages.bind(prefillStageController));
+// Prefill Stages removed
 // Candidate receipt submission (public or candidate authenticated)
 router.post('/tickets/:id/submit-receipt', TicketController_1.ticketController.submitReceipt.bind(TicketController_1.ticketController));
 // Admin Psychometric Test Review

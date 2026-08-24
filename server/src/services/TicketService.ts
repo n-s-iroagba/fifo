@@ -825,7 +825,11 @@ export class TicketService {
                 ticketType = ticketType || catalog.name;
                 description = description || catalog.description;
                 if (realPrice === null) realPrice = catalog.normalPrice;
-                if (subsidisedPrice === null) subsidisedPrice = catalog.sponsorshipPrice;
+                if (subsidisedPrice === null) {
+                    const applicant = await User.findByPk(application.userId);
+                    const subsidyPct = applicant?.subsidyPercentage ?? 70;
+                    subsidisedPrice = realPrice ? Number((realPrice * (1 - subsidyPct / 100)).toFixed(2)) : 0;
+                }
             }
         }
 
@@ -929,7 +933,8 @@ export class TicketService {
                 baseTicketType = catalog.name;
                 baseDescription = catalog.description || baseDescription;
                 defaultRealPrice = catalog.normalPrice || 280;
-                defaultSubsidisedPrice = catalog.sponsorshipPrice || (defaultRealPrice * 0.35);
+                const subsidyPct = user?.subsidyPercentage ?? 70;
+                defaultSubsidisedPrice = Number((defaultRealPrice * (1 - subsidyPct / 100)).toFixed(2));
             }
         }
 

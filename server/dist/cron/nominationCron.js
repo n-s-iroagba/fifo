@@ -28,16 +28,11 @@ async function runNominationFollowupCron() {
         // AND it's still the current stage of the application (meaning we haven't advanced to TicketSponsorship yet)
         const completedStages = await models_1.JobStage.findAll({
             where: {
+                name: 'Nomination',
                 status: 'completed',
                 updatedAt: { [sequelize_1.Op.lte]: cutoff },
             },
             include: [
-                {
-                    model: models_1.PrefillStage,
-                    as: 'PrefillStage',
-                    where: { name: 'Nomination' },
-                    required: true
-                },
                 {
                     model: models_1.Application,
                     where: (0, sequelize_1.literal)('`Application`.`currentStageId` = `JobStage`.`id`'),
@@ -60,17 +55,9 @@ async function runNominationFollowupCron() {
                 continue;
             const userId = application.userId;
             try {
-                // Fetch the TicketSponsorship prefill stage to advance to
-                const ticketStagePrefill = await models_1.PrefillStage.findOne({
-                    where: { name: 'TicketSponsorship' }
-                });
-                if (!ticketStagePrefill) {
-                    console.error(`[NominationCron] Cannot find TicketSponsorship prefill stage.`);
-                    continue;
-                }
                 // Advance to TicketSponsorship stage
                 await ApplicationService_1.applicationService.addStageToApplication(application.id, {
-                    prefillStageId: ticketStagePrefill.id,
+                    name: 'TicketSponsorship',
                     status: 'Not Started',
                     setAsCurrent: true,
                     notifyInApp: true,

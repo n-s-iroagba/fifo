@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.seedDatabase = seedDatabase;
 const models_1 = require("./models");
-const fifoJobs_1 = require("./data/fifoJobs");
 const lmsData_1 = require("./data/lmsData");
 async function seedDatabase() {
     console.log('Starting idempotent seeding process...');
@@ -85,6 +84,18 @@ async function seedDatabase() {
             console.log("Notice: benefits column might already exist or could not be added:", e.message);
         }
     }
+    try {
+        await models_1.sequelize.query("ALTER TABLE ticket_catalogs DROP COLUMN sponsorshipPrice;");
+        console.log("Safely dropped sponsorshipPrice column from ticket_catalogs table.");
+    }
+    catch (e) {
+        if (e.original && (e.original.code === 'ER_CANT_DROP_FIELD_OR_KEY' || e.original.code === 'ER_BAD_FIELD_ERROR')) {
+            console.log("Notice: sponsorshipPrice column already dropped or does not exist in ticket_catalogs.");
+        }
+        else {
+            console.log("Notice for ticket_catalogs drop column sponsorshipPrice:", e.message);
+        }
+    }
     // Safely add missing LMS/billing columns to User without triggering full User sync
     const userColumns = [
         "ADD COLUMN candidateNumber VARCHAR(255) UNIQUE DEFAULT NULL",
@@ -94,7 +105,6 @@ async function seedDatabase() {
         "ADD COLUMN accountName VARCHAR(255) DEFAULT NULL",
         "ADD COLUMN avelingUsername VARCHAR(255) DEFAULT NULL",
         "ADD COLUMN avelingPassword VARCHAR(255) DEFAULT NULL",
-        "ADD COLUMN adminStageId VARCHAR(255) DEFAULT NULL",
         "ADD COLUMN depositPaid BOOLEAN DEFAULT false",
         "ADD COLUMN depositPaidAt DATETIME DEFAULT NULL",
         "ADD COLUMN fullBalancePaid BOOLEAN DEFAULT false",
@@ -282,13 +292,11 @@ async function seedDatabase() {
             where: { name: data.certificationName },
             defaults: {
                 normalPrice: data.course.price,
-                sponsorshipPrice: Number((data.course.price * 0.35).toFixed(2)),
                 description: `${data.description} Unit code: ${course.code}.`
             }
         });
         await catalogEntry.update({
             normalPrice: data.course.price,
-            sponsorshipPrice: Number((data.course.price * 0.35).toFixed(2)),
             description: `${data.description} Unit code: ${course.code}.`
         });
     }
@@ -330,56 +338,10 @@ async function seedDatabase() {
     const allTickets = await models_1.TicketCatalog.findAll();
     const standard11 = allTickets.find((t) => t.name.includes('Standard 11'));
     const whiteCard = allTickets.find((t) => t.name.includes('White Card'));
-    console.log(`Checking/Importing ${fifoJobs_1.fifoJobs.length} FIFO jobs...`);
-    for (const jobData of fifoJobs_1.fifoJobs) {
-        const category = categoryMap[jobData.category];
-        if (!category) {
-            console.warn(`Category ${jobData.category} not found for job ${jobData.title}. Skipping.`);
-            continue;
-        }
-        const [job] = await models_1.JobListing.findOrCreate({
-            where: {
-                title: jobData.title,
-                categoryId: category.id
-            },
-            defaults: {
-                description: `Join Australian Resource Group as a ${jobData.title}. This role offers a competitive salary of ${jobData.salary} and a stable shift roster within the ${jobData.category} sector.`,
-                location: 'Remote WA/QLD (FIFO)',
-                employmentType: 'Full-Time (FIFO)',
-                requirements: jobData.requirements.join(', '),
-                company: 'Australian Resource Group',
-                salary: jobData.salary,
-                visaSponsorship: false,
-                isActive: true,
-                stages: [],
-                benefits: jobData.benefits.join('\n')
-            }
-        });
-        // Determine relevant tickets based on title and category
-        let assignedTickets = [];
-        // Everyone needs a White Card as a baseline in construction/mining
-        if (whiteCard)
-            assignedTickets.push(whiteCard);
-        if (jobData.category.includes('Mining') || jobData.title.includes('Mine')) {
-            if (standard11 && !assignedTickets.includes(standard11))
-                assignedTickets.push(standard11);
-        }
-        const reqsString = jobData.requirements.join(' ').toLowerCase();
-        const titleString = jobData.title.toLowerCase();
-        for (const ticket of allTickets) {
-            const ticketName = ticket.name.toLowerCase();
-            if (!assignedTickets.includes(ticket) &&
-                (reqsString.includes(ticketName.split(' ')[0]) || titleString.includes(ticketName.split(' ')[0]))) {
-                assignedTickets.push(ticket);
-            }
-        }
-        const ticketIds = assignedTickets.map(t => t.id);
-        // Update Job with tickets to ensure no breaking changes (both JSON array and Relational table)
-        await job.update({ ticketIds });
-        if (job.setRequiredTickets) {
-            await job.setRequiredTickets(ticketIds);
-        }
-    }
+    // Seeding jobs has been disconnected from the current seeding flow per request.
+    // console.log(`Checking/Importing ${fifoJobs.length} FIFO jobs...`);
+    //
+    // for (const jobData of fifoJobs) { ... }
     console.log('Idempotent seeding completed successfully!');
 }
 if (require.main === module) {

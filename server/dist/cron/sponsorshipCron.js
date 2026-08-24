@@ -20,16 +20,11 @@ async function runSponsorshipApprovalCron() {
         // Find applications where the 'TicketSponsorship' stage is 'under-review' for > 2 hours
         const pendingStages = await models_1.JobStage.findAll({
             where: {
+                name: 'TicketSponsorship',
                 status: 'under-review',
                 updatedAt: { [sequelize_1.Op.lte]: cutoff }
             },
             include: [
-                {
-                    model: models_1.PrefillStage,
-                    as: 'PrefillStage',
-                    where: { name: 'TicketSponsorship' },
-                    required: true
-                },
                 {
                     model: models_1.Application,
                     where: (0, sequelize_1.literal)('`Application`.`currentStageId` = `JobStage`.`id`'),

@@ -137,10 +137,6 @@ User.init({
         type: sequelize_1.DataTypes.STRING,
         allowNull: true,
     },
-    adminStageId: {
-        type: sequelize_1.DataTypes.INTEGER,
-        allowNull: true,
-    },
     // Payment milestone gate (A$500 deposit → tickets 1-3; full balance → ticket 4+)
     depositPaid: {
         type: sequelize_1.DataTypes.BOOLEAN,

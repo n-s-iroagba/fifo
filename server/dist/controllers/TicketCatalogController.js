@@ -16,7 +16,6 @@ class TicketCatalogController {
                         where: { name },
                         defaults: {
                             normalPrice: data.course.price,
-                            sponsorshipPrice: data.course.price / 2,
                             description: `Australian Ticket for ${data.certificationName} (${code})`
                         }
                     });
@@ -31,9 +30,9 @@ class TicketCatalogController {
     }
     async create(req, res, next) {
         try {
-            const { name, normalPrice, sponsorshipPrice, description } = req.body;
+            const { name, normalPrice, description } = req.body;
             const catalog = await models_1.TicketCatalog.create({
-                name, normalPrice, sponsorshipPrice, description
+                name, normalPrice, description
             });
             res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json({ success: true, data: catalog });
         }

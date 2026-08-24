@@ -6,14 +6,12 @@ class JobStageRepository {
     async findByApplicationId(applicationId, transaction) {
         return models_1.JobStage.findAndCountAll({
             where: { applicationId },
-            include: [{ model: models_1.PrefillStage, as: 'PrefillStage' }],
             order: [['createdAt', 'ASC']],
             transaction
         });
     }
     async findById(id, transaction) {
         return models_1.JobStage.findByPk(id, {
-            include: [{ model: models_1.PrefillStage, as: 'PrefillStage' }],
             transaction
         });
     }

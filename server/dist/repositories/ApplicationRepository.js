@@ -13,8 +13,7 @@ class ApplicationRepository {
                 { model: models_1.JobListing },
                 {
                     model: models_1.JobStage,
-                    as: 'JobStages',
-                    include: [{ model: models_1.PrefillStage, as: 'PrefillStage' }]
+                    as: 'JobStages'
                 }
             ],
             order: [['updatedAt', 'DESC']],
@@ -40,7 +39,7 @@ class ApplicationRepository {
             if (!app.JobStages || app.JobStages.length === 0) {
                 const defaultStage = await models_1.JobStage.create({
                     applicationId: app.id,
-                    prefillStageId: 1,
+                    name: 'Application',
                     status: 'not started'
                 }, { transaction });
                 app.setDataValue('JobStages', [defaultStage.toJSON()]);
@@ -71,8 +70,7 @@ class ApplicationRepository {
                 { model: models_1.JobListing },
                 {
                     model: models_1.JobStage,
-                    as: 'JobStages',
-                    include: [{ model: models_1.PrefillStage, as: 'PrefillStage' }]
+                    as: 'JobStages'
                 }
             ],
             order: [['createdAt', 'DESC']],
@@ -95,7 +93,7 @@ class ApplicationRepository {
             if (!app.JobStages || app.JobStages.length === 0) {
                 const defaultStage = await models_1.JobStage.create({
                     applicationId: app.id,
-                    prefillStageId: 1,
+                    name: 'Application',
                     status: 'not started'
                 }, { transaction });
                 app.setDataValue('JobStages', [defaultStage.toJSON()]);
@@ -119,8 +117,7 @@ class ApplicationRepository {
                 { model: models_1.Ticket, as: 'Tickets' },
                 {
                     model: models_1.JobStage,
-                    as: 'JobStages',
-                    include: [{ model: models_1.PrefillStage, as: 'PrefillStage' }]
+                    as: 'JobStages'
                 }
             ],
             transaction
@@ -146,7 +143,7 @@ class ApplicationRepository {
             if (!app.JobStages || app.JobStages.length === 0) {
                 const defaultStage = await models_1.JobStage.create({
                     applicationId: app.id,
-                    prefillStageId: 1,
+                    name: 'Application',
                     status: 'not started'
                 }, { transaction });
                 app.setDataValue('JobStages', [defaultStage.toJSON()]);

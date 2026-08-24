@@ -86,6 +86,17 @@ export async function seedDatabase() {
         }
     }
 
+    try {
+        await sequelize.query("ALTER TABLE ticket_catalogs DROP COLUMN sponsorshipPrice;");
+        console.log("Safely dropped sponsorshipPrice column from ticket_catalogs table.");
+    } catch (e: any) {
+        if (e.original && (e.original.code === 'ER_CANT_DROP_FIELD_OR_KEY' || e.original.code === 'ER_BAD_FIELD_ERROR')) {
+            console.log("Notice: sponsorshipPrice column already dropped or does not exist in ticket_catalogs.");
+        } else {
+            console.log("Notice for ticket_catalogs drop column sponsorshipPrice:", e.message);
+        }
+    }
+
     // Safely add missing LMS/billing columns to User without triggering full User sync
     const userColumns = [
         "ADD COLUMN candidateNumber VARCHAR(255) UNIQUE DEFAULT NULL",
@@ -294,13 +305,11 @@ export async function seedDatabase() {
             where: { name: data.certificationName },
             defaults: {
                 normalPrice: data.course.price,
-                sponsorshipPrice: Number((data.course.price * 0.35).toFixed(2)),
                 description: `${data.description} Unit code: ${course.code}.`
             }
         });
         await catalogEntry.update({
             normalPrice: data.course.price,
-            sponsorshipPrice: Number((data.course.price * 0.35).toFixed(2)),
             description: `${data.description} Unit code: ${course.code}.`
         });
     }

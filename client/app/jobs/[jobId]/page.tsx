@@ -18,7 +18,7 @@ interface JobDetail {
     JobCategory: { name: string };
     JobBenefits: { benefitType: string; description: string }[];
     JobConditions: { name: string; description: string }[];
-    RequiredTickets: { id: number; name: string; description: string; normalPrice: number; sponsorshipPrice: number }[];
+    RequiredTickets: { id: number; name: string; description: string; normalPrice: number }[];
     visaSponsorship: boolean;
 }
 

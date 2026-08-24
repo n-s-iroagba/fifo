@@ -16,7 +16,6 @@ export class TicketCatalogController {
                         where: { name },
                         defaults: {
                             normalPrice: data.course.price,
-                            sponsorshipPrice: data.course.price / 2,
                             description: `Australian Ticket for ${data.certificationName} (${code})`
                         }
                     });
@@ -29,9 +28,9 @@ export class TicketCatalogController {
 
     public async create(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const { name, normalPrice, sponsorshipPrice, description } = req.body;
+            const { name, normalPrice, description } = req.body;
             const catalog = await TicketCatalog.create({
-                name, normalPrice, sponsorshipPrice, description
+                name, normalPrice, description
             });
             res.status(CONSTANTS.HTTP_STATUS.CREATED).json({ success: true, data: catalog });
         } catch (error) { next(error); }

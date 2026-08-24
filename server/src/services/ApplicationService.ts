@@ -171,6 +171,12 @@ export class ApplicationService {
 
                 const isAlreadyPossessed = possessedNames.has(cat.name.toLowerCase().trim());
 
+                const { User } = require('../models');
+                const applicant = await User.findByPk(userId, { transaction: t });
+                const subsidyPct = applicant?.subsidyPercentage ?? 70;
+                const normalPrice = cat.normalPrice || 0;
+                const calcSubsidisedPrice = Number((normalPrice * (1 - subsidyPct / 100)).toFixed(2));
+
                 await Ticket.create({
                     userId,
                     applicationId: newApp.id,
@@ -180,9 +186,9 @@ export class ApplicationService {
                     ticketSponsorship: 'no_application',
                     refundStatus: 'none',
                     description: cat.description,
-                    realPrice: cat.normalPrice,
-                    subsidisedPrice: cat.sponsorshipPrice,
-                    purchasePrice: cat.sponsorshipPrice ?? cat.normalPrice ?? 0,
+                    realPrice: normalPrice,
+                    subsidisedPrice: calcSubsidisedPrice,
+                    purchasePrice: calcSubsidisedPrice,
                     canApplySponsorship: !isAlreadyPossessed,
                     courseId: matchingCourse ? matchingCourse.id : null
                 }, { transaction: t });

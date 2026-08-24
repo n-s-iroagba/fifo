@@ -18,22 +18,17 @@ async function runApplicationApprovalCron() {
         console.log('[ApplicationCron] Running application auto-acceptance check...');
         const cutoff = new Date(Date.now() - SIX_HOURS_MS);
         // Find JobStage rows where:
-        //   1. The linked PrefillStage is named 'Application'
+        //   1. The stage is named 'Application'
         //   2. The stage has been 'under-review' for more than 6 hours
         //   3. The owning Application still points to this stage as currentStageId
         //      (i.e. the application hasn't already been manually advanced)
         const pendingStages = await models_1.JobStage.findAll({
             where: {
+                name: 'Application',
                 status: 'under-review',
                 updatedAt: { [sequelize_1.Op.lte]: cutoff }
             },
             include: [
-                {
-                    model: models_1.PrefillStage,
-                    as: 'PrefillStage',
-                    where: { name: 'Application' },
-                    required: true
-                },
                 {
                     model: models_1.Application,
                     // literal() produces reliable column refs under MySQL's underscored schema

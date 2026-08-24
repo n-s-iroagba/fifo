@@ -169,14 +169,14 @@ class AdminService {
         const user = await UserRepository_1.userRepository.findById(userId);
         if (!user)
             throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        await (0, email_1.sendWelcomeEmail)(user.email, user.fullName);
+        await (0, email_1.sendWelcomeApplicationFoundEmail)(user.email, user.fullName);
         return { success: true };
     }
     async sendEOIMail(userId) {
         const user = await UserRepository_1.userRepository.findById(userId);
         if (!user)
             throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        await (0, email_1.sendEOIEmail)(user.email);
+        await (0, email_1.sendEOIReceivedEmail)(user.email, user.fullName);
         return { success: true };
     }
     async updateApplicantWallet(id, walletBalance) {

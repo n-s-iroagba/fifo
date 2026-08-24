@@ -8,7 +8,6 @@ interface TicketCatalog {
     id: number;
     name: string;
     normalPrice: number;
-    sponsorshipPrice: number;
     description: string;
     createdAt?: string;
     updatedAt?: string;
@@ -54,14 +53,13 @@ export default function TicketCatalogsPage() {
                             <tr>
                                 <th className="p-4 pl-6">Ticket Name</th>
                                 <th className="p-4">Normal Price</th>
-                                <th className="p-4">Sponsorship Price</th>
                                 <th className="p-4 pr-6 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-blue-50 font-medium text-slate-700">
                             {catalogs.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="p-8 text-center text-slate-400 italic">
+                                    <td colSpan={3} className="p-8 text-center text-slate-400 italic">
                                         No tickets found.
                                     </td>
                                 </tr>
@@ -70,7 +68,6 @@ export default function TicketCatalogsPage() {
                                     <tr key={t.id} className="hover:bg-blue-50/30 transition-colors">
                                         <td className="p-4 pl-6 font-bold text-blue-900">{t.name}</td>
                                         <td className="p-4">${t.normalPrice}</td>
-                                        <td className="p-4 font-bold text-blue-600">${t.sponsorshipPrice}</td>
                                         <td className="p-4 pr-6 text-right space-x-2">
                                             <button
                                                 onClick={() => handleDelete(t.id)}

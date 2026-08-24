@@ -36,7 +36,6 @@ interface TicketCatalog {
     name: string;
     description: string;
     normalPrice: number;
-    sponsorshipPrice: number;
 }
 
 export default function ApplicationDetailPage() {
@@ -331,10 +330,9 @@ export default function ApplicationDetailPage() {
                                                 ) : (
                                                     <div className="w-full flex items-center justify-between gap-4">
                                                         <div>
-                                                            <span className="text-[9px] font-black text-amber-700 uppercase tracking-widest block">Sponsorship Rate</span>
+                                                            <span className="text-[9px] font-black text-amber-700 uppercase tracking-widest block">Normal Price</span>
                                                             <div className="flex items-center gap-2">
-                                                                <span className="text-xs font-bold text-slate-400 line-through">${catalog.normalPrice}</span>
-                                                                <span className="text-base font-black text-emerald-700">${catalog.sponsorshipPrice}</span>
+                                                                <span className="text-sm font-black text-blue-900">${catalog.normalPrice}</span>
                                                             </div>
                                                         </div>
                                                         <Link
