@@ -30,10 +30,19 @@ JobStage.init({
         type: DataTypes.STRING,
         defaultValue: 'not started',
     },
+    sequenceOrder: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1,
+    },
+    orderPosition: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1,
+    },
     isCompleted: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     }
+
 }, {
     sequelize,
     tableName: 'job_stages',

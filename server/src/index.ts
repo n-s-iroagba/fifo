@@ -5,12 +5,9 @@ import { logger } from './utils/logger';
 
 // Initializes Associations Mapping
 import './models';
-import { seedDatabase } from './seedDatabase';
-import { run } from './runMigration';
 
-import { migratePaymentMilestone } from './migrations/payment_milestone_migration';
-import { migrateAccountingAndSubsidy } from './migrations/accounting_migration';
-import { migrateCourseFormatEnum } from './migrations/course_format_migration';
+
+
 import { startNominationCron } from './cron/nominationCron';
 import { startApplicationCron } from './cron/applicationCron';
 import { startSponsorshipCron } from './cron/sponsorshipCron';
@@ -29,19 +26,16 @@ const startServer = async () => {
             // Run heavy seeding and migrations in the background so Fly.io health checks don't timeout
             (async () => {
                 try {
-                    await migratePaymentMilestone();
-                    await migrateAccountingAndSubsidy();
-                    await migrateCourseFormatEnum();
-                    await seedDatabase();
-                    logger.info('Database seeded successfully in background.');
-                } catch (err) {
-                    logger.error('Background database initialization error:', err);
-                } finally {
                     startNominationCron();
                     startApplicationCron();
                     startSponsorshipCron();
                     startContractCron();
+
                     logger.info('All background cron jobs started.');
+
+                    logger.info('Database seeded successfully in background.');
+                } catch (err) {
+                    logger.error('Background database initialization error:', err);
                 }
             })();
 

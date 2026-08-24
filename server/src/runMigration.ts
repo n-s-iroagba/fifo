@@ -1,25 +1,6 @@
-import { sequelize } from './config/database';
-import { migrateApexNetwork } from './migrations/apex_network_migration';
-import { migratePaymentMilestone } from './migrations/payment_milestone_migration';
-import { migrateAccountingAndSubsidy } from './migrations/accounting_migration';
+import { runAllMigrations } from './migrations';
 
 export async function run() {
-    // Existing migrations...
-    try {
-        await sequelize.query('ALTER TABLE crypto_wallets MODIFY COLUMN currencyName VARCHAR(255);');
-        await sequelize.query('ALTER TABLE crypto_wallets MODIFY COLUMN networkType VARCHAR(255);');
-        console.log('Relaxed ENUM constraints in crypto_wallets');
-    } catch (e: any) {
-        console.error('Error relaxing crypto constraints:', e.message);
-    }
-
-    // New Apex Network Migration
-    await migrateApexNetwork();
-
-    // Payment Milestone Gate (Schedule 1 / Clause 5.1)
-    await migratePaymentMilestone();
-
-    // Accounting & Subsidy
-    await migrateAccountingAndSubsidy();
+    await runAllMigrations();
 }
 

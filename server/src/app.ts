@@ -35,6 +35,11 @@ app.use(cookieParser());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+// Serve uploaded documents
+app.use('/uploads', express.static(require('path').join(__dirname, '../public/uploads')));
+app.use('/uploads', express.static(require('path').join(__dirname, '../uploads')));
+
+
 // Health check endpoint for infrastructure monitoring
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
