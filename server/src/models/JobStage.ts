@@ -4,13 +4,12 @@ import { sequelize } from '../config/database';
 export class JobStage extends Model {
     declare id: number;
     declare applicationId: number;
-    declare prefillStageId: number;
+    declare name: string;
     declare status: string;
     declare isCurrent: boolean;
 
     // Associations
     declare Application?: any;
-    declare PrefillStage?: any;
 }
 
 JobStage.init({
@@ -23,8 +22,8 @@ JobStage.init({
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    prefillStageId: {
-        type: DataTypes.INTEGER,
+    name: {
+        type: DataTypes.STRING,
         allowNull: false,
     },
     status: {

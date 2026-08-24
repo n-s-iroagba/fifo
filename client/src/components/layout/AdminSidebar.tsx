@@ -8,10 +8,11 @@ import { useAuth } from '@/contexts/AuthContext';
 const navItems = [
     { label: 'Overview', href: CONSTANTS.ROUTES.ADMIN.DASHBOARD, icon: 'analytics' },
     { label: 'Applications', href: CONSTANTS.ROUTES.ADMIN.APPLICATIONS, icon: 'assignment' },
-    { label: 'Pipeline Stages', href: '/admin/settings/stages', icon: 'linear_scale' },
+
     { label: 'Applicants', href: '/admin/applicants', icon: 'groups' },
     { label: 'Psychometric Reviews', href: '/admin/psychometric', icon: 'psychiatry' },
     { label: 'Interests', href: '/admin/interests', icon: 'psychology' },
+    { label: 'Tickets', href: '/admin/tickets', icon: 'local_activity' },
     { label: 'Receipts', href: '/admin/receipts', icon: 'receipt_long' },
     { label: 'Invoices', href: '/admin/invoices', icon: 'request_quote' },
     { label: 'Jobs', href: CONSTANTS.ROUTES.ADMIN.JOBS, icon: 'business_center' },

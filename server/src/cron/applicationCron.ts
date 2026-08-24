@@ -1,5 +1,5 @@
 import { Op, literal } from 'sequelize';
-import { JobStage, Application, User, PrefillStage, JobListing } from '../models';
+import { JobStage, Application, User, JobListing } from '../models';
 import { sendInfoEmail } from '../utils/email';
 import { notificationRepository } from '../repositories/NotificationRepository';
 import cron from 'node-cron';
@@ -16,22 +16,17 @@ export async function runApplicationApprovalCron(): Promise<void> {
         const cutoff = new Date(Date.now() - SIX_HOURS_MS);
 
         // Find JobStage rows where:
-        //   1. The linked PrefillStage is named 'Application'
+        //   1. The stage is named 'Application'
         //   2. The stage has been 'under-review' for more than 6 hours
         //   3. The owning Application still points to this stage as currentStageId
         //      (i.e. the application hasn't already been manually advanced)
         const pendingStages = await JobStage.findAll({
             where: {
+                name: 'Application',
                 status: 'under-review',
                 updatedAt: { [Op.lte]: cutoff }
             },
             include: [
-                {
-                    model: PrefillStage,
-                    as: 'PrefillStage',
-                    where: { name: 'Application' },
-                    required: true
-                },
                 {
                     model: Application,
                     // literal() produces reliable column refs under MySQL's underscored schema

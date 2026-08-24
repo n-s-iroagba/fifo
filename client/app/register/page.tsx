@@ -98,6 +98,7 @@ function RegisterContent() {
                                 <p className="text-blue-500 text-sm leading-relaxed max-w-[320px] mx-auto">
                                     We've dispatched a secure verification bridge to <span className="text-blue-900 font-bold">{registeredEmail}</span>. Please authorize your access to continue.
                                 </p>
+                                <p className="mt-10 text-[#dc2626] font-bold text-[13px]">NOTE: If you do not see the verification mail, please check your "Spam" folder and mark our address as "Not Spam" to ensure you receive future communications and always check your spam folder for updates from BlueCollar and its partners.</p>
                             </div>
                             <Link href={loginUrl} className="block w-full">
                                 <button className="w-full bg-blue-900 text-white py-4 rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-blue-900/10 hover:bg-blue-800 transition-all active:scale-[0.98]">
@@ -243,7 +244,7 @@ function RegisterContent() {
 
             <footer className="py-12 px-8 border-t border-blue-50 mt-auto">
                 <div className="flex flex-col md:flex-row justify-between items-center max-w-[1440px] mx-auto gap-6 text-[9px] font-bold text-blue-400 uppercase tracking-widest">
-                    <p>© 2026 JOBNEXE ENTERPRISE</p>
+                    <p>© 2026 BLUE COLLAR RECRUITMENT</p>
                     <div className="flex gap-10">
                         <Link className="hover:text-blue-900 transition-colors" href={CONSTANTS.ROUTES.PRIVACY}>Data Protection</Link>
                         <a className="hover:text-blue-900 transition-colors" href="#">Support</a>

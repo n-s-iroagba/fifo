@@ -140,7 +140,7 @@ export default function VerifyEmailPage() {
 
             <footer className="mt-24 py-12 border-t border-blue-50 w-full max-w-[1440px]">
                 <div className="flex justify-center flex-col items-center gap-4">
-                    <p className="text-blue-300 text-[9px] font-bold uppercase tracking-[0.3em]">© 2026 JOBNEXE ENTERPRISE</p>
+                    <p className="text-blue-300 text-[9px] font-bold uppercase tracking-[0.3em]">© 2026 BLUE COLLAR RECRUITMENT</p>
                 </div>
             </footer>
         </div>

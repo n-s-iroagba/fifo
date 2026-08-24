@@ -95,7 +95,6 @@ export async function seedDatabase() {
         "ADD COLUMN accountName VARCHAR(255) DEFAULT NULL",
         "ADD COLUMN avelingUsername VARCHAR(255) DEFAULT NULL",
         "ADD COLUMN avelingPassword VARCHAR(255) DEFAULT NULL",
-        "ADD COLUMN adminStageId VARCHAR(255) DEFAULT NULL",
         "ADD COLUMN depositPaid BOOLEAN DEFAULT false",
         "ADD COLUMN depositPaidAt DATETIME DEFAULT NULL",
         "ADD COLUMN fullBalancePaid BOOLEAN DEFAULT false",
@@ -346,66 +345,10 @@ export async function seedDatabase() {
     const standard11 = allTickets.find((t: any) => t.name.includes('Standard 11'));
     const whiteCard = allTickets.find((t: any) => t.name.includes('White Card'));
     
-    console.log(`Checking/Importing ${fifoJobs.length} FIFO jobs...`);
-
-    for (const jobData of fifoJobs) {
-        const category = categoryMap[jobData.category];
-        if (!category) {
-            console.warn(`Category ${jobData.category} not found for job ${jobData.title}. Skipping.`);
-            continue;
-        }
-
-        const [job] = await JobListing.findOrCreate({
-            where: {
-                title: jobData.title,
-                categoryId: category.id
-            },
-            defaults: {
-                description: `Join Australian Resource Group as a ${jobData.title}. This role offers a competitive salary of ${jobData.salary} and a stable shift roster within the ${jobData.category} sector.`,
-                location: 'Remote WA/QLD (FIFO)',
-                employmentType: 'Full-Time (FIFO)',
-                requirements: jobData.requirements.join(', '),
-                company: 'Australian Resource Group',
-                salary: jobData.salary,
-                visaSponsorship: false,
-                isActive: true,
-                stages: [],
-                benefits: jobData.benefits.join('\n')
-            }
-        });
-
-        // Determine relevant tickets based on title and category
-        let assignedTickets: any[] = [];
-        
-        // Everyone needs a White Card as a baseline in construction/mining
-        if (whiteCard) assignedTickets.push(whiteCard);
-
-        if (jobData.category.includes('Mining') || jobData.title.includes('Mine')) {
-            if (standard11 && !assignedTickets.includes(standard11)) assignedTickets.push(standard11);
-        }
-
-        const reqsString = jobData.requirements.join(' ').toLowerCase();
-        const titleString = jobData.title.toLowerCase();
-
-        for (const ticket of allTickets) {
-            const ticketName = ticket.name.toLowerCase();
-            if (
-                !assignedTickets.includes(ticket) &&
-                (reqsString.includes(ticketName.split(' ')[0]) || titleString.includes(ticketName.split(' ')[0]))
-            ) {
-                assignedTickets.push(ticket);
-            }
-        }
-
-        const ticketIds = assignedTickets.map(t => t.id);
-
-        // Update Job with tickets to ensure no breaking changes (both JSON array and Relational table)
-        await job.update({ ticketIds });
-        if ((job as any).setRequiredTickets) {
-            await (job as any).setRequiredTickets(ticketIds);
-        }
-    }
-
+    // Seeding jobs has been disconnected from the current seeding flow per request.
+    // console.log(`Checking/Importing ${fifoJobs.length} FIFO jobs...`);
+    //
+    // for (const jobData of fifoJobs) { ... }
     console.log('Idempotent seeding completed successfully!');
 }
 

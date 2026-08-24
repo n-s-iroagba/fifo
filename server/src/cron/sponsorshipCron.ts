@@ -1,5 +1,5 @@
 import { Op, literal } from 'sequelize';
-import { JobStage, Application, Ticket, User, PrefillStage, JobListing } from '../models';
+import { JobStage, Application, Ticket, User, JobListing } from '../models';
 import { sendInfoEmail } from '../utils/email';
 import cron from 'node-cron';
 import { registerCron, recordCronRun } from './cronRegistry';
@@ -18,16 +18,11 @@ export async function runSponsorshipApprovalCron(): Promise<void> {
         // Find applications where the 'TicketSponsorship' stage is 'under-review' for > 2 hours
         const pendingStages = await JobStage.findAll({
             where: {
+                name: 'TicketSponsorship',
                 status: 'under-review',
                 updatedAt: { [Op.lte]: cutoff }
             },
             include: [
-                {
-                    model: PrefillStage,
-                    as: 'PrefillStage',
-                    where: { name: 'TicketSponsorship' },
-                    required: true
-                },
                 {
                     model: Application,
                     where: literal('`Application`.`currentStageId` = `JobStage`.`id`'),

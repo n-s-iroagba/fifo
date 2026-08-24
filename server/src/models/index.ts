@@ -22,7 +22,6 @@ import { ExamAttempt } from './ExamAttempt';
 import { Certificate } from './Certificate';
 import { Ticket } from './Ticket';
 import { TicketCatalog } from './TicketCatalog';
-import { PrefillStage } from './PrefillStage';
 import { PsychometricAttempt } from './PsychometricAttempt';
 import { Nomination } from './Nomination';
 import { Contract } from './Contract';
@@ -39,13 +38,7 @@ Ticket.belongsTo(Application, { foreignKey: 'applicationId' });
 User.hasMany(Interest, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
 Interest.belongsTo(User, { foreignKey: 'userId' });
 
-// PrefillStage <-> User
-PrefillStage.hasMany(User, { foreignKey: 'adminStageId', as: 'Users' });
-User.belongsTo(PrefillStage, { foreignKey: 'adminStageId', as: 'AdminStage' });
 
-// PrefillStage <-> JobStage
-PrefillStage.hasMany(JobStage, { foreignKey: 'prefillStageId', as: 'JobStages' });
-JobStage.belongsTo(PrefillStage, { foreignKey: 'prefillStageId', as: 'PrefillStage' });
 
 
 
@@ -173,7 +166,6 @@ export {
     Certificate,
     Ticket,
     TicketCatalog,
-    PrefillStage,
     PsychometricAttempt,
     Nomination,
     Contract

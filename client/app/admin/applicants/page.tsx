@@ -51,6 +51,7 @@ export default function AdminApplicantsPage() {
                                                 {u.fullName.charAt(0)}
                                             </div>
                                             <span className="text-sm font-bold text-blue-900 uppercase tracking-tight">{u.fullName}</span>
+                                            <span className="text-xs font-bold text-blue-400 uppercase tracking-tight">{u.id.toString()}</span>
                                         </div>
                                     </td>
                                     <td className="px-8 py-6">

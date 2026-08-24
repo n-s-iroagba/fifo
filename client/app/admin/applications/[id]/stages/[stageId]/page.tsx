@@ -47,7 +47,7 @@ export default function ApplicationStageDetailPage() {
                             <div className="bg-blue-50 p-8 rounded-2xl border border-blue-100 space-y-6">
                                 <div>
                                     <label className="text-[10px] font-bold text-blue-400 uppercase tracking-widest block mb-2 px-1">Stage Name</label>
-                                    <h3 className="text-2xl font-bold text-blue-900 px-1 uppercase tracking-tight">{stage.PrefillStage?.name || 'Unnamed Stage'}</h3>
+                                    <h3 className="text-2xl font-bold text-blue-900 px-1 uppercase tracking-tight">{stage.name || 'Unnamed Stage'}</h3>
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-bold text-blue-400 uppercase tracking-widest block mb-2 px-1">Stage Status</label>

@@ -32,20 +32,16 @@ export default function EditApplicationStagePage() {
     );
 
     const [form, setForm] = useState({
-        prefillStageId: 1,
+        name: '',
         status: 'pending'
     });
 
-    const { data: prefillStagesResponse } = useApiQuery<any>(
-        ['admin', 'prefill-stages'],
-        '/admin/prefill-stages'
-    );
-    const prefillStages = (prefillStagesResponse?.data || []).filter((s: any) => s.type === 'admin_display' || s.type === 'applicant_display');
+
 
     useEffect(() => {
         if (stage) {
             setForm({
-                prefillStageId: stage.prefillStageId || '',
+                name: stage.name || '',
                 status: stage.status || 'pending'
             });
         }
@@ -89,18 +85,15 @@ export default function EditApplicationStagePage() {
                         <div className="space-y-6">
                             <div className="space-y-2">
                                 <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1">Stage Name</label>
-                                <select
-                                    name="prefillStageId"
+                                <input
+                                    name="name"
+                                    type="text"
                                     required
-                                    value={form.prefillStageId}
+                                    value={form.name}
                                     onChange={handleChange}
                                     className="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium focus:bg-white focus:ring-2 focus:ring-blue-900/5 focus:border-blue-900 transition-all outline-none"
-                                >
-                                    <option value="" disabled>Select Stage Template...</option>
-                                    {prefillStages.map((ps: any) => (
-                                        <option key={ps.id} value={ps.id}>{ps.name}</option>
-                                    ))}
-                                </select>
+                                    placeholder="Enter Stage Name"
+                                />
                             </div>
 
                             <div className="space-y-2">

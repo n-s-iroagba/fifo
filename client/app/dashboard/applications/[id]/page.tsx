@@ -66,7 +66,7 @@ export default function ApplicationDetailPage() {
     const stages = app?.JobStages?.sort((a: any, b: any) => a.id - b.id) || [];
     const currentStageIndex = stages.findIndex((s: any) => s.id === app.currentStageId);
     const currentStage = (currentStageIndex >= 0 ? stages[currentStageIndex] : stages[0]) || {
-        PrefillStage: { name: 'Initial Review' },
+        name: 'Initial Review',
         status: 'pending'
     };
     const currentPayment = app.Payments?.find(p => p.stageId === app.currentStageId);
@@ -133,7 +133,7 @@ export default function ApplicationDetailPage() {
                     {currentStage && (
                         <div className="px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] bg-blue-50 text-blue-900 border-2 border-blue-200 shadow-sm flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
-                            Current Stage: {currentStage.PrefillStage?.name}
+                            Current Stage: {currentStage.name || 'Unnamed Stage'}
                         </div>
                     )}
                     <div className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border-2 ${app.status === 'ACTIVE' || app.status === 'Active' ? 'bg-blue-900 text-white border-blue-900 shadow-xl shadow-blue-900/10' : 'bg-white text-blue-400 border-blue-50'}`}>
@@ -153,7 +153,7 @@ export default function ApplicationDetailPage() {
                                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
                                 <span className="text-[10px] font-black text-blue-200 uppercase tracking-[0.3em]">Active Recruitment Stage</span>
                             </div>
-                            <h2 className="text-2xl font-bold tracking-tight uppercase text-white">{currentStage?.PrefillStage?.name || 'Application Under Review'}</h2>
+                            <h2 className="text-2xl font-bold tracking-tight uppercase text-white">{currentStage?.name || 'Application Under Review'}</h2>
                         </div>
                     </section>
                     {/* Job Details & Specifications */}
@@ -420,7 +420,7 @@ export default function ApplicationDetailPage() {
                                                         {isCompleted ? 'Completed' : isActive ? (isPendingVerification ? 'Reviewing' : 'Current Stage') : 'Pending'}
                                                     </span>
                                                 </div>
-                                                <h4 className="font-bold text-blue-900 uppercase tracking-tight text-lg mb-2">{stage.PrefillStage?.name || 'Unnamed Stage'}</h4>
+                                                <h4 className="font-bold text-blue-900 uppercase tracking-tight text-lg mb-2">{stage.name || 'Unnamed Stage'}</h4>
                                             </div>
                                             <div className="flex flex-col items-end md:min-w-[150px] pt-6 md:pt-0 border-t md:border-t-0 border-blue-50">
                                                 <span className="text-[9px] font-black text-blue-300 uppercase tracking-widest mb-2">Status</span>

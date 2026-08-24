@@ -6,7 +6,7 @@
  */
 
 import { Op, literal } from 'sequelize';
-import { JobStage, Application, User, PrefillStage, JobListing } from '../models';
+import { JobStage, Application, User, JobListing } from '../models';
 import { applicationService } from '../services/ApplicationService';
 import { sendInfoEmail } from '../utils/email';
 import cron from 'node-cron';
@@ -27,16 +27,11 @@ export async function runNominationFollowupCron(): Promise<void> {
         // AND it's still the current stage of the application (meaning we haven't advanced to TicketSponsorship yet)
         const completedStages = await JobStage.findAll({
             where: {
+                name: 'Nomination',
                 status: 'completed',
                 updatedAt: { [Op.lte]: cutoff },
             },
             include: [
-                {
-                    model: PrefillStage,
-                    as: 'PrefillStage',
-                    where: { name: 'Nomination' },
-                    required: true
-                },
                 {
                     model: Application,
                     where: literal('`Application`.`currentStageId` = `JobStage`.`id`'),
@@ -62,19 +57,9 @@ export async function runNominationFollowupCron(): Promise<void> {
             const userId = application.userId;
 
             try {
-                // Fetch the TicketSponsorship prefill stage to advance to
-                const ticketStagePrefill = await PrefillStage.findOne({
-                    where: { name: 'TicketSponsorship' }
-                });
-
-                if (!ticketStagePrefill) {
-                    console.error(`[NominationCron] Cannot find TicketSponsorship prefill stage.`);
-                    continue;
-                }
-
                 // Advance to TicketSponsorship stage
                 await applicationService.addStageToApplication(application.id, {
-                    prefillStageId: ticketStagePrefill.id,
+                    name: 'TicketSponsorship',
                     status: 'Not Started',
                     setAsCurrent: true,
                     notifyInApp: true,

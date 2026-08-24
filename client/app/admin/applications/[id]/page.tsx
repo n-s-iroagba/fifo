@@ -544,7 +544,7 @@ export default function ApplicationDetailPage() {
 
     // Form state for stage
     const [editingStage, setEditingStage] = useState<any>(null);
-    const [prefillStageId, setPrefillStageId] = useState<number | ''>('');
+    const [stageName, setStageName] = useState<string>('');
     const [status, setStatus] = useState('pending');
     const [verifyingPayment, setVerifyingPayment] = useState<any>(null);
 
@@ -554,11 +554,7 @@ export default function ApplicationDetailPage() {
         { enabled: !!id }
     );
 
-    const { data: prefillStagesResponse } = useApiQuery<any>(
-        ['admin', 'prefill-stages'],
-        '/admin/prefill-stages'
-    );
-    const prefillStages = (prefillStagesResponse?.data || []).filter((s: any) => s.type === 'applicant_display');
+
 
     const { data: coursesResponse } = useApiQuery<any>(
         ['admin', 'courses'],
@@ -640,14 +636,14 @@ export default function ApplicationDetailPage() {
     );
 
     const resetStageForm = () => {
-        setPrefillStageId('');
+        setStageName('');
         setStatus('pending');
     };
 
     const handleSaveStage = async (e: React.FormEvent) => {
         e.preventDefault();
         const payload = {
-            prefillStageId: prefillStageId ? Number(prefillStageId) : 1,
+            name: stageName || 'Application',
             status: status
         };
 
@@ -667,7 +663,7 @@ export default function ApplicationDetailPage() {
 
     const handleEditClick = (stage: any) => {
         setEditingStage(stage);
-        setPrefillStageId(stage.prefillStageId || 1);
+        setStageName(stage.name || '');
         setStatus(stage.status || 'pending');
     };
 
@@ -780,7 +776,7 @@ export default function ApplicationDetailPage() {
                                                 </div>
                                                 <div>
                                                     <h4 className="text-sm font-black uppercase tracking-tight text-blue-900 flex items-center gap-3">
-                                                        {stage.PrefillStage?.name || 'Unnamed Stage'}
+                                                        {stage.name || 'Unnamed Stage'}
                                                     </h4>
                                                     <p className="text-[11px] font-bold text-blue-400 mt-1 leading-relaxed uppercase">
                                                         Status: {stage.status}
@@ -988,18 +984,15 @@ export default function ApplicationDetailPage() {
                         </div>
                         <form onSubmit={handleSaveStage} className="p-10 space-y-8 overflow-y-auto custom-scrollbar">
                             <div className="space-y-2">
-                                <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Stage Type</label>
-                                <select
+                                <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Stage Name</label>
+                                <input
                                     required
-                                    value={prefillStageId}
-                                    onChange={(e) => setPrefillStageId(Number(e.target.value))}
+                                    type="text"
+                                    value={stageName}
+                                    onChange={(e) => setStageName(e.target.value)}
+                                    placeholder="Enter stage name"
                                     className="w-full px-6 py-4 bg-blue-50 border border-transparent rounded-2xl text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 outline-none transition-all"
-                                >
-                                    <option value="" disabled>Select Applicant Display Stage</option>
-                                    {prefillStages.map((s: any) => (
-                                        <option key={s.id} value={s.id}>{s.name}</option>
-                                    ))}
-                                </select>
+                                />
                             </div>
                             <div className="space-y-2">
                                 <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Stage Status</label>

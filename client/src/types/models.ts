@@ -84,8 +84,7 @@ export interface JobStage {
     name: string;
     status: 'pending' | 'completed' | 'failed' | 'approved' | 'rejected';
     isCurrent: boolean;
-    prefillStageId?: number;
-    PrefillStage?: any;
+
     createdAt: string;
     updatedAt: string;
 }

@@ -38,7 +38,7 @@ export class ApplicationService {
                     isCompleted: currentStage?.status === 'completed',
                     amount: 0,
                     currency: 'USD',
-                    stageName: currentStage?.PrefillStage?.name || 'Unnamed Stage',
+                    stageName: currentStage?.name || 'Unnamed Stage',
                     stageDescription: null,
                     paymentStatus: 'Unpaid',
                     stageStatus: currentStage?.status,
@@ -116,19 +116,10 @@ export class ApplicationService {
                 currentStageId: null
             }, t);
 
-            const { PrefillStage } = require('../models');
-            const firstApplicantStage = await PrefillStage.findOne({
-                where: { type: 'applicant_display' },
-                order: [['orderIndex', 'ASC']],
-                transaction: t
-            });
-
-            const initialStageId = firstApplicantStage ? firstApplicantStage.id : 1;
-            
             // ── Stage: Application submitted → under-review (spec step 4) ──
             const initialStage = await jobStageRepository.create({
                 applicationId: newApp.id,
-                prefillStageId: initialStageId,
+                name: 'Application',
                 status: 'under-review'
             }, t);
 
@@ -300,7 +291,7 @@ export class ApplicationService {
                     await notificationRepository.create({
                         userId: app.userId,
                         subject: 'Application Advanced',
-                        message: `Your application has moved to the next phase: "${nextStage.PrefillStage?.name || 'Unnamed Phase'}".`,
+                        message: `Your application has moved to the next phase: "${nextStage.name || 'Unnamed Phase'}".`,
                         type: 'SYSTEM',
                     }, t);
                 }
@@ -339,7 +330,7 @@ export class ApplicationService {
 
 
                 const nSubject = 'Process Activation';
-                const nMessage = `A new phase has been activated for your application: "${newStage.PrefillStage?.name || 'Unnamed Phase'}".`;
+                const nMessage = `A new phase has been activated for your application: "${newStage.name || 'Unnamed Phase'}".`;
 
                 if (notifyInApp) {
                     await notificationRepository.create({
@@ -397,8 +388,8 @@ export class ApplicationService {
 
         const nSubject = setAsCurrent ? 'Process Activation' : 'Phase Update';
         const nMessage = setAsCurrent
-            ? `A phase has been activated for your application: "${updatedStage?.PrefillStage?.name || 'Unnamed Phase'}".`
-            : `Details for your current phase "${updatedStage?.PrefillStage?.name || 'Unnamed Phase'}" have been updated by administration.`;
+            ? `A phase has been activated for your application: "${updatedStage?.name || 'Unnamed Phase'}".`
+            : `Details for your current phase "${updatedStage?.name || 'Unnamed Phase'}" have been updated by administration.`;
 
         if (notifyInApp) {
             await notificationRepository.create({
@@ -454,7 +445,7 @@ export class ApplicationService {
             await notificationRepository.create({
                 userId: app.userId,
                 subject: 'Phase Completed',
-                message: `Congratulations, your application phase "${stage.PrefillStage?.name || 'Unnamed Phase'}" has been marked as complete.`,
+                message: `Congratulations, your application phase "${stage.name || 'Unnamed Phase'}" has been marked as complete.`,
                 type: 'SYSTEM'
             });
         }

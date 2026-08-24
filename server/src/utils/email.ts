@@ -217,82 +217,9 @@ export const sendEmailFrom = async (fromType: 'auth' | 'info' | 'aveling', to: s
     }
 };
 
-// Apex Invitation Template
-export const sendApexInvitationEmail = async (to: string, userName: string): Promise<void> => {
-    const subject = 'Invitation to the BlueCollar Apex Network';
-    const content = `
-        <p>Dear ${userName},</p>
-        <p>Based on our initial audit of your professional node and market impact, you have been shortlisted for the <strong>BlueCollar Apex Network</strong>.</p>
-        <p>Apex is not a job board; it is a high-stakes professional ecosystem restricted to the top 1% of vetted talent. Membership grants you immediate access to:</p>
-        <ul style="margin-bottom: 30px;">
-            <li><strong>High Priority Placement:</strong> Guaranteed placement within 3 weeks for Apex-exclusive roles commanding higher pay.</li>
-            <li><strong>Asymmetric Market Intelligence:</strong> Access to the "Black Box" Dashboard—see the true budget ceiling, team turnover rates, and time-to-hire metrics.</li>
-            <li><strong>Shadow Roles:</strong> Access to unlisted, confidential executive and high-level tech positions.</li>
-            <li><strong>The Power-Flipped Pipeline:</strong> You don't apply. Vetted employers pitch to you using credits.</li>
-            <li><strong>Bypass HR:</strong> Direct introductions to CTOs, VPs of Engineering, and Founders.</li>
-            <li><strong>High-Stakes Deal Structuring:</strong> Expert support for equity, performance bonuses, and fractional role negotiations with integrated escrow protection.</li>
-        </ul>
-        <p>Activation of your Apex status requires a one-time vetting and infrastructure fee of <strong>$503</strong>.</p>
-        <div class="cta-block">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/apex/activate" class="button">Accept Invitation & Activate</a>
-        </div>
-        <p style="margin-top: 30px; font-size: 13px; color: #64748b;">Do not share this invitation. Membership is non-transferable and subject to continuous performance auditing.</p>
-    `;
-    await sendAuthEmail(to, subject, content);
-};
 
-// Expression of Interest Template (Scouting)
-export const sendEOIEmail = async (to: string): Promise<void> => {
-    const subject = 'Expression of Interest: Help Us Scout Your Next Role';
-    const content = `
-        <p>Thank you for choosing BlueCollar to manage your professional trajectory.</p>
-        <p>This is <strong>not</strong> an invitation to the Apex Network. Instead, we want to understand your specific interests, target roles, and core competencies so our recruitment team can actively scout the market for you.</p>
-        <p>By filling out this form, you help us filter our unlisted registry for roles that match your exact aspirations.</p>
-        <div class="cta-block">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/expression-of-interest" class="button">Define My Interests</a>
-        </div>
-        <p style="margin-top: 20px;">Once your interests are defined, our automated system will alert you as soon as a matching role enters our pipeline.</p>
-    `;
-    await sendAuthEmail(to, subject, content);
-};
 
-// Welcome Email Template (Post-Verification)
-export const sendWelcomeEmail = async (to: string, userName: string): Promise<void> => {
-    const subject = 'Welcome to BlueCollar: Next Steps for Your Profile';
-    const content = `
-        <p>Dear ${userName},</p>
-        <p>Welcome to the BlueCollar recruitment ecosystem. Your account has been successfully verified.</p>
-        <p><strong>Blue Collar Recruitment specializes in hiring and sponsoring foreign applicants to work FIFO in Australia.</strong></p>
-        <p>To ensure you are matched with the most relevant high-impact roles, please complete the following steps:</p>
-        <ol>
-            <li><strong>Complete your Biodata:</strong> Log in and fill all fields in your profile dashboard.</li>
-            <li><strong>Upload your CV:</strong> Use the attached template to structure your resume for our automated screening system.</li>
-        </ol>
-        <div class="cta-block">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard" class="button">Go to Dashboard</a>
-        </div>
-        <p style="margin-top: 20px; color: #0b3486; font-weight: 800;">IMPORTANT: Please check your inbox for a separate "Expression of Interest" email. Filling that form allows our team to scout for roles that specifically match your career goals.</p>
-        <p style="margin-top: 10px; color: #dc2626; font-weight: 700; font-size: 13px;">NOTE: If you do not see the EOI mail, please check your "Spam" folder and mark our address as "Not Spam" to ensure you receive future scouting alerts.</p>
-        <p style="margin-top: 10px;">Accuracy in your biodata and CV structure significantly increases your visibility to top-tier employers.</p>
-    `;
 
-    const fs = require('fs');
-    // Now that we've copied the template into the server directory for deployment
-    const templatePath = path.resolve(process.cwd(), 'Universal Applicant CV Template.docx');
-
-    const attachments = [];
-    if (fs.existsSync(templatePath)) {
-        attachments.push({
-            filename: 'Universal Applicant CV Template.docx',
-            path: templatePath
-        });
-        console.log(`[EmailUtil] Attaching CV Template from: ${templatePath}`);
-    } else {
-        console.warn(`[EmailUtil] CV Template not found at expected location: ${templatePath}. Sending welcome mail without attachment.`);
-    }
-
-    await sendAuthEmail(to, subject, content, attachments);
-};
 
 // Backward compatibility or generic usage
 export const sendEmail = sendInfoEmail;

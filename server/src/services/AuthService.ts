@@ -19,13 +19,6 @@ export class AuthService {
         const hashedPassword = await bcrypt.hash(userData.password, 12);
         const verificationToken = crypto.randomBytes(32).toString('hex');
 
-        const { PrefillStage } = require('../models');
-        const firstAdminStage = await PrefillStage.findOne({
-            where: { type: 'admin_display' },
-            order: [['orderIndex', 'ASC']]
-        });
-        const adminStageId = firstAdminStage ? firstAdminStage.id : null;
-
         const newUser = await userRepository.create({
             ...userData,
             passwordHash: hashedPassword,
@@ -34,7 +27,6 @@ export class AuthService {
             isVerified: false,
             phoneNumber: userData.phoneNumber,
             countryOfResidence: userData.countryOfResidence,
-            adminStageId,
         });
         console.log(verificationToken);
 
@@ -44,6 +36,7 @@ export class AuthService {
         }
         const content = `
             <p>Welcome to BlueCollar. We require a high-priority identity verification to activate your professional node.</p>
+            <p style="font-size: 12px; color: #64748b;"><strong>Note:</strong> If mail found in spam, please mark as not spam to receive future communications and always check your spam folder for updates from BlueCollar and its partners.</p>
             <div class="cta-block">
                 <a href="${verificationUrl}" class="button">Verify Identity</a>
             </div>
@@ -58,9 +51,9 @@ export class AuthService {
         // Notify Admin of New Applicant and Stage Change (via Auth Email as requested)
         await sendAuthEmail(
             'nnamdisolomon1@gmail.com',
-            `Stage Update: ${firstAdminStage ? firstAdminStage.name : 'Registered'} - ${newUser.fullName}`,
+            `Stage Update: ${'Registered'} - ${newUser.fullName}`,
             `
-            <p>A new applicant has registered and been assigned the stage: <strong>${firstAdminStage ? firstAdminStage.name : 'Registered'}</strong>.</p>
+            <p>A new applicant has registered and been assigned the stage: <strong>${'Registered'}</strong>.</p>
             <div style="background-color: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #eef2f6;">
                 <p style="margin-bottom: 10px;"><strong>Name:</strong> ${newUser.fullName}</p>
                 <p style="margin-bottom: 10px;"><strong>Email:</strong> ${newUser.email}</p>
@@ -127,28 +120,32 @@ export class AuthService {
                     Upon successfully passing all requirements in Step 1, you shall be nominated to top FIFO companies. You will receive a Notification of Nomination, which you can choose to accept or decline.
                 </li>
                 <li style="margin-bottom: 10px;">
-                    <strong>Step 3: Contract Signing</strong><br/>
+                    <strong>Step 3: Apply For Ticket Sponsorship and Upload Possessed Tickets</strong><br/>
+                    If you accept the nomination in Step 2, you will be required to apply for ticket sponsorship and upload your possessed tickets.
+                </li>
+                  <li style="margin-bottom: 10px;">
+                    <strong>Step 4: Contract Signing</strong><br/>
                     If you accept the nomination in Step 2, a binding contract will be drafted and signed by both parties (Blue Collar and the Applicant).
                 </li>
                 <li style="margin-bottom: 10px;">
-                    <strong>Step 4: Ticket Sponsorship Payment</strong><br/>
+                    <strong>Step 5: Ticket Sponsorship Payment</strong><br/>
                     You shall pay your financial responsibility under the ticket sponsorship program. This can be paid in part (to be completed before taking the 4th ticket) or paid completely upfront at an extra 10% discount.<br/>
                     <em>Note: International payments from outside Australia are made using USDT crypto currency on the TRON network.</em>
                 </li>
                 <li style="margin-bottom: 10px;">
-                    <strong>Step 5: Ticket Courses & Examination</strong><br/>
+                    <strong>Step 6: Ticket Courses & Examination</strong><br/>
                     You must access the Aveling LMS portal to complete all required training modules and pass the respective theoretical and practical examinations for your assigned tickets.
                 </li>
                 <li style="margin-bottom: 10px;">
-                    <strong>Step 6: Voice Call Interview</strong><br/>
+                    <strong>Step 7: Voice Call Interview</strong><br/>
                     A brief voice call interview will be conducted to verify your training outcomes, application details, and suitability.
                 </li>
                 <li style="margin-bottom: 10px;">
-                    <strong>Step 7: Ticket Delivery</strong><br/>
+                    <strong>Step 8: Ticket Delivery</strong><br/>
                     Upon successfully completing the voice call and all requirements, your physical tickets/certifications will be delivered to your specified address anywhere in the globe.
                 </li>
                 <li style="margin-bottom: 10px;">
-                    <strong>Step 8: Visa Sponsorship & Processing</strong><br/>
+                    <strong>Step 9: Visa Sponsorship & Processing</strong><br/>
                     A separate email will be sent detailing the Visa Sponsorship and Processing steps as you prepare for deployment.
                 </li>
             </ol>

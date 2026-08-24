@@ -7,11 +7,10 @@ import { JobStage } from '@/types/models';
 interface StageManagerProps {
     applicationId: number;
     initialStages?: JobStage[];
-    prefillStages: any[];
     onRefresh: () => void;
 }
 
-export function ApplicationStageManager({ applicationId, initialStages = [], prefillStages = [], onRefresh }: StageManagerProps) {
+export function ApplicationStageManager({ applicationId, initialStages = [], onRefresh }: StageManagerProps) {
     const [isEditing, setIsEditing] = useState<number | null>(null);
     const [isAdding, setIsAdding] = useState(false);
     const [formData, setFormData] = useState<any>({});
@@ -85,16 +84,13 @@ export function ApplicationStageManager({ applicationId, initialStages = [], pre
                             <div className="col-span-2">
                                 <div className="space-y-1">
                                     <label className="text-[8px] font-black uppercase tracking-widest text-blue-400">Stage Name</label>
-                                    <select
-                                        value={formData.prefillStageId || ''}
-                                        onChange={(e) => setFormData({ ...formData, prefillStageId: parseInt(e.target.value) || '' })}
+                                    <input
+                                        type="text"
+                                        value={formData.name || ''}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        placeholder="e.g. Nomination"
                                         className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-xs font-bold text-blue-900 focus:outline-none focus:border-blue-900 transition-colors"
-                                    >
-                                        <option value="" disabled>Select Stage Template...</option>
-                                        {prefillStages.map((ps: any) => (
-                                            <option key={ps.id} value={ps.id}>{ps.name}</option>
-                                        ))}
-                                    </select>
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -126,16 +122,12 @@ export function ApplicationStageManager({ applicationId, initialStages = [], pre
                                     <div className="col-span-2">
                                         <div className="space-y-1">
                                             <label className="text-[8px] font-black uppercase tracking-widest text-blue-400">Stage Name</label>
-                                            <select
-                                                value={formData.prefillStageId || stage.prefillStageId || ''}
-                                                onChange={(e) => setFormData({ ...formData, prefillStageId: parseInt(e.target.value) || '' })}
+                                            <input
+                                                type="text"
+                                                value={formData.name || stage.name || ''}
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                                 className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-xs font-bold text-blue-900 focus:outline-none focus:border-blue-900 transition-colors"
-                                            >
-                                                <option value="" disabled>Select Stage Template...</option>
-                                                {prefillStages.map((ps: any) => (
-                                                    <option key={ps.id} value={ps.id}>{ps.name}</option>
-                                                ))}
-                                            </select>
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -149,7 +141,7 @@ export function ApplicationStageManager({ applicationId, initialStages = [], pre
                                 <div>
                                     <div className="flex items-center gap-3 mb-1">
                                         <span className="w-5 h-5 bg-blue-50 text-blue-900 rounded-md flex items-center justify-center text-[10px] font-black italic">{idx + 1}</span>
-                                        <h4 className="text-xs font-black uppercase tracking-tight text-blue-900">{stage.PrefillStage?.name || 'Unnamed Stage'}</h4>
+                                        <h4 className="text-xs font-black uppercase tracking-tight text-blue-900">{stage.name || 'Unnamed Stage'}</h4>
                                         <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[8px] font-black uppercase tracking-widest border border-blue-100">
                                             Status: {stage.status}
                                         </span>

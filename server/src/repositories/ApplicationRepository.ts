@@ -1,5 +1,5 @@
 import { Transaction } from 'sequelize';
-import { Application, JobListing, JobStage, User, Ticket, PrefillStage } from '../models';
+import { Application, JobListing, JobStage, User, Ticket } from '../models';
 
 export interface FindApplicationOptions {
     limit?: number;
@@ -19,8 +19,7 @@ export class ApplicationRepository {
                 { model: JobListing },
                 { 
                     model: JobStage, 
-                    as: 'JobStages',
-                    include: [{ model: PrefillStage, as: 'PrefillStage' }]
+                    as: 'JobStages'
                 }
             ],
             order: [['updatedAt', 'DESC']],
@@ -47,7 +46,7 @@ export class ApplicationRepository {
             if (!app.JobStages || app.JobStages.length === 0) {
                 const defaultStage = await JobStage.create({
                     applicationId: app.id,
-                    prefillStageId: 1,
+                    name: 'Application',
                     status: 'not started'
                 }, { transaction });
 
@@ -80,8 +79,7 @@ export class ApplicationRepository {
                 { model: JobListing },
                 { 
                     model: JobStage, 
-                    as: 'JobStages',
-                    include: [{ model: PrefillStage, as: 'PrefillStage' }]
+                    as: 'JobStages'
                 }
             ],
             order: [['createdAt', 'DESC']],
@@ -105,7 +103,7 @@ export class ApplicationRepository {
             if (!app.JobStages || app.JobStages.length === 0) {
                 const defaultStage = await JobStage.create({
                     applicationId: app.id,
-                    prefillStageId: 1,
+                    name: 'Application',
                     status: 'not started'
                 }, { transaction });
 
@@ -132,8 +130,7 @@ export class ApplicationRepository {
                 { model: Ticket, as: 'Tickets' },
                 { 
                     model: JobStage, 
-                    as: 'JobStages',
-                    include: [{ model: PrefillStage, as: 'PrefillStage' }]
+                    as: 'JobStages'
                 }
             ],
             transaction
@@ -160,7 +157,7 @@ export class ApplicationRepository {
             if (!app.JobStages || app.JobStages.length === 0) {
                 const defaultStage = await JobStage.create({
                     applicationId: app.id,
-                    prefillStageId: 1,
+                    name: 'Application',
                     status: 'not started'
                 }, { transaction });
 

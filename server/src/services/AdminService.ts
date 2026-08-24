@@ -3,7 +3,7 @@ import { bankAccountRepository } from '../repositories/BankAccountRepository';
 import { jobCategoryRepository, FindCategoryOptions } from '../repositories/JobCategoryRepository';
 import { userRepository } from '../repositories/UserRepository';
 import { notificationRepository } from '../repositories/NotificationRepository';
-import { sendInfoEmail, sendEmailFrom, sendWelcomeEmail, sendEOIEmail } from '../utils/email';
+import { sendInfoEmail, sendEmailFrom, sendWelcomeApplicationFoundEmail, sendEOIReceivedEmail } from '../utils/email';
 import { sequelize } from '../config/database';
 import { CONSTANTS } from '../constants';
 import { LmsCredential } from '../models/LmsCredential';
@@ -185,7 +185,7 @@ export class AdminService {
         const user = await userRepository.findById(userId);
         if (!user) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
         
-        await sendWelcomeEmail(user.email, user.fullName);
+        await sendWelcomeApplicationFoundEmail(user.email, user.fullName);
         return { success: true };
     }
 
@@ -193,7 +193,7 @@ export class AdminService {
         const user = await userRepository.findById(userId);
         if (!user) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
         
-        await sendEOIEmail(user.email);
+        await sendEOIReceivedEmail(user.email, user.fullName);
         return { success: true };
     }
     public async updateApplicantWallet(id: number, walletBalance: number) {

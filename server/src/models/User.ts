@@ -34,7 +34,7 @@ export class User extends Model {
     declare accountName: string | null;
     declare avelingUsername: string | null;
     declare avelingPassword: string | null;
-    declare adminStageId: number | null;
+
 
     declare psychometricModule1Passed: boolean;
     declare psychometricModule2Passed: boolean;
@@ -176,10 +176,7 @@ User.init({
         type: DataTypes.STRING,
         allowNull: true,
     },
-    adminStageId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-    },
+
     // Payment milestone gate (A$500 deposit → tickets 1-3; full balance → ticket 4+)
     depositPaid: {
         type: DataTypes.BOOLEAN,

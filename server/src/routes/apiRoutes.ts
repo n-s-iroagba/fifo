@@ -18,11 +18,8 @@ import { examController } from '../controllers/ExamController';
 import { examAttemptController } from '../controllers/ExamAttemptController';
 import { certificateController } from '../controllers/CertificateController';
 import { ticketController } from '../controllers/TicketController';
-import { PrefillStageController } from '../controllers/PrefillStageController';
-import { psychometricController } from '../controllers/PsychometricController';
 // Removed requirePsychometricClear import
-
-const prefillStageController = new PrefillStageController();
+import { psychometricController } from '../controllers/PsychometricController';
 
 
 const upload = multer({ 
@@ -188,7 +185,7 @@ router.post('/admin/users/:id/welcome-mail', ...adminMW, adminController.sendWel
 router.post('/admin/users/:id/eoi-mail', ...adminMW, adminController.sendEOIMail.bind(adminController));
 router.put('/admin/users/:id/wallet', ...adminMW, adminController.updateApplicantWallet.bind(adminController));
 router.put('/admin/users/:id/aveling-credentials', ...adminMW, adminController.updateAvelingCredentials.bind(adminController));
-router.put('/admin/users/:id/admin-stage', ...adminMW, adminController.updateApplicantAdminStage.bind(adminController));
+
 router.put('/admin/users/:id/subsidy-percentage', ...adminMW, adminController.updateApplicantSubsidy.bind(adminController));
 router.put('/admin/applicants/:id/aveling-credentials', ...adminMW, adminController.updateAvelingCredentials.bind(adminController));
 
@@ -235,12 +232,7 @@ router.get('/admin/invoices', ...adminMW, adminController.getAllInvoices.bind(ad
 router.post('/admin/invoices/:id/receipt', ...adminMW, adminController.generateInvoiceReceipt.bind(adminController));
 
 
-// Prefill Stages
-router.get('/admin/prefill-stages', ...adminMW, prefillStageController.getPrefillStages.bind(prefillStageController));
-router.post('/admin/prefill-stages', ...adminMW, prefillStageController.createPrefillStage.bind(prefillStageController));
-router.put('/admin/prefill-stages/:id', ...adminMW, prefillStageController.updatePrefillStage.bind(prefillStageController));
-router.delete('/admin/prefill-stages/:id', ...adminMW, prefillStageController.deletePrefillStage.bind(prefillStageController));
-router.post('/admin/prefill-stages/reorder', ...adminMW, prefillStageController.reorderPrefillStages.bind(prefillStageController));
+// Prefill Stages removed
 
 // Candidate receipt submission (public or candidate authenticated)
 router.post('/tickets/:id/submit-receipt', ticketController.submitReceipt.bind(ticketController));

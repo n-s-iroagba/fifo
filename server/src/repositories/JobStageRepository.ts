@@ -1,12 +1,11 @@
 import { Transaction } from 'sequelize';
-import { JobStage, PrefillStage } from '../models';
+import { JobStage } from '../models';
 
 export class JobStageRepository {
 
     public async findByApplicationId(applicationId: number, transaction?: Transaction): Promise<{ rows: JobStage[], count: number }> {
         return JobStage.findAndCountAll({
             where: { applicationId },
-            include: [{ model: PrefillStage, as: 'PrefillStage' }],
             order: [['createdAt', 'ASC']],
             transaction
         });
@@ -14,7 +13,6 @@ export class JobStageRepository {
 
     public async findById(id: number, transaction?: Transaction): Promise<JobStage | null> {
         return JobStage.findByPk(id, { 
-            include: [{ model: PrefillStage, as: 'PrefillStage' }],
             transaction 
         });
     }

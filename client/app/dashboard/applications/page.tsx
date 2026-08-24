@@ -11,7 +11,7 @@ interface Application {
     currentStageId?: number | null;
     updatedAt: string;
     JobListing: { title: string; visaSponsorship: boolean };
-    JobStages?: Array<{ id: number; name: string; PrefillStage?: { name: string } }>;
+    JobStages?: Array<{ id: number; name: string }>;
 }
 
 interface ApplicationsResponse {
@@ -92,7 +92,7 @@ export default function ApplicationsListPage() {
                                             {currentStage && (
                                                 <span className="bg-blue-50 text-blue-900 border border-blue-200 px-2.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
-                                                    Stage: {currentStage.PrefillStage?.name || 'Unnamed Stage'}
+                                                    Stage: {currentStage.name || 'Unnamed Stage'}
                                                 </span>
                                             )}
                                             <span className="text-blue-400 text-[9px] font-bold uppercase tracking-widest">• Updated {new Date(app.updatedAt).toLocaleDateString()}</span>
