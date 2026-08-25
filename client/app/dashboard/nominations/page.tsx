@@ -18,7 +18,7 @@ export default function NominationsPage() {
         { enabled: !!appId }
     );
 
-    const { mutateAsync: selectNomination, isPending: isSelecting } = useApiMutation<any, any>('put', `/applications/${appId}/nominations/:nominationId/select`);
+    const { mutateAsync: selectNomination } = useApiMutation<any, any>('put', `/applications/${appId}/nominations/:nominationId/select`);
     const { mutateAsync: uploadDocument, isPending: isUploading } = useApiMutation<any, any>('post', `/applications/documents`);
 
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
@@ -41,23 +41,6 @@ export default function NominationsPage() {
         });
     };
 
-    const handleSelectSubmit = async () => {
-        if (selectedIds.size === 0) {
-            setError('Please select at least one nomination before uploading.');
-            return;
-        }
-        try {
-            setError(null);
-            // Select each checked nomination
-            for (const nomId of Array.from(selectedIds)) {
-                await selectNomination({ params: { nominationId: nomId } });
-            }
-            await refetch();
-        } catch (err: any) {
-            setError(err.response?.data?.error || 'Failed to select nomination.');
-        }
-    };
-
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -73,6 +56,13 @@ export default function NominationsPage() {
 
             const uploadedUrl = await uploadFile(file, 'image');
 
+            // Select nominations if they haven't been finalized yet
+            if (!alreadyApproved && !underReview) {
+                for (const nomId of Array.from(selectedIds)) {
+                    await selectNomination({ params: { nominationId: nomId } });
+                }
+            }
+
             await uploadDocument({
                 data: {
                     documentUrl: uploadedUrl,
@@ -85,7 +75,7 @@ export default function NominationsPage() {
             setTimeout(() => setUploadSuccess(false), 6000);
             await refetch();
         } catch (err: any) {
-            setError(err.response?.data?.error || 'Failed to upload document.');
+            setError(err.response?.data?.error || 'Failed to complete nomination process.');
         }
     };
 
@@ -246,19 +236,6 @@ export default function NominationsPage() {
                             );
                         })}
                     </div>
-
-                    {/* Confirm Selection Button — only show if unchecked and not locked */}
-                    {!isLocked && selectedIds.size > 0 && !underReview && (
-                        <div className="flex justify-end">
-                            <button
-                                onClick={handleSelectSubmit}
-                                disabled={isSelecting}
-                                className="px-6 py-3 bg-blue-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-800 transition-all disabled:opacity-50"
-                            >
-                                {isSelecting ? 'Saving...' : `Confirm Selection (${selectedIds.size})`}
-                            </button>
-                        </div>
-                    )}
 
                     {/* Upload Section — shown after selection is confirmed or if under review/approved */}
                     {(selectedIds.size > 0 || isLocked || underReview) && (
