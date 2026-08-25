@@ -7,14 +7,14 @@ const email_1 = require("../utils/email");
 const NotificationRepository_1 = require("../repositories/NotificationRepository");
 const cronRegistry_1 = require("./cronRegistry");
 const CRON_NAME = 'ApplicationAutoAcceptance';
-const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
+const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 async function runApplicationApprovalCron() {
     try {
         console.log('[ApplicationCron] Running application auto-acceptance check...');
-        const cutoff = new Date(Date.now() - SIX_HOURS_MS);
+        const cutoff = new Date(Date.now() - THREE_HOURS_MS);
         // Find JobStage rows where:
         //   1. The stage is named 'Application'
-        //   2. The stage has been 'under-review' for more than 6 hours
+        //   2. The stage has been 'under-review' for more than 3 hours
         //   3. The owning Application still points to this stage as currentStageId
         //      (i.e. the application hasn't already been manually advanced)
         const pendingStages = await models_1.JobStage.findAll({
@@ -47,7 +47,6 @@ async function runApplicationApprovalCron() {
                 continue;
             const userId = application.userId;
             const jobTitle = application.JobListing?.title || 'your applied role';
-            const jobCompany = application.JobListing?.company || 'Blue Collar Recruitment';
             try {
                 // Mark stage as accepted (lowercase, consistent with 'under-review' convention)
                 await stage.update({ status: 'accepted' });
