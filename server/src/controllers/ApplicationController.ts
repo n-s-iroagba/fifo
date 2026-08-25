@@ -265,7 +265,8 @@ export class ApplicationController {
                         <p>You may also download, sign, and upload the signed document through your dashboard nominations page.</p>
                         <p>Yours sincerely,<br>Troy Latuff<br>Chief Executive Officer<br>Blue Collar Recruitment Pty Ltd</p>
                     `;
-                    await sendInfoEmail(candidateEmail, subject, content, documentUrl);
+                    const attachments = [{ filename: 'Nomination_Form.pdf', path: documentUrl }];
+                    await sendInfoEmail(candidateEmail, subject, content, attachments);
                 } catch (mailErr) {
                     console.error('[ApplicationController.createNominations] email failed:', mailErr);
                 }
