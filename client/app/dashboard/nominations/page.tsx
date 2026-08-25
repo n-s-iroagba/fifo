@@ -18,10 +18,10 @@ export default function NominationsPage() {
         { enabled: !!appId }
     );
 
-    const { mutateAsync: selectNomination } = useApiMutation<any, any>('put', `/applications/${appId}/nominations/:nominationId/select`);
     const { mutateAsync: uploadDocument, isPending: isUploading } = useApiMutation<any, any>('post', `/applications/documents`);
 
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [uploadSuccess, setUploadSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -41,12 +41,22 @@ export default function NominationsPage() {
         });
     };
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+        if (file) {
+            setSelectedFile(file);
+            setError(null);
+        }
+    };
 
+    const handleSubmitNomination = async () => {
         if (selectedIds.size === 0 && !alreadyApproved && !underReview) {
             setError('Please check your selected nomination(s) before uploading the signed document.');
+            return;
+        }
+
+        if (!selectedFile) {
+            setError('Please select a signed document to upload.');
             return;
         }
 
@@ -54,24 +64,19 @@ export default function NominationsPage() {
             setError(null);
             setUploadSuccess(false);
 
-            const uploadedUrl = await uploadFile(file, 'image');
-
-            // Select nominations if they haven't been finalized yet
-            if (!alreadyApproved && !underReview) {
-                for (const nomId of Array.from(selectedIds)) {
-                    await selectNomination({ params: { nominationId: nomId } });
-                }
-            }
+            const uploadedUrl = await uploadFile(selectedFile, 'image');
 
             await uploadDocument({
                 data: {
                     documentUrl: uploadedUrl,
                     documentType: 'Nomination Form',
-                    applicationId: appId
+                    applicationId: appId,
+                    nominationIds: (!alreadyApproved && !underReview) ? Array.from(selectedIds) : []
                 }
             });
 
             setUploadSuccess(true);
+            setSelectedFile(null);
             setTimeout(() => setUploadSuccess(false), 6000);
             await refetch();
         } catch (err: any) {
@@ -273,20 +278,36 @@ export default function NominationsPage() {
 
                             {/* Upload drop zone — hide if locked/approved */}
                             {!isLocked && (
-                                <label className={`block relative border-2 border-dashed border-blue-200 rounded-xl p-8 text-center transition-all ${isUploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-50 cursor-pointer'}`}>
-                                    <input
-                                        type="file"
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        accept=".pdf,.jpg,.jpeg,.png"
-                                        onChange={handleFileUpload}
-                                        disabled={isUploading}
-                                    />
-                                    <span className="material-symbols-outlined text-blue-300 text-3xl mb-2">upload_file</span>
-                                    <p className="text-xs font-bold text-blue-900 uppercase tracking-widest">
-                                        {isUploading ? 'Uploading...' : 'Click to Upload Signed Document'}
-                                    </p>
-                                    <p className="text-[10px] text-blue-400 mt-1">PDF, JPG, or PNG accepted</p>
-                                </label>
+                                <div className="space-y-4">
+                                    <label className={`block relative border-2 border-dashed border-blue-200 rounded-xl p-8 text-center transition-all ${isUploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-50 cursor-pointer'}`}>
+                                        <input
+                                            type="file"
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                            accept=".pdf,.jpg,.jpeg,.png"
+                                            onChange={handleFileChange}
+                                            disabled={isUploading}
+                                        />
+                                        <span className="material-symbols-outlined text-blue-300 text-3xl mb-2">
+                                            {selectedFile ? 'draft' : 'upload_file'}
+                                        </span>
+                                        <p className="text-xs font-bold text-blue-900 uppercase tracking-widest">
+                                            {selectedFile ? selectedFile.name : 'Click to Select Signed Document'}
+                                        </p>
+                                        {!selectedFile && (
+                                            <p className="text-[10px] text-blue-400 mt-1">PDF, JPG, or PNG accepted</p>
+                                        )}
+                                    </label>
+                                    
+                                    <div className="flex justify-end">
+                                        <button
+                                            onClick={handleSubmitNomination}
+                                            disabled={isUploading || !selectedFile || selectedIds.size === 0}
+                                            className="px-6 py-3 bg-blue-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-800 transition-all disabled:opacity-50"
+                                        >
+                                            {isUploading ? 'Submitting...' : 'Submit Nomination'}
+                                        </button>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     )}

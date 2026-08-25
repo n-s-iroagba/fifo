@@ -27,7 +27,7 @@ export async function runNominationFollowupCron(): Promise<void> {
         const completedStages = await JobStage.findAll({
             where: {
                 name: 'Nomination',
-                status: 'completed',
+                status: 'under-review',
                 updatedAt: { [Op.lte]: cutoff },
             },
             include: [
@@ -43,6 +43,7 @@ export async function runNominationFollowupCron(): Promise<void> {
                             required: false
                         }
                     ]
+
                 }
             ]
         });

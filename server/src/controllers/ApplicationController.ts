@@ -290,26 +290,20 @@ export class ApplicationController {
         }
     }
 
-    public async selectNomination(req: Request, res: Response): Promise<void> {
-        try {
-            const id = parseInt(req.params.id as string, 10);
-            const nominationId = parseInt(req.params.nominationId as string, 10);
-            const nominations = await applicationService.selectNomination(id, nominationId);
-            res.status(CONSTANTS.HTTP_STATUS.OK).json(nominations);
-        } catch (error: any) {
-            console.error('[ApplicationController.selectNomination]', error);
-            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
-
     public async uploadNominationDocument(req: Request, res: Response): Promise<void> {
         try {
             const userId = (req as any).user.id;
-            const { documentUrl, documentType, applicationId } = req.body;
+            const { documentUrl, applicationId, nominationIds } = req.body;
 
             if (!documentUrl || !applicationId) {
                 res.status(400).json({ error: 'documentUrl and applicationId are required' });
                 return;
+            }
+
+            if (nominationIds && Array.isArray(nominationIds)) {
+                for (const nomId of nominationIds) {
+                    await applicationService.selectNomination(applicationId, nomId);
+                }
             }
 
             await applicationService.saveNominationDocument(applicationId, documentUrl);
@@ -375,7 +369,7 @@ export class ApplicationController {
             const id = parseInt(req.params.id as string, 10);
             const { company, role } = req.body;
             const contract = await applicationService.createContract(id, company, role);
-            
+
             try {
                 // Fetch app to get applicant's userId
                 const app = await applicationService.getApplicationDetails(id);
@@ -436,7 +430,7 @@ export class ApplicationController {
             }
 
             const { sendInfoEmail } = require('../utils/email');
-            
+
             // Send the document to the admin
             const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
             const subject = `New Signed Contract Uploaded (User ID: ${userId})`;

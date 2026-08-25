@@ -130,12 +130,10 @@ router.put('/admin/applications/:id/visa-sponsorship', ...adminMW, applicationCo
 
 router.post('/admin/applications/:id/nominations', ...adminMW, applicationController.createNominations.bind(applicationController));
 router.get('/admin/applications/:id/nominations', ...adminMW, applicationController.getNominations.bind(applicationController));
-router.put('/admin/applications/:id/nominations/:nominationId/select', ...adminMW, applicationController.selectNomination.bind(applicationController));
 
 // Applicant Nomination Upload
 router.post('/applications/documents', ...applicantMW, applicationController.uploadNominationDocument.bind(applicationController));
 router.get('/applications/:id/nominations', ...applicantMW, applicationController.getNominations.bind(applicationController));
-router.put('/applications/:id/nominations/:nominationId/select', ...applicantMW, applicationController.selectNomination.bind(applicationController));
 
 // Admin Contract endpoints
 router.get('/admin/applications/:id/contracts', ...adminMW, applicationController.getContracts.bind(applicationController));
