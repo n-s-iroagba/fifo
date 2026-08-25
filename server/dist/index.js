@@ -9,14 +9,7 @@ const database_1 = require("./config/database");
 const logger_1 = require("./utils/logger");
 // Initializes Associations Mapping
 require("./models");
-const seedDatabase_1 = require("./seedDatabase");
-const payment_milestone_migration_1 = require("./migrations/payment_milestone_migration");
-const accounting_migration_1 = require("./migrations/accounting_migration");
-const course_format_migration_1 = require("./migrations/course_format_migration");
-const nominationCron_1 = require("./cron/nominationCron");
-const applicationCron_1 = require("./cron/applicationCron");
-const sponsorshipCron_1 = require("./cron/sponsorshipCron");
-const contractCron_1 = require("./cron/contractCron");
+const register_qstash_crons_1 = __importDefault(require("./scripts/register-qstash-crons"));
 const PORT = process.env.PORT || 5000;
 const startServer = async () => {
     try {
@@ -26,21 +19,12 @@ const startServer = async () => {
             // Run heavy seeding and migrations in the background so Fly.io health checks don't timeout
             (async () => {
                 try {
-                    await (0, payment_milestone_migration_1.migratePaymentMilestone)();
-                    await (0, accounting_migration_1.migrateAccountingAndSubsidy)();
-                    await (0, course_format_migration_1.migrateCourseFormatEnum)();
-                    await (0, seedDatabase_1.seedDatabase)();
+                    await (0, register_qstash_crons_1.default)();
+                    logger_1.logger.info('QStash endpoints are ready for background jobs.');
                     logger_1.logger.info('Database seeded successfully in background.');
                 }
                 catch (err) {
                     logger_1.logger.error('Background database initialization error:', err);
-                }
-                finally {
-                    (0, nominationCron_1.startNominationCron)();
-                    (0, applicationCron_1.startApplicationCron)();
-                    (0, sponsorshipCron_1.startSponsorshipCron)();
-                    (0, contractCron_1.startContractCron)();
-                    logger_1.logger.info('All background cron jobs started.');
                 }
             })();
             if (process.env.NODE_ENV !== 'production') {

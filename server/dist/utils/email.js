@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendAvelingNoticeOfPayment = exports.sendAvelingCandidateshipNotice = exports.sendTicketSponsorshipEmail = exports.sendPaymentProofReceivedEmail = exports.sendContractFormEmail = exports.sendNominationFormEmail = exports.sendApplicationAcceptedEmail = exports.sendApplicationSubmittedEmail = exports.sendPsychoMod2PassedEmail = exports.sendPsychoMod2SubmittedEmail = exports.sendPsychoMod1PassedEmail = exports.sendBioReceivedEmail = exports.sendCVUploadEmail = exports.sendEOIAddressedEmail = exports.sendEOIReceivedEmail = exports.sendWelcomeApplicationFoundEmail = exports.sendVerificationEmail = exports.sendReceiptEmail = exports.sendInvoiceEmail = exports.sendContractEmail = exports.sendSingleRoleNominationEmail = exports.sendMultipleRolesNominationEmail = exports.sendEmail = exports.sendEmailFrom = exports.sendAvelingEmail = exports.sendInfoEmail = exports.sendAuthEmail = void 0;
+exports.sendTicketCoursePassedEmail = exports.sendTicketCourseFailedEmail = exports.sendTicketCourseSubmittedEmail = exports.sendAvelingCredentialsEmail = exports.sendContractApprovedEmail = exports.sendTicketSponsorshipApprovalMail = exports.sendSponsorshipReviewConfirmationMail = exports.sendTicketSponsorshipApplicationMail = exports.sendNominationApprovedEmail = exports.sendHowToExpressInterestEmail = exports.sendPsychoMod2FailedEmail = exports.sendContractFormEmail = exports.sendNominationFormEmail = exports.sendApplicationAcceptedEmail = exports.sendApplicationSubmittedEmail = exports.sendPsychoMod2PassedEmail = exports.sendPsychoMod2SubmittedEmail = exports.sendPsychoMod1PassedEmail = exports.sendBioReceivedEmail = exports.sendCVUploadEmail = exports.sendEOIReceivedEmail = exports.sendWelcomeApplicationFoundEmail = exports.sendVerificationEmail = exports.sendReceiptEmail = exports.sendInvoiceEmail = exports.sendEmail = exports.sendEmailFrom = exports.sendAvelingEmail = exports.sendInfoEmail = exports.sendAuthEmail = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const createTransporter = (user, pass) => {
     return nodemailer_1.default.createTransport({
@@ -62,7 +62,7 @@ const getStandardEmailTemplate = (subject, content, fromType = 'info') => {
     }
     const cleanedContent = cleanHtmlContent(content);
     const isAveling = fromType === 'aveling';
-    const logoUrl = isAveling ? `${process.env.AVELING_URL || 'https://aveling.online'}/aveling-favicon.png` : `${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg`;
+    const logoUrl = isAveling ? `${process.env.AVELING_URL || 'https://aveling.online'}/aveling.jpg` : `${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg`;
     const headerBgColor = isAveling ? '#FFC700' : '#0b3486';
     const primaryColor = isAveling ? '#000000' : '#0b3486';
     const altText = isAveling ? 'Aveling LMS Training' : 'BlueCollar Curated Career';
@@ -215,57 +215,6 @@ const sendEmailFrom = async (fromType, to, subject, content, attachments = []) =
 exports.sendEmailFrom = sendEmailFrom;
 // Backward compatibility or generic usage
 exports.sendEmail = exports.sendInfoEmail;
-// 1. Nomination Email Templates
-const sendMultipleRolesNominationEmail = async (to, candidateName, totalApplicants, companyName, requiredApplicants) => {
-    const subject = `Official Nomination Notification: ${companyName}`;
-    const content = `
-        <p>Dear ${candidateName},</p>
-        <p>We are pleased to inform you that you have been officially nominated for multiple potential roles at <strong>${companyName}</strong>.</p>
-        <p><strong>Nomination Details:</strong></p>
-        <ul>
-            <li>Target Company: ${companyName}</li>
-            <li>Required Applicants: ${requiredApplicants}</li>
-            <li>Total Pool Size: ${totalApplicants}</li>
-        </ul>
-        <p>Please log in to your dashboard for further instructions on how to proceed.</p>
-    `;
-    await (0, exports.sendInfoEmail)(to, subject, content);
-};
-exports.sendMultipleRolesNominationEmail = sendMultipleRolesNominationEmail;
-const sendSingleRoleNominationEmail = async (to, candidateName, totalApplicants, companyName, roleTitle, requiredApplicants) => {
-    const subject = `Official Nomination Notification: ${roleTitle} at ${companyName}`;
-    const content = `
-        <p>Dear ${candidateName},</p>
-        <p>We are pleased to inform you that you have been officially nominated for the position of <strong>${roleTitle}</strong> at <strong>${companyName}</strong>.</p>
-        <p><strong>Nomination Details:</strong></p>
-        <ul>
-            <li>Target Company: ${companyName}</li>
-            <li>Role: ${roleTitle}</li>
-            <li>Required Applicants: ${requiredApplicants}</li>
-            <li>Total Pool Size: ${totalApplicants}</li>
-        </ul>
-        <p>Please log in to your dashboard for further instructions on how to proceed.</p>
-    `;
-    await (0, exports.sendInfoEmail)(to, subject, content);
-};
-exports.sendSingleRoleNominationEmail = sendSingleRoleNominationEmail;
-// 2. Contract Email Template
-const sendContractEmail = async (to, candidateName, subsidyPercentage, nominationDetails, currentDate, attachments = []) => {
-    const subject = `Your Training and Ticket Acquisition Contract`;
-    const content = `
-        <p>Dear ${candidateName},</p>
-        <p>Following your successful nomination, please find attached your official contract.</p>
-        <p><strong>Contract Summary:</strong></p>
-        <ul>
-            <li>Date: ${currentDate}</li>
-            <li>Nomination Details: ${nominationDetails}</li>
-            <li>Approved Subsidy: ${subsidyPercentage}%</li>
-        </ul>
-        <p>Please review, sign, and return the attached contract document within the stipulated timeframe.</p>
-    `;
-    await (0, exports.sendInfoEmail)(to, subject, content, attachments);
-};
-exports.sendContractEmail = sendContractEmail;
 // 3. Invoice Email Template
 const sendInvoiceEmail = async (to, candidateName, invoiceType, partAmount, totalCost, subsidyPercentage, finalAmountDue, attachments = []) => {
     let typeDescription = '';
@@ -374,16 +323,6 @@ const sendEOIReceivedEmail = async (to, userName) => {
     await (0, exports.sendInfoEmail)(to, subject, content);
 };
 exports.sendEOIReceivedEmail = sendEOIReceivedEmail;
-// 8. EoI Addressed Email (INFO BLUE)
-const sendEOIAddressedEmail = async (to, userName) => {
-    const subject = 'Expression of Interest Processed';
-    const content = `
-        <p>Dear ${userName},</p>
-        <p>Your Expression of Interest has been processed, and our team has taken the necessary next steps.</p>
-    `;
-    await (0, exports.sendInfoEmail)(to, subject, content);
-};
-exports.sendEOIAddressedEmail = sendEOIAddressedEmail;
 // 9. CV upload Email (INFO BLUE)
 const sendCVUploadEmail = async (to, userName) => {
     const subject = 'CV Successfully Uploaded';
@@ -479,52 +418,105 @@ const sendContractFormEmail = async (to, userName) => {
     await (0, exports.sendInfoEmail)(to, subject, content);
 };
 exports.sendContractFormEmail = sendContractFormEmail;
-// 18. Payment Proof reception Acknowledgement
-const sendPaymentProofReceivedEmail = async (to, userName, typeDescription, isAveling = false) => {
-    const subject = 'Payment Proof Received';
+// --- Missing automated emails from email_list.md ---
+const sendPsychoMod2FailedEmail = async (to, userName) => {
+    const subject = 'Psychometric Module 2 Update';
     const content = `
         <p>Dear ${userName},</p>
-        <p>We have successfully received your proof of payment for <strong>${typeDescription}</strong>.</p>
-        <p>Our finance team will review and verify this transaction shortly.</p>
-    `;
-    if (isAveling) {
-        await (0, exports.sendAvelingEmail)(to, subject, content);
-    }
-    else {
-        await (0, exports.sendInfoEmail)(to, subject, content);
-    }
-};
-exports.sendPaymentProofReceivedEmail = sendPaymentProofReceivedEmail;
-// 19. Apply for Ticket Sponsorship And Upload Possed Tickets Mail (Blue Collar INFO)
-const sendTicketSponsorshipEmail = async (to, userName) => {
-    const subject = 'Ticket Sponsorship Application Received';
-    const content = `
-        <p>Dear ${userName},</p>
-        <p>We have received your application for Ticket Sponsorship along with your uploaded tickets.</p>
-        <p>Our team is reviewing your eligibility. We will notify you once the assessment is complete.</p>
+        <p>We have reviewed your Psychometric Module 2 submission. Unfortunately, you did not meet the required threshold this time.</p>
+        <p>Please contact our support team for next steps.</p>
     `;
     await (0, exports.sendInfoEmail)(to, subject, content);
 };
-exports.sendTicketSponsorshipEmail = sendTicketSponsorshipEmail;
-// 20. Aveling Candidateship Notice (AVELING INFO)
-const sendAvelingCandidateshipNotice = async (to, userName) => {
-    const subject = 'Aveling Candidateship Notice';
+exports.sendPsychoMod2FailedEmail = sendPsychoMod2FailedEmail;
+const sendHowToExpressInterestEmail = async (to, userName) => {
+    const subject = 'How to Express Interest';
     const content = `
         <p>Dear ${userName},</p>
-        <p>This is an official notice regarding your Aveling LMS Candidateship.</p>
-        <p>Your profile is now being processed for Aveling training integration. Please check your dashboard for pending training modules.</p>
+        <p>Thank you for registering. Since there are no immediate matching vacancies, please complete the Expression of Interest form on your dashboard.</p>
+    `;
+    await (0, exports.sendInfoEmail)(to, subject, content);
+};
+exports.sendHowToExpressInterestEmail = sendHowToExpressInterestEmail;
+const sendNominationApprovedEmail = async (to, userName) => {
+    const subject = 'Nomination Approved';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Congratulations! Your nomination has been formally approved by the company.</p>
+        <p>Please check your dashboard for further instructions.</p>
+    `;
+    await (0, exports.sendInfoEmail)(to, subject, content);
+};
+exports.sendNominationApprovedEmail = sendNominationApprovedEmail;
+const sendTicketSponsorshipApplicationMail = async (to, userName) => {
+    const subject = 'Action Required: Ticket Uploads & Sponsorship Application';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>It is now time to finalize your tickets. Please log in to your dashboard to upload any possessed tickets and apply for sponsorship for the remaining gaps.</p>
+    `;
+    await (0, exports.sendInfoEmail)(to, subject, content);
+};
+exports.sendTicketSponsorshipApplicationMail = sendTicketSponsorshipApplicationMail;
+const sendSponsorshipReviewConfirmationMail = async (to, userName) => {
+    const subject = 'Sponsorship Application Under Review';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>We have received your ticket uploads and sponsorship application. It is currently under review.</p>
+    `;
+    await (0, exports.sendInfoEmail)(to, subject, content);
+};
+exports.sendSponsorshipReviewConfirmationMail = sendSponsorshipReviewConfirmationMail;
+const sendTicketSponsorshipApprovalMail = async (to, userName) => {
+    const subject = 'Ticket Sponsorship Approved';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Great news! Your ticket sponsorship application has been approved.</p>
+    `;
+    await (0, exports.sendInfoEmail)(to, subject, content);
+};
+exports.sendTicketSponsorshipApprovalMail = sendTicketSponsorshipApprovalMail;
+const sendContractApprovedEmail = async (to, userName) => {
+    const subject = 'Contract Approved';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Your signed contract has been reviewed and officially approved.</p>
+    `;
+    await (0, exports.sendInfoEmail)(to, subject, content);
+};
+exports.sendContractApprovedEmail = sendContractApprovedEmail;
+const sendAvelingCredentialsEmail = async (to, userName) => {
+    const subject = 'Your Aveling LMS Credentials';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Your Aveling training profile has been created. Please log in with the credentials provided on your dashboard.</p>
     `;
     await (0, exports.sendAvelingEmail)(to, subject, content);
 };
-exports.sendAvelingCandidateshipNotice = sendAvelingCandidateshipNotice;
-// 21. Aveling Notice OF Payment (AVELING INFO)
-const sendAvelingNoticeOfPayment = async (to, userName) => {
-    const subject = 'Aveling Notice of Payment';
+exports.sendAvelingCredentialsEmail = sendAvelingCredentialsEmail;
+const sendTicketCourseSubmittedEmail = async (to, userName) => {
+    const subject = 'Ticket Course Exam Submitted';
     const content = `
         <p>Dear ${userName},</p>
-        <p>This is a formal notice regarding payment for your Aveling Training modules.</p>
-        <p>Please ensure all outstanding invoices are cleared to avoid disruption to your training schedule.</p>
+        <p>We have received your exam submission for your ticket course. It is now being graded.</p>
     `;
     await (0, exports.sendAvelingEmail)(to, subject, content);
 };
-exports.sendAvelingNoticeOfPayment = sendAvelingNoticeOfPayment;
+exports.sendTicketCourseSubmittedEmail = sendTicketCourseSubmittedEmail;
+const sendTicketCourseFailedEmail = async (to, userName) => {
+    const subject = 'Ticket Course Exam Failed';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Unfortunately, you did not pass the ticket course exam. You may have another attempt.</p>
+    `;
+    await (0, exports.sendAvelingEmail)(to, subject, content);
+};
+exports.sendTicketCourseFailedEmail = sendTicketCourseFailedEmail;
+const sendTicketCoursePassedEmail = async (to, userName) => {
+    const subject = 'Ticket Course Exam Passed';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Congratulations! You have successfully passed your ticket course exam.</p>
+    `;
+    await (0, exports.sendAvelingEmail)(to, subject, content);
+};
+exports.sendTicketCoursePassedEmail = sendTicketCoursePassedEmail;

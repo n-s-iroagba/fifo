@@ -32,6 +32,40 @@ app.use(cors({
     credentials: true,
 }));
 app.use(cookieParser());
+
+// QStash Webhooks (must be before express.json() so verifySignature can access raw body)
+import { Receiver } from '@upstash/qstash';
+import { cronController } from './controllers/CronController';
+
+const receiver = new Receiver({
+    currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY || '',
+    nextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY || '',
+});
+
+const qstashMiddleware = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const signature = req.headers['upstash-signature'];
+    if (!signature || typeof signature !== 'string') {
+        return res.status(401).json({ error: 'Missing or invalid signature header' });
+    }
+
+    try {
+        const body = req.body instanceof Buffer ? req.body.toString('utf8') : req.body;
+        await receiver.verify({
+            signature,
+            body: typeof body === 'string' ? body : JSON.stringify(body)
+        });
+        next();
+    } catch (error) {
+        return res.status(401).json({ error: 'Invalid signature' });
+    }
+};
+
+app.post('/api/cron/application', express.raw({type: 'application/json'}), qstashMiddleware, cronController.application);
+app.post('/api/cron/nomination', express.raw({type: 'application/json'}), qstashMiddleware, cronController.nomination);
+app.post('/api/cron/contract', express.raw({type: 'application/json'}), qstashMiddleware, cronController.contract);
+app.post('/api/cron/sponsorship', express.raw({type: 'application/json'}), qstashMiddleware, cronController.sponsorship);
+
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 

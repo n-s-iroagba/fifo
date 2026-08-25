@@ -2,7 +2,6 @@ import { Op, literal } from 'sequelize';
 import { JobStage, Application, User, JobListing } from '../models';
 import { sendInfoEmail } from '../utils/email';
 import { notificationRepository } from '../repositories/NotificationRepository';
-import cron from 'node-cron';
 import { registerCron, recordCronRun } from './cronRegistry';
 
 const CRON_NAME = 'ApplicationAutoAcceptance';
@@ -97,12 +96,3 @@ export async function runApplicationApprovalCron(): Promise<void> {
     }
 }
 
-export function startApplicationCron(): void {
-    registerCron(CRON_NAME);
-    console.log('[ApplicationCron] Starting application auto-acceptance cron (every hour).');
-    cron.schedule('0 * * * *', () => {
-        runApplicationApprovalCron();
-    });
-    // Run immediately after seed completes to catch up missed applications on redeploy
-    setTimeout(() => runApplicationApprovalCron(), 5_000);
-}

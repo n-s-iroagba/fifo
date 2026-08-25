@@ -22,7 +22,6 @@ RUN mkdir -p logs && chown -R nodejs:nodejs logs
 
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nodejs:nodejs /app/src/assets ./src/assets
-COPY --from=builder --chown=nodejs:nodejs ["/app/Universal Applicant CV Template.docx", "./Universal Applicant CV Template.docx"]
 
 USER nodejs
 EXPOSE 5000

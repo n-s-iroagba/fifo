@@ -5,17 +5,12 @@
  * exactly or more than 1 hour ago, and the application is still on the 'Nomination' stage.
  * It advances the application to the 'TicketSponsorship' stage and sends the email.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.runNominationFollowupCron = runNominationFollowupCron;
-exports.startNominationCron = startNominationCron;
 const sequelize_1 = require("sequelize");
 const models_1 = require("../models");
 const ApplicationService_1 = require("../services/ApplicationService");
 const email_1 = require("../utils/email");
-const node_cron_1 = __importDefault(require("node-cron"));
 const cronRegistry_1 = require("./cronRegistry");
 const CRON_NAME = 'NominationFollowup';
 const ONE_HOUR_MS = 60 * 60 * 1000;
@@ -88,13 +83,4 @@ async function runNominationFollowupCron() {
         console.error('[NominationCron] Fatal error:', err);
         (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'error', String(err));
     }
-}
-function startNominationCron() {
-    (0, cronRegistry_1.registerCron)(CRON_NAME);
-    console.log('[NominationCron] Starting nomination followup cron (every hour).');
-    node_cron_1.default.schedule('0 * * * *', () => {
-        runNominationFollowupCron();
-    });
-    // Run immediately on startup to catch up any missed during redeploy
-    setTimeout(() => runNominationFollowupCron(), 5_000);
 }

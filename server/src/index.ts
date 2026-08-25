@@ -5,13 +5,11 @@ import { logger } from './utils/logger';
 
 // Initializes Associations Mapping
 import './models';
+import registerCrons from './scripts/register-qstash-crons';
 
 
 
-import { startNominationCron } from './cron/nominationCron';
-import { startApplicationCron } from './cron/applicationCron';
-import { startSponsorshipCron } from './cron/sponsorshipCron';
-import { startContractCron } from './cron/contractCron';
+
 
 
 const PORT = process.env.PORT || 5000;
@@ -26,12 +24,8 @@ const startServer = async () => {
             // Run heavy seeding and migrations in the background so Fly.io health checks don't timeout
             (async () => {
                 try {
-                    startNominationCron();
-                    startApplicationCron();
-                    startSponsorshipCron();
-                    startContractCron();
-
-                    logger.info('All background cron jobs started.');
+                    await registerCrons()
+                    logger.info('QStash endpoints are ready for background jobs.');
 
                     logger.info('Database seeded successfully in background.');
                 } catch (err) {

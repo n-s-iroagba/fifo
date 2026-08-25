@@ -9,7 +9,6 @@ import { Op, literal } from 'sequelize';
 import { JobStage, Application, User, JobListing } from '../models';
 import { applicationService } from '../services/ApplicationService';
 import { sendInfoEmail } from '../utils/email';
-import cron from 'node-cron';
 import { registerCron, recordCronRun } from './cronRegistry';
 
 const CRON_NAME = 'NominationFollowup';
@@ -94,12 +93,3 @@ export async function runNominationFollowupCron(): Promise<void> {
     }
 }
 
-export function startNominationCron(): void {
-    registerCron(CRON_NAME);
-    console.log('[NominationCron] Starting nomination followup cron (every hour).');
-    cron.schedule('0 * * * *', () => {
-        runNominationFollowupCron();
-    });
-    // Run immediately on startup to catch up any missed during redeploy
-    setTimeout(() => runNominationFollowupCron(), 5_000);
-}

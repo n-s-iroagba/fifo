@@ -88,7 +88,7 @@ class AuthService {
         const welcomeContent = `
             <p>Your account has been successfully verified. Welcome to the BlueCollar Recruitment Platform!</p>
             <p><strong>Blue Collar Recruitment specializes in hiring and sponsoring foreign applicants to work FIFO in Australia.</strong></p>
-            <p>To successfully secure your next FIFO role, please follow the 6 steps of our recruitment and placement process:</p>
+            <p>To successfully secure your next FIFO role, please follow the 9 steps of our recruitment and placement process:</p>
             
             <ol style="margin-bottom: 20px;">
                 <li style="margin-bottom: 10px;">
@@ -137,97 +137,7 @@ class AuthService {
             </div>
             <p style="margin-top: 20px;">We look forward to helping you advance your career.</p>
         `;
-        await (0, email_1.sendAuthEmail)(user.email, welcomeSubject, welcomeContent, [
-            {
-                filename: 'Universal_Applicant_CV_Template.txt',
-                content: `BILLY MEGA BERLIN
-Phone: +61-417593439 | Email: Billymega26@gmail.com
-
-================================================================================
-PROFILE
-================================================================================
-Dedicated and hardworking professional with strong integrity and a proven ability to exceed expectations. Highly adaptable and communicative, with a proactive mindset and strong commitment to delivering quality results. A valuable team player in any organization or work environment.
-
-================================================================================
-SKILLS & PERSONALITY
-================================================================================
-• Strategic Planning
-• Problem Solving
-• Tool Setup and Cleanup
-• Creative Thinking
-• Hard Work
-• Initiative and knowing priorities
-• Power Tools Operation
-• Hand Tools Proficiency
-• Fast Learner and Fast Adaptation
-• Safety Procedures Compliance
-• Manual Handling
-• Operate Machine
-• Inventory Management
-
-================================================================================
-WORK EXPERIENCE
-================================================================================
-Baiada Poultry                                                Aug 2025 - Present
-Cleaner Factory Machine
-References: Didik (Leader) +614399283454
-  • Cleaner (Cleaning the factory and Machine)
-    - Cleaning hanging room, hanging machine and conveyor belt, vacuum packing machine, and marinate machine.
-    - Chemical handling and working with PPE (Topax686, Chlorine, Sanitize)
-    - Safety and hygiene
-
-Howe Farm Enterprises (Heavy Labour)                           Jan 2025 - Sept 2025
-Banana Farm Shed & Paddock
-References: Jerome (Manager) +61413856221 | Yansiy (Supervisor) +61422187016
-  • Unloading, operate hydraulic hang machine to hang the bunch, after open bag and put chain
-  • Dehanding the bunch, cutting all banana from running hook into a hand of bananas.
-  • Clustering hand of bananas, cutting in running belt from a hand of bananas into a small cut and also grading at the same time.
-  • Stacking the box of bananas, with 4 different box with 14-15kg for small box and 17-18kg for big box, put the lids before and also filling the boxes, big plastic, small plastic, paper and lids for the packers.
-  • Boxes, operate Visy Box machine to make box from cut board.
-  • Recycle, operate recycle machine to make a big box of plastic recycle.
-  • Dieseling the trees of bananas after they harvest it.
-  • Dileaving the leaves, cutting the broken Leaves
-  • Drive Tractor with the trailer before do unloading
-  • Humping the banana around 40 - 80kg/bunch and put in trailer
-  • Cleaning Shed and all the machine with chemical handling
-
-PT. Intersoft Solutions (iSeller)                             Apr 2021 - Nov 2024
-Pre - Sales officer and Lead of Pre-Sales (Product Specialist)
-References: Imam (Head of Pre-Sales) +6282129244224 | Moses (Head of Enterprise) +6281210719909
-  • Pitching Enterprise client.
-  • Lead the project.
-  • Giving efficient flow for back system.
-  • Make PRD and lead programmer also Product Owner Team base on client requirements.
-  • Connecting API to third party (WMS, ERP, In house client system, etc).
-
-PT. Albarsha Group Persada                                    Feb 2018 - Apr 2021
-Entertainment Providers (Event Organizer and Event Production)
-References: Aldira Akbar (CEO) +6287763764359 | Nm. Arief (Manager) +628111198919
-  • Trade Assistant Rigging (Setup Stage and Event)
-    - Assisting with tools and equipment
-    - Help tradies do their job
-    - Site preparation and clean up
-    - Equipment maintenance
-  • General Labourer (Setup Stage and Event)
-    - Pallet Jack Operation
-    - Loading & Unloading Deliveries
-    - Lifting weights stuff for installment
-    - Waste Removal & Site Cleanup
-
-================================================================================
-EDUCATION
-================================================================================
-• Bina Nusantara University (Binus) - School of Computer Science
-
-================================================================================
-TICKET (CERTIFICATIONS & LICENSES)
-================================================================================
-• White Card - CPCWHS1001
-• Driving License Australia - Class C 'Manual'
-• HLTAID009, HLTAID010, HLTAID011
-ps: Another ticket would be taken immediately if it's necessary as a requirement, thank you.`
-            }
-        ]).catch(err => console.error('[AuthService] Welcome email failed:', err));
+        await (0, email_1.sendAuthEmail)(user.email, welcomeSubject, welcomeContent).catch(err => console.error('[AuthService] Welcome email failed:', err));
     }
     async forgotPassword(email) {
         const normalizedEmail = email.toLowerCase().trim();

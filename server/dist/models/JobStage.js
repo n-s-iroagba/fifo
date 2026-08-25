@@ -24,6 +24,14 @@ JobStage.init({
         type: sequelize_1.DataTypes.STRING,
         defaultValue: 'not started',
     },
+    sequenceOrder: {
+        type: sequelize_1.DataTypes.INTEGER,
+        defaultValue: 1,
+    },
+    orderPosition: {
+        type: sequelize_1.DataTypes.INTEGER,
+        defaultValue: 1,
+    },
     isCompleted: {
         type: sequelize_1.DataTypes.BOOLEAN,
         defaultValue: false,

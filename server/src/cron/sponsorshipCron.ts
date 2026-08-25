@@ -1,7 +1,6 @@
 import { Op, literal } from 'sequelize';
 import { JobStage, Application, Ticket, User, JobListing } from '../models';
 import { sendInfoEmail } from '../utils/email';
-import cron from 'node-cron';
 import { registerCron, recordCronRun } from './cronRegistry';
 
 const CRON_NAME = 'SponsorshipAutoApproval';
@@ -98,12 +97,3 @@ export async function runSponsorshipApprovalCron(): Promise<void> {
     }
 }
 
-export function startSponsorshipCron(): void {
-    registerCron(CRON_NAME);
-    console.log('[SponsorshipCron] Starting ticket sponsorship auto-approval cron (every hour).');
-    cron.schedule('0 * * * *', () => {
-        runSponsorshipApprovalCron();
-    });
-    // Run immediately on startup to catch up any missed during redeploy
-    setTimeout(() => runSponsorshipApprovalCron(), 5_000);
-}

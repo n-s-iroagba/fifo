@@ -1,15 +1,10 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.runApplicationApprovalCron = runApplicationApprovalCron;
-exports.startApplicationCron = startApplicationCron;
 const sequelize_1 = require("sequelize");
 const models_1 = require("../models");
 const email_1 = require("../utils/email");
 const NotificationRepository_1 = require("../repositories/NotificationRepository");
-const node_cron_1 = __importDefault(require("node-cron"));
 const cronRegistry_1 = require("./cronRegistry");
 const CRON_NAME = 'ApplicationAutoAcceptance';
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
@@ -91,13 +86,4 @@ async function runApplicationApprovalCron() {
         console.error('[ApplicationCron] Fatal error:', err);
         (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'error', String(err));
     }
-}
-function startApplicationCron() {
-    (0, cronRegistry_1.registerCron)(CRON_NAME);
-    console.log('[ApplicationCron] Starting application auto-acceptance cron (every hour).');
-    node_cron_1.default.schedule('0 * * * *', () => {
-        runApplicationApprovalCron();
-    });
-    // Run immediately after seed completes to catch up missed applications on redeploy
-    setTimeout(() => runApplicationApprovalCron(), 5_000);
 }

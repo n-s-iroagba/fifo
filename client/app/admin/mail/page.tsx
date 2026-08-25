@@ -299,79 +299,54 @@ function MailComposerContent() {
                         <div className="space-y-2">
                             {[
                                 {
-                                    title: 'Step 1: Application Completion Reminder',
-                                    subject: 'Action Required: Complete Your Application Steps',
-                                    body: '<p>Dear [Insert Username],</p><p>We noticed you have not yet completed all steps of your application. To proceed to the nomination stage, please ensure you complete the following:</p><ul><li>Upload your CV using the ATS format template.</li><li>Complete your Biodata profile.</li><li>Pass the Psychometric assessment.</li></ul><p>Please log in to your dashboard to complete these requirements.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                    title: 'Vacancy Available Mail',
+                                    subject: 'Update: New Vacancy Available for Your Profile',
+                                    body: '<p>Dear [Insert Username],</p><p>We are pleased to inform you that a new vacancy matching your profile is now available.</p><p>Please log in to your dashboard for more details.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
                                 },
                                 {
-                                    title: 'Step 2: Notification of Nomination',
-                                    subject: 'Congratulations: Notification of Company Nomination',
-                                    body: '<p>Dear [Insert Username],</p><p>Congratulations! Having passed all initial requirements, you have been officially nominated to our partner FIFO companies.</p><p>You must now log in to your dashboard to formally <strong>Accept</strong> or <strong>Decline</strong> this nomination. If accepted, we will proceed to draft your binding contract.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                    title: 'Nomination Presentation Mail',
+                                    subject: 'Action Required: Notification of Company Nomination',
+                                    body: '<p>Dear [Insert Username],</p><p>Having passed all initial requirements, you have been officially nominated to our partner FIFO companies.</p><p>Please review the attached Nomination document. You must log in to your dashboard to formally <strong>Accept</strong> or <strong>Decline</strong> this nomination.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
                                 },
                                 {
-                                    title: 'Step 3: Binding Contract',
+                                    title: 'Contract Presentation Mail',
                                     subject: 'Action Required: Your Placement Contract',
-                                    body: '<p>Dear [Insert Username],</p><p>Following your acceptance of our nomination, please find attached your binding contract between you and Blue Collar Recruitment.</p><p>Kindly review the document carefully, sign where indicated, and reply to this email within the stipulated timeframe.</p><p>Yours sincerely,<br />Gary Nexon Fletcher.<br />Hiring Manager.<br />Blue Collar Recruitment.</p>'
+                                    body: '<p>Dear [Insert Username],</p><p>Following your acceptance of our nomination, please find attached your binding contract between you and Blue Collar Recruitment.</p><p>Kindly review the document carefully, sign where indicated, and upload it to your dashboard within the stipulated timeframe.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
                                 },
                                 {
-                                    title: 'Step 4: Ticket Sponsorship Payment Confirmation',
+                                    title: 'Payment Confirmation Inquiry Mail',
                                     subject: 'Action Required: Confirm Your Ticket Sponsorship Payment Plan',
-                                    body: '<p>Dear [Insert Username],</p><p>To proceed with your required certifications, please complete your financial responsibility under the Ticket Sponsorship program.</p><p>Please confirm if you will be making half payments on your total ticket bundle or full payment at a 10% discount.</p><p>You may choose to pay in parts (which must be completed before taking your 4th ticket) or pay the complete amount upfront to receive the extra 10% discount.</p><p><em>Note: International payments from outside Australia are made using USDT crypto currency on the TRON network.</em></p><p>Please log in to your dashboard to complete your payment or reply to this email to confirm your payment structure.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                    body: '<p>Dear [Insert Username],</p><p>To proceed with your required certifications, please complete your financial responsibility under the Ticket Sponsorship program.</p><p>Please confirm if you will be making half payments on your total ticket bundle or full payment at a 10% discount.</p><p><em>Note: International payments from outside Australia are made using USDT crypto currency on the TRON network.</em></p><p>Please reply to this email to confirm your payment structure.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
                                 },
                                 {
-                                    title: 'Step 5: Ticket Courses & Examination',
-                                    subject: 'Action Required: Complete Your Ticket Courses',
-                                    body: '<p>Dear [Insert Username],</p><p>Your training has been unlocked. You must now log in to the Aveling LMS portal to complete all required training modules and pass the theoretical and practical examinations for your assigned tickets.</p><p>Please ensure this is completed promptly.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                    title: 'Partial Invoice Mail',
+                                    subject: 'Invoice: Partial Ticket Sponsorship Payment',
+                                    body: '<p>Dear [Insert Username],</p><p>Please find attached your invoice for the partial payment towards your ticket courses and certifications.</p><p>Kindly arrange for payment at your earliest convenience.</p><p>Yours sincerely,<br />Aveling / Blue Collar Recruitment.</p>'
                                 },
                                 {
-                                    title: 'Step 6: Voice Call Interview Invitation',
-                                    subject: 'Action Required: Schedule Your Voice Call Interview',
-                                    body: '<p>Dear [Insert Username],</p><p>Congratulations on completing your ticket courses. The next step is a brief Voice Call Interview to verify your training outcomes, application details, and suitability.</p><p>Please let us know your availability over the next 48 hours so we can schedule the call.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                    title: 'Complete-after-partial Invoice Mail',
+                                    subject: 'Invoice: Final Ticket Sponsorship Payment',
+                                    body: '<p>Dear [Insert Username],</p><p>Please find attached your invoice for the completion of your ticket courses and certifications payment.</p><p>Kindly arrange for payment at your earliest convenience.</p><p>Yours sincerely,<br />Aveling / Blue Collar Recruitment.</p>'
                                 },
                                 {
-                                    title: 'Step 7: Ticket Delivery Confirmation',
-                                    subject: 'Update: Your Physical Tickets are on the Way',
-                                    body: '<p>Dear [Insert Username],</p><p>Congratulations on passing your required ticket courses and the voice call interview! We are pleased to inform you that your physical tickets and certifications have been printed and will be delivered to your specified physical address.</p><p>Please ensure your address details on your profile are up to date. You will receive a tracking number shortly.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                    title: 'Complete Invoice Mail',
+                                    subject: 'Invoice: Full Ticket Sponsorship Payment',
+                                    body: '<p>Dear [Insert Username],</p><p>Please find attached your invoice for the full payment of your ticket courses and certifications (with 10% discount applied).</p><p>Kindly arrange for payment at your earliest convenience.</p><p>Yours sincerely,<br />Aveling / Blue Collar Recruitment.</p>'
                                 },
                                 {
-                                    title: 'Step 8: Visa Sponsorship & Processing',
-                                    subject: 'Action Required: Visa Sponsorship and Processing Initiation',
-                                    body: '<p>Dear [Insert Username],</p><p>With your tickets successfully acquired, we are now initiating your Visa Sponsorship and Processing.</p><p>Please review the attached visa documentation guidelines. You will be required to submit specific identification and medical documents to proceed with the final stages of your deployment.</p><p>Our immigration team will be in touch with you shortly.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
+                                    title: 'Shipping Invoice Mail',
+                                    subject: 'Invoice: Ticket Shipping Fee',
+                                    body: '<p>Dear [Insert Username],</p><p>Please find attached your invoice for the physical shipping of your hardcopy tickets.</p><p>Yours sincerely,<br />Aveling / Blue Collar Recruitment.</p>'
                                 },
                                 {
-                                    title: 'Bulk Package Sponsorship Invitation',
-                                    subject: 'Action Required: Your FIFO Sponsorship Ticket Package & Financial Breakdown',
-                                    body: '<p>Dear [Insert Username],</p><p>We have configured your complete FIFO Sponsorship Qualification Package containing all 7 required site tickets:</p><ul><li>EEHA Certification (Hazardous Areas)</li><li>Standard 11 Mining Induction (WA)</li><li>White Card WA (CPCWHS1001)</li><li>Working at Heights (RIIWHS204E)</li><li>Confined Space Entry (RIIWHS202E)</li><li>Gas Test Atmospheres (MSMWHS217)</li><li>Provide First Aid (HLTAID011)</li></ul><p><strong>Financial Responsibility Breakdown (Schedule 1):</strong><br />- Candidate Training Liability (35% Share): A$1,240.75<br />- Visa VAC Share (Clause 5.1): A$1,405.25<br />- Licensing & Credentials: A$185.50<br />- Maximum Liability Ceiling (Clause 5.2): A$3,599.20<br />- Initial Deposit Required (Modules 1–3): A$500.00</p><p>Please log in to your Candidate Dashboard under <strong>Site Tickets & Sponsorship</strong> to submit your package sponsorship application and provide your refund bank details.</p><p>Yours sincerely,<br />Blue Collar Recruitment Pty Ltd.</p>'
+                                    title: 'Visa Invoice Mail',
+                                    subject: 'Invoice: Visa Fee Subsidy',
+                                    body: '<p>Dear [Insert Username],</p><p>Please find attached your invoice for the Visa fee subsidy.</p><p>Yours sincerely,<br />Aveling / Blue Collar Recruitment.</p>'
                                 },
                                 {
-                                    title: 'Application Review Success',
-                                    subject: 'Update: Application Successfully Reviewed',
-                                    body: '<p>Dear [Insert Username],</p><p>Congratulations!</p><p>Welcome to the BlueCollar recruitment ecosystem.</p><p>Your application for the applied role(s) has been successfully reviewed.</p><p>And we are pleased to inform you that you can proceed to the next stage of the hiring process.</p><p>Sequel to this mail, we shall send you a contract mail, kindly read the mail and its attached contract document carefully when received, and reply within the stipulated timeframe, if willing to comply to the contract terms.</p><p>Once again congratulations!</p><p>Yours sincerely,<br>Gary Nexon Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>'
-                                },
-                                {
-                                    title: 'Contract Email',
-                                    subject: 'Action Required: Your Training and Ticket Acquisition Contract',
-                                    body: '<p>Dear [Insert Username],</p><p>Following your successful application review, please find attached your Training and Ticket Acquisition Contract.</p><p>Kindly read the attached contract document carefully, and reply to this email within the stipulated timeframe to confirm your acceptance of the contract terms.</p><p>We look forward to welcoming you aboard!</p><p>Yours sincerely,<br>Gary Nexon Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>'
-                                },
-                                {
-                                    title: 'Invite: Ticket Sponsorship',
-                                    subject: 'Invitation to Apply for Ticket Sponsorship',
-                                    body: '<p>Dear [Insert Username],</p><p>We noted from your profile that you are currently missing some required certifications (Tickets) for your applied role.</p><p>We are pleased to invite you to apply for our Ticket Sponsorship program. This program is designed to assist you in obtaining the necessary qualifications through our training partner.</p><p>Please log in to your dashboard to initiate your sponsorship application.</p><p>Yours sincerely,<br>Blue Collar Recruitment.</p>'
-                                },
-                                {
-                                    title: 'Sponsorship Approved',
-                                    subject: 'Ticket Sponsorship Approved - Your Aveling Credentials',
-                                    body: '<p>Dear [Insert Username],</p><p>Congratulations! Your Ticket Sponsorship application has been approved.</p><p>Below are your credentials to access the Aveling LMS portal to complete your required courses:</p><p><strong>Username:</strong> [Insert Username/Email]<br><strong>Password:</strong> [Insert Password]</p><p>Please log in as soon as possible to begin your certification journey.</p><p>Yours sincerely,<br>Blue Collar Recruitment.</p>'
-                                },
-                                {
-                                    title: 'Aveling Course Onboarding',
-                                    subject: 'Getting Started with Your Aveling Ticket Courses',
-                                    body: '<p>Dear [Insert Username],</p><p>Welcome to the Aveling Training Portal!</p><p>To get started with your certification courses, please follow these steps:</p><ol><li>Log in using your provided Aveling credentials.</li><li>Navigate to the "My Courses" section to view your assigned training.</li><li>Complete the theory modules and any associated assessments.</li><li>If applicable, book your practical assessment slot.</li></ol><p>Your Aveling Credentials:<br><strong>Username:</strong> [Insert Username]<br><strong>Password:</strong> [Insert Password]</p><p>If you encounter any issues, please reply to this email for support.</p><p>Yours sincerely,<br>Aveling LMS Support.</p>'
-                                },
-                                {
-                                    title: 'Ticket Exam Passed',
-                                    subject: 'Congratulations! You Have Passed Your Ticket Exam',
-                                    body: '<p>Dear [Insert Username],</p><p>Congratulations! We are thrilled to inform you that you have successfully passed your recent ticket examination.</p><p>If your ticket was sponsored, the applicable refund has been automatically credited directly to your digital wallet.</p><p>You can now proceed to view your updated certification status and access your newly issued ticket from your dashboard.</p><p>Keep up the great work!</p><p>Yours sincerely,<br>Aveling LMS / Blue Collar Recruitment.</p>'
+                                    title: 'Payment Receipt Mail',
+                                    subject: 'Receipt: Payment Confirmed',
+                                    body: '<p>Dear [Insert Username],</p><p>We have successfully received your payment. Please find your official receipt attached.</p><p>Yours sincerely,<br />Aveling / Blue Collar Recruitment.</p>'
                                 }
                             ].map((tmpl, i) => (
                                 <button

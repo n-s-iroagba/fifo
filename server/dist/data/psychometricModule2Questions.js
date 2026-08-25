@@ -3,19 +3,43 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.psychometricModule2Questions = void 0;
 exports.psychometricModule2Questions = [
     {
+        questionText: 'What are the sub-steps required to complete Step 1 (Application)?',
+        questionType: 'mcq',
+        options: [
+            'Only upload a resume and wait.',
+            'Upload your CV in ATS format, fill out your biodata, and pass the Psychometric assessment.',
+            'Pay the application fee and book an interview.',
+            'Send an email to the support team.'
+        ],
+        correctOptionIndex: 1,
+        weight: 1
+    },
+    {
         questionText: 'What happens in Step 2 (Nomination) after successfully completing the initial application?',
         questionType: 'mcq',
         options: [
             'You are immediately offered a job.',
             'You must book a flight directly.',
-            'You are nominated to top FIFO companies and can accept or decline.',
+            'You are nominated to top FIFO companies and can choose to accept or decline the Notification of Nomination.',
             'You are asked to pay your final visa fee.'
         ],
         correctOptionIndex: 2,
         weight: 1
     },
     {
-        questionText: 'What occurs during Step 3 (Contract Signing)?',
+        questionText: 'What is required in Step 3 (Ticket Sponsorship) if you accept a nomination?',
+        questionType: 'mcq',
+        options: [
+            'You must apply for ticket sponsorship and upload any possessed tickets.',
+            'You must fly to Australia immediately.',
+            'You must find your own accommodation.',
+            'You must quit your current job.'
+        ],
+        correctOptionIndex: 0,
+        weight: 1
+    },
+    {
+        questionText: 'What occurs during Step 4 (Contract Signing)?',
         questionType: 'mcq',
         options: [
             'A binding contract is drafted and signed by both Blue Collar and the Applicant.',
@@ -27,19 +51,19 @@ exports.psychometricModule2Questions = [
         weight: 1
     },
     {
-        questionText: 'How must international ticket sponsorship payments (from outside Australia) be made in Step 4?',
+        questionText: 'How must international ticket sponsorship payments (from outside Australia) be made in Step 5?',
         questionType: 'mcq',
         options: [
             'Bank Transfer',
             'Credit Card',
-            'USDT crypto currency on the TRON (TRC-20) network',
+            'USDT crypto currency on the TRON network',
             'PayPal'
         ],
         correctOptionIndex: 2,
         weight: 1
     },
     {
-        questionText: 'Are you familiar with crypto payments (USDT TRC-20 on TRON) for international transactions, or will you need assistance?',
+        questionText: 'Are you familiar with crypto payments (USDT on the TRON network) for international transactions, or will you need assistance?',
         questionType: 'mcq',
         options: [
             'I am fully familiar and can process it independently.',
@@ -51,11 +75,11 @@ exports.psychometricModule2Questions = [
         weight: 1
     },
     {
-        questionText: 'What must you do during Step 5 (Ticket Courses & Examination)?',
+        questionText: 'What must you do during Step 6 (Ticket Courses & Examination)?',
         questionType: 'mcq',
         options: [
             'Buy physical tickets from a store.',
-            'Access the Aveling LMS portal to complete all required training modules and pass the exams.',
+            'Access the Aveling LMS portal to complete all required training modules and pass the respective theoretical and practical examinations.',
             'Wait for the employer to train you on site.',
             'Pay the deposit again.'
         ],
@@ -63,7 +87,7 @@ exports.psychometricModule2Questions = [
         weight: 1
     },
     {
-        questionText: 'What is the purpose of the Voice Call Interview in Step 6?',
+        questionText: 'What is the purpose of the Voice Call Interview in Step 7?',
         questionType: 'mcq',
         options: [
             'To test your internet speed.',
@@ -75,7 +99,7 @@ exports.psychometricModule2Questions = [
         weight: 1
     },
     {
-        questionText: 'What happens in Step 7 (Ticket Delivery)?',
+        questionText: 'What happens in Step 8 (Ticket Delivery)?',
         questionType: 'mcq',
         options: [
             'You receive digital badges only.',
@@ -87,27 +111,15 @@ exports.psychometricModule2Questions = [
         weight: 1
     },
     {
-        questionText: 'What is the final phase (Step 8) before deployment?',
+        questionText: 'What is the final phase (Step 9) before deployment?',
         questionType: 'mcq',
         options: [
-            'Visa Sponsorship & Processing (including medical checks and immigration clearances).',
+            'Visa Sponsorship & Processing (detailed in a separate email).',
             'A second psychometric test.',
             'Buying your own PPE (Personal Protective Equipment).',
             'Opening an Australian bank account.'
         ],
         correctOptionIndex: 0,
-        weight: 1
-    },
-    {
-        questionText: 'Why does the platform require this psychometric literacy test before you can apply for jobs?',
-        questionType: 'mcq',
-        options: [
-            'To waste your time.',
-            'To collect data for marketing.',
-            'To ensure you fully understand the 8-Step Pathway, payments, and platform protocols.',
-            'To test your English spelling.'
-        ],
-        correctOptionIndex: 2,
         weight: 1
     }
 ];

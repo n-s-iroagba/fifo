@@ -1,7 +1,6 @@
 import { Op, literal } from 'sequelize';
 import { JobStage, Application, User, JobListing } from '../models';
 import { sendInfoEmail } from '../utils/email';
-import cron from 'node-cron';
 import { registerCron, recordCronRun } from './cronRegistry';
 
 const CRON_NAME = 'ContractAutoApproval';
@@ -78,12 +77,3 @@ export async function runContractApprovalCron(): Promise<void> {
     }
 }
 
-export function startContractCron(): void {
-    registerCron(CRON_NAME);
-    console.log('[ContractCron] Starting contract auto-approval cron (every hour).');
-    cron.schedule('0 * * * *', () => {
-        runContractApprovalCron();
-    });
-    // Run immediately on startup to catch up any missed during redeploy
-    setTimeout(() => runContractApprovalCron(), 5_000);
-}
