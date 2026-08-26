@@ -24,7 +24,7 @@ async function runNominationFollowupCron() {
         const completedStages = await models_1.JobStage.findAll({
             where: {
                 name: 'Nomination',
-                status: 'completed',
+                status: 'under-review',
                 updatedAt: { [sequelize_1.Op.lte]: cutoff },
             },
             include: [

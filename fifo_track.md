@@ -239,8 +239,8 @@
 
 5. Visa   
    1. Prefill(Visa Fee Subsidy).  
-   2. Invoicer : Aveling  
-   3. Mail: Aveling (Visa Invoice Mail)
+   2. Invoicer : Blue Collar 
+   3. Mail: Blue Collar (Visa Invoice Mail)
 * 
 
 9. # Receipt
@@ -250,7 +250,7 @@
    3. Generate receipt  
    4. Preview  
    5. Create at server  
-   6. Send with mail as attachment(all files are sent with mail as attachment) (Payment Receipt Mail)
+   6. Send with mail as attachment(all files are sent with mail as attachment) (Payment Receipt Mail from the invoicer for that invoice)
 
    
 
@@ -268,9 +268,9 @@
 2. If aveling partial made with no complete after partial invoice paid, applicant can only take 3 ticket courses and exams.  
 3. If complete after partial payment made applicant can take all courses  
 4. If complete payment applicant can take all ticket courses and exams  
-5. On submit Ticket Course Submitted Mail is sent  
-6. On fail Ticket Course Failed Mail is sent  
-7. On pass Ticket Course Passed Mail is sent  
+5. On submit Ticket Course Exam Submitted Mail is sent  
+6. On fail Ticket Course Exam Failed Mail is sent  
+7. On pass Ticket Course Exam Passed Mail is sent  
 8. The first attempt is truly properly graded.  
 9. If candidate truly failed first attempt second attempt is automatically passed at the pass mark
 

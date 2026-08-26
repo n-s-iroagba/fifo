@@ -148,7 +148,7 @@ export default function ContractsDashboardPage() {
             ) : (
                 <div className="space-y-8">
                     {contracts.map((contract: any) => {
-                        const isApproved = contract.status === 'approved' || contract.status === 'completed';
+                        const isApproved = contract.status === 'approved' || contract.status === 'completed' || contract.status === 'accepted';
                         const isUnderReview = contract.status === 'under-review';
                         const isOngoing = contract.status === 'ongoing' || contract.status === 'pending';
                         const contractUploads = uploadState[contract.id] || {};

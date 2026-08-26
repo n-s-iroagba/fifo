@@ -37,9 +37,22 @@ Contract.init({
         type: sequelize_1.DataTypes.STRING,
         allowNull: true,
     },
+    documentUrl1: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
+    documentUrl15: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
     adminDocumentUrl: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: true,
+    },
+    avelingWelcomeSent: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
     }
 }, {
     sequelize: database_1.sequelize,

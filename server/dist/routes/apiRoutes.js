@@ -112,11 +112,9 @@ router.get('/admin/applications/:id', ...adminMW, ApplicationController_1.applic
 router.put('/admin/applications/:id/visa-sponsorship', ...adminMW, ApplicationController_1.applicationController.updateVisaSponsorshipStatus.bind(ApplicationController_1.applicationController));
 router.post('/admin/applications/:id/nominations', ...adminMW, ApplicationController_1.applicationController.createNominations.bind(ApplicationController_1.applicationController));
 router.get('/admin/applications/:id/nominations', ...adminMW, ApplicationController_1.applicationController.getNominations.bind(ApplicationController_1.applicationController));
-router.put('/admin/applications/:id/nominations/:nominationId/select', ...adminMW, ApplicationController_1.applicationController.selectNomination.bind(ApplicationController_1.applicationController));
 // Applicant Nomination Upload
 router.post('/applications/documents', ...applicantMW, ApplicationController_1.applicationController.uploadNominationDocument.bind(ApplicationController_1.applicationController));
 router.get('/applications/:id/nominations', ...applicantMW, ApplicationController_1.applicationController.getNominations.bind(ApplicationController_1.applicationController));
-router.put('/applications/:id/nominations/:nominationId/select', ...applicantMW, ApplicationController_1.applicationController.selectNomination.bind(ApplicationController_1.applicationController));
 // Admin Contract endpoints
 router.get('/admin/applications/:id/contracts', ...adminMW, ApplicationController_1.applicationController.getContracts.bind(ApplicationController_1.applicationController));
 router.post('/admin/applications/:id/contracts', ...adminMW, ApplicationController_1.applicationController.createContract.bind(ApplicationController_1.applicationController));

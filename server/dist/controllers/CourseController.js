@@ -97,6 +97,40 @@ class CourseController {
     async getPublishedCourses(req, res, next) {
         try {
             const data = await CourseService_1.CourseService.getPublishedCourses();
+            // Check for optional auth
+            let userId = null;
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                try {
+                    const { verifyToken } = require('../utils/token');
+                    const decoded = verifyToken(authHeader.split(' ')[1]);
+                    if (decoded && decoded.id)
+                        userId = decoded.id;
+                }
+                catch (e) {
+                    // Ignore invalid token here
+                }
+            }
+            if (userId) {
+                const { Ticket, User } = require('../models');
+                const user = await User.findByPk(userId);
+                const missingTickets = await Ticket.findAll({
+                    where: { userId, status: 'not_possessed' }
+                });
+                const gapCourseIds = missingTickets.map((t) => t.courseId);
+                const subsidyPercentage = user?.subsidyPercentage || 0;
+                const enrichedData = data.map((c) => {
+                    const plain = c.toJSON ? c.toJSON() : c;
+                    const isGap = gapCourseIds.includes(plain.id);
+                    if (isGap && subsidyPercentage > 0) {
+                        plain.isGapRecommended = true;
+                        plain.subsidyAmount = Math.round(plain.price * (subsidyPercentage / 100));
+                        plain.subsidyReason = 'Corporate Subsidy applied';
+                    }
+                    return plain;
+                });
+                return res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: enrichedData });
+            }
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data });
         }
         catch (error) {

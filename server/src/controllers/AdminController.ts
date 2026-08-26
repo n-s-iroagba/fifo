@@ -265,7 +265,7 @@ export class AdminController {
 
     public async dispatchInvoiceEmail(req: Request, res: Response): Promise<void> {
         try {
-            const { applicantId, invoiceType, partAmount, totalCost, subsidyPercentage, finalAmountDue, email } = req.body;
+            const { applicantId, invoiceType, partAmount, totalCost, subsidyPercentage, finalAmountDue, email, walletAddress } = req.body;
             const { sendInvoiceEmail } = require('../utils/email');
             const { User, Invoice } = require('../models');
 
@@ -290,7 +290,8 @@ export class AdminController {
                 parseFloat(totalCost || '0'),
                 parseFloat(subsidyPercentage || '0'),
                 parseFloat(finalAmountDue || '0'),
-                attachments
+                attachments,
+                walletAddress
             );
 
             // Record invoice in DB
@@ -323,10 +324,13 @@ export class AdminController {
 
     public async generateInvoiceReceipt(req: Request, res: Response): Promise<void> {
         try {
-            const { Invoice } = require('../models');
+            const { Invoice, User } = require('../models');
+            const { sendReceiptEmail } = require('../utils/email');
             const id = parseInt(req.params.id as string, 10);
             
-            const invoice = await Invoice.findByPk(id);
+            const invoice = await Invoice.findByPk(id, {
+                include: [{ model: User, as: 'applicant' }]
+            });
             if (!invoice) {
                 res.status(404).json({ success: false, message: 'Invoice not found' });
                 return;
@@ -336,7 +340,19 @@ export class AdminController {
             invoice.receiptProofSubmission = new Date();
             await invoice.save();
 
-            res.status(200).json({ success: true, message: 'Receipt generated and invoice marked as paid.' });
+            const receiptType = invoice.purpose === 'visa-blue-collar' ? 'blue-collar' : 'aveling';
+            
+            if (invoice.applicant && invoice.applicant.email) {
+                await sendReceiptEmail(
+                    invoice.applicant.email,
+                    invoice.applicant.fullName,
+                    receiptType,
+                    parseFloat(invoice.amountInUSD || '0'),
+                    invoice.id
+                );
+            }
+
+            res.status(200).json({ success: true, message: 'Receipt generated, marked as paid, and emailed.' });
         } catch (error: any) {
             console.error('[AdminController.generateInvoiceReceipt]', error);
             res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });

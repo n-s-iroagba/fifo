@@ -6,7 +6,7 @@ import { uploadFile } from '@/lib/utils';
 
 // ─── Contract Document Generator ─────────────────────────────────────────────
 
-async function generateContractPDF(applicant: any, nomination: any, dateStr: string): Promise<Blob> {
+async function generateContractPDF(applicant: any, nomination: any, dateStr: string, tickets: any[] = []): Promise<Blob> {
     const { jsPDF } = await import('jspdf');
     const autoTable = (await import('jspdf-autotable')).default;
 
@@ -174,18 +174,36 @@ async function generateContractPDF(applicant: any, nomination: any, dateStr: str
 
     const calcCand = (total: number, comp: number) => `A$${(total - comp).toFixed(2)}`;
 
-    const s1Rows = [
-        ['1. White Card WA (CPCCWHS1001)', 'A$95.00', `A$${(95 * Number(companySub) / 100).toFixed(2)}`, calcCand(95, 95 * Number(companySub) / 100), 'Online. Max 2.'],
-        ['2. Working at Heights (RIIWHS204E)', 'A$270.00', `A$${(270 * Number(companySub) / 100).toFixed(2)}`, calcCand(270, 270 * Number(companySub) / 100), 'Hybrid. Max 2.'],
-        ['3. Confined Space Entry (RIIWHS202E)', 'A$290.00', `A$${(290 * Number(companySub) / 100).toFixed(2)}`, calcCand(290, 290 * Number(companySub) / 100), 'Hybrid. Max 2.'],
-        ['4. Manual Driver\'s Licence (Class C)', 'A$185.50', 'A$0.00', 'A$185.50', 'DoT Fees. Max 2.'],
-        ['5. Standard 11 Mining Induction', 'A$690.00', `A$${(690 * Number(companySub) / 100).toFixed(2)}`, calcCand(690, 690 * Number(companySub) / 100), 'Mandatory. Max 2.'],
-        ['6. Provide First Aid & CPR', 'A$160.00', `A$${(160 * Number(companySub) / 100).toFixed(2)}`, calcCand(160, 160 * Number(companySub) / 100), 'Online Prep. Max 2.'],
-        ['7. National Police Clearance', 'A$55.00', 'A$0.00', 'A$55.00', 'Background Check.'],
-        ['8. Subclass 482 Visa (VAC Fee)', 'A$4,015.00', 'A$4,015.00', 'A$0.00', 'Reg 2.87 Compliant.'],
-        ['9. TRA Offshore Skills Assessment', 'Statutory', 'A$0.00', '100% Cand.', 'Direct to TRA.'],
-        ['10. Mobilization Housing (3 Mo.)', 'A$12,000.00', 'A$12,000.00', 'A$0.00', 'Company Benefit.']
+    const s1Rows: string[][] = [];
+    
+    // Add gap tickets first
+    if (tickets && tickets.length > 0) {
+        tickets.forEach((ticket: any, index: number) => {
+            if (ticket.status === 'not_possessed') {
+                const totalCost = ticket.realPrice || ticket.purchasePrice || 0;
+                const companyAmount = (totalCost * Number(companySub)) / 100;
+                const candidateAmount = totalCost - companyAmount;
+                s1Rows.push([
+                    `${index + 1}. ${ticket.ticketType}`,
+                    `A$${totalCost.toFixed(2)}`,
+                    `A$${companyAmount.toFixed(2)}`,
+                    `A$${candidateAmount.toFixed(2)}`,
+                    'Online/Hybrid. Max 2.'
+                ]);
+            }
+        });
+    }
+
+    // Default static items that always apply to mobilization/processing
+    const baseIndex = s1Rows.length + 1;
+    const staticRows = [
+        [`${baseIndex}. Manual Driver's Licence (Class C)`, 'A$185.50', 'A$0.00', 'A$185.50', 'DoT Fees. Max 2.'],
+        [`${baseIndex + 1}. National Police Clearance`, 'A$55.00', 'A$0.00', 'A$55.00', 'Background Check.'],
+        [`${baseIndex + 2}. Subclass 482 Visa (VAC Fee)`, 'A$4,015.00', 'A$4,015.00', 'A$0.00', 'Reg 2.87 Compliant.'],
+        [`${baseIndex + 3}. TRA Offshore Skills Assessment`, 'Statutory', 'A$0.00', '100% Cand.', 'Direct to TRA.'],
+        [`${baseIndex + 4}. Mobilization Housing (3 Mo.)`, 'A$12,000.00', 'A$12,000.00', 'A$0.00', 'Company Benefit.']
     ];
+    s1Rows.push(...staticRows);
 
     if (y > 220) { doc.addPage(); y = 15; }
     autoTable(doc, {
@@ -278,6 +296,13 @@ export default function ContractsPage() {
     const nominations = nominationsRes || [];
     const selectedNomination = nominations.find((n: any) => n.isSelected) || nominations[0];
 
+    const { data: ticketsRes } = useApiQuery<any>(
+        ['admin', 'tickets', selectedApplicant],
+        `/admin/tickets?userId=${selectedApplicant}&limit=100`,
+        { enabled: !!selectedApplicant }
+    );
+    const tickets = ticketsRes?.rows || [];
+
     const { data: contracts = [], refetch } = useApiQuery<any[]>(
         ['admin', 'contracts', appId],
         `/admin/applications/${appId}/contracts`,
@@ -303,7 +328,7 @@ export default function ContractsPage() {
         // we'll implement this as a download of the generated PDF instead for simplicity.
         const applicant = applicants.find((a: any) => a.id.toString() === selectedApplicant);
         if (!applicant || !selectedNomination) return;
-        const pdfBlob = await generateContractPDF(applicant, selectedNomination, getToday());
+        const pdfBlob = await generateContractPDF(applicant, selectedNomination, getToday(), tickets);
         const url = URL.createObjectURL(pdfBlob);
         const a = document.createElement('a');
         a.href = url;
@@ -336,7 +361,7 @@ export default function ContractsPage() {
         `;
 
         try {
-            const pdfBlob = await generateContractPDF(applicant, selectedNomination, getToday());
+            const pdfBlob = await generateContractPDF(applicant, selectedNomination, getToday(), tickets);
             const pdfFile = new File([pdfBlob], `BCR-FIFO-CON-0810_${applicant.fullName.replace(/\s+/g, '_')}.pdf`, { type: 'application/pdf' });
 
             const formData = new FormData();

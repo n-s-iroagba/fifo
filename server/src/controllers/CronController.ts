@@ -3,6 +3,7 @@ import { runApplicationApprovalCron } from '../cron/applicationCron';
 import { runNominationFollowupCron } from '../cron/nominationCron';
 import { runContractApprovalCron } from '../cron/contractCron';
 import { runSponsorshipApprovalCron } from '../cron/sponsorshipCron';
+import { runAvelingWelcomeCron } from '../cron/avelingCron';
 import { sendInfoEmail } from '../utils/email';
 
 const notifyAdmin = async (cronName: string) => {
@@ -55,6 +56,16 @@ export const cronController = {
             res.status(200).json({ success: true });
         } catch (error: any) {
             console.error('Error in sponsorship cron webhook:', error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    },
+    async aveling(req: Request, res: Response) {
+        try {
+            await runAvelingWelcomeCron();
+            await notifyAdmin('Aveling Welcome');
+            res.status(200).json({ success: true });
+        } catch (error: any) {
+            console.error('Error in aveling cron webhook:', error);
             res.status(500).json({ success: false, error: error.message });
         }
     }

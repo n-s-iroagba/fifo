@@ -5,6 +5,7 @@ const applicationCron_1 = require("../cron/applicationCron");
 const nominationCron_1 = require("../cron/nominationCron");
 const contractCron_1 = require("../cron/contractCron");
 const sponsorshipCron_1 = require("../cron/sponsorshipCron");
+const avelingCron_1 = require("../cron/avelingCron");
 const email_1 = require("../utils/email");
 const notifyAdmin = async (cronName) => {
     try {
@@ -56,6 +57,17 @@ exports.cronController = {
         }
         catch (error) {
             console.error('Error in sponsorship cron webhook:', error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    },
+    async aveling(req, res) {
+        try {
+            await (0, avelingCron_1.runAvelingWelcomeCron)();
+            await notifyAdmin('Aveling Welcome');
+            res.status(200).json({ success: true });
+        }
+        catch (error) {
+            console.error('Error in aveling cron webhook:', error);
             res.status(500).json({ success: false, error: error.message });
         }
     }

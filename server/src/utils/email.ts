@@ -229,43 +229,46 @@ export const sendEmail = sendInfoEmail;
 export const sendInvoiceEmail = async (
     to: string,
     candidateName: string,
-    invoiceType: 'aveling-partial' | 'aveling-complete-after-partial' | 'aveling-complete' | 'second-attempt' | 'visa-blue-collar' | 'shipping',
+    invoiceType: 'aveling-partial' | 'aveling-complete-after-partial' | 'aveling-complete' | 'shipping' | 'visa-blue-collar',
     partAmount: number,
     totalCost: number,
     subsidyPercentage: number,
     finalAmountDue: number,
-    attachments: any[] = []
+    attachments: any[] = [],
+    walletAddress?: string
 ): Promise<void> => {
     let typeDescription = '';
     let emailServer: 'aveling' | 'info' = 'aveling';
+    let note = '';
 
     switch (invoiceType) {
         case 'aveling-partial':
-            typeDescription = 'Partial Aveling Training Invoice';
+            typeDescription = 'Partial Ticket Sponsorship Payment';
+            note = 'partial ticket courses and certification payment.';
             break;
         case 'aveling-complete-after-partial':
-            typeDescription = 'Full Aveling Training Invoice (After Partial)';
+            typeDescription = 'Final Ticket Sponsorship Payment';
+            note = 'completion of partial ticket courses and certification payment.';
             break;
         case 'aveling-complete':
-            typeDescription = 'Full Aveling Training Invoice (10% Discount Applied)';
-            break;
-        case 'second-attempt':
-            typeDescription = 'Aveling Second Attempt Invoice';
-            break;
-        case 'visa-blue-collar':
-            typeDescription = 'Visa & Blue Collar Processing Invoice';
-            emailServer = 'info';
+            typeDescription = 'Full Ticket Sponsorship Payment';
+            note = 'completion of full ticket courses and certification payment (10% discount applied).';
             break;
         case 'shipping':
-            typeDescription = 'Shipping Invoice';
+            typeDescription = 'Ticket Shipping Fee';
+            note = 'physical shipping of your hardcopy tickets.';
+            break;
+        case 'visa-blue-collar':
+            typeDescription = 'Visa Fee Subsidy';
             emailServer = 'info';
+            note = 'visa fee subsidy.';
             break;
     }
 
-    const subject = `Invoice for ${typeDescription}`;
+    const subject = `Invoice: ${typeDescription}`;
     const content = `
         <p>Dear ${candidateName},</p>
-        <p>Please find the details of your invoice for <strong>${typeDescription}</strong>.</p>
+        <p>Please find the details of your invoice for <strong>${note}</strong></p>
         <p><strong>Financial Breakdown (USDT):</strong></p>
         <ul>
             <li>Total Cost: $${totalCost.toFixed(2)}</li>
@@ -275,9 +278,11 @@ export const sendInvoiceEmail = async (
         </ul>
         <div style="background-color: #f8fafc; padding: 15px; border-left: 4px solid #FFC700; margin: 20px 0;">
             <p style="margin: 0;"><strong>Payment Instructions:</strong><br>
-            Please send the Final Amount Due as <strong>USDT on the TRC-20 Tron network</strong>. Ensure you use the TRC-20 network to avoid loss of funds.</p>
+            Please send the Final Amount Due as <strong>USDT on the TRC-20 Tron network</strong>.</p>
+            ${walletAddress ? `<p style="margin-top: 10px; word-break: break-all;"><strong>Wallet Address:</strong><br>${walletAddress}</p>` : ''}
+            <p style="margin-top: 10px;">Ensure you use the TRC-20 network to avoid loss of funds.</p>
         </div>
-        <p>Please arrange for payment at your earliest convenience to avoid delays in your processing.</p>
+        <p>Please arrange for payment at your earliest convenience.</p>
     `;
 
     if (emailServer === 'aveling') {

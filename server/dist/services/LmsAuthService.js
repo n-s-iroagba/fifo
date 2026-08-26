@@ -58,6 +58,15 @@ class LmsAuthService {
                 isActive: true
             });
         }
+        const { sendAvelingCredentialsEmail } = require('../utils/email');
+        if (user.email) {
+            try {
+                await sendAvelingCredentialsEmail(user.email, user.fullName);
+            }
+            catch (err) {
+                console.error('[LmsAuthService] Failed to send credentials email', err);
+            }
+        }
         return {
             lmsUsername,
             temporaryPassword

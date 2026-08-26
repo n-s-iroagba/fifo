@@ -265,7 +265,8 @@ class ApplicationController {
                         <p>You may also download, sign, and upload the signed document through your dashboard nominations page.</p>
                         <p>Yours sincerely,<br>Troy Latuff<br>Chief Executive Officer<br>Blue Collar Recruitment Pty Ltd</p>
                     `;
-                    await (0, email_1.sendInfoEmail)(candidateEmail, subject, content, documentUrl);
+                    const attachments = [{ filename: 'Nomination_Form.pdf', path: documentUrl }];
+                    await (0, email_1.sendInfoEmail)(candidateEmail, subject, content, attachments);
                 }
                 catch (mailErr) {
                     console.error('[ApplicationController.createNominations] email failed:', mailErr);
@@ -289,25 +290,16 @@ class ApplicationController {
             res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
-    async selectNomination(req, res) {
-        try {
-            const id = parseInt(req.params.id, 10);
-            const nominationId = parseInt(req.params.nominationId, 10);
-            const nominations = await ApplicationService_1.applicationService.selectNomination(id, nominationId);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(nominations);
-        }
-        catch (error) {
-            console.error('[ApplicationController.selectNomination]', error);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
-        }
-    }
     async uploadNominationDocument(req, res) {
         try {
             const userId = req.user.id;
-            const { documentUrl, documentType, applicationId } = req.body;
+            const { documentUrl, applicationId, nominationIds } = req.body;
             if (!documentUrl || !applicationId) {
                 res.status(400).json({ error: 'documentUrl and applicationId are required' });
                 return;
+            }
+            if (nominationIds && Array.isArray(nominationIds) && nominationIds.length > 0) {
+                await ApplicationService_1.applicationService.selectNominations(applicationId, nominationIds);
             }
             await ApplicationService_1.applicationService.saveNominationDocument(applicationId, documentUrl);
             // Update stage to Nomination under-review
@@ -419,7 +411,7 @@ class ApplicationController {
                 res.status(400).json({ error: 'documentUrl, applicationId, and contractId are required' });
                 return;
             }
-            await ApplicationService_1.applicationService.saveContractDocument(applicationId, contractId, documentUrl);
+            await ApplicationService_1.applicationService.saveContractDocument(applicationId, contractId, documentUrl, documentType);
             try {
                 await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(userId, 'under-review');
             }
@@ -429,10 +421,10 @@ class ApplicationController {
             const { sendInfoEmail } = require('../utils/email');
             // Send the document to the admin
             const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
-            const subject = `New Signed Contract Uploaded (User ID: ${userId})`;
-            const content = `
+            const adminSubject = `New Signed Contract Uploaded (User ID: ${userId})`;
+            const adminContent = `
                 <p>Hello Admin,</p>
-                <p>A candidate has uploaded their signed contract.</p>
+                <p>A candidate has uploaded their signed contract (${documentType || 'Document'}).</p>
                 <ul>
                     <li><strong>Candidate User ID:</strong> ${userId}</li>
                     <li><strong>Application ID:</strong> ${applicationId}</li>
@@ -440,7 +432,26 @@ class ApplicationController {
                     <li><strong>Document URL:</strong> <a href="${documentUrl}">View Document</a></li>
                 </ul>
             `;
-            await sendInfoEmail(adminEmail, subject, content);
+            await sendInfoEmail(adminEmail, adminSubject, adminContent);
+            // Send confirmation to candidate
+            try {
+                const { User } = require('../models');
+                const user = await User.findByPk(userId);
+                if (user) {
+                    const candidateSubject = `Contract Received and Under Review`;
+                    const candidateContent = `
+                        <p>Dear ${user.firstName},</p>
+                        <p>We have successfully received your signed contract document (${documentType || 'Document'}).</p>
+                        <p>Your contract is currently <strong>Under Review</strong>. This process typically takes up to 3 hours.</p>
+                        <p>We will notify you once the contract has been fully approved.</p>
+                        <p>Best regards,<br>The Blue Collar Recruitment Team</p>
+                    `;
+                    await sendInfoEmail(user.email, candidateSubject, candidateContent);
+                }
+            }
+            catch (err) {
+                console.error('[ApplicationController.uploadContractDocument] Failed to send candidate email', err);
+            }
             res.status(200).json({ message: 'Document uploaded successfully and sent to admin.' });
         }
         catch (error) {

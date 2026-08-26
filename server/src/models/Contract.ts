@@ -11,7 +11,10 @@ export class Contract extends Model {
     declare role: string;
     declare status: 'pending' | 'accepted' | 'rejected';
     declare documentUrl: string | null;
+    declare documentUrl1: string | null;
+    declare documentUrl15: string | null;
     declare adminDocumentUrl: string | null;
+    declare avelingWelcomeSent: boolean;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 
@@ -50,9 +53,22 @@ Contract.init({
         type: DataTypes.STRING,
         allowNull: true,
     },
+    documentUrl1: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    documentUrl15: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     adminDocumentUrl: {
         type: DataTypes.STRING,
         allowNull: true,
+    },
+    avelingWelcomeSent: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
     }
 }, {
     sequelize,

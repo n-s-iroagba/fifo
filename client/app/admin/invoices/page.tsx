@@ -8,11 +8,13 @@ export default function AdminInvoicesPage() {
     const [applicants, setApplicants] = useState<any[]>([]);
     const [tickets, setTickets] = useState<any[]>([]);
     const [invoices, setInvoices] = useState<any[]>([]);
+    const [wallets, setWallets] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [dispatching, setDispatching] = useState(false);
     const [successMsg, setSuccessMsg] = useState('');
 
     const [selectedUserId, setSelectedUserId] = useState('');
+    const [selectedWalletId, setSelectedWalletId] = useState('');
     const [invoiceType, setInvoiceType] = useState('aveling-partial');
     const [partAmount, setPartAmount] = useState('');
     
@@ -34,8 +36,9 @@ export default function AdminInvoicesPage() {
         Promise.all([
             api.get('/admin/users'),
             api.get('/admin/tickets'),
+            api.get('/admin/bank-accounts'),
             fetchInvoices()
-        ]).then(([usersRes, ticketsRes]) => {
+        ]).then(([usersRes, ticketsRes, walletsRes]) => {
             fetch('https://api.frankfurter.app/latest?from=AUD&to=USD')
                 .then(r => r.json())
                 .then(data => {
@@ -45,6 +48,7 @@ export default function AdminInvoicesPage() {
 
             setApplicants(usersRes.data?.rows || usersRes.data?.users || (Array.isArray(usersRes.data) ? usersRes.data : []));
             setTickets(ticketsRes.data || []);
+            setWallets(walletsRes.data || []);
             setLoading(false);
         }).catch(err => {
             console.error('Failed to load data', err);
@@ -79,17 +83,14 @@ export default function AdminInvoicesPage() {
                 // Full After part aveling
                 finalDue = (cost - subsidyVal) - enteredPart;
                 break;
-            case 'second-attempt':
-                // Aveling Second attempt
-                finalDue = enteredPart;
-                break;
             case 'aveling-complete':
                 // Full Aveling - Apply 10% full discount
                 const baseCostAfterSubsidy = cost - subsidyVal;
                 finalDue = baseCostAfterSubsidy - (baseCostAfterSubsidy * 0.10);
                 break;
+            case 'shipping':
             case 'visa-blue-collar':
-                // Visa Blue Collar - just the entered amount
+                // Shipping or Visa Blue Collar - just the entered amount
                 finalDue = enteredPart;
                 break;
         }
@@ -104,6 +105,8 @@ export default function AdminInvoicesPage() {
         setSuccessMsg('');
 
         try {
+            const selectedWallet = wallets.find(w => w.id === parseInt(selectedWalletId));
+
             await api.post('/admin/invoices/dispatch', {
                 applicantId: selectedUser.id,
                 email: selectedUser.email,
@@ -111,7 +114,8 @@ export default function AdminInvoicesPage() {
                 partAmount: parseFloat(partAmount || '0') * exchangeRate,
                 totalCost: totalCost * exchangeRate,
                 subsidyPercentage: selectedUser.subsidyPercentage || 70,
-                finalAmountDue: finalAmountDue * exchangeRate
+                finalAmountDue: finalAmountDue * exchangeRate,
+                walletAddress: selectedWallet ? selectedWallet.accountNumber : undefined
             });
             setSuccessMsg(`Invoice dispatched successfully to ${selectedUser.fullName}!`);
             fetchInvoices();
@@ -149,7 +153,7 @@ export default function AdminInvoicesPage() {
                     Configure Invoice
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div>
                         <label className="block text-xs font-black uppercase tracking-widest text-zinc-700 mb-2">Select Applicant</label>
                         <select
@@ -171,11 +175,25 @@ export default function AdminInvoicesPage() {
                             onChange={(e) => { setInvoiceType(e.target.value); setCalculationDone(false); }}
                             className="w-full bg-zinc-50 border-2 border-zinc-200 p-4 rounded-xl text-sm font-bold text-zinc-900 outline-none focus:border-[#FFC700] transition-all"
                         >
-                            <option value="aveling-partial">1. Part Aveling</option>
-                            <option value="aveling-complete-after-partial">2. Full After Part Aveling</option>
-                            <option value="second-attempt">3. Aveling Second Attempt</option>
-                            <option value="aveling-complete">4. Full Aveling</option>
-                            <option value="visa-blue-collar">5. Visa & Blue Collar Processing</option>
+                            <option value="aveling-partial">1. Partial</option>
+                            <option value="aveling-complete-after-partial">2. Complete-after-partial</option>
+                            <option value="aveling-complete">3. Complete</option>
+                            <option value="shipping">4. Shipping</option>
+                            <option value="visa-blue-collar">5. Visa</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-black uppercase tracking-widest text-zinc-700 mb-2">Select Wallet</label>
+                        <select
+                            value={selectedWalletId}
+                            onChange={(e) => { setSelectedWalletId(e.target.value); setCalculationDone(false); }}
+                            className="w-full bg-zinc-50 border-2 border-zinc-200 p-4 rounded-xl text-sm font-bold text-zinc-900 outline-none focus:border-[#FFC700] transition-all"
+                        >
+                            <option value="">-- Choose Wallet --</option>
+                            {wallets.map(w => (
+                                <option key={w.id} value={w.id}>{w.bankName} - {w.accountName} ({w.currency})</option>
+                            ))}
                         </select>
                     </div>
                 </div>

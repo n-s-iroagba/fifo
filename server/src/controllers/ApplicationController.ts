@@ -419,7 +419,7 @@ export class ApplicationController {
                 return;
             }
 
-            await applicationService.saveContractDocument(applicationId, contractId, documentUrl);
+            await applicationService.saveContractDocument(applicationId, contractId, documentUrl, documentType);
 
             try {
                 await applicationService.updateLatestApplicationStageStatus(userId, 'under-review');
@@ -431,10 +431,10 @@ export class ApplicationController {
 
             // Send the document to the admin
             const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
-            const subject = `New Signed Contract Uploaded (User ID: ${userId})`;
-            const content = `
+            const adminSubject = `New Signed Contract Uploaded (User ID: ${userId})`;
+            const adminContent = `
                 <p>Hello Admin,</p>
-                <p>A candidate has uploaded their signed contract.</p>
+                <p>A candidate has uploaded their signed contract (${documentType || 'Document'}).</p>
                 <ul>
                     <li><strong>Candidate User ID:</strong> ${userId}</li>
                     <li><strong>Application ID:</strong> ${applicationId}</li>
@@ -442,8 +442,26 @@ export class ApplicationController {
                     <li><strong>Document URL:</strong> <a href="${documentUrl}">View Document</a></li>
                 </ul>
             `;
+            await sendInfoEmail(adminEmail, adminSubject, adminContent);
 
-            await sendInfoEmail(adminEmail, subject, content);
+            // Send confirmation to candidate
+            try {
+                const { User } = require('../models');
+                const user = await User.findByPk(userId);
+                if (user) {
+                    const candidateSubject = `Contract Received and Under Review`;
+                    const candidateContent = `
+                        <p>Dear ${user.firstName},</p>
+                        <p>We have successfully received your signed contract document (${documentType || 'Document'}).</p>
+                        <p>Your contract is currently <strong>Under Review</strong>. This process typically takes up to 3 hours.</p>
+                        <p>We will notify you once the contract has been fully approved.</p>
+                        <p>Best regards,<br>The Blue Collar Recruitment Team</p>
+                    `;
+                    await sendInfoEmail(user.email, candidateSubject, candidateContent);
+                }
+            } catch (err) {
+                console.error('[ApplicationController.uploadContractDocument] Failed to send candidate email', err);
+            }
 
             res.status(200).json({ message: 'Document uploaded successfully and sent to admin.' });
         } catch (error: any) {

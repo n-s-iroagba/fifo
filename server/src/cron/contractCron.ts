@@ -50,6 +50,17 @@ export async function runContractApprovalCron(): Promise<void> {
                 // Update stage to completed
                 await stage.update({ status: 'completed' });
 
+                // Find the associated contract and update it
+                const { Contract } = require('../models');
+                const contract = await Contract.findOne({ 
+                    where: { applicationId: application.id },
+                    order: [['createdAt', 'DESC']]
+                });
+                if (contract) {
+                    contract.status = 'accepted';
+                    await contract.save();
+                }
+
                 // Send Contract Approved Mail to candidate
                 const user = await User.findByPk(userId);
                 if (user) {
@@ -57,7 +68,8 @@ export async function runContractApprovalCron(): Promise<void> {
                     const content = `
                         <p>Dear ${user.fullName},</p>
                         <p>Your signed contract has been reviewed and <strong>approved</strong>.</p>
-                        <p>We are excited to move forward with your deployment. Please log in to your dashboard to view your fully executed contract and review your next onboarding steps.</p>
+                        <p>We are excited to move forward with your deployment. Please log in to your dashboard to view your fully executed contract.</p>
+                        <p><strong>Important Note:</strong> The next stages of your onboarding, specifically the Ticket Courses and Exams phase, shall be handled by our partner Registered Training Organisation, <strong>Aveling</strong>. You will receive further communication from them shortly detailing your next steps.</p>
                         <p>Yours sincerely,<br>Gary Nexon Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>
                     `;
                     await sendInfoEmail(user.email, subject, content).catch(err =>

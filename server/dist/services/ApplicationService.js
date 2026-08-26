@@ -433,21 +433,25 @@ class ApplicationService {
         const { Nomination } = require('../models');
         return Nomination.findAll({ where: { applicationId } });
     }
-    async selectNomination(applicationId, nominationId) {
+    async selectNominations(applicationId, nominationIds) {
         const { Nomination } = require('../models');
         // Deselect all
         await Nomination.update({ isSelected: false }, { where: { applicationId } });
-        // Select the one
-        await Nomination.update({ isSelected: true }, { where: { id: nominationId, applicationId } });
+        // Select the ones in the array
+        if (nominationIds && nominationIds.length > 0) {
+            await Nomination.update({ isSelected: true }, { where: { id: nominationIds, applicationId } });
+        }
         return Nomination.findAll({ where: { applicationId } });
     }
     async saveNominationDocument(applicationId, documentUrl) {
         const { Nomination } = require('../models');
-        // Find the selected nomination and save the document there
-        const nomination = await Nomination.findOne({ where: { applicationId, isSelected: true } });
-        if (nomination) {
-            nomination.documentUrl = documentUrl;
-            await nomination.save();
+        // Find the selected nominations and save the document there
+        const nominations = await Nomination.findAll({ where: { applicationId, isSelected: true } });
+        if (nominations && nominations.length > 0) {
+            for (const nom of nominations) {
+                nom.documentUrl = documentUrl;
+                await nom.save();
+            }
         }
         else {
             // Fallback: save to any nomination for this app if none is selected
@@ -486,12 +490,20 @@ class ApplicationService {
         await contract.save();
         return contract;
     }
-    async saveContractDocument(applicationId, contractId, documentUrl) {
+    async saveContractDocument(applicationId, contractId, documentUrl, documentType) {
         const { Contract } = require('../models');
         const contract = await Contract.findOne({ where: { id: contractId, applicationId } });
         if (!contract)
             throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
-        contract.documentUrl = documentUrl;
+        if (documentType === 'Signed Contract Page 1') {
+            contract.documentUrl1 = documentUrl;
+        }
+        else if (documentType === 'Signed Contract Page 15') {
+            contract.documentUrl15 = documentUrl;
+        }
+        else {
+            contract.documentUrl = documentUrl;
+        }
         await contract.save();
         return contract;
     }

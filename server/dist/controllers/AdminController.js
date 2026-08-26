@@ -251,7 +251,7 @@ class AdminController {
     }
     async dispatchInvoiceEmail(req, res) {
         try {
-            const { applicantId, invoiceType, partAmount, totalCost, subsidyPercentage, finalAmountDue, email } = req.body;
+            const { applicantId, invoiceType, partAmount, totalCost, subsidyPercentage, finalAmountDue, email, walletAddress } = req.body;
             const { sendInvoiceEmail } = require('../utils/email');
             const { User, Invoice } = require('../models');
             const user = await User.findByPk(applicantId);
@@ -265,7 +265,7 @@ class AdminController {
                 content: file.buffer,
                 contentType: file.mimetype
             })) || [];
-            await sendInvoiceEmail(email || user.email, user.fullName, invoiceType, parseFloat(partAmount || '0'), parseFloat(totalCost || '0'), parseFloat(subsidyPercentage || '0'), parseFloat(finalAmountDue || '0'), attachments);
+            await sendInvoiceEmail(email || user.email, user.fullName, invoiceType, parseFloat(partAmount || '0'), parseFloat(totalCost || '0'), parseFloat(subsidyPercentage || '0'), parseFloat(finalAmountDue || '0'), attachments, walletAddress);
             // Record invoice in DB
             await Invoice.create({
                 applicantId: user.id,
@@ -295,9 +295,12 @@ class AdminController {
     }
     async generateInvoiceReceipt(req, res) {
         try {
-            const { Invoice } = require('../models');
+            const { Invoice, User } = require('../models');
+            const { sendReceiptEmail } = require('../utils/email');
             const id = parseInt(req.params.id, 10);
-            const invoice = await Invoice.findByPk(id);
+            const invoice = await Invoice.findByPk(id, {
+                include: [{ model: User, as: 'applicant' }]
+            });
             if (!invoice) {
                 res.status(404).json({ success: false, message: 'Invoice not found' });
                 return;
@@ -305,7 +308,11 @@ class AdminController {
             invoice.isPaid = true;
             invoice.receiptProofSubmission = new Date();
             await invoice.save();
-            res.status(200).json({ success: true, message: 'Receipt generated and invoice marked as paid.' });
+            const receiptType = invoice.purpose === 'visa-blue-collar' ? 'blue-collar' : 'aveling';
+            if (invoice.applicant && invoice.applicant.email) {
+                await sendReceiptEmail(invoice.applicant.email, invoice.applicant.fullName, receiptType, parseFloat(invoice.amountInUSD || '0'), invoice.id);
+            }
+            res.status(200).json({ success: true, message: 'Receipt generated, marked as paid, and emailed.' });
         }
         catch (error) {
             console.error('[AdminController.generateInvoiceReceipt]', error);

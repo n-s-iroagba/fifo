@@ -576,12 +576,19 @@ export class ApplicationService {
         return contract;
     }
 
-    public async saveContractDocument(applicationId: number, contractId: number, documentUrl: string) {
+    public async saveContractDocument(applicationId: number, contractId: number, documentUrl: string, documentType?: string) {
         const { Contract } = require('../models');
         const contract = await Contract.findOne({ where: { id: contractId, applicationId } });
         if (!contract) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
 
-        contract.documentUrl = documentUrl;
+        if (documentType === 'Signed Contract Page 1') {
+            contract.documentUrl1 = documentUrl;
+        } else if (documentType === 'Signed Contract Page 15') {
+            contract.documentUrl15 = documentUrl;
+        } else {
+            contract.documentUrl = documentUrl;
+        }
+        
         await contract.save();
         return contract;
     }

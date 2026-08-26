@@ -64,6 +64,7 @@ app.post('/api/cron/application', express.raw({type: 'application/json'}), qstas
 app.post('/api/cron/nomination', express.raw({type: 'application/json'}), qstashMiddleware, cronController.nomination);
 app.post('/api/cron/contract', express.raw({type: 'application/json'}), qstashMiddleware, cronController.contract);
 app.post('/api/cron/sponsorship', express.raw({type: 'application/json'}), qstashMiddleware, cronController.sponsorship);
+app.post('/api/cron/aveling', express.raw({type: 'application/json'}), qstashMiddleware, cronController.aveling);
 
 
 app.use(express.json({ limit: '50mb' }));

@@ -83,6 +83,44 @@ export class CourseController {
     async getPublishedCourses(req: Request, res: Response, next: NextFunction) {
         try {
             const data = await CourseService.getPublishedCourses();
+            
+            // Check for optional auth
+            let userId = null;
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                try {
+                    const { verifyToken } = require('../utils/token');
+                    const decoded = verifyToken(authHeader.split(' ')[1]);
+                    if (decoded && decoded.id) userId = decoded.id;
+                } catch (e) {
+                    // Ignore invalid token here
+                }
+            }
+
+            if (userId) {
+                const { Ticket, User } = require('../models');
+                const user = await User.findByPk(userId);
+                const missingTickets = await Ticket.findAll({
+                    where: { userId, status: 'not_possessed' }
+                });
+                
+                const gapCourseIds = missingTickets.map((t: any) => t.courseId);
+                const subsidyPercentage = user?.subsidyPercentage || 0;
+
+                const enrichedData = data.map((c: any) => {
+                    const plain = c.toJSON ? c.toJSON() : c;
+                    const isGap = gapCourseIds.includes(plain.id);
+                    if (isGap && subsidyPercentage > 0) {
+                        plain.isGapRecommended = true;
+                        plain.subsidyAmount = Math.round(plain.price * (subsidyPercentage / 100));
+                        plain.subsidyReason = 'Corporate Subsidy applied';
+                    }
+                    return plain;
+                });
+                
+                return res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: enrichedData });
+            }
+
             res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data });
         } catch (error) { next(error); }
     }

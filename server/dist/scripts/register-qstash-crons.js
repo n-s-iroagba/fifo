@@ -13,7 +13,8 @@ const crons = [
     { name: 'application', schedule: '0 * * * *', endpoint: '/api/cron/application' }, // Every hour
     { name: 'nomination', schedule: '0 * * * *', endpoint: '/api/cron/nomination' }, // Every hour
     { name: 'contract', schedule: '0 * * * *', endpoint: '/api/cron/contract' }, // Every hour
-    { name: 'sponsorship', schedule: '0 * * * *', endpoint: '/api/cron/sponsorship' } // Every hour
+    { name: 'sponsorship', schedule: '0 * * * *', endpoint: '/api/cron/sponsorship' }, // Every hour
+    { name: 'aveling', schedule: '0 * * * *', endpoint: '/api/cron/aveling' } // Every hour
 ];
 async function registerCrons() {
     if (!QSTASH_TOKEN) {

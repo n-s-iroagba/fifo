@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ExamAttemptService = void 0;
 const ExamAttempt_1 = require("../models/ExamAttempt");
-const ExamConfig_1 = require("../models/ExamConfig");
 const ExamQuestion_1 = require("../models/ExamQuestion");
 class ExamAttemptService {
     static async getAttemptDetails(attemptId) {
@@ -21,8 +20,27 @@ class ExamAttemptService {
         };
     }
     static async startAttempt(userId, courseId) {
-        const { Ticket, Enrollment } = require('../models');
-        // Check if the user has access
+        const { Ticket, Enrollment, Invoice } = require('../models');
+        // Check invoice status to see if they can take courses
+        const userInvoices = await Invoice.findAll({ where: { applicantId: userId, isPaid: true } });
+        const hasComplete = userInvoices.some((i) => i.purpose === 'aveling-complete' || i.purpose === 'aveling-complete-after-partial');
+        const hasPartial = userInvoices.some((i) => i.purpose === 'aveling-partial');
+        if (!hasComplete && hasPartial) {
+            const distinctCoursesAttempted = await ExamAttempt_1.ExamAttempt.count({
+                where: { userId },
+                distinct: true,
+                col: 'courseId'
+            });
+            const hasAttemptedThisCourse = await ExamAttempt_1.ExamAttempt.count({ where: { userId, courseId } });
+            if (hasAttemptedThisCourse === 0 && distinctCoursesAttempted >= 3) {
+                throw new Error('PARTIAL_LIMIT_EXCEEDED');
+            }
+        }
+        else if (!hasComplete && !hasPartial) {
+            // Strictly require payment to start (though ticket gate might also catch this)
+            throw new Error('PAYMENT_REQUIRED');
+        }
+        // Check if the user has access via ticket or enrollment
         const ticket = await Ticket.findOne({ where: { userId, courseId } });
         const enrollment = await Enrollment.findOne({ where: { userId, courseId } });
         if (ticket && ticket.courseAccessGranted === false) {
@@ -32,7 +50,6 @@ class ExamAttemptService {
             throw new Error('PAYMENT_REQUIRED');
         }
         // Payment Milestone Gate (Schedule 1 / Clause 5.1)
-        // Must pass before any exam can be started — regardless of per-ticket payment status.
         if (ticket) {
             const { ticketService } = require('./TicketService');
             const gateResult = await ticketService.checkPaymentMilestoneGate(userId, ticket.id);
@@ -47,7 +64,6 @@ class ExamAttemptService {
         if (prevAttempts >= 2) {
             throw new Error('RETAKE_LIMIT_EXCEEDED');
         }
-        const config = await ExamConfig_1.ExamConfig.findOne({ where: { courseId } });
         const attempt = await ExamAttempt_1.ExamAttempt.create({
             userId,
             courseId,
@@ -108,6 +124,23 @@ class ExamAttemptService {
         }
         attempt.isPass = isPass;
         await attempt.save();
+        const { User } = require('../models');
+        const user = await User.findByPk(attempt.userId);
+        const { sendTicketCourseSubmittedEmail, sendTicketCourseFailedEmail, sendTicketCoursePassedEmail } = require('../utils/email');
+        if (user) {
+            try {
+                await sendTicketCourseSubmittedEmail(user.email, user.fullName);
+                if (isPass) {
+                    await sendTicketCoursePassedEmail(user.email, user.fullName);
+                }
+                else {
+                    await sendTicketCourseFailedEmail(user.email, user.fullName);
+                }
+            }
+            catch (err) {
+                console.error('[ExamAttemptService] Failed to send outcome emails', err);
+            }
+        }
         // 1.1.20 Update Course/Enrollment status to 'Review-Awaiting' upon exam submission
         const enrollment = await Enrollment.findOne({
             where: { userId: attempt.userId, courseId: attempt.courseId }
