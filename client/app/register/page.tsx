@@ -86,6 +86,16 @@ function RegisterContent() {
                                 </p>
                             </div>
 
+                            <div className="mt-4 p-5 bg-blue-50/80 border border-blue-100 rounded-xl text-left flex items-start gap-3 shadow-inner">
+                                <span className="material-symbols-outlined text-blue-400 text-xl mt-0.5 animate-pulse">mark_email_unread</span>
+                                <div>
+                                    <p className="text-blue-900 text-[10px] font-black uppercase tracking-widest mb-1.5">Check Spam Folder</p>
+                                    <p className="text-blue-500/90 text-[9px] font-bold uppercase tracking-widest leading-relaxed">
+                                        Please check your spam or junk folder for the verification link. We highly advise that you always check your spam folder for all future communications and mark our emails as "Not Spam".
+                                    </p>
+                                </div>
+                            </div>
+
                             <Link
                                 href="/login"
                                 className="block text-center w-full py-4 bg-white border-2 border-blue-900 text-blue-900 font-bold text-[10px] uppercase tracking-[0.2em] rounded-lg hover:bg-blue-50 transition-all active:scale-[0.98]"
