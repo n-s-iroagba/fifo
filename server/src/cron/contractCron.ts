@@ -8,7 +8,7 @@ const CRON_NAME = 'ContractAutoApproval';
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
-export async function runContractApprovalCron(): Promise<void> {
+export async function runContractApprovalCron(): Promise<number> {
     try {
         console.log('[ContractCron] Running contract auto-approval check...');
 
@@ -83,9 +83,11 @@ export async function runContractApprovalCron(): Promise<void> {
             }
         }
         recordCronRun(CRON_NAME, 'ok');
+        return pendingStages.length;
     } catch (err) {
         console.error('[ContractCron] Fatal error:', err);
         recordCronRun(CRON_NAME, 'error', String(err));
+        return 0;
     }
 }
 

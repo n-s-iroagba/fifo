@@ -111,9 +111,11 @@ async function runAvelingWelcomeCron() {
             }
         }
         (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'ok');
+        return contracts.length;
     }
     catch (err) {
         console.error('[AvelingCron] Fatal error:', err);
         (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'error', String(err));
+        return 0;
     }
 }

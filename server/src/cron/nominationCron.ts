@@ -15,7 +15,7 @@ const CRON_NAME = 'NominationFollowup';
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
-export async function runNominationFollowupCron(): Promise<void> {
+export async function runNominationFollowupCron(): Promise<number> {
     try {
         const start = Date.now();
         console.log('[NominationCron] Running nomination followup check (1 hour post-approval)...');
@@ -88,9 +88,11 @@ export async function runNominationFollowupCron(): Promise<void> {
             }
         }
         recordCronRun(CRON_NAME, 'ok');
+        return completedStages.length;
     } catch (err) {
         console.error('[NominationCron] Fatal error:', err);
         recordCronRun(CRON_NAME, 'error', String(err));
+        return 0;
     }
 }
 

@@ -7,7 +7,7 @@ import axios from 'axios';
 const CRON_NAME = 'AvelingWelcome';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
-export async function runAvelingWelcomeCron(): Promise<void> {
+export async function runAvelingWelcomeCron(): Promise<number> {
     try {
         console.log('[AvelingCron] Running aveling welcome check...');
 
@@ -121,8 +121,10 @@ export async function runAvelingWelcomeCron(): Promise<void> {
             }
         }
         recordCronRun(CRON_NAME, 'ok');
+        return contracts.length;
     } catch (err) {
         console.error('[AvelingCron] Fatal error:', err);
         recordCronRun(CRON_NAME, 'error', String(err));
+        return 0;
     }
 }

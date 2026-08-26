@@ -159,13 +159,14 @@
 
 5. # Ticket Uploads And Sponsorship Application
 
-1. 1 hour after Nomination Step 15 above  Ticket Uploads & Sponsorship Application Mail is sent  
+1. 1 hour after Nomination accepted cron mail is sent,  Ticket Uploads & Sponsorship Application Mail is sent  
 2. Applicant visits tickets dashboard, uploads none or more tickets and applies for sponsorship for the ones with no uploads.  
-3. Upload tickets are marked as possessed  
-4. Applicant receives Sponsorship Application Review Confirmation Mail  
-5. Stage update (name: TicketSponsorship, status: under-review)  
-6. Admin edits applicant.subsidyPercentage attribute (optional should not block g below, and should be edited on the applicants details page)  
-7. 2 hours after ticket sponsorship application submission  
+3. Upload tickets are marked as possessed 
+4. If no upload , sponsorship is applied
+5. Applicant receives Sponsorship Application Review Confirmation Mail  
+6. Stage update (name: TicketSponsorship, status: under-review)  
+7. Admin edits applicant.subsidyPercentage attribute (optional should not block g below, and should be edited on the applicants details page)  
+8. 2 hours after ticket sponsorship application submission  
 1. Cron job approves application  
 2. Ticket Sponsorship Approval Mail is sent  
 3. Stage Update (name : Ticket Sponsorship: approved)
@@ -268,9 +269,9 @@
 2. If aveling partial made with no complete after partial invoice paid, applicant can only take 3 ticket courses and exams.  
 3. If complete after partial payment made applicant can take all courses  
 4. If complete payment applicant can take all ticket courses and exams  
-5. On submit Ticket Course Exam Submitted Mail is sent  
-6. On fail Ticket Course Exam Failed Mail is sent  
-7. On pass Ticket Course Exam Passed Mail is sent  
+5. On submit Ticket Course Exam attempt (Submitted Mail) is sent  
+6. On fail Ticket Course Exam attempt (Failed Mail) is sent  
+7. On pass Ticket Course Exam attempt (Passed Mail) is sent  
 8. The first attempt is truly properly graded.  
 9. If candidate truly failed first attempt second attempt is automatically passed at the pass mark
 

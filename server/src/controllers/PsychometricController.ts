@@ -190,7 +190,7 @@ export class PsychometricController {
                 score = 0;
                 passed = false;
                 try {
-                    await sendAvelingEmail(user.email, 'Psychometric Module 2 Submitted', `<p>Dear ${user.fullName},</p><p>We have received your submission for Psychometric Module 2. Our team is currently reviewing your results.</p>`);
+                    await sendAvelingEmail(user.email, 'Psychometric Module 2 Submitted', `<p>Dear ${user.fullName},</p><p>We have received your submission for Psychometric Module 2. Our team is currently reviewing your results. They will be ready in less than 2 hours. Please keep your eyes on your mail, including your spam folder.</p>`);
                     await applicationService.updateLatestApplicationStageStatus(userId, 'Psychometric Test Module 2 under-review');
                 } catch (e) {
                     console.error('[PsychometricController] Error with Module 2 post-processing:', e);
@@ -209,7 +209,7 @@ export class PsychometricController {
 
             const responseMessage = moduleEnum === 'module_1' 
                 ? `Congratulations! You have passed Psychometric Module 1 with a score of ${score}%.`
-                : 'Your results have been submitted and will be reviewed within 24 hours. You will be notified via email.';
+                : 'Your results have been submitted and will be ready in less than 2 hours. Please keep your eyes on your mail, including your spam folder. You will be notified via email.';
 
             res.status(CONSTANTS.HTTP_STATUS.OK).json({
                 message: responseMessage,

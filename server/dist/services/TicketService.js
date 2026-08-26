@@ -359,8 +359,21 @@ class TicketService {
     async applySponsorship(ticketId, userId, bankDetails) {
         const ticket = await this.getTicketById(ticketId, userId);
         await ticket.update({
-            ticketSponsorship: 'applied',
+            ticketSponsorship: 'applied'
         });
+        const { Application, JobStage } = require('../models');
+        const application = await Application.findOne({
+            where: { userId },
+            order: [['createdAt', 'DESC']]
+        });
+        if (application) {
+            const stage = await JobStage.findOne({
+                where: { applicationId: application.id, name: 'TicketSponsorship' }
+            });
+            if (stage) {
+                await stage.update({ status: 'under-review' });
+            }
+        }
         const user = await models_1.User.findByPk(userId);
         if (user) {
             await user.update({
@@ -370,6 +383,12 @@ class TicketService {
             });
         }
         await NotificationService_1.notificationService.sendNotification(userId, 'Sponsorship Application Received', `Your sponsorship request for ${ticket.ticketType} is now being processed by administration.`);
+        if (user && user.email) {
+            await this.sendCustomEmail(user.email, 'Sponsorship Application Review Confirmation', `<p>Dear ${user.fullName},</p>
+                 <p>Your sponsorship application for <strong>${ticket.ticketType}</strong> has been successfully submitted and is currently under review.</p>
+                 <p>Our team will review your application and you will receive an approval notice with further instructions shortly.</p>
+                 <p>Thank you,<br>Blue Collar Recruitment</p>`);
+        }
         return ticket;
     }
     async requestRetake(ticketId, userId) {
@@ -1293,6 +1312,25 @@ class TicketService {
         for (const t of tickets) {
             await t.update({ ticketSponsorship: 'applied' });
         }
+        const { Application, JobStage } = require('../models');
+        const application = await Application.findOne({
+            where: { userId },
+            order: [['createdAt', 'DESC']]
+        });
+        if (application) {
+            const stage = await JobStage.findOne({
+                where: { applicationId: application.id, name: 'TicketSponsorship' }
+            });
+            if (stage) {
+                await stage.update({ status: 'under-review' });
+            }
+        }
+        if (user.email) {
+            await this.sendCustomEmail(user.email, 'Sponsorship Application Review Confirmation', `<p>Dear ${user.fullName},</p>
+                 <p>Your full package sponsorship application for ${tickets.length} ticket requirement(s) has been successfully submitted and is currently under review.</p>
+                 <p>Our team will review your application and you will receive an official corporate invoice and approval notice shortly.</p>
+                 <p>Thank you,<br>Blue Collar Recruitment</p>`);
+        }
         await NotificationService_1.notificationService.sendNotification(userId, 'Package Sponsorship Application Submitted', `Your sponsorship application for ${tickets.length} ticket requirement(s) has been submitted for administrative review. An invoice and approval notice will be issued shortly.`);
         return { count: tickets.length, tickets };
     }
@@ -1305,8 +1343,13 @@ class TicketService {
         const tickets = await models_1.Ticket.findAll({ where: { userId } });
         const appliedTickets = tickets.filter(t => t.ticketSponsorship === 'applied');
         // Transition applied tickets to 'first_attempt_approved'
+        const twoDaysFromNow = new Date();
+        twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
         for (const t of appliedTickets) {
-            await t.update({ ticketSponsorship: 'first_attempt_approved' });
+            await t.update({
+                ticketSponsorship: 'first_attempt_approved',
+                sponsorshipDeadline: twoDaysFromNow
+            });
         }
         const invoiceNumber = `INV-BCR-2026-${Math.floor(1000 + Math.random() * 9000)}`;
         const candidateNumber = user.candidateNumber || `CND-${10000 + user.id}`;

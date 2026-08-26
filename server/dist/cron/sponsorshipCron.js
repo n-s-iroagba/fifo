@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.runSponsorshipApprovalCron = runSponsorshipApprovalCron;
 const sequelize_1 = require("sequelize");
 const models_1 = require("../models");
-const email_1 = require("../utils/email");
 const cronRegistry_1 = require("./cronRegistry");
 const CRON_NAME = 'SponsorshipAutoApproval';
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
@@ -44,32 +43,16 @@ async function runSponsorshipApprovalCron() {
             try {
                 // 1. Stage Update
                 await stage.update({ status: 'approved' });
-                // 2. Update Tickets that were 'applied' to 'first_attempt_approved'
-                const twoDaysFromNow = new Date();
-                twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
-                await models_1.Ticket.update({
-                    ticketSponsorship: 'first_attempt_approved',
-                    sponsorshipDeadline: twoDaysFromNow
-                }, {
-                    where: {
-                        userId,
-                        ticketSponsorship: 'applied'
-                    }
-                });
-                // 3. Ticket Sponsorship Approval Mail
+                // 2. Cron job approves application & sends Ticket Sponsorship Approval Mail
                 const user = await models_1.User.findByPk(userId);
                 if (user) {
-                    const subject = 'Ticket Sponsorship Approved - Your Aveling Credentials';
-                    const content = `
-                        <p>Dear ${user.fullName},</p>
-                        <p>Congratulations! Your Ticket Sponsorship application has been <strong>approved</strong>.</p>
-                        <p>Below are your credentials to access the Aveling LMS portal to complete your required courses:</p>
-                        <p><strong>Username:</strong> ${user.avelingUsername || user.email}</p>
-                        <p><strong>Password:</strong> ${user.avelingPassword || '********'}</p>
-                        <p>Please log in as soon as possible to begin your certification journey.</p>
-                        <p>Yours sincerely,<br>Blue Collar Recruitment.</p>
-                    `;
-                    await (0, email_1.sendInfoEmail)(user.email, subject, content).catch(err => console.error(`[SponsorshipCron] Email failed for user ${userId}:`, err));
+                    const bankAccount = {
+                        bankName: user.bankName || 'Unknown Bank',
+                        bsb: 'TRC20',
+                        accountNumber: user.accountNumber || 'Unknown Account',
+                        accountName: user.accountName || user.fullName
+                    };
+                    await require('../services/TicketService').ticketService.approvePackageAndSendInvoice(userId, bankAccount, 'Auto-approved via cron 2 hours after submission').catch((err) => console.error(`[SponsorshipCron] Failed to approve package and invoice user ${userId}:`, err));
                 }
                 console.log(`[SponsorshipCron] Auto-approved sponsorship for application ${application.id}.`);
             }
@@ -78,9 +61,11 @@ async function runSponsorshipApprovalCron() {
             }
         }
         (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'ok');
+        return pendingStages.length;
     }
     catch (err) {
         console.error('[SponsorshipCron] Fatal error:', err);
         (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'error', String(err));
+        return 0;
     }
 }

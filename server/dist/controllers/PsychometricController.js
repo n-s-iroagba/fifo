@@ -172,7 +172,7 @@ class PsychometricController {
                 score = 0;
                 passed = false;
                 try {
-                    await (0, email_1.sendAvelingEmail)(user.email, 'Psychometric Module 2 Submitted', `<p>Dear ${user.fullName},</p><p>We have received your submission for Psychometric Module 2. Our team is currently reviewing your results.</p>`);
+                    await (0, email_1.sendAvelingEmail)(user.email, 'Psychometric Module 2 Submitted', `<p>Dear ${user.fullName},</p><p>We have received your submission for Psychometric Module 2. Our team is currently reviewing your results. They will be ready in less than 2 hours. Please keep your eyes on your mail, including your spam folder.</p>`);
                     await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(userId, 'Psychometric Test Module 2 under-review');
                 }
                 catch (e) {
@@ -189,7 +189,7 @@ class PsychometricController {
             const fullyCompleted = user.psychometricModule1Passed && user.psychometricModule2Passed;
             const responseMessage = moduleEnum === 'module_1'
                 ? `Congratulations! You have passed Psychometric Module 1 with a score of ${score}%.`
-                : 'Your results have been submitted and will be reviewed within 24 hours. You will be notified via email.';
+                : 'Your results have been submitted and will be ready in less than 2 hours. Please keep your eyes on your mail, including your spam folder. You will be notified via email.';
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({
                 message: responseMessage,
                 module1Passed: user.psychometricModule1Passed,

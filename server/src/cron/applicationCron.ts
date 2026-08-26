@@ -8,7 +8,7 @@ const CRON_NAME = 'ApplicationAutoAcceptance';
 
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 
-export async function runApplicationApprovalCron(): Promise<void> {
+export async function runApplicationApprovalCron(): Promise<number> {
     try {
         console.log('[ApplicationCron] Running application auto-acceptance check...');
 
@@ -57,6 +57,16 @@ export async function runApplicationApprovalCron(): Promise<void> {
                 // Mark stage as accepted (lowercase, consistent with 'under-review' convention)
                 await stage.update({ status: 'accepted' });
 
+                // Advance to Nomination stage
+                const { applicationService } = require('../services/ApplicationService');
+                await applicationService.addStageToApplication(application.id, {
+                    name: 'Nomination',
+                    status: 'ongoing',
+                    setAsCurrent: true,
+                    notifyInApp: false,
+                    notifyEmail: false
+                });
+
                 // In-app notification
                 await notificationRepository.create({
                     userId,
@@ -90,9 +100,10 @@ export async function runApplicationApprovalCron(): Promise<void> {
             }
         }
         recordCronRun(CRON_NAME, 'ok');
+        return pendingStages.length;
     } catch (err) {
         console.error('[ApplicationCron] Fatal error:', err);
         recordCronRun(CRON_NAME, 'error', String(err));
+        return 0;
     }
 }
-

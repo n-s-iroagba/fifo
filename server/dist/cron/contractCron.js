@@ -74,9 +74,11 @@ async function runContractApprovalCron() {
             }
         }
         (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'ok');
+        return pendingStages.length;
     }
     catch (err) {
         console.error('[ContractCron] Fatal error:', err);
         (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'error', String(err));
+        return 0;
     }
 }

@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.patchcontracts = patchcontracts;
 const database_1 = require("../config/database");
 const sequelize_1 = require("sequelize");
-async function patch() {
+async function patchcontracts() {
     try {
         const queryInterface = database_1.sequelize.getQueryInterface();
         await queryInterface.addColumn('contracts', 'documentUrl1', {
@@ -26,4 +27,3 @@ async function patch() {
     }
     process.exit(0);
 }
-patch();

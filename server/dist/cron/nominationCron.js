@@ -78,9 +78,11 @@ async function runNominationFollowupCron() {
             }
         }
         (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'ok');
+        return completedStages.length;
     }
     catch (err) {
         console.error('[NominationCron] Fatal error:', err);
         (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'error', String(err));
+        return 0;
     }
 }

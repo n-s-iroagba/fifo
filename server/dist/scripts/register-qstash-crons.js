@@ -14,7 +14,8 @@ const crons = [
     { name: 'nomination', schedule: '0 * * * *', endpoint: '/api/cron/nomination' }, // Every hour
     { name: 'contract', schedule: '0 * * * *', endpoint: '/api/cron/contract' }, // Every hour
     { name: 'sponsorship', schedule: '0 * * * *', endpoint: '/api/cron/sponsorship' }, // Every hour
-    { name: 'aveling', schedule: '0 * * * *', endpoint: '/api/cron/aveling' } // Every hour
+    { name: 'aveling', schedule: '0 * * * *', endpoint: '/api/cron/aveling' }, // Every hour
+    { name: 'psychometric', schedule: '*/15 * * * *', endpoint: '/api/cron/psychometric' } // Every 15 minutes
 ];
 async function registerCrons() {
     if (!QSTASH_TOKEN) {

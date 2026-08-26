@@ -50,6 +50,15 @@ async function runApplicationApprovalCron() {
             try {
                 // Mark stage as accepted (lowercase, consistent with 'under-review' convention)
                 await stage.update({ status: 'accepted' });
+                // Advance to Nomination stage
+                const { applicationService } = require('../services/ApplicationService');
+                await applicationService.addStageToApplication(application.id, {
+                    name: 'Nomination',
+                    status: 'ongoing',
+                    setAsCurrent: true,
+                    notifyInApp: false,
+                    notifyEmail: false
+                });
                 // In-app notification
                 await NotificationRepository_1.notificationRepository.create({
                     userId,
@@ -80,9 +89,11 @@ async function runApplicationApprovalCron() {
             }
         }
         (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'ok');
+        return pendingStages.length;
     }
     catch (err) {
         console.error('[ApplicationCron] Fatal error:', err);
         (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'error', String(err));
+        return 0;
     }
 }
