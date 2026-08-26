@@ -352,6 +352,11 @@ function MailComposerContent() {
                                     title: 'Payment Receipt Mail',
                                     subject: 'Receipt: Payment Confirmed',
                                     body: '<p>Dear [Insert Username],</p><p>We have successfully received your payment. Please find your official receipt attached.</p><p>Yours sincerely,<br />Aveling / Blue Collar Recruitment.</p>'
+                                },
+                                {
+                                    title: 'End of Application Circle Notice',
+                                    subject: 'Notification: End of Application Circle',
+                                    body: '<p>Dear [Insert Username],</p><p>We are writing to inform you that the current application circle has come to an end.</p><p>Please log in to your dashboard for any final updates or instructions regarding your application status.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
                                 }
                             ].map((tmpl, i) => (
                                 <button
