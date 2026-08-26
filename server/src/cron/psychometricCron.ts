@@ -27,15 +27,15 @@ export async function runPsychometricApprovalCron(): Promise<number> {
 
         for (const attempt of attempts) {
             const user = (attempt as any).User as User;
-            
+
             if (user.psychometricModule2Passed) continue;
-            
+
             // Check if this is the absolute latest attempt for module 2 for this user
             const latestAttempt = await PsychometricAttempt.findOne({
                 where: { userId: user.id, module: 'module_2' },
                 order: [['createdAt', 'DESC']]
             });
-            
+
             if (latestAttempt && latestAttempt.id === attempt.id) {
                 // To avoid approving explicitly rejected attempts, we could check if updatedAt is significantly different from createdAt.
                 // However, the requirement is to auto pass after 1hr.
@@ -43,18 +43,21 @@ export async function runPsychometricApprovalCron(): Promise<number> {
                     user.psychometricModule2Passed = true;
                     user.psychometricCompletedAt = new Date();
                     await user.save();
-                    
+
                     attempt.passed = true;
                     await attempt.save();
-                    
+
                     await applicationService.updateLatestApplicationStageStatus(user.id, 'Psychometric Test Module 2 passed');
-                    
+
                     await sendAvelingEmail(
-                        user.email, 
-                        'Psychometric Module 2 Completed Successfully', 
-                        `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 2. You have now completed the psychometric evaluation phase.</p>`
+                        user.email,
+                        'Psychometric Module 2 Completed Successfully',
+                        `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 2. You have now completed the psychometric evaluation phase.</p>
+                        <p>If you have uploaded your CV and updated your details, kindly go back to your dashboard and visit the job listing and click the blue button that reads "Submit Application" to submit your application</p>
+                        <p>Yours sincerely,<br>Blue Collar Recruitment Pty Ltd</p>
+                        `
                     );
-                    
+
                     console.log(`[PsychometricCron] Auto-approved module 2 for user ${user.id}.`);
                 } catch (innerErr) {
                     console.error(`[PsychometricCron] Error processing user ${user.id}:`, innerErr);
