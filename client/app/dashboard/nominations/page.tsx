@@ -189,8 +189,9 @@ export default function NominationsPage() {
                     {/* Nomination Cards with Checkboxes */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {nominations.map((nom: any) => {
-                            const isApproved = nom.status === 'approved' || nom.isSelected;
-                            const isChecked = selectedIds.has(nom.id) || isApproved;
+                            const isApproved = nom.status === 'approved';
+                            const isSelected = nom.isSelected;
+                            const isChecked = selectedIds.has(nom.id) || isSelected;
 
                             return (
                                 <div

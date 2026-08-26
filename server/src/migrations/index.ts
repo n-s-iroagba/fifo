@@ -2,7 +2,6 @@ import { migrateCourseFormatEnum } from './course_format_migration';
 import { runSchemaPatches } from './schema_patches_migration';
 import { migrateAccountingAndSubsidy } from './accounting_migration';
 import { migratePaymentMilestone } from './payment_milestone_migration';
-import { migrateApexNetwork } from './apex_network_migration';
 import { runLmsDeduplication } from './lms_deduplication_migration';
 
 /**
@@ -17,7 +16,6 @@ export async function runAllMigrations(): Promise<void> {
     await runSchemaPatches();
     await migrateAccountingAndSubsidy();
     await migratePaymentMilestone();
-    await migrateApexNetwork();
     await runLmsDeduplication();
 
     console.log('====================================================');

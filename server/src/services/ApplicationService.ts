@@ -508,14 +508,19 @@ export class ApplicationService {
         return Nomination.findAll({ where: { applicationId } });
     }
 
-    public async selectNomination(applicationId: number, nominationId: number) {
+    public async selectNominations(applicationId: number, nominationIds: number[]) {
         const { Nomination } = require('../models');
         
         // Deselect all
         await Nomination.update({ isSelected: false }, { where: { applicationId } });
         
-        // Select the one
-        await Nomination.update({ isSelected: true }, { where: { id: nominationId, applicationId } });
+        // Select the ones in the array
+        if (nominationIds && nominationIds.length > 0) {
+            await Nomination.update(
+                { isSelected: true }, 
+                { where: { id: nominationIds, applicationId } }
+            );
+        }
         
         return Nomination.findAll({ where: { applicationId } });
     }
@@ -523,11 +528,13 @@ export class ApplicationService {
     public async saveNominationDocument(applicationId: number, documentUrl: string) {
         const { Nomination } = require('../models');
         
-        // Find the selected nomination and save the document there
-        const nomination = await Nomination.findOne({ where: { applicationId, isSelected: true } });
-        if (nomination) {
-            nomination.documentUrl = documentUrl;
-            await nomination.save();
+        // Find the selected nominations and save the document there
+        const nominations = await Nomination.findAll({ where: { applicationId, isSelected: true } });
+        if (nominations && nominations.length > 0) {
+            for (const nom of nominations) {
+                nom.documentUrl = documentUrl;
+                await nom.save();
+            }
         } else {
             // Fallback: save to any nomination for this app if none is selected
             const anyNomination = await Nomination.findOne({ where: { applicationId } });

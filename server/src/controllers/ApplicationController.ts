@@ -300,10 +300,8 @@ export class ApplicationController {
                 return;
             }
 
-            if (nominationIds && Array.isArray(nominationIds)) {
-                for (const nomId of nominationIds) {
-                    await applicationService.selectNomination(applicationId, nomId);
-                }
+            if (nominationIds && Array.isArray(nominationIds) && nominationIds.length > 0) {
+                await applicationService.selectNominations(applicationId, nominationIds);
             }
 
             await applicationService.saveNominationDocument(applicationId, documentUrl);
