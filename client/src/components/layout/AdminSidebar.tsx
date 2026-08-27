@@ -13,6 +13,7 @@ const navItems = [
     { label: 'Psychometric Reviews', href: '/admin/psychometric', icon: 'psychiatry' },
     { label: 'Interests', href: '/admin/interests', icon: 'psychology' },
     { label: 'Tickets', href: '/admin/tickets', icon: 'local_activity' },
+    { label: 'Sponsorships', href: '/admin/sponsorships', icon: 'verified' },
     { label: 'Receipts', href: '/admin/receipts', icon: 'receipt_long' },
     { label: 'Invoices', href: '/admin/invoices', icon: 'request_quote' },
     { label: 'Jobs', href: CONSTANTS.ROUTES.ADMIN.JOBS, icon: 'business_center' },
