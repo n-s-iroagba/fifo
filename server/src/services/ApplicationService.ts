@@ -132,7 +132,7 @@ export class ApplicationService {
             // All RequiredTickets from the job are copied as applicant ticket gaps.
             // If the user declared they already possess some tickets in ticketsData,
             // those are marked 'possessed'; the rest default to 'not_possessed'.
-            const { Ticket, Course } = require('../models');
+            const { Ticket, Course, TicketCatalog } = require('../models');
             const { Op } = require('sequelize');
 
             // Build a Set of possessed ticket names declared by the applicant
@@ -141,9 +141,17 @@ export class ApplicationService {
             );
 
             // Collect source: RequiredTickets from the job listing (canonical gaps)
-            const catalogTickets: any[] = (job as any).RequiredTickets && Array.isArray((job as any).RequiredTickets)
+            let catalogTickets: any[] = (job as any).RequiredTickets && Array.isArray((job as any).RequiredTickets)
                 ? (job as any).RequiredTickets
                 : [];
+
+            // If the M:M relationship is empty, fallback to fetching from the ticketIds JSON array
+            if (catalogTickets.length === 0 && Array.isArray(job.ticketIds) && job.ticketIds.length > 0) {
+                catalogTickets = await TicketCatalog.findAll({
+                    where: { id: { [Op.in]: job.ticketIds } },
+                    transaction: t
+                });
+            }
 
             // Also include any user-declared possessed tickets not already in the job catalog
             const extraPossessedTickets = (ticketsData || []).filter((td: any) => {

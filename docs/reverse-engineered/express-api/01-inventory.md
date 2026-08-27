@@ -1,0 +1,578 @@
+# 01 - Inventory
+
+## 1. File List
+### Routes
+- src/routes/apiRoutes.ts
+
+### Controllers
+- src/controllers/AdminController.ts
+- src/controllers/ApplicationController.ts
+- src/controllers/AuthController.ts
+- src/controllers/CertificateController.ts
+- src/controllers/CourseController.ts
+- src/controllers/CronController.ts
+- src/controllers/CvController.ts
+- src/controllers/ExamAttemptController.ts
+- src/controllers/ExamController.ts
+- src/controllers/InterestController.ts
+- src/controllers/JobController.ts
+- src/controllers/LmsAuthController.ts
+- src/controllers/NotificationController.ts
+- src/controllers/PsychometricController.ts
+- src/controllers/TicketCatalogController.ts
+- src/controllers/TicketController.ts
+
+### Services
+- src/services/AdminService.ts
+- src/services/ApplicationService.ts
+- src/services/AuthService.ts
+- src/services/CertificateService.ts
+- src/services/CourseService.ts
+- src/services/CvService.ts
+- src/services/ExamAttemptService.ts
+- src/services/ExamService.ts
+- src/services/InterestService.ts
+- src/services/JobService.ts
+- src/services/LmsAuthService.ts
+- src/services/NotificationService.ts
+- src/services/TicketService.ts
+
+### Repositories
+- src/repositories/ApplicationRepository.ts
+- src/repositories/BankAccountRepository.ts
+- src/repositories/JobCategoryRepository.ts
+- src/repositories/JobRepository.ts
+- src/repositories/JobStageRepository.ts
+- src/repositories/NotificationRepository.ts
+- src/repositories/UserRepository.ts
+
+### Middleware
+- src/middleware/auditMiddleware.ts
+- src/middleware/auth.ts
+- src/middleware/errorHandler.ts
+- src/middleware/psychometricGuard.ts
+- src/middleware/rbac.ts
+
+### Shared Utilities
+- src/config/database.ts
+- src/utils/cvScreening.ts
+- src/utils/email.ts
+- src/utils/logger.ts
+- src/utils/rateLimiter.ts
+- src/utils/token.ts
+- src/utils/validators.ts
+
+### Models
+- src/models/Application.ts
+- src/models/BankAccount.ts
+- src/models/Certificate.ts
+- src/models/CertificationType.ts
+- src/models/Contract.ts
+- src/models/Course.ts
+- src/models/CourseModule.ts
+- src/models/Enrollment.ts
+- src/models/ExamAttempt.ts
+- src/models/ExamConfig.ts
+- src/models/ExamQuestion.ts
+- src/models/Interest.ts
+- src/models/Invoice.ts
+- src/models/JobCategory.ts
+- src/models/JobListing.ts
+- src/models/JobStage.ts
+- src/models/LmsCredential.ts
+- src/models/Nomination.ts
+- src/models/Notification.ts
+- src/models/PsychometricAttempt.ts
+- src/models/Receipt.ts
+- src/models/Ticket.ts
+- src/models/TicketCatalog.ts
+- src/models/User.ts
+- src/models/index.ts
+
+### Other
+- src/app.ts
+- src/constants.ts
+- src/cron/applicationCron.ts
+- src/cron/avelingCron.ts
+- src/cron/contractCron.ts
+- src/cron/cronRegistry.ts
+- src/cron/nominationCron.ts
+- src/cron/psychometricCron.ts
+- src/cron/sponsorshipCron.ts
+- src/data/fifoJobs.ts
+- src/data/lmsData.ts
+- src/data/modules/commercialCookeryModules.ts
+- src/data/modules/confinedSpaceModules.ts
+- src/data/modules/driversLicenceModules.ts
+- src/data/modules/eehaModules.ts
+- src/data/modules/firstAidModules.ts
+- src/data/modules/foodSafetyModules.ts
+- src/data/modules/forkliftModules.ts
+- src/data/modules/gasTestModules.ts
+- src/data/modules/policeClearanceModules.ts
+- src/data/modules/rsaModules.ts
+- src/data/modules/std11Modules.ts
+- src/data/modules/whiteCardModules.ts
+- src/data/modules/workingAtHeightsModules.ts
+- src/data/psychometricModule1Questions.ts
+- src/data/psychometricModule2Questions.ts
+- src/data/questions/commercialCookeryQuestions.ts
+- src/data/questions/confinedSpaceQuestions.ts
+- src/data/questions/driversLicenceQuestions.ts
+- src/data/questions/eehaQuestions.ts
+- src/data/questions/firstAidQuestions.ts
+- src/data/questions/foodSafetyQuestions.ts
+- src/data/questions/forkliftQuestions.ts
+- src/data/questions/gasTestQuestions.ts
+- src/data/questions/policeClearanceQuestions.ts
+- src/data/questions/rsaQuestions.ts
+- src/data/questions/std11Questions.ts
+- src/data/questions/whiteCardQuestions.ts
+- src/data/questions/workingAtHeightsQuestions.ts
+- src/executeMigration.ts
+- src/index.ts
+- src/migrations/accounting_migration.ts
+- src/migrations/course_format_migration.ts
+- src/migrations/index.ts
+- src/migrations/lms_deduplication_migration.ts
+- src/migrations/payment_milestone_migration.ts
+- src/migrations/remove_prefill_stages.ts
+- src/migrations/schema_patches_migration.ts
+- src/runMigration.ts
+- src/scripts/register-qstash-crons.ts
+- src/seedDatabase.ts
+
+## 2. Module Dependencies (Call Graph approximation)
+- **src/app.ts** depends on:
+  - ./routes/apiRoutes
+  - ./middleware/errorHandler
+  - ./cron/cronRegistry
+  - ./controllers/CronController
+- **src/config/database.ts** depends on:
+  - ../constants
+- **src/controllers/AdminController.ts** depends on:
+  - ../services/AdminService
+  - ../constants
+  - ../utils/email
+  - ../models
+  - ../seedDatabase
+- **src/controllers/ApplicationController.ts** depends on:
+  - ../services/ApplicationService
+  - ../constants
+  - ../utils/email
+  - ../models/User
+  - ../models
+- **src/controllers/AuthController.ts** depends on:
+  - ../services/AuthService
+  - ../constants
+- **src/controllers/CertificateController.ts** depends on:
+  - ../services/CertificateService
+  - ../constants
+- **src/controllers/CourseController.ts** depends on:
+  - ../services/CourseService
+  - ../constants
+  - ../utils/token
+  - ../models
+- **src/controllers/CronController.ts** depends on:
+  - ../cron/applicationCron
+  - ../cron/nominationCron
+  - ../cron/contractCron
+  - ../cron/sponsorshipCron
+  - ../cron/avelingCron
+  - ../cron/psychometricCron
+  - ../utils/email
+- **src/controllers/CvController.ts** depends on:
+  - ../services/CvService
+  - ../constants
+- **src/controllers/ExamAttemptController.ts** depends on:
+  - ../services/ExamAttemptService
+  - ../constants
+- **src/controllers/ExamController.ts** depends on:
+  - ../services/ExamService
+  - ../constants
+- **src/controllers/InterestController.ts** depends on:
+  - ../services/InterestService
+  - ../constants
+  - ../utils/email
+  - ../models/User
+  - ../services/ApplicationService
+- **src/controllers/JobController.ts** depends on:
+  - ../services/JobService
+  - ../constants
+- **src/controllers/LmsAuthController.ts** depends on:
+  - ../services/LmsAuthService
+  - ../constants
+- **src/controllers/NotificationController.ts** depends on:
+  - ../services/NotificationService
+  - ../constants
+- **src/controllers/PsychometricController.ts** depends on:
+  - ../constants
+  - ../models/User
+  - ../models/PsychometricAttempt
+  - ../data/psychometricModule1Questions
+  - ../data/psychometricModule2Questions
+  - ../utils/email
+  - ../services/ApplicationService
+- **src/controllers/TicketCatalogController.ts** depends on:
+  - ../models
+  - ../constants
+  - ../data/lmsData
+- **src/controllers/TicketController.ts** depends on:
+  - ../services/TicketService
+  - ../constants
+  - ../models
+- **src/cron/applicationCron.ts** depends on:
+  - ../models
+  - ../utils/email
+  - ../repositories/NotificationRepository
+  - ./cronRegistry
+  - ../services/ApplicationService
+- **src/cron/avelingCron.ts** depends on:
+  - ../models
+  - ../utils/email
+  - ./cronRegistry
+- **src/cron/contractCron.ts** depends on:
+  - ../models
+  - ../utils/email
+  - ./cronRegistry
+- **src/cron/nominationCron.ts** depends on:
+  - ../models
+  - ../services/ApplicationService
+  - ../utils/email
+  - ./cronRegistry
+- **src/cron/psychometricCron.ts** depends on:
+  - ../models
+  - ../services/ApplicationService
+  - ../utils/email
+  - ./cronRegistry
+- **src/cron/sponsorshipCron.ts** depends on:
+  - ../models
+  - ../utils/email
+  - ./cronRegistry
+  - ../services/TicketService
+- **src/data/lmsData.ts** depends on:
+  - ./questions/eehaQuestions
+  - ./questions/std11Questions
+  - ./questions/whiteCardQuestions
+  - ./questions/workingAtHeightsQuestions
+  - ./questions/confinedSpaceQuestions
+  - ./questions/gasTestQuestions
+  - ./questions/firstAidQuestions
+  - ./questions/policeClearanceQuestions
+  - ./questions/driversLicenceQuestions
+  - ./questions/commercialCookeryQuestions
+  - ./questions/foodSafetyQuestions
+  - ./questions/rsaQuestions
+  - ./questions/forkliftQuestions
+  - ./modules/eehaModules
+  - ./modules/std11Modules
+  - ./modules/whiteCardModules
+  - ./modules/workingAtHeightsModules
+  - ./modules/confinedSpaceModules
+  - ./modules/gasTestModules
+  - ./modules/firstAidModules
+  - ./modules/policeClearanceModules
+  - ./modules/driversLicenceModules
+  - ./modules/commercialCookeryModules
+  - ./modules/foodSafetyModules
+  - ./modules/rsaModules
+  - ./modules/forkliftModules
+- **src/executeMigration.ts** depends on:
+  - ./runMigration
+  - ./config/database
+- **src/index.ts** depends on:
+  - ./app
+  - ./config/database
+  - ./utils/logger
+  - ./models
+  - ./scripts/register-qstash-crons
+- **src/middleware/auditMiddleware.ts** depends on:
+  - ../utils/email
+  - ../constants
+- **src/middleware/auth.ts** depends on:
+  - ../utils/token
+  - ../constants
+- **src/middleware/errorHandler.ts** depends on:
+  - ../constants
+- **src/middleware/psychometricGuard.ts** depends on:
+  - ../constants
+- **src/middleware/rbac.ts** depends on:
+  - ../constants
+- **src/migrations/accounting_migration.ts** depends on:
+  - ../config/database
+- **src/migrations/course_format_migration.ts** depends on:
+  - ../config/database
+- **src/migrations/index.ts** depends on:
+  - ./course_format_migration
+  - ./schema_patches_migration
+  - ./accounting_migration
+  - ./payment_milestone_migration
+  - ./lms_deduplication_migration
+- **src/migrations/lms_deduplication_migration.ts** depends on:
+  - ../config/database
+- **src/migrations/payment_milestone_migration.ts** depends on:
+  - ../config/database
+- **src/migrations/remove_prefill_stages.ts** depends on:
+  - ../config/database
+- **src/migrations/schema_patches_migration.ts** depends on:
+  - ../models
+- **src/models/Application.ts** depends on:
+  - ../config/database
+- **src/models/BankAccount.ts** depends on:
+  - ../config/database
+  - ../constants
+- **src/models/Certificate.ts** depends on:
+  - ../config/database
+- **src/models/CertificationType.ts** depends on:
+  - ../config/database
+- **src/models/Contract.ts** depends on:
+  - ../config/database
+  - ./Application
+  - ./User
+- **src/models/Course.ts** depends on:
+  - ../config/database
+- **src/models/CourseModule.ts** depends on:
+  - ../config/database
+- **src/models/Enrollment.ts** depends on:
+  - ../config/database
+- **src/models/ExamAttempt.ts** depends on:
+  - ../config/database
+- **src/models/ExamConfig.ts** depends on:
+  - ../config/database
+- **src/models/ExamQuestion.ts** depends on:
+  - ../config/database
+- **src/models/Interest.ts** depends on:
+  - ../config/database
+- **src/models/Invoice.ts** depends on:
+  - ../config/database
+- **src/models/JobCategory.ts** depends on:
+  - ../config/database
+- **src/models/JobListing.ts** depends on:
+  - ../config/database
+- **src/models/JobStage.ts** depends on:
+  - ../config/database
+- **src/models/LmsCredential.ts** depends on:
+  - ../config/database
+  - ./User
+- **src/models/Nomination.ts** depends on:
+  - ../config/database
+  - ./Application
+- **src/models/Notification.ts** depends on:
+  - ../config/database
+- **src/models/PsychometricAttempt.ts** depends on:
+  - ../config/database
+  - ./User
+- **src/models/Receipt.ts** depends on:
+  - ../config/database
+- **src/models/Ticket.ts** depends on:
+  - ../config/database
+- **src/models/TicketCatalog.ts** depends on:
+  - ../config/database
+- **src/models/User.ts** depends on:
+  - ../config/database
+  - ../constants
+- **src/models/index.ts** depends on:
+  - ../config/database
+  - ./User
+  - ./BankAccount
+  - ./JobCategory
+  - ./JobListing
+  - ./JobStage
+  - ./Application
+  - ./Invoice
+  - ./Receipt
+  - ./Notification
+  - ./Interest
+  - ./LmsCredential
+  - ./CertificationType
+  - ./Course
+  - ./CourseModule
+  - ./ExamConfig
+  - ./ExamQuestion
+  - ./Enrollment
+  - ./ExamAttempt
+  - ./Certificate
+  - ./Ticket
+  - ./TicketCatalog
+  - ./PsychometricAttempt
+  - ./Nomination
+  - ./Contract
+- **src/repositories/ApplicationRepository.ts** depends on:
+  - ../models
+- **src/repositories/BankAccountRepository.ts** depends on:
+  - ../models
+- **src/repositories/JobCategoryRepository.ts** depends on:
+  - ../models
+- **src/repositories/JobRepository.ts** depends on:
+  - ../models
+- **src/repositories/JobStageRepository.ts** depends on:
+  - ../models
+- **src/repositories/NotificationRepository.ts** depends on:
+  - ../models
+- **src/repositories/UserRepository.ts** depends on:
+  - ../models
+- **src/routes/apiRoutes.ts** depends on:
+  - ../controllers/AuthController
+  - ../controllers/JobController
+  - ../controllers/ApplicationController
+  - ../controllers/AdminController
+  - ../controllers/NotificationController
+  - ../controllers/CvController
+  - ../middleware/auth
+  - ../middleware/rbac
+  - ../utils/rateLimiter
+  - ../constants
+  - ../middleware/auditMiddleware
+  - ../controllers/LmsAuthController
+  - ../controllers/CourseController
+  - ../controllers/ExamController
+  - ../controllers/ExamAttemptController
+  - ../controllers/CertificateController
+  - ../controllers/TicketController
+  - ../controllers/PsychometricController
+  - ../controllers/InterestController
+  - ../controllers/TicketCatalogController
+- **src/runMigration.ts** depends on:
+  - ./migrations
+- **src/seedDatabase.ts** depends on:
+  - ./data/lmsData
+  - ./migrations
+- **src/services/AdminService.ts** depends on:
+  - ../repositories/BankAccountRepository
+  - ../repositories/JobCategoryRepository
+  - ../repositories/UserRepository
+  - ../repositories/NotificationRepository
+  - ../utils/email
+  - ../config/database
+  - ../constants
+  - ../models/LmsCredential
+  - ../models
+- **src/services/ApplicationService.ts** depends on:
+  - ../config/database
+  - ../repositories/ApplicationRepository
+  - ../repositories/JobRepository
+  - ../repositories/JobStageRepository
+  - ../repositories/NotificationRepository
+  - ../constants
+  - ../utils/email
+  - ../models
+  - ../repositories/UserRepository
+- **src/services/AuthService.ts** depends on:
+  - ../repositories/UserRepository
+  - ../utils/token
+  - ../constants
+  - ../utils/email
+  - ./ApplicationService
+- **src/services/CertificateService.ts** depends on:
+  - ../models/Certificate
+  - ../models/Ticket
+  - ../models/CertificationType
+- **src/services/CourseService.ts** depends on:
+  - ../models/Course
+  - ../models/CourseModule
+  - ../models/CertificationType
+  - ../config/database
+  - ../models/ExamConfig
+  - ../models/ExamQuestion
+- **src/services/CvService.ts** depends on:
+  - ../repositories/UserRepository
+  - ../constants
+  - ../utils/cvScreening
+  - ./ApplicationService
+  - ../utils/email
+- **src/services/ExamAttemptService.ts** depends on:
+  - ../models/ExamAttempt
+  - ../models/ExamConfig
+  - ../models/ExamQuestion
+  - ../models
+  - ./TicketService
+  - ../utils/email
+- **src/services/ExamService.ts** depends on:
+  - ../models/ExamConfig
+  - ../models/ExamQuestion
+  - ../models/Course
+- **src/services/InterestService.ts** depends on:
+  - ../models
+- **src/services/JobService.ts** depends on:
+  - ../repositories/JobRepository
+  - ../repositories/JobStageRepository
+  - ../constants
+  - ../config/database
+  - ../models
+- **src/services/LmsAuthService.ts** depends on:
+  - ../models/LmsCredential
+  - ../models/User
+  - ../config/database
+  - ../constants
+  - ../utils/email
+- **src/services/NotificationService.ts** depends on:
+  - ../models
+  - ../repositories/NotificationRepository
+- **src/services/TicketService.ts** depends on:
+  - ../models
+  - ./NotificationService
+  - ../utils/email
+- **src/utils/logger.ts** depends on:
+  - ../constants
+- **src/utils/rateLimiter.ts** depends on:
+  - ../constants
+- **src/utils/token.ts** depends on:
+  - ../constants
+- **src/utils/validators.ts** depends on:
+  - ../constants
+
+## 3. External Dependencies
+- @upstash/qstash
+- axios
+- bcrypt
+- cookie-parser
+- cors
+- crypto
+- dotenv
+- dotenv/config
+- express
+- express-rate-limit
+- fs
+- helmet
+- jsonwebtoken
+- mammoth
+- multer
+- nodemailer
+- path
+- sequelize
+- uuid
+- web-push
+- zod
+
+## 4. Environment Variables
+- ADMIN_EMAIL
+- AVELING_URL
+- AV_SMTP_INFO_FROM
+- CLIENT_URL
+- CORS_ORIGINS
+- DB_HOST
+- DB_NAME
+- DB_PASSWORD
+- DB_PORT
+- DB_USER
+- JWT_EXPIRES_IN
+- JWT_SECRET
+- NODE_ENV
+- PORT
+- PRODUCTION_URL
+- QSTASH_CURRENT_SIGNING_KEY
+- QSTASH_NEXT_SIGNING_KEY
+- QSTASH_TOKEN
+- QSTASH_URL
+- REFRESH_SECRET
+- SMTP_AUTH_FROM
+- SMTP_AUTH_PASS
+- SMTP_AUTH_USER
+- SMTP_HOST
+- SMTP_INFO_FROM
+- SMTP_INFO_PASS
+- SMTP_INFO_USER
+- SMTP_PORT
+- SMTP_SECURE
+- VAPID_PRIVATE_KEY
+- VAPID_PUBLIC_KEY

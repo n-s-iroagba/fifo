@@ -25,8 +25,9 @@ export default function NominationsPage() {
     const [uploadSuccess, setUploadSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const alreadyApproved = nominations.some((n: any) => n.status === 'approved' || n.isSelected);
-    const underReview = nominations.some((n: any) => n.documentUrl);
+    const hasTicketSponsorshipStage = (application?.JobStages || []).some((s: any) => s.name === 'TicketSponsorship');
+    const alreadyApproved = nominations.some((n: any) => n.status === 'approved' || (n.isSelected && hasTicketSponsorshipStage));
+    const underReview = nominations.some((n: any) => n.documentUrl) && !alreadyApproved;
 
     const handleCheckbox = (nominationId: number) => {
         if (alreadyApproved || underReview) return;
@@ -109,7 +110,7 @@ export default function NominationsPage() {
     // Stage-driven banner
     const getStageInfo = () => {
         if (nominations.length === 0) return null;
-        if (nominations.some((n: any) => n.status === 'approved'))
+        if (nominations.some((n: any) => n.status === 'approved' || (n.isSelected && hasTicketSponsorshipStage)))
             return { label: 'Nomination Approved', color: 'emerald', icon: 'verified' };
         if (nominations.some((n: any) => n.documentUrl))
             return { label: 'Nomination Under Review', color: 'amber', icon: 'hourglass_top' };
@@ -189,7 +190,7 @@ export default function NominationsPage() {
                     {/* Nomination Cards with Checkboxes */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {nominations.map((nom: any) => {
-                            const isApproved = nom.status === 'approved';
+                            const isApproved = nom.status === 'approved' || (nom.isSelected && hasTicketSponsorshipStage);
                             const isSelected = nom.isSelected;
                             const isChecked = selectedIds.has(nom.id) || isSelected;
 
@@ -248,12 +249,12 @@ export default function NominationsPage() {
                         <div className="bg-white p-8 rounded-2xl border border-blue-100 shadow-sm space-y-6">
                             <div>
                                 <h3 className="text-sm font-bold text-blue-900 uppercase tracking-widest mb-1">
-                                    {isLocked && nominations.some((n: any) => n.status === 'approved')
+                                    {isLocked && alreadyApproved
                                         ? 'Signed Document'
                                         : 'Upload Signed Nomination Document'}
                                 </h3>
                                 <p className="text-xs text-blue-500">
-                                    {isLocked && nominations.some((n: any) => n.status === 'approved')
+                                    {isLocked && alreadyApproved
                                         ? 'Your nomination has been approved. No further action is required.'
                                         : 'Upload your signed Official Notice of Nomination & Trade Selection form here.'}
                                 </p>

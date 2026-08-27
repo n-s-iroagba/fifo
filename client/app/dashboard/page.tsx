@@ -1,10 +1,9 @@
 'use client';
 
-import { PaymentUpload } from '@/components/ui/PaymentUpload';
 import { useApiQuery } from '@/lib/hooks';
 import Link from 'next/link';
 import { useState } from 'react';
-import { NominationUpload } from '@/components/ui/NominationUpload';
+
 
 export default function ApplicantDashboard() {
     const { data: summary, isLoading, refetch } = useApiQuery<any>(['applicant', 'dashboard'], '/dashboard');
@@ -172,7 +171,7 @@ export default function ApplicantDashboard() {
                                                 </div>
 
                                                 {app.stageName?.toLowerCase().includes('nomination') && !app.isCompleted && app.stageStatus !== 'under-review' && (
-                                                    <NominationUpload applicationId={app.applicationId} />
+                                                    <p className="text-[9px] font-bold text-blue-900 uppercase tracking-tight leading-relaxed italic opacity-90 mb-4 whitespace-pre-wrap line-clamp-3">Kindly use the Nomination Button in your dashboard on the sidebar to upload your signed Official Notice of Nomination & Trade Selection form here.</p>
                                                 )}
                                             </div>
 
