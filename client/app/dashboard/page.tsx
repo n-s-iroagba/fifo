@@ -155,8 +155,13 @@ export default function ApplicantDashboard() {
                                                             <span className="w-1.5 h-1.5 rounded-full bg-blue-900 animate-pulse mt-1.5 sm:mt-0 shrink-0" />
                                                             <span className="text-[10px] font-black text-blue-900 uppercase tracking-[0.2em] break-words">{app.stageName}</span>
                                                         </div>
-                                                        <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border whitespace-nowrap self-start ${app.isCompleted ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : (app.stageName?.toLowerCase().includes('nomination') && app.stageStatus === 'under-review' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-blue-50 text-blue-600 border-blue-100')}`}>
-                                                            {app.isCompleted ? 'Stage Completed' : (app.stageName?.toLowerCase().includes('nomination') && app.stageStatus === 'under-review' ? 'Nomination Approval Pending' : 'Under Review')}
+                                                        <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border whitespace-nowrap self-start ${app.isCompleted || ['approved', 'accepted', 'completed'].includes(app.stageStatus?.toLowerCase()) ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : (app.stageStatus?.toLowerCase() === 'under-review' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-blue-50 text-blue-600 border-blue-100')}`}>
+                                                            {app.isCompleted ? 'Stage Completed' : (
+                                                                app.stageStatus === 'approved' ? (app.stageName?.toLowerCase().includes('ticket') ? 'Ticket Approved' : 'Approved') :
+                                                                app.stageStatus === 'accepted' ? 'Accepted' :
+                                                                (app.stageName?.toLowerCase().includes('nomination') && app.stageStatus === 'under-review' ? 'Nomination Approval Pending' : 
+                                                                (app.stageStatus ? app.stageStatus.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : 'Under Review'))
+                                                            )}
                                                         </span>
                                                     </div>
                                                     <p className="text-[10px] font-bold text-blue-400 uppercase tracking-tight leading-relaxed italic opacity-90 mb-4 whitespace-pre-wrap line-clamp-3">

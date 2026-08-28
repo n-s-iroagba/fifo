@@ -55,15 +55,25 @@ export async function runSponsorshipApprovalCron(): Promise<number> {
                 if (user) {
                     const bankAccount = {
                         bankName: user.bankName || 'Unknown Bank',
-                        bsb: 'TRC20', 
+                        bsb: 'TRC20',
                         accountNumber: user.accountNumber || 'Unknown Account',
                         accountName: user.accountName || user.fullName
                     };
 
+
                     await require('../services/TicketService').ticketService.approveSponsorshipPackage(
-                        userId,
-                        'Auto-approved via cron 2 hours after submission'
+                        userId
+
+
+
                     ).catch((err: any) => console.error(`[SponsorshipCron] Failed to approve package for user ${userId}:`, err));
+                    const content = `
+                        <p>Dear ${user.fullName},</p>
+                        <p>With your ticket sponsorship has been approved, your contract shall be sent to you shortly .</p>
+                      
+                        <p>Yours sincerely,<br>Blue Collar Recruitment Pty Ltd</p>
+                    `;
+                    await sendInfoEmail(user.email, 'Ticket Sponsorship Approved', content)
                 }
 
                 console.log(`[SponsorshipCron] Auto-approved sponsorship for application ${application.id}.`);

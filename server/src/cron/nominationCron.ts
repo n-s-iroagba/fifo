@@ -74,7 +74,7 @@ export async function runNominationFollowupCron(): Promise<number> {
                         <p>Dear ${user.fullName},</p>
                         <p>With your nomination approved, it is time for the final administrative step before finalizing your contract.</p>
                         <p>Please log in to your dashboard and visit the <strong>Tickets</strong> section. You must upload proof of any required tickets you already possess. For the tickets you do not currently hold, you can easily apply for our Ticket Sponsorship program directly on the same page.</p>
-                        <p>Please complete this step as soon as possible so we can proceed with your deployment.</p>
+                        <p>Please complete this step as soon as possible in the next 48 hours, so we can proceed with your deployment.</p>
                         <p>Yours sincerely,<br>Blue Collar Recruitment Pty Ltd</p>
                     `;
                     await sendInfoEmail(user.email, subject, content).catch(err =>

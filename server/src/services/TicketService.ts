@@ -1,6 +1,6 @@
 import { Ticket, User, Application } from '../models';
 import { notificationService } from './NotificationService';
-import { sendAvelingEmail } from '../utils/email';
+import { sendAvelingEmail, sendInfoEmail } from '../utils/email';
 
 /** Schedule 1 / Clause 5.1 — Payment Milestone & Liability Constants */
 const DEPOSIT_AMOUNT = 500;                    // A$500 initial commitment deposit
@@ -1601,12 +1601,12 @@ export class TicketService {
         }
 
         if (user.email) {
-            await this.sendCustomEmail(
+            await sendInfoEmail(
                 user.email,
                 'Sponsorship Application Review Confirmation',
                 `<p>Dear ${user.fullName},</p>
                  <p>Your full package sponsorship application for ${tickets.length} ticket requirement(s) has been successfully submitted and is currently under review.</p>
-                 <p>Our team will review your application and you will receive an official corporate invoice and approval notice shortly.</p>
+                 <p>Our team will review your application and you will receive an official approval notice shortly.</p>
                  <p>Thank you,<br>Blue Collar Recruitment</p>`
             );
         }
@@ -1621,7 +1621,7 @@ export class TicketService {
     }
 
     // Admin approves candidate's ticket package and dispatches official corporate invoice with selected bank account
-    public async approveSponsorshipPackage(userId: number, adminNotes?: string) {
+    public async approveSponsorshipPackage(userId: number) {
         const { User: UserModel } = require('../models');
         const user = await UserModel.findByPk(userId);
         if (!user) throw new Error('USER_NOT_FOUND');
