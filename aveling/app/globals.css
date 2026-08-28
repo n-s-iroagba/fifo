@@ -2,7 +2,10 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #000000;
+  --aveling-yellow: #FFC700;
+  --aveling-black: #000000;
+  --aveling-white: #ffffff;
 }
 
 @theme inline {

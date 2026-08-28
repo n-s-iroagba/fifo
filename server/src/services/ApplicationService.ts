@@ -181,9 +181,7 @@ export class ApplicationService {
 
                 const { User } = require('../models');
                 const applicant = await User.findByPk(userId, { transaction: t });
-                const subsidyPct = applicant?.subsidyPercentage ?? 70;
                 const normalPrice = cat.normalPrice || 0;
-                const calcSubsidisedPrice = Number((normalPrice * (1 - subsidyPct / 100)).toFixed(2));
 
                 await Ticket.create({
                     userId,
@@ -195,8 +193,7 @@ export class ApplicationService {
                     refundStatus: 'none',
                     description: cat.description,
                     realPrice: normalPrice,
-                    subsidisedPrice: calcSubsidisedPrice,
-                    purchasePrice: calcSubsidisedPrice,
+                    purchasePrice: normalPrice,
                     canApplySponsorship: !isAlreadyPossessed,
                     courseId: matchingCourse ? matchingCourse.id : null
                 }, { transaction: t });

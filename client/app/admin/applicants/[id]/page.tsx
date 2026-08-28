@@ -14,11 +14,11 @@ export default function AdminApplicantDetailPage() {
     const { id } = useParams();
     const { data: userData, isLoading, refetch: refetchUser } = useApiQuery<any>(['admin', 'applicants', id], `/admin/users/${id}`);
     const { data: appsData, isLoading: isAppsLoading, refetch: refetchApps } = useApiQuery<{ rows: Application[] }>(['admin', 'applicants', id, 'applications'], `/admin/applications?userId=${id}`);
-    
+
 
     const user = userData?.user;
     const applications = appsData?.rows || [];
-    
+
     const [isEditingWallet, setIsEditingWallet] = useState(false);
     const [walletAmount, setWalletAmount] = useState('');
     const [isUpdatingWallet, setIsUpdatingWallet] = useState(false);
@@ -157,7 +157,7 @@ export default function AdminApplicantDetailPage() {
                             {user.fullName.charAt(0)}
                         </div>
                         <h2 className="text-xl font-black uppercase tracking-tight text-blue-900 text-center">{user.fullName}</h2>
-                        
+
 
 
                         <div className="w-full mt-10 pt-10 border-t border-blue-50 grid grid-cols-1 gap-6">
@@ -230,10 +230,10 @@ export default function AdminApplicantDetailPage() {
 
                         {!isEditingSubsidy ? (
                             <div className="flex flex-col items-center">
-                                <span className="text-3xl font-black text-blue-900">{user.subsidyPercentage || 0}%</span>
+                                <span className="text-3xl font-black text-blue-900">{user.subsidyPercentage ?? 70}%</span>
                                 <button
                                     onClick={() => {
-                                        setSubsidyValue((user.subsidyPercentage || 0).toString());
+                                        setSubsidyValue((user.subsidyPercentage ?? 70).toString());
                                         setIsEditingSubsidy(true);
                                     }}
                                     className="mt-6 w-full py-3 bg-blue-50 text-blue-900 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-100 transition-all"
@@ -275,9 +275,9 @@ export default function AdminApplicantDetailPage() {
                     </div>
 
                     {/* LMS Access Management */}
-                    <LmsAccessPanel 
-                        applicantId={id as string} 
-                        initialUsername={user.avelingUsername} 
+                    <LmsAccessPanel
+                        applicantId={id as string}
+                        initialUsername={user.avelingUsername}
                         initialPassword={user.avelingPassword}
                         onUpdated={refetchUser}
                     />
@@ -335,7 +335,7 @@ export default function AdminApplicantDetailPage() {
                             <span className="material-symbols-outlined text-blue-900">confirmation_number</span>
                             <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-900">Tickets & Certifications</h2>
                         </div>
-                        
+
                         <div className="space-y-6">
                             {user.Tickets && user.Tickets.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

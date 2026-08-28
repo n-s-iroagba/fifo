@@ -118,14 +118,21 @@ class ApplicationService {
             // All RequiredTickets from the job are copied as applicant ticket gaps.
             // If the user declared they already possess some tickets in ticketsData,
             // those are marked 'possessed'; the rest default to 'not_possessed'.
-            const { Ticket, Course } = require('../models');
+            const { Ticket, Course, TicketCatalog } = require('../models');
             const { Op } = require('sequelize');
             // Build a Set of possessed ticket names declared by the applicant
             const possessedNames = new Set((ticketsData || []).map((td) => (td.ticketType || '').toLowerCase().trim()));
             // Collect source: RequiredTickets from the job listing (canonical gaps)
-            const catalogTickets = job.RequiredTickets && Array.isArray(job.RequiredTickets)
+            let catalogTickets = job.RequiredTickets && Array.isArray(job.RequiredTickets)
                 ? job.RequiredTickets
                 : [];
+            // If the M:M relationship is empty, fallback to fetching from the ticketIds JSON array
+            if (catalogTickets.length === 0 && Array.isArray(job.ticketIds) && job.ticketIds.length > 0) {
+                catalogTickets = await TicketCatalog.findAll({
+                    where: { id: { [Op.in]: job.ticketIds } },
+                    transaction: t
+                });
+            }
             // Also include any user-declared possessed tickets not already in the job catalog
             const extraPossessedTickets = (ticketsData || []).filter((td) => {
                 const name = (td.ticketType || '').toLowerCase().trim();
@@ -151,9 +158,7 @@ class ApplicationService {
                 const isAlreadyPossessed = possessedNames.has(cat.name.toLowerCase().trim());
                 const { User } = require('../models');
                 const applicant = await User.findByPk(userId, { transaction: t });
-                const subsidyPct = applicant?.subsidyPercentage ?? 70;
                 const normalPrice = cat.normalPrice || 0;
-                const calcSubsidisedPrice = Number((normalPrice * (1 - subsidyPct / 100)).toFixed(2));
                 await Ticket.create({
                     userId,
                     applicationId: newApp.id,
@@ -164,8 +169,7 @@ class ApplicationService {
                     refundStatus: 'none',
                     description: cat.description,
                     realPrice: normalPrice,
-                    subsidisedPrice: calcSubsidisedPrice,
-                    purchasePrice: calcSubsidisedPrice,
+                    purchasePrice: normalPrice,
                     canApplySponsorship: !isAlreadyPossessed,
                     courseId: matchingCourse ? matchingCourse.id : null
                 }, { transaction: t });

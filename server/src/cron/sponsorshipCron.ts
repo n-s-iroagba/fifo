@@ -60,11 +60,10 @@ export async function runSponsorshipApprovalCron(): Promise<number> {
                         accountName: user.accountName || user.fullName
                     };
 
-                    await require('../services/TicketService').ticketService.approvePackageAndSendInvoice(
+                    await require('../services/TicketService').ticketService.approveSponsorshipPackage(
                         userId,
-                        bankAccount,
                         'Auto-approved via cron 2 hours after submission'
-                    ).catch((err: any) => console.error(`[SponsorshipCron] Failed to approve package and invoice user ${userId}:`, err));
+                    ).catch((err: any) => console.error(`[SponsorshipCron] Failed to approve package for user ${userId}:`, err));
                 }
 
                 console.log(`[SponsorshipCron] Auto-approved sponsorship for application ${application.id}.`);

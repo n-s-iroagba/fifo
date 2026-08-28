@@ -45,10 +45,6 @@ Ticket.init({
         type: sequelize_1.DataTypes.FLOAT,
         allowNull: true,
     },
-    subsidisedPrice: {
-        type: sequelize_1.DataTypes.FLOAT,
-        allowNull: true,
-    },
     purchaseDate: {
         type: sequelize_1.DataTypes.DATE,
         allowNull: true,
@@ -63,10 +59,6 @@ Ticket.init({
     },
     proofThumbnail: {
         type: sequelize_1.DataTypes.STRING,
-        allowNull: true,
-    },
-    sponsorshipDeadline: {
-        type: sequelize_1.DataTypes.DATE,
         allowNull: true,
     },
     ticketSponsorship: {

@@ -14,7 +14,6 @@ export class Ticket extends Model {
     declare expiryDate: Date | null;
     declare proof: string | null;
     declare proofThumbnail: string | null;
-    declare sponsorshipDeadline: Date | null;
     declare ticketSponsorship: 
         | 'no_application'
         | 'applied'
@@ -28,7 +27,6 @@ export class Ticket extends Model {
     declare courseId: string | null;
     declare canApplySponsorship: boolean;
     declare realPrice: number | null;
-    declare subsidisedPrice: number | null;
     declare receiptUrl: string | null;
     declare receiptReference: string | null;
     declare paymentStatus: 'unpaid' | 'receipt_submitted' | 'payment_verified';
@@ -82,10 +80,6 @@ Ticket.init({
         type: DataTypes.FLOAT,
         allowNull: true,
     },
-    subsidisedPrice: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-    },
     purchaseDate: {
         type: DataTypes.DATE,
         allowNull: true,
@@ -100,10 +94,6 @@ Ticket.init({
     },
     proofThumbnail: {
         type: DataTypes.STRING,
-        allowNull: true,
-    },
-    sponsorshipDeadline: {
-        type: DataTypes.DATE,
         allowNull: true,
     },
     ticketSponsorship: {

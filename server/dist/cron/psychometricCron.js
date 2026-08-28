@@ -41,7 +41,10 @@ async function runPsychometricApprovalCron() {
                     attempt.passed = true;
                     await attempt.save();
                     await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(user.id, 'Psychometric Test Module 2 passed');
-                    await (0, email_1.sendAvelingEmail)(user.email, 'Psychometric Module 2 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 2. You have now completed the psychometric evaluation phase.</p>`);
+                    await (0, email_1.sendAvelingEmail)(user.email, 'Psychometric Module 2 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 2. You have now completed the psychometric evaluation phase.</p>
+                        <p>If you have uploaded your CV and updated your details, kindly go back to your dashboard and visit the job listing and click the blue button that reads "Submit Application" to submit your application</p>
+                        <p>Yours sincerely,<br>Blue Collar Recruitment Pty Ltd</p>
+                        `);
                     console.log(`[PsychometricCron] Auto-approved module 2 for user ${user.id}.`);
                 }
                 catch (innerErr) {

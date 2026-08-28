@@ -72,7 +72,7 @@ async function generateContractPDF(applicant: any, nomination: any, dateStr: str
     addLine('4. FISCAL SPONSORSHIP & COMPANY COVENANTS', 11, true);
     addLine('Conditional upon the Candidate remaining in absolute standing and fulfilling every chronological requirement set out in Clause 6 and Schedule 2, the Company covenants to execute the following financial provisions:');
     
-    const companySub = applicant.subsidyPercentage ? Number(applicant.subsidyPercentage).toFixed(2) : '96.38';
+    const companySub = applicant.subsidyPercentage ? Number(applicant.subsidyPercentage).toFixed(2) : '70.00';
     
     addLine(`4.1 Vocational Training Subsidy: The Company shall directly fund ${companySub} percent (${companySub}%) of the total gross commercial fees charged by the Training Partner for the administration and assessment of each individual course block, safety induction, and specialized modules listed under Schedule 1.`);
     addLine('4.2 Visa Charge Apportionment: The Company shall fund hundred percent (100%) of the statutory Visa Application Charge (VAC) applicable to the Subclass 482 visa framework in strict compliance with Regulation 2.87 of the Migration Regulations 1994 (Cth).');
@@ -176,6 +176,8 @@ async function generateContractPDF(applicant: any, nomination: any, dateStr: str
 
     const s1Rows: string[][] = [];
     
+    let totalCandidateShare = 0;
+    
     // Add gap tickets first
     if (tickets && tickets.length > 0) {
         tickets.forEach((ticket: any, index: number) => {
@@ -183,6 +185,7 @@ async function generateContractPDF(applicant: any, nomination: any, dateStr: str
                 const totalCost = ticket.realPrice || ticket.purchasePrice || 0;
                 const companyAmount = (totalCost * Number(companySub)) / 100;
                 const candidateAmount = totalCost - companyAmount;
+                totalCandidateShare += candidateAmount;
                 s1Rows.push([
                     `${index + 1}. ${ticket.ticketType}`,
                     `A$${totalCost.toFixed(2)}`,
@@ -204,6 +207,10 @@ async function generateContractPDF(applicant: any, nomination: any, dateStr: str
         [`${baseIndex + 4}. Mobilization Housing (3 Mo.)`, 'A$12,000.00', 'A$12,000.00', 'A$0.00', 'Company Benefit.']
     ];
     s1Rows.push(...staticRows);
+    
+    const visaShare = 1405.25;
+    const licensingShare = 185.50;
+    const totalLiability = totalCandidateShare + visaShare + licensingShare;
 
     if (y > 220) { doc.addPage(); y = 15; }
     autoTable(doc, {
@@ -215,6 +222,13 @@ async function generateContractPDF(applicant: any, nomination: any, dateStr: str
     });
 
     y = (doc as any).lastAutoTable.finalY + 6;
+    
+    addLine('Financial Summary:', 10, true);
+    addLine(`- Candidate Training Liability (${candidateSub}% Share): A$${totalCandidateShare.toFixed(2)}`, 9);
+    addLine(`- Subclass 482 Visa VAC Share (Clause 5.1): A$${visaShare.toFixed(2)}`, 9);
+    addLine(`- WA High-Risk Licensing & Site Credentials: A$${licensingShare.toFixed(2)}`, 9);
+    addLine(`- Total Maximum Contractual Liability (Clause 5.2 Cap): A$${totalLiability.toFixed(2)}`, 9, true);
+    addSpace(2);
 
     addLine('Official Payment Protocols & Financial Channels:', 10, true);
     addLine('- Commitment Security: The primary initial commitment deposit of A$500.00 must be transferred to the Company\'s verified institutional bank account prior to course portal unlocking.', 9);

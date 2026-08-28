@@ -400,7 +400,6 @@ class TicketService {
         twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
         await ticket.update({
             ticketSponsorship: 'second_attempt_approved',
-            sponsorshipDeadline: twoDaysFromNow,
             paymentStatus: 'unpaid',
             courseAccessGranted: false
         });
@@ -426,18 +425,7 @@ class TicketService {
             throw new Error('TICKET_NOT_FOUND');
         const oldStatus = ticket.ticketSponsorship;
         const newStatus = data.ticketSponsorship || ticket.ticketSponsorship;
-        let sponsorshipDeadline = ticket.sponsorshipDeadline;
-        // If sponsorship approved, set deadline to 3 days after approval
-        if ((newStatus === 'first_attempt_approved' || newStatus === 'second_attempt_approved') &&
-            oldStatus !== newStatus) {
-            // Clause 6.6.2: retake must be executed within 48 hours for remote online theory modules
-            const twoDaysFromNow = new Date();
-            twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
-            sponsorshipDeadline = twoDaysFromNow;
-        }
-        else if (data.sponsorshipDeadline) {
-            sponsorshipDeadline = new Date(data.sponsorshipDeadline);
-        }
+        // Removed sponsorship deadline logic
         const updatePayload = {
             status: data.status !== undefined ? data.status : ticket.status,
             ticketNumber: data.ticketNumber !== undefined ? data.ticketNumber : ticket.ticketNumber,
@@ -445,7 +433,6 @@ class TicketService {
             description: data.description !== undefined ? data.description : ticket.description,
             purchasePrice: data.purchasePrice !== undefined ? data.purchasePrice : ticket.purchasePrice,
             realPrice: data.realPrice !== undefined ? data.realPrice : ticket.realPrice,
-            subsidisedPrice: data.subsidisedPrice !== undefined ? data.subsidisedPrice : ticket.subsidisedPrice,
             canApplySponsorship: data.canApplySponsorship !== undefined ? data.canApplySponsorship : ticket.canApplySponsorship,
             purchaseDate: data.purchaseDate !== undefined ? data.purchaseDate : ticket.purchaseDate,
             expiryDate: data.expiryDate !== undefined ? data.expiryDate : ticket.expiryDate,
@@ -453,7 +440,6 @@ class TicketService {
             proofThumbnail: data.proofThumbnail !== undefined ? data.proofThumbnail : ticket.proofThumbnail,
             ticketSponsorship: newStatus,
             ticketSponsorshipRefundAmount: data.ticketSponsorshipRefundAmount !== undefined ? data.ticketSponsorshipRefundAmount : ticket.ticketSponsorshipRefundAmount,
-            sponsorshipDeadline,
             courseId: data.courseId !== undefined ? data.courseId : ticket.courseId,
         };
         if (updatePayload.status === 'possessed') {
@@ -662,7 +648,6 @@ class TicketService {
         let ticketType = data.ticketType;
         let description = data.description || null;
         let realPrice = data.realPrice ?? null;
-        let subsidisedPrice = data.subsidisedPrice ?? null;
         let courseId = data.courseId || null;
         // If cloning from a catalog template
         if (data.catalogId) {
@@ -672,11 +657,6 @@ class TicketService {
                 description = description || catalog.description;
                 if (realPrice === null)
                     realPrice = catalog.normalPrice;
-                if (subsidisedPrice === null) {
-                    const applicant = await models_1.User.findByPk(application.userId);
-                    const subsidyPct = applicant?.subsidyPercentage ?? 70;
-                    subsidisedPrice = realPrice ? Number((realPrice * (1 - subsidyPct / 100)).toFixed(2)) : 0;
-                }
             }
         }
         // Auto-link matching course if courseId is not set
@@ -714,8 +694,7 @@ class TicketService {
             ticketSponsorship: 'no_application',
             description: description,
             realPrice: realPrice,
-            subsidisedPrice: subsidisedPrice,
-            purchasePrice: subsidisedPrice ?? realPrice ?? 0,
+            purchasePrice: realPrice ?? 0,
             canApplySponsorship: data.canApplySponsorship ?? true,
             courseId: courseId,
         });
@@ -751,7 +730,6 @@ class TicketService {
                 baseTicketType = sourceTicket.ticketType;
                 baseDescription = sourceTicket.description || baseDescription;
                 defaultRealPrice = sourceTicket.realPrice ?? sourceTicket.purchasePrice ?? 280;
-                defaultSubsidisedPrice = sourceTicket.subsidisedPrice ?? (defaultRealPrice * 0.35);
                 defaultCourseId = defaultCourseId || sourceTicket.courseId;
             }
         }
@@ -761,8 +739,6 @@ class TicketService {
                 baseTicketType = catalog.name;
                 baseDescription = catalog.description || baseDescription;
                 defaultRealPrice = catalog.normalPrice || 280;
-                const subsidyPct = user?.subsidyPercentage ?? 70;
-                defaultSubsidisedPrice = Number((defaultRealPrice * (1 - subsidyPct / 100)).toFixed(2));
             }
         }
         if (!defaultCourseId) {
@@ -779,8 +755,7 @@ class TicketService {
             }
         }
         const realPrice = data.customRealPrice ?? defaultRealPrice;
-        const subsidisedPrice = data.customSubsidisedPrice ?? defaultSubsidisedPrice;
-        const purchasePrice = data.customPurchasePrice ?? subsidisedPrice;
+        const purchasePrice = data.customPurchasePrice ?? realPrice;
         const clonedTicket = await models_1.Ticket.create({
             userId: data.targetUserId,
             applicationId: data.applicationId || null,
@@ -790,7 +765,6 @@ class TicketService {
             ticketSponsorship: 'applied',
             canApplySponsorship: data.canApplySponsorship ?? true,
             realPrice: realPrice,
-            subsidisedPrice: subsidisedPrice,
             purchasePrice: purchasePrice,
             courseId: defaultCourseId,
             paymentStatus: 'unpaid',
@@ -851,7 +825,7 @@ class TicketService {
         let body = `<p>Hello ${user.fullName || 'Applicant'},</p>
                     <p>Your sponsorship for <strong>${ticket.ticketType}</strong> has been updated to <strong>${sponsorshipStatus.replace(/_/g, ' ').toUpperCase()}</strong>.</p>`;
         if (sponsorshipStatus === 'first_attempt_approved' || sponsorshipStatus === 'second_attempt_approved') {
-            body += `<p>Please proceed to pay and start your course on Aveling LMS before the deadline (${ticket.sponsorshipDeadline ? new Date(ticket.sponsorshipDeadline).toLocaleDateString() : '3 days'}).</p>
+            body += `<p>Please proceed to pay and start your course on Aveling LMS as soon as possible.</p>
                      <p><a href="${avelingPayUrl}" style="background:#1e3a8a;color:#ffffff;padding:10px 20px;text-decoration:none;border-radius:6px;display:inline-block;">Proceed to Aveling LMS Payment</a></p>`;
         }
         await this.sendCustomEmail(user.email, subject, body);
@@ -962,8 +936,9 @@ class TicketService {
             platform_bank_account_number: 'T...',
             platform_bank_account_name: 'FIFO Training Operations'
         };
-        const courseFee = ticket.subsidisedPrice ?? ticket.purchasePrice ?? 0;
-        const realPrice = ticket.realPrice ?? null;
+        const realPrice = ticket.realPrice ?? 0;
+        const subsidyPct = user.subsidyPercentage ?? 70;
+        const courseFee = realPrice ? Number((realPrice * (1 - subsidyPct / 100)).toFixed(2)) : (ticket.purchasePrice ?? 0);
         // Send credentials + payment instructions email
         if (user.email) {
             await this.sendCustomEmail(user.email, `Your Aveling LMS Login & Payment Instructions – ${ticket.ticketType}`, `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
@@ -1017,7 +992,12 @@ class TicketService {
         const user = ticket.User;
         if (!user)
             throw new Error('USER_NOT_FOUND');
-        let coursePrice = ticket.subsidisedPrice ?? ticket.purchasePrice ?? 0;
+        let coursePrice = ticket.purchasePrice ?? 0;
+        const realPrice = ticket.realPrice ?? 0;
+        if (realPrice) {
+            const subsidyPct = user.subsidyPercentage ?? 70;
+            coursePrice = Number((realPrice * (1 - subsidyPct / 100)).toFixed(2));
+        }
         let isFullyCovered = false;
         if (data?.useWallet && user.walletBalance && user.walletBalance > 0) {
             if (user.walletBalance >= coursePrice) {
@@ -1055,7 +1035,7 @@ class TicketService {
                             courseId: ticket.courseId,
                             paymentStatus: 'Paid',
                             status: 'Active',
-                            amountPaid: ticket.subsidisedPrice ?? ticket.purchasePrice ?? 0
+                            amountPaid: coursePrice
                         });
                     }
                 }
@@ -1207,7 +1187,6 @@ class TicketService {
                 ticketType: 'EEHA Certification (Hazardous Areas)',
                 description: 'Electrical Equipment in Hazardous Areas (UEE42620 / EEHA) Competency Ticket',
                 realPrice: 1850.00,
-                subsidisedPrice: 647.50,
                 canApplySponsorship: true,
                 courseId: 'eeha-cert-01'
             },
@@ -1215,7 +1194,6 @@ class TicketService {
                 ticketType: 'Standard 11 Mining Induction (WA)',
                 description: 'Surface and Underground Mining Health and Safety Induction (RIIRIS301E)',
                 realPrice: 690.00,
-                subsidisedPrice: 241.50,
                 canApplySponsorship: true,
                 courseId: 'std11-mining-02'
             },
@@ -1223,7 +1201,6 @@ class TicketService {
                 ticketType: 'White Card WA (CPCWHS1001)',
                 description: 'Prepare to Work Safely in the Construction Industry (CPCWHS1001)',
                 realPrice: 95.00,
-                subsidisedPrice: 33.25,
                 canApplySponsorship: true,
                 courseId: 'whitecard-wa-03'
             },
@@ -1231,7 +1208,6 @@ class TicketService {
                 ticketType: 'Working at Heights (RIIWHS204E)',
                 description: 'Work Safely at Heights Competency Ticket (RIIWHS204E)',
                 realPrice: 270.00,
-                subsidisedPrice: 94.50,
                 canApplySponsorship: true,
                 courseId: 'heights-04'
             },
@@ -1239,7 +1215,6 @@ class TicketService {
                 ticketType: 'Confined Space Entry (RIIWHS202E)',
                 description: 'Enter and Work in Confined Spaces Competency Ticket (RIIWHS202E)',
                 realPrice: 290.00,
-                subsidisedPrice: 101.50,
                 canApplySponsorship: true,
                 courseId: 'confined-space-05'
             },
@@ -1247,7 +1222,6 @@ class TicketService {
                 ticketType: 'Gas Test Atmospheres (MSMWHS217)',
                 description: 'Conduct Gas Testing Atmospheres Competency Ticket (MSMWHS217)',
                 realPrice: 190.00,
-                subsidisedPrice: 66.50,
                 canApplySponsorship: true,
                 courseId: 'gas-test-06'
             },
@@ -1255,7 +1229,6 @@ class TicketService {
                 ticketType: 'Provide First Aid (HLTAID011)',
                 description: 'Provide First Aid and CPR Competency Ticket (HLTAID011)',
                 realPrice: 160.00,
-                subsidisedPrice: 56.00,
                 canApplySponsorship: true,
                 courseId: 'first-aid-07'
             }
@@ -1272,8 +1245,7 @@ class TicketService {
                     status: 'not_possessed',
                     ticketSponsorship: 'no_application',
                     realPrice: item.realPrice,
-                    subsidisedPrice: item.subsidisedPrice,
-                    purchasePrice: item.subsidisedPrice,
+                    purchasePrice: item.realPrice,
                     canApplySponsorship: item.canApplySponsorship !== false,
                     courseId: item.courseId || null,
                     description: item.description || null
@@ -1335,7 +1307,7 @@ class TicketService {
         return { count: tickets.length, tickets };
     }
     // Admin approves candidate's ticket package and dispatches official corporate invoice with selected bank account
-    async approvePackageAndSendInvoice(userId, bankAccount, adminNotes) {
+    async approveSponsorshipPackage(userId, adminNotes) {
         const { User: UserModel } = require('../models');
         const user = await UserModel.findByPk(userId);
         if (!user)
@@ -1343,94 +1315,13 @@ class TicketService {
         const tickets = await models_1.Ticket.findAll({ where: { userId } });
         const appliedTickets = tickets.filter(t => t.ticketSponsorship === 'applied');
         // Transition applied tickets to 'first_attempt_approved'
-        const twoDaysFromNow = new Date();
-        twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
         for (const t of appliedTickets) {
             await t.update({
-                ticketSponsorship: 'first_attempt_approved',
-                sponsorshipDeadline: twoDaysFromNow
+                ticketSponsorship: 'first_attempt_approved'
             });
         }
-        const invoiceNumber = `INV-BCR-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-        const candidateNumber = user.candidateNumber || `CND-${10000 + user.id}`;
-        // Build itemized email content
-        const ticketRowsHtml = tickets.map((t, idx) => `
-            <tr>
-                <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-size:12px;"><strong>Module ${idx + 1}:</strong> ${t.ticketType}</td>
-                <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;">A$${(t.realPrice || 0).toFixed(2)}</td>
-                <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;color:#059669;">A$${((t.realPrice || 0) * 0.65).toFixed(2)} (65%)</td>
-                <td style="padding:10px;border-bottom:1px solid #e2e8f0;font-size:12px;text-align:right;font-weight:bold;">A$${(t.subsidisedPrice || t.purchasePrice || 0).toFixed(2)} (35%)</td>
-            </tr>
-        `).join('');
-        const checkoutUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/checkout`;
-        const avelingUrl = `https://aveling.online/checkout`;
-        const emailHtml = `
-        <div style="font-family: Arial, sans-serif; color: #1e3a8a; max-width: 650px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 16px; overflow: hidden; background: #ffffff;">
-            <div style="background: #1e3a8a; color: #ffffff; padding: 24px; text-align: center;">
-                <h1 style="margin:0; font-size: 22px; text-transform: uppercase; tracking: 1px;">Blue Collar Recruitment Pty Ltd</h1>
-                <p style="margin:4px 0 0 0; font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 2px;">Official Sponsorship Invoice & Approval Notice</p>
-            </div>
-            <div style="padding: 24px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom: 20px; font-size: 12px; color: #475569;">
-                    <div>
-                        <p style="margin:2px 0;"><strong>Billed To:</strong> ${user.fullName}</p>
-                        <p style="margin:2px 0;"><strong>Candidate ID:</strong> ${candidateNumber}</p>
-                        <p style="margin:2px 0;"><strong>Email:</strong> ${user.email}</p>
-                    </div>
-                    <div style="text-align: right;">
-                        <p style="margin:2px 0;"><strong>Invoice Ref:</strong> ${invoiceNumber}</p>
-                        <p style="margin:2px 0;"><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
-                        <p style="margin:2px 0; color: #059669; font-weight: bold;">Status: Approved & Pending Remittance</p>
-                    </div>
-                </div>
-
-                <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 6px; margin-top: 20px;">Sponsorship Ticket Package & Liability Matrix</h3>
-                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                    <thead>
-                        <tr style="background: #f1f5f9; font-size: 10px; text-transform: uppercase; color: #475569;">
-                            <th style="padding: 8px; text-align: left;">Qualification / Ticket</th>
-                            <th style="padding: 8px; text-align: right;">Total Price</th>
-                            <th style="padding: 8px; text-align: right;">Company Share</th>
-                            <th style="padding: 8px; text-align: right;">Candidate Share</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${ticketRowsHtml}
-                    </tbody>
-                </table>
-
-                <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px; margin-top: 20px;">
-                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #1e3a8a; text-transform: uppercase;">Financial Summary (Schedule 1)</h4>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;">Candidate Training Liability (35% Share): <strong>A$1,240.75</strong></p>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;">Subclass 482 Visa VAC Share (Clause 5.1): <strong>A$1,405.25</strong></p>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;">WA High-Risk Licensing & Site Credentials: <strong>A$185.50</strong></p>
-                    <p style="margin: 6px 0 0 0; font-size: 12px; font-weight: bold; color: #1e3a8a; border-top: 1px solid #cbd5e1; padding-top: 6px;">Total Maximum Contractual Liability (Clause 5.2 Cap): A$3,599.20</p>
-                    <p style="margin: 4px 0 0 0; font-size: 11px; color: #059669; font-weight: bold;">Initial Deposit Required to Unlock Modules 1–3: A$500.00</p>
-                </div>
-
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-top: 20px;">
-                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #1e3a8a; text-transform: uppercase;">Corporate Payment Details (USDT TRC-20)</h4>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Asset / Network:</strong> USDT on TRON (TRC-20)</p>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Wallet Address:</strong> ${bankAccount.accountNumber}</p>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Wallet Entity:</strong> ${bankAccount.accountName || bankAccount.bankName}</p>
-                    <p style="margin: 3px 0; font-size: 11px; color: #1e3a8a; margin-top: 6px;"><strong>Payment Reference:</strong> ${invoiceNumber} (${candidateNumber})</p>
-                </div>
-
-                <div style="margin-top: 24px; text-align: center;">
-                    <a href="${avelingUrl}" style="background: #1e3a8a; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-size: 12px; font-weight: bold; text-transform: uppercase; display: inline-block;">Pay Deposit or Complete Remittance Now</a>
-                </div>
-
-                <p style="font-size: 10px; color: #64748b; margin-top: 20px; text-align: center;">
-                    Note: Under Clause 7.1, 100% of all candidate course fees paid are credited to your Candidate Wallet upon passing each module.
-                </p>
-            </div>
-        </div>
-        `;
-        if (user.email) {
-            await this.sendCustomEmail(user.email, `Invoice & Approval Notice: Ticket Sponsorship Package (${invoiceNumber})`, emailHtml);
-        }
-        await NotificationService_1.notificationService.sendNotification(userId, 'Sponsorship Package Approved & Invoice Dispatched', `Your complete ticket sponsorship application has been approved! Invoice ${invoiceNumber} has been issued to your email with bank details for your A$500 deposit / remittance.`);
-        return { invoiceNumber, ticketsApproved: appliedTickets.length, bankAccount };
+        await NotificationService_1.notificationService.sendNotification(userId, 'Sponsorship Package Approved', `Your ticket sponsorship application has been approved by Blue Collar Recruitment! You will receive your training invoice from Aveling shortly.`);
+        return { ticketsApproved: appliedTickets.length };
     }
 }
 exports.TicketService = TicketService;

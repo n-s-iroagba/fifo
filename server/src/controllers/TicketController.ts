@@ -627,21 +627,18 @@ export class TicketController {
         }
     }
 
-    // Admin: Approve candidate's sponsorship package & dispatch corporate invoice with selected bank account
+    // Admin: Approve candidate's sponsorship package (invoice sent later by cron)
     public async approvePackageAndSendInvoice(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const userId = parseInt(req.params.userId as string, 10);
-            const { bankAccount, adminNotes } = req.body;
+            const { adminNotes } = req.body; // Removed strict bankAccount requirement as it's handled at application stage now
             if (!userId || isNaN(userId)) {
                 res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
                 return;
             }
-            if (!bankAccount || !bankAccount.bankName || !bankAccount.accountNumber) {
-                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'USDT TRC-20 wallet details are required.' });
-                return;
-            }
-            const result = await ticketService.approvePackageAndSendInvoice(userId, bankAccount, adminNotes);
-            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: 'Sponsorship package approved and corporate invoice dispatched.' });
+            
+            const result = await ticketService.approveSponsorshipPackage(userId, adminNotes);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: 'Sponsorship package approved. Corporate invoice will be dispatched by automated workflow.' });
         } catch (error: any) {
             if (error.message === 'USER_NOT_FOUND') {
                 res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Candidate not found.' });

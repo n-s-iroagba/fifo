@@ -626,21 +626,17 @@ class TicketController {
             next(error);
         }
     }
-    // Admin: Approve candidate's sponsorship package & dispatch corporate invoice with selected bank account
+    // Admin: Approve candidate's sponsorship package (invoice sent later by cron)
     async approvePackageAndSendInvoice(req, res, next) {
         try {
             const userId = parseInt(req.params.userId, 10);
-            const { bankAccount, adminNotes } = req.body;
+            const { adminNotes } = req.body; // Removed strict bankAccount requirement as it's handled at application stage now
             if (!userId || isNaN(userId)) {
                 res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
                 return;
             }
-            if (!bankAccount || !bankAccount.bankName || !bankAccount.accountNumber) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'USDT TRC-20 wallet details are required.' });
-                return;
-            }
-            const result = await TicketService_1.ticketService.approvePackageAndSendInvoice(userId, bankAccount, adminNotes);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: 'Sponsorship package approved and corporate invoice dispatched.' });
+            const result = await TicketService_1.ticketService.approveSponsorshipPackage(userId, adminNotes);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: 'Sponsorship package approved. Corporate invoice will be dispatched by automated workflow.' });
         }
         catch (error) {
             if (error.message === 'USER_NOT_FOUND') {
