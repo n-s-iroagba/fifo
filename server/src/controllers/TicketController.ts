@@ -182,7 +182,7 @@ export class TicketController {
 
             if (!user) {
                 const { LmsCredential } = require('../models');
-                const credential = await LmsCredential.findOne({ 
+                const credential = await LmsCredential.findOne({
                     where: require('sequelize').where(require('sequelize').fn('LOWER', require('sequelize').col('lms_username')), cleanNum.toLowerCase())
                 });
                 if (credential) {
@@ -636,8 +636,8 @@ export class TicketController {
                 res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
                 return;
             }
-            
-            const result = await ticketService.approveSponsorshipPackage(userId, adminNotes);
+
+            const result = await ticketService.approveSponsorshipPackage(userId);
             res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: 'Sponsorship package approved. Corporate invoice will be dispatched by automated workflow.' });
         } catch (error: any) {
             if (error.message === 'USER_NOT_FOUND') {
