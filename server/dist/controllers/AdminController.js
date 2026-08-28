@@ -200,7 +200,8 @@ class AdminController {
                     cvUrl: user.cvUrl,
                     walletBalance: user.walletBalance,
                     avelingUsername: user.avelingUsername,
-                    avelingPassword: user.avelingPassword
+                    avelingPassword: user.avelingPassword,
+                    subsidyPercentage: user.subsidyPercentage
                 }
             });
         }

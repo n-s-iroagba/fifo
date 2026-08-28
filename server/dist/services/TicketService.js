@@ -825,7 +825,7 @@ class TicketService {
         let body = `<p>Hello ${user.fullName || 'Applicant'},</p>
                     <p>Your sponsorship for <strong>${ticket.ticketType}</strong> has been updated to <strong>${sponsorshipStatus.replace(/_/g, ' ').toUpperCase()}</strong>.</p>`;
         if (sponsorshipStatus === 'first_attempt_approved' || sponsorshipStatus === 'second_attempt_approved') {
-            body += `<p>Please proceed to pay and start your course on Aveling LMS as soon as possible.</p>
+            body += `<p>Please proceed to pay and start your course on Aveling LMS within the next 2 days.</p>
                      <p><a href="${avelingPayUrl}" style="background:#1e3a8a;color:#ffffff;padding:10px 20px;text-decoration:none;border-radius:6px;display:inline-block;">Proceed to Aveling LMS Payment</a></p>`;
         }
         await this.sendCustomEmail(user.email, subject, body);

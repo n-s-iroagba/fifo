@@ -230,10 +230,10 @@ export default function AdminApplicantDetailPage() {
 
                         {!isEditingSubsidy ? (
                             <div className="flex flex-col items-center">
-                                <span className="text-3xl font-black text-blue-900">{user.subsidyPercentage ?? 70}%</span>
+                                <span className="text-3xl font-black text-blue-900">{user.subsidyPercentage || 0}%</span>
                                 <button
                                     onClick={() => {
-                                        setSubsidyValue((user.subsidyPercentage ?? 70).toString());
+                                        setSubsidyValue((user.subsidyPercentage || 0).toString());
                                         setIsEditingSubsidy(true);
                                     }}
                                     className="mt-6 w-full py-3 bg-blue-50 text-blue-900 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-100 transition-all"
