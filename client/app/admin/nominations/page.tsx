@@ -179,6 +179,7 @@ export default function NominationsPage() {
         { tradeStream: '', hostEmployer: '', vacancies: '', competitors: '' }
     ]);
     const [success, setSuccess] = useState(false);
+    const [isSubmittingLocal, setIsSubmittingLocal] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [previewPdf, setPreviewPdf] = useState<string | null>(null);
 
@@ -238,15 +239,21 @@ export default function NominationsPage() {
 
     const handleSendNomination = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isSubmittingLocal) return;
+        
         if (!selectedApplicant || options.length === 0 || !appId) {
             setError('Please select a candidate with an active application.');
             return;
         }
         setError(null);
         setSuccess(false);
+        setIsSubmittingLocal(true);
 
         const applicant = applicants.find((a: any) => a.id.toString() === selectedApplicant);
-        if (!applicant) return;
+        if (!applicant) {
+            setIsSubmittingLocal(false);
+            return;
+        }
 
         try {
             const pdfUri = await generateNominationPDF(applicant, options, totalApplicants, getToday());
@@ -266,6 +273,8 @@ export default function NominationsPage() {
             setPreviewPdf(null);
         } catch (err: any) {
             setError(err?.response?.data?.error || 'Failed to issue nomination.');
+        } finally {
+            setIsSubmittingLocal(false);
         }
     };
 
@@ -419,10 +428,10 @@ export default function NominationsPage() {
                             </button>
                             <button
                                 type="submit"
-                                disabled={creatingNoms || isLoading || !appId}
+                                disabled={creatingNoms || isLoading || !appId || isSubmittingLocal}
                                 className="bg-blue-900 text-white px-8 py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-blue-800 transition-all shadow-lg shadow-blue-900/10 disabled:opacity-50"
                             >
-                                {creatingNoms ? 'Issuing...' : 'Issue Nomination'}
+                                {creatingNoms || isSubmittingLocal ? 'Issuing...' : 'Issue Nomination'}
                             </button>
                         </div>
                     </form>

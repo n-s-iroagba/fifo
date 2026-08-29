@@ -14,10 +14,28 @@ const MAX_CANDIDATE_LIABILITY = 3599.20;       // Clause 5.2 upper contractual l
 
 export class TicketService {
     public async getUserTickets(userId: number) {
-        return await Ticket.findAll({
+        const { JobStage } = require('../models');
+        const tickets = await Ticket.findAll({
             where: { userId },
-            include: [{ model: Application, as: 'Application' }],
+            include: [
+                {
+                    model: Application,
+                    as: 'Application',
+                    include: [
+                        {
+                            model: JobStage,
+                            as: 'JobStages'
+                        }
+                    ]
+                }
+            ],
             order: [['createdAt', 'DESC']]
+        });
+
+        return tickets.filter((t: any) => {
+            if (!t.Application) return true; // Global ticket or old data
+            const stages = t.Application.JobStages || [];
+            return stages.some((s: any) => s.name === 'TicketSponsorship' || s.name === 'Ticket Sponsorship');
         });
     }
 
