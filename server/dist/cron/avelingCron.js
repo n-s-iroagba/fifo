@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.runAvelingWelcomeCron = runAvelingWelcomeCron;
+exports.runAvelingTicketDeliveryCron = runAvelingTicketDeliveryCron;
 const sequelize_1 = require("sequelize");
 const models_1 = require("../models");
 const email_1 = require("../utils/email");
@@ -116,6 +117,101 @@ async function runAvelingWelcomeCron() {
     catch (err) {
         console.error('[AvelingCron] Fatal error:', err);
         (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'error', String(err));
+        return 0;
+    }
+}
+async function runAvelingTicketDeliveryCron() {
+    try {
+        console.log('[AvelingCron] Running aveling ticket delivery check...');
+        const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
+        const cutoff = new Date(Date.now() - FOUR_HOURS_MS);
+        // Find users who might have tickets ready
+        const users = await models_1.User.findAll({
+            where: {
+                role: 'applicant'
+            },
+            include: [{
+                    model: models_1.Ticket,
+                    as: 'Tickets',
+                    required: true // only users with tickets
+                }]
+        });
+        let processedCount = 0;
+        for (const user of users) {
+            const anyUser = user;
+            const prefs = anyUser.preferences || {};
+            if (prefs.certificatesSent) {
+                continue;
+            }
+            const tickets = anyUser.Tickets || [];
+            if (tickets.length === 0)
+                continue;
+            // Check if all tickets have been taken
+            // Taken means ticketSponsorship is in 'ticket_issued', 'first_attempt_failed', 'second_attempt_failed'
+            const allTaken = tickets.every(t => ['ticket_issued', 'first_attempt_failed', 'second_attempt_failed'].includes(t.ticketSponsorship));
+            if (!allTaken)
+                continue;
+            // Check if at least one ticket was issued (passed)
+            const passedTickets = tickets.filter(t => t.ticketSponsorship === 'ticket_issued');
+            if (passedTickets.length === 0)
+                continue;
+            // Check if the most recent update is > 4 hours ago
+            const lastUpdated = new Date(Math.max(...tickets.map(t => new Date(t.updatedAt).getTime())));
+            if (lastUpdated > cutoff) {
+                continue;
+            }
+            // Generate HTML for the PDF-like tickets
+            let ticketsHtml = '';
+            for (const pt of passedTickets) {
+                ticketsHtml += `
+                <div style="border: 2px solid #000; padding: 20px; margin-bottom: 20px; border-radius: 8px; background: #fff;">
+                    <div style="text-align: center; border-bottom: 2px solid #FFC700; padding-bottom: 10px; margin-bottom: 10px;">
+                        <h2 style="margin: 0; color: #000; font-family: 'Times New Roman', serif; text-transform: uppercase;">Statement of Attainment</h2>
+                        <p style="margin: 5px 0 0; font-size: 12px; color: #555;">Aveling LMS Training - Certified Digital Copy</p>
+                    </div>
+                    <div style="font-family: Arial, sans-serif;">
+                        <p><strong>This is to certify that:</strong></p>
+                        <h3 style="margin: 5px 0; color: #1e3a8a; text-transform: uppercase;">${user.fullName}</h3>
+                        <p><strong>Candidate ID:</strong> ${user.candidateNumber || 'N/A'}</p>
+                        <p style="margin-top: 20px;"><strong>Has fulfilled the requirements for:</strong></p>
+                        <h3 style="margin: 5px 0; color: #000;">${pt.ticketType}</h3>
+                        <p style="margin-top: 20px;"><strong>Date Issued:</strong> ${new Date(pt.updatedAt).toLocaleDateString()}</p>
+                        <p style="margin-top: 30px; font-size: 11px; color: #777; border-top: 1px dashed #ccc; padding-top: 10px;">
+                            This is an official digital ticket. A downloadable PDF version can also be generated from your portal.
+                        </p>
+                    </div>
+                </div>
+                `;
+            }
+            const subject = 'Your Official Digital Tickets & Statements of Attainment';
+            const content = `
+                <p>Dear ${user.fullName},</p>
+                <p>Congratulations on completing your Aveling LMS Training requirements. Below you will find your digital Statement(s) of Attainment.</p>
+                <div style="background-color: #f3f4f6; padding: 20px; margin: 20px 0; border-radius: 10px;">
+                    ${ticketsHtml}
+                </div>
+                <p>You can download the PDF versions of these certificates directly from your candidate dashboard under the <strong>Tickets</strong> section.</p>
+                <p>Best regards,<br>Aveling Training & Blue Collar Recruitment Team</p>
+            `;
+            try {
+                const { sendAvelingEmail } = require('../utils/email');
+                await sendAvelingEmail(user.email, subject, content);
+                // Mark as sent
+                prefs.certificatesSent = true;
+                await user.update({ preferences: prefs });
+                processedCount++;
+                console.log(`[AvelingCron] Sent digital tickets to user ${user.id}`);
+            }
+            catch (innerErr) {
+                console.error(`[AvelingCron] Failed to send tickets to user ${user.id}:`, innerErr);
+            }
+        }
+        (0, cronRegistry_1.recordCronRun)('AvelingTicketDelivery', 'ok');
+        return processedCount;
+    }
+    catch (err) {
+        console.error('[AvelingCron] Ticket delivery fatal error:', err);
+        (0, cronRegistry_1.recordCronRun)('AvelingTicketDelivery', 'error', String(err));
         return 0;
     }
 }

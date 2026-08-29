@@ -65,8 +65,10 @@ exports.cronController = {
     },
     async aveling(req, res) {
         try {
-            const count = await (0, avelingCron_1.runAvelingWelcomeCron)();
-            await notifyAdmin('Aveling Welcome', count);
+            const count1 = await (0, avelingCron_1.runAvelingWelcomeCron)();
+            const count2 = await (0, avelingCron_1.runAvelingTicketDeliveryCron)();
+            const count = count1 + count2;
+            await notifyAdmin('Aveling Welcome & Ticket Delivery', count);
             res.status(200).json({ success: true, processed: count });
         }
         catch (error) {

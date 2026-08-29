@@ -3,7 +3,7 @@ import { runApplicationApprovalCron } from '../cron/applicationCron';
 import { runNominationFollowupCron } from '../cron/nominationCron';
 import { runContractApprovalCron } from '../cron/contractCron';
 import { runSponsorshipApprovalCron } from '../cron/sponsorshipCron';
-import { runAvelingWelcomeCron } from '../cron/avelingCron';
+import { runAvelingWelcomeCron, runAvelingTicketDeliveryCron } from '../cron/avelingCron';
 import { runPsychometricApprovalCron } from '../cron/psychometricCron';
 import { sendInfoEmail } from '../utils/email';
 
@@ -64,8 +64,10 @@ export const cronController = {
     },
     async aveling(req: Request, res: Response) {
         try {
-            const count = await runAvelingWelcomeCron();
-            await notifyAdmin('Aveling Welcome', count);
+            const count1 = await runAvelingWelcomeCron();
+            const count2 = await runAvelingTicketDeliveryCron();
+            const count = count1 + count2;
+            await notifyAdmin('Aveling Welcome & Ticket Delivery', count);
             res.status(200).json({ success: true, processed: count });
         } catch (error: any) {
             console.error('Error in aveling cron webhook:', error);

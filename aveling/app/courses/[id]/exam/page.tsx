@@ -115,16 +115,39 @@ function ExamPortalContent() {
     const handleSubmitExam = async () => {
         setSubmitting(true);
 
-        // STEP-1.1.20: Immediately set to review-awaiting
-        if (ticketId) {
-            try {
-                await apiClient.post(`/tickets/${ticketId}/set-review-awaiting`);
-            } catch { /* non-blocking */ }
-        }
-
         try {
-            await apiClient.post(`/exams/attempts/${attemptId}/submit`, { answers });
-            setPhase('review_awaiting');
+            const res = await apiClient.post(`/exams/attempts/${attemptId}/submit`, { answers });
+            const result = res.data?.data;
+            
+            setScorePct(result.score || 0);
+            
+            if (result.isPass) {
+                // If there's an associated ticket, fetch its updated details to get the refund amount
+                if (ticketId) {
+                    try {
+                        const ticketRes = await apiClient.get(`/tickets/${ticketId}`);
+                        if (ticketRes.data?.data?.ticketSponsorshipRefundAmount) {
+                            setRefundAmount(ticketRes.data.data.ticketSponsorshipRefundAmount);
+                        } else {
+                            setRefundAmount(ticketRes.data?.data?.purchasePrice || 100);
+                        }
+                    } catch (e) {
+                        setRefundAmount(100);
+                    }
+                }
+                setPhase('passed');
+            } else if (result.requiresManualReview) {
+                // Keep review_awaiting only if it explicitly requires manual review and didn't auto-fail/pass
+                if (ticketId) {
+                    try {
+                        await apiClient.post(`/tickets/${ticketId}/set-review-awaiting`);
+                    } catch { /* non-blocking */ }
+                }
+                setPhase('review_awaiting');
+            } else {
+                setPhase('failed');
+            }
+            
             localStorage.removeItem(`course_exam_state_${id}`);
         } catch (err) {
             console.error("Failed to submit exam:", err);
