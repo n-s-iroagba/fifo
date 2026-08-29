@@ -207,6 +207,47 @@ export class TicketService {
         return { invoiceNumber, userId, amountAud: data.amountAud, convertedAmount: data.convertedAmount, currency: data.currency, selectedBank };
     }
 
+    public async processAvelingInvoicePayment(userId: number, invoicePurpose: string) {
+        const { Ticket, Enrollment, Course } = require('../models');
+        const user = await User.findByPk(userId);
+        if (!user) return;
+        
+        let ticketsToUnlock = [];
+        
+        if (invoicePurpose === 'aveling-partial') {
+            await user.update({ depositPaid: true, depositPaidAt: user.depositPaidAt || new Date() });
+            const tickets = await Ticket.findAll({ where: { userId }, order: [['createdAt', 'ASC']] });
+            ticketsToUnlock = tickets.slice(0, 3);
+        } else if (invoicePurpose === 'aveling-complete' || invoicePurpose === 'aveling-complete-after-partial') {
+            await user.update({ depositPaid: true, fullBalancePaid: true, depositPaidAt: user.depositPaidAt || new Date() });
+            ticketsToUnlock = await Ticket.findAll({ where: { userId } });
+        }
+        
+        for (const ticket of ticketsToUnlock) {
+            await ticket.update({ paymentStatus: 'payment_verified', courseAccessGranted: true });
+            
+            if (ticket.courseId) {
+                const validCourse = await Course.findByPk(ticket.courseId);
+                if (validCourse) {
+                    const existingEnrollment = await Enrollment.findOne({
+                        where: { userId, courseId: ticket.courseId }
+                    });
+                    if (existingEnrollment) {
+                        await existingEnrollment.update({ paymentStatus: 'Paid', status: 'Active' });
+                    } else {
+                        await Enrollment.create({
+                            userId,
+                            courseId: ticket.courseId,
+                            paymentStatus: 'Paid',
+                            status: 'Active',
+                            amountPaid: ticket.purchasePrice ?? 0
+                        });
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Admin verifies the A$500 initial deposit receipt.
      * Sets depositPaid=true, notifies candidate, unlocks Tickets 1-3.

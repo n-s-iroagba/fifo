@@ -28,6 +28,7 @@ export class ExamAttemptController {
             if (error.message === 'PAYMENT_REQUIRED') return res.status(402).json({ code: 402, error: 'PAYMENT_REQUIRED', message: 'Course payment required to start exam.' });
             if (error.message === 'DEPOSIT_REQUIRED') return res.status(402).json({ code: 402, error: 'DEPOSIT_REQUIRED', message: 'Your A$500 initial commitment deposit must be verified before accessing the first training module. Please submit your deposit receipt.' });
             if (error.message === 'FULL_BALANCE_REQUIRED') return res.status(402).json({ code: 402, error: 'FULL_BALANCE_REQUIRED', message: 'Your full programme balance must be paid before accessing Training Module 4 and beyond. Please submit your balance receipt.' });
+            if (error.message === 'PARTIAL_LIMIT_EXCEEDED') return res.status(403).json({ code: 403, error: 'PARTIAL_LIMIT_EXCEEDED', message: 'You have reached the limit of 3 ticket courses allowed under a partial payment. Please pay the remaining balance to unlock all courses.' });
             next(error);
         }
     }

@@ -353,6 +353,11 @@ export class AdminController {
                 );
             }
 
+            if (invoice.purpose && invoice.purpose.startsWith('aveling')) {
+                const { ticketService } = require('../services/TicketService');
+                await ticketService.processAvelingInvoicePayment(invoice.applicantId, invoice.purpose);
+            }
+
             res.status(200).json({ success: true, message: 'Receipt generated, marked as paid, and emailed.' });
         } catch (error: any) {
             console.error('[AdminController.generateInvoiceReceipt]', error);
