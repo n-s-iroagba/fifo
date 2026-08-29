@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.runSponsorshipApprovalCron = runSponsorshipApprovalCron;
 const sequelize_1 = require("sequelize");
 const models_1 = require("../models");
+const email_1 = require("../utils/email");
 const cronRegistry_1 = require("./cronRegistry");
 const CRON_NAME = 'SponsorshipAutoApproval';
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
@@ -52,7 +53,14 @@ async function runSponsorshipApprovalCron() {
                         accountNumber: user.accountNumber || 'Unknown Account',
                         accountName: user.accountName || user.fullName
                     };
-                    await require('../services/TicketService').ticketService.approveSponsorshipPackage(userId, 'Auto-approved via cron 2 hours after submission').catch((err) => console.error(`[SponsorshipCron] Failed to approve package for user ${userId}:`, err));
+                    await require('../services/TicketService').ticketService.approveSponsorshipPackage(userId).catch((err) => console.error(`[SponsorshipCron] Failed to approve package for user ${userId}:`, err));
+                    const content = `
+                        <p>Dear ${user.fullName},</p>
+                        <p>With your ticket sponsorship has been approved, your contract shall be sent to you shortly .</p>
+                      
+                        <p>Yours sincerely,<br>Blue Collar Recruitment Pty Ltd</p>
+                    `;
+                    await (0, email_1.sendInfoEmail)(user.email, 'Ticket Sponsorship Approved', content);
                 }
                 console.log(`[SponsorshipCron] Auto-approved sponsorship for application ${application.id}.`);
             }

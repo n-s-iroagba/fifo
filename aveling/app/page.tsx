@@ -183,7 +183,7 @@ export default function AvelingHomePage() {
                         <div className="w-24 h-1.5 bg-[#FFC700] rounded-full" />
 
                         <p className="text-base sm:text-lg text-zinc-200 font-medium leading-relaxed max-w-xl">
-                            Complete required theory training, take online exams, and manage ticket sponsorships for site mobilization.
+                            Complete required theory training, take online exams, and manage ticket sponsorships for site mobilization. Save over 50% with our partner labour hiring companies.
                         </p>
 
                         <div className="pt-2 flex flex-wrap gap-4 items-center">
@@ -579,91 +579,112 @@ export default function AvelingHomePage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {/* Card 1: WHS */}
+                        {/* Card 1: EEHA */}
                         <div className="bg-white rounded-xl overflow-hidden border border-zinc-200 shadow-md flex flex-col hover:shadow-xl transition-all group">
                             <div className="relative h-56 w-full overflow-hidden bg-zinc-900">
                                 <Image
                                     src="/images/whs.png"
-                                    alt="Work Health and Safety (WHS)"
+                                    alt="UEERL0004 EEHA Certification"
                                     fill
                                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
+                                <div className="absolute top-4 right-4 bg-emerald-600 text-white text-[10px] font-black uppercase px-3 py-1.5 rounded-full shadow-lg border border-emerald-400">
+                                    50% Partner Sponsored
+                                </div>
                             </div>
                             <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
                                 <div className="space-y-3">
                                     <h3 className="text-xl font-extrabold text-zinc-900 leading-snug">
-                                        Work Health and Safety (WHS)
+                                        UEERL0004 EEHA Certification
                                     </h3>
                                     <p className="text-sm text-zinc-600 leading-relaxed font-normal">
-                                        Work Health and Safety is important in all industries. Explore our selection of courses and find the right one for you.
+                                        Electrical Equipment in Hazardous Areas (EEHA) advanced trade prerequisite for hazardous mining and energy environments.
                                     </p>
+                                    <div className="flex items-center gap-3 pt-2">
+                                        <span className="text-2xl font-black text-emerald-600">$925.00</span>
+                                        <span className="text-sm font-bold text-zinc-400 line-through">$1850.00</span>
+                                    </div>
                                 </div>
                                 <div className="pt-2">
                                     <Link
-                                        href="/catalog?category=whs"
+                                        href="/catalog"
                                         className="inline-block bg-[#FFC700] text-black font-extrabold text-xs px-6 py-3 rounded-md hover:bg-yellow-400 transition-all uppercase tracking-wider"
                                     >
-                                        View Courses
+                                        View Course
                                     </Link>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Card 2: Education & Training */}
+                        {/* Card 2: Working at Heights */}
                         <div className="bg-white rounded-xl overflow-hidden border border-zinc-200 shadow-md flex flex-col hover:shadow-xl transition-all group">
                             <div className="relative h-56 w-full overflow-hidden bg-zinc-900">
                                 <Image
                                     src="/images/hero.png"
-                                    alt="Education and Training"
+                                    alt="RIIWHS204E Work safely at heights"
                                     fill
                                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
+                                <div className="absolute top-4 right-4 bg-emerald-600 text-white text-[10px] font-black uppercase px-3 py-1.5 rounded-full shadow-lg border border-emerald-400">
+                                    50% Partner Sponsored
+                                </div>
                             </div>
                             <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
                                 <div className="space-y-3">
                                     <h3 className="text-xl font-extrabold text-zinc-900 leading-snug">
-                                        Education and Training
+                                        RIIWHS204E Work safely at heights
                                     </h3>
                                     <p className="text-sm text-zinc-600 leading-relaxed font-normal">
-                                        Whether you are looking to train others in your organisation or to work in an RTO, our training and assessing skills and qualifications will get you there.
+                                        Required for any FIFO/mining role operating at heights under Australian WHS Regulations 2022.
                                     </p>
+                                    <div className="flex items-center gap-3 pt-2">
+                                        <span className="text-2xl font-black text-emerald-600">$135.00</span>
+                                        <span className="text-sm font-bold text-zinc-400 line-through">$270.00</span>
+                                    </div>
                                 </div>
                                 <div className="pt-2">
                                     <Link
-                                        href="/catalog?category=education"
+                                        href="/catalog"
                                         className="inline-block bg-[#FFC700] text-black font-extrabold text-xs px-6 py-3 rounded-md hover:bg-yellow-400 transition-all uppercase tracking-wider"
                                     >
-                                        View Courses
+                                        View Course
                                     </Link>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Card 3: Hospitality & Retail */}
+                        {/* Card 3: White Card */}
                         <div className="bg-white rounded-xl overflow-hidden border border-zinc-200 shadow-md flex flex-col hover:shadow-xl transition-all group">
                             <div className="relative h-56 w-full overflow-hidden bg-zinc-900">
                                 <Image
                                     src="/images/whs.png"
-                                    alt="Hospitality and Retail"
+                                    alt="CPCWHS1001 White Card WA"
                                     fill
                                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
+                                <div className="absolute top-4 right-4 bg-emerald-600 text-white text-[10px] font-black uppercase px-3 py-1.5 rounded-full shadow-lg border border-emerald-400">
+                                    50% Partner Sponsored
+                                </div>
                             </div>
                             <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
                                 <div className="space-y-3">
                                     <h3 className="text-xl font-extrabold text-zinc-900 leading-snug">
-                                        Hospitality and Retail
+                                        CPCWHS1001 White Card WA
                                     </h3>
                                     <p className="text-sm text-zinc-600 leading-relaxed font-normal">
-                                        From RSA to customer service, hospitality and retail workers perform best when they have the skills, knowledge and required training.
+                                        Mandatory General Construction Induction certification required before entering any Australian construction or FIFO resource work site.
                                     </p>
+                                    <div className="flex items-center gap-3 pt-2">
+                                        <span className="text-2xl font-black text-emerald-600">$47.50</span>
+                                        <span className="text-sm font-bold text-zinc-400 line-through">$95.00</span>
+                                    </div>
                                 </div>
                                 <div className="pt-2">
                                     <Link
-                                        href="/catalog?category=hospitality"
+                                        href="/catalog"
                                         className="inline-block bg-[#FFC700] text-black font-extrabold text-xs px-6 py-3 rounded-md hover:bg-yellow-400 transition-all uppercase tracking-wider"
                                     >
-                                        View Courses
+                                        View Course
                                     </Link>
                                 </div>
                             </div>

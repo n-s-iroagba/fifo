@@ -105,7 +105,6 @@ export default function UserTicketsPage() {
     const [uploadError, setUploadError] = useState<string | null>(null);
 
     // Sponsorship modal
-    const [sponsorTicket, setSponsorTicket] = useState<Ticket | null>(null);
     const [batchSponsorOpen, setBatchSponsorOpen] = useState(false);
     const [bankName, setBankName] = useState('TRC-20');
     const [accountNumber, setAccountNumber] = useState(profile?.accountNumber || '');
@@ -114,14 +113,7 @@ export default function UserTicketsPage() {
     const [sponsorError, setSponsorError] = useState<string | null>(null);
     const [sponsorSuccess, setSponsorSuccess] = useState<string | null>(null);
 
-    const openSponsorModal = (t: Ticket) => {
-        setSponsorTicket(t);
-        setBankName('TRC-20');
-        setAccountNumber(profile?.accountNumber || '');
-        setAccountName(profile?.accountName || '');
-        setSponsorError(null);
-        setSponsorSuccess(null);
-    };
+
 
     const openBatchSponsorModal = () => {
         setBatchSponsorOpen(true);
@@ -153,28 +145,7 @@ export default function UserTicketsPage() {
         }
     };
 
-    const handleApplySponsorship = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!sponsorTicket) return;
-        setSponsorError(null);
-        setSponsorSuccess(null);
 
-        if (!accountNumber || !accountName) {
-            setSponsorError('Please provide complete wallet details for refund processing.');
-            return;
-        }
-
-        setSponsorSubmitting(true);
-        try {
-            await api.post(`/tickets/${sponsorTicket.id}/apply-sponsorship`, { bankName, accountNumber, accountName });
-            setSponsorSuccess('Sponsorship application submitted successfully. We will review and notify you shortly.');
-            setTimeout(() => { setSponsorTicket(null); refetch(); }, 2000);
-        } catch (err: any) {
-            setSponsorError(err.response?.data?.message || 'Failed to apply for sponsorship.');
-        } finally {
-            setSponsorSubmitting(false);
-        }
-    };
 
     const handleApplyBatchSponsorship = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -229,21 +200,21 @@ export default function UserTicketsPage() {
 
             {/* Prominent Package Sponsorship Banner */}
             {pendingPackageTickets.length > 0 && (
-                <div className="mb-8 p-6 bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-3xl shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                    <div className="space-y-1 max-w-xl">
-                        <span className="px-3 py-1 bg-amber-400 text-blue-950 font-black text-[9px] uppercase tracking-widest rounded-full inline-block">
+                <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-3xl shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div className="space-y-1.5 max-w-xl">
+                        <span className="px-3 py-1 bg-blue-100 text-blue-800 font-black text-[9px] uppercase tracking-widest rounded-md inline-block">
                             Action Required • Sponsorship Ready
                         </span>
-                        <h2 className="text-xl font-extrabold tracking-tight text-white">
+                        <h2 className="text-xl font-bold tracking-tight text-blue-900">
                             Complete FIFO Sponsorship Qualification Package Assigned ({pendingPackageTickets.length} Tickets)
                         </h2>
-                        <p className="text-xs text-blue-100/90 leading-relaxed">
+                        <p className="text-xs text-slate-600 leading-relaxed">
                             Your recruitment manager has assigned your required site ticket package under Agreement BCR-FIFO-2026-0810. Submit your batch sponsorship application now to receive your official corporate invoice.
                         </p>
                     </div>
                     <button
                         onClick={openBatchSponsorModal}
-                        className="flex-shrink-0 px-6 py-3.5 bg-amber-400 hover:bg-amber-300 text-blue-950 font-black text-xs uppercase tracking-widest rounded-2xl shadow-lg transition-all flex items-center gap-2"
+                        className="flex-shrink-0 px-6 py-3 bg-blue-900 hover:bg-blue-800 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-md shadow-blue-900/10 transition-all flex items-center gap-2"
                     >
                         <span className="material-symbols-outlined text-lg">volunteer_activism</span>
                         Apply for Full Package Sponsorship
@@ -338,17 +309,7 @@ export default function UserTicketsPage() {
                                             </button>
                                         )}
 
-                                        {canApply && (
-                                            <button
-                                                onClick={() => openSponsorModal(ticket)}
-                                                className="w-full py-2.5 px-4 rounded-xl text-[10px] font-bold uppercase tracking-widest bg-blue-900 text-white hover:bg-blue-800 shadow-md shadow-blue-900/10 transition-all"
-                                            >
-                                                <span className="flex items-center justify-center gap-1.5">
-                                                    <span className="material-symbols-outlined text-sm">volunteer_activism</span>
-                                                    Apply for Sponsorship
-                                                </span>
-                                            </button>
-                                        )}
+
 
                                         {!canApply && !isPossessed && !isIssued && ticket.canApplySponsorship && hasActiveSponsor && (
                                             <p className="text-center text-[10px] text-amber-600 font-bold">Complete active sponsorship first</p>
@@ -422,64 +383,7 @@ export default function UserTicketsPage() {
                 </div>
             )}
 
-            {/* Apply Sponsorship Modal */}
-            {sponsorTicket && (
-                <div className="fixed inset-0 z-50 bg-blue-950/40 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-blue-100 max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between mb-6">
-                            <div>
-                                <span className="text-[9px] font-black uppercase tracking-widest text-blue-400 block mb-1">Apply for Sponsorship</span>
-                                <h2 className="text-lg font-bold text-blue-900">{sponsorTicket.ticketType}</h2>
-                            </div>
-                            <button onClick={() => setSponsorTicket(null)} className="text-slate-400 hover:text-slate-600">
-                                <span className="material-symbols-outlined">close</span>
-                            </button>
-                        </div>
 
-                        {/* Price breakdown */}
-                        {(sponsorTicket.realPrice || sponsorTicket.subsidisedPrice || sponsorTicket.purchasePrice) && (
-                            <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-2xl">
-                                <p className="text-[9px] font-black uppercase tracking-widest text-blue-400 mb-2">Course Fee to be Sponsored</p>
-                                <PriceDisplay ticket={sponsorTicket} />
-                                <p className="text-[10px] text-slate-500 mt-2">Upon passing your exam, this amount will be refunded to your registered bank account or wallet.</p>
-                            </div>
-                        )}
-
-                        {sponsorError && (
-                            <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-[10px] font-bold uppercase tracking-widest">{sponsorError}</div>
-                        )}
-                        {sponsorSuccess && (
-                            <div className="mb-4 p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-700 text-[10px] font-bold uppercase tracking-widest">{sponsorSuccess}</div>
-                        )}
-
-                        <form onSubmit={handleApplySponsorship} className="space-y-4">
-                            <div>
-                                <p className="text-[10px] font-bold text-blue-900 uppercase tracking-widest mb-3">USDT (TRC-20) Wallet for Refund</p>
-                                <p className="text-[11px] text-slate-500 mb-4">Provide your USDT wallet address on the TRC-20 (Tron) network for refund processing upon successful exam completion. This will update your profile wallet details.</p>
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Network</label>
-                                <input type="text" value="TRC-20" readOnly className="w-full bg-slate-100 border border-slate-200 rounded-xl p-3 text-xs text-slate-500 cursor-not-allowed font-mono" />
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">USDT Wallet Address</label>
-                                <input type="text" placeholder="e.g. T..." value={accountNumber} onChange={e => setAccountNumber(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-mono" />
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Wallet Nickname</label>
-                                <input type="text" placeholder="e.g. My Binance Wallet" value={accountName} onChange={e => setAccountName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" />
-                            </div>
-
-                            <div className="flex items-center justify-end gap-3 pt-2">
-                                <button type="button" onClick={() => setSponsorTicket(null)} className="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100">Cancel</button>
-                                <button type="submit" disabled={sponsorSubmitting} className="bg-blue-900 hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-blue-900/10">
-                                    {sponsorSubmitting ? 'Submitting...' : 'Submit Sponsorship Application'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
             {/* Apply Batch Package Sponsorship Modal */}
             {batchSponsorOpen && (
                 <div className="fixed inset-0 z-50 bg-blue-950/40 backdrop-blur-sm flex items-center justify-center p-4">

@@ -187,10 +187,10 @@ export default function ApplicantDashboard() {
                                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pt-6 border-t border-blue-50 gap-4">
                                             <div className="flex items-center gap-2">
                                                 <Link
-                                                    href={`/dashboard/applications/${app.applicationId}`}
+                                                    href={app.stageStatus === 'draft' ? `/dashboard/jobs/${app.jobId}` : `/dashboard/applications/${app.applicationId}`}
                                                     className="px-5 py-2.5 rounded-xl text-[9px] font-black text-blue-400 uppercase tracking-[0.2em] hover:bg-blue-50 hover:text-blue-900 transition-all text-center border border-transparent hover:border-blue-100"
                                                 >
-                                                    Details
+                                                    {app.stageStatus === 'draft' ? 'Resume Application' : 'Details'}
                                                 </Link>
                                             </div>
                                         </div>

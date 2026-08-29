@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendTicketCoursePassedEmail = exports.sendTicketCourseFailedEmail = exports.sendTicketCourseSubmittedEmail = exports.sendAvelingCredentialsEmail = exports.sendContractApprovedEmail = exports.sendTicketSponsorshipApprovalMail = exports.sendSponsorshipReviewConfirmationMail = exports.sendTicketSponsorshipApplicationMail = exports.sendNominationApprovedEmail = exports.sendHowToExpressInterestEmail = exports.sendPsychoMod2FailedEmail = exports.sendContractFormEmail = exports.sendNominationFormEmail = exports.sendApplicationAcceptedEmail = exports.sendApplicationSubmittedEmail = exports.sendPsychoMod2PassedEmail = exports.sendPsychoMod2SubmittedEmail = exports.sendPsychoMod1PassedEmail = exports.sendBioReceivedEmail = exports.sendCVUploadEmail = exports.sendEOIReceivedEmail = exports.sendWelcomeApplicationFoundEmail = exports.sendVerificationEmail = exports.sendReceiptEmail = exports.sendInvoiceEmail = exports.sendEmail = exports.sendEmailFrom = exports.sendAvelingEmail = exports.sendInfoEmail = exports.sendAuthEmail = void 0;
+exports.sendTicketCoursePassedEmail = exports.sendTicketCourseFailedEmail = exports.sendTicketCourseSubmittedEmail = exports.sendAvelingCredentialsEmail = exports.sendContractApprovedEmail = exports.sendTicketSponsorshipApprovalMail = exports.sendSponsorshipReviewConfirmationMail = exports.sendTicketSponsorshipApplicationMail = exports.sendNominationApprovedEmail = exports.sendHowToExpressInterestEmail = exports.sendApplicationAcceptedEmail = exports.sendApplicationSubmittedEmail = exports.sendPsychoMod2PassedEmail = exports.sendPsychoMod2SubmittedEmail = exports.sendPsychoMod1PassedEmail = exports.sendBioReceivedEmail = exports.sendCVUploadEmail = exports.sendEOIReceivedEmail = exports.sendWelcomeApplicationFoundEmail = exports.sendVerificationEmail = exports.sendReceiptEmail = exports.sendInvoiceEmail = exports.sendEmail = exports.sendEmailFrom = exports.sendAvelingEmail = exports.sendInfoEmail = exports.sendAuthEmail = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const createTransporter = (user, pass) => {
     return nodemailer_1.default.createTransport({
@@ -400,39 +400,6 @@ const sendApplicationAcceptedEmail = async (to, userName) => {
     await (0, exports.sendInfoEmail)(to, subject, content);
 };
 exports.sendApplicationAcceptedEmail = sendApplicationAcceptedEmail;
-// 16. Notification/Nomination form mail (INFO BLUE)
-const sendNominationFormEmail = async (to, userName) => {
-    const subject = 'Official Nomination Form Issued';
-    const content = `
-        <p>Dear ${userName},</p>
-        <p>Your Official Nomination Form has been issued and is available on your dashboard.</p>
-        <p>Please review, sign, and upload the document to proceed.</p>
-    `;
-    await (0, exports.sendInfoEmail)(to, subject, content);
-};
-exports.sendNominationFormEmail = sendNominationFormEmail;
-// 17. Contract form mail (INFO BLUE)
-const sendContractFormEmail = async (to, userName) => {
-    const subject = 'Employment Contract Issued';
-    const content = `
-        <p>Dear ${userName},</p>
-        <p>Your employment contract has been generated and is now available on your dashboard.</p>
-        <p>Please review, sign, and upload the contract to proceed.</p>
-    `;
-    await (0, exports.sendInfoEmail)(to, subject, content);
-};
-exports.sendContractFormEmail = sendContractFormEmail;
-// --- Missing automated emails from email_list.md ---
-const sendPsychoMod2FailedEmail = async (to, userName) => {
-    const subject = 'Psychometric Module 2 Update';
-    const content = `
-        <p>Dear ${userName},</p>
-        <p>We have reviewed your Psychometric Module 2 submission. Unfortunately, you did not meet the required threshold this time.</p>
-        <p>Please contact our support team for next steps.</p>
-    `;
-    await (0, exports.sendInfoEmail)(to, subject, content);
-};
-exports.sendPsychoMod2FailedEmail = sendPsychoMod2FailedEmail;
 const sendHowToExpressInterestEmail = async (to, userName) => {
     const subject = 'How to Express Interest';
     const content = `

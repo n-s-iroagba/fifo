@@ -10,8 +10,9 @@ interface Application {
     status: string;
     currentStageId?: number | null;
     updatedAt: string;
-    JobListing: { title: string; visaSponsorship: boolean };
+    JobListing: { id: number; title: string; visaSponsorship: boolean };
     JobStages?: Array<{ id: number; name: string }>;
+    jobId?: number;
 }
 
 interface ApplicationsResponse {
@@ -101,13 +102,22 @@ export default function ApplicationsListPage() {
                                     </div>
 
                                 <div className="flex md:flex-col items-end gap-2 shrink-0">
-                                    <Link
-                                        href={`/dashboard/applications/${app.id}`}
-                                        className="bg-blue-50 text-blue-900 px-6 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-blue-100 transition-all border border-blue-100 text-center w-full"
-                                    >
-                                        View Detail
-                                    </Link>
-                                    {app.JobListing?.visaSponsorship && (
+                                    {app.status === 'Draft' ? (
+                                        <Link
+                                            href={`/dashboard/jobs/${app.JobListing?.id || app.jobId}`}
+                                            className="bg-slate-50 text-slate-600 px-6 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-slate-100 transition-all border border-slate-200 text-center w-full"
+                                        >
+                                            Continue Application
+                                        </Link>
+                                    ) : (
+                                        <Link
+                                            href={`/dashboard/applications/${app.id}`}
+                                            className="bg-blue-50 text-blue-900 px-6 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-blue-100 transition-all border border-blue-100 text-center w-full"
+                                        >
+                                            View Detail
+                                        </Link>
+                                    )}
+                                    {app.JobListing?.visaSponsorship && app.status !== 'Draft' && (
                                         <Link
                                             href={`/dashboard/applications/${app.id}/sponsorship`}
                                             className="bg-blue-900 text-white px-6 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-blue-800 transition-all shadow-md text-center w-full"

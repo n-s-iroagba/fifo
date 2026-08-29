@@ -42,6 +42,9 @@ class ExamAttemptService {
         }
         // Check if the user has access via ticket or enrollment
         const ticket = await Ticket.findOne({ where: { userId, courseId } });
+        if (ticket && (ticket.status === 'possessed' || ticket.status === 'refunded' || ticket.status === 'verified')) {
+            throw new Error('ALREADY_POSSESSED');
+        }
         const enrollment = await Enrollment.findOne({ where: { userId, courseId } });
         if (ticket && ticket.courseAccessGranted === false) {
             throw new Error('PAYMENT_REQUIRED');

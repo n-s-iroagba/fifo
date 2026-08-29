@@ -431,39 +431,7 @@ export const sendApplicationAcceptedEmail = async (to: string, userName: string)
     await sendInfoEmail(to, subject, content);
 };
 
-// 16. Notification/Nomination form mail (INFO BLUE)
-export const sendNominationFormEmail = async (to: string, userName: string): Promise<void> => {
-    const subject = 'Official Nomination Form Issued';
-    const content = `
-        <p>Dear ${userName},</p>
-        <p>Your Official Nomination Form has been issued and is available on your dashboard.</p>
-        <p>Please review, sign, and upload the document to proceed.</p>
-    `;
-    await sendInfoEmail(to, subject, content);
-};
 
-// 17. Contract form mail (INFO BLUE)
-export const sendContractFormEmail = async (to: string, userName: string): Promise<void> => {
-    const subject = 'Employment Contract Issued';
-    const content = `
-        <p>Dear ${userName},</p>
-        <p>Your employment contract has been generated and is now available on your dashboard.</p>
-        <p>Please review, sign, and upload the contract to proceed.</p>
-    `;
-    await sendInfoEmail(to, subject, content);
-};
-
-// --- Missing automated emails from email_list.md ---
-
-export const sendPsychoMod2FailedEmail = async (to: string, userName: string): Promise<void> => {
-    const subject = 'Psychometric Module 2 Update';
-    const content = `
-        <p>Dear ${userName},</p>
-        <p>We have reviewed your Psychometric Module 2 submission. Unfortunately, you did not meet the required threshold this time.</p>
-        <p>Please contact our support team for next steps.</p>
-    `;
-    await sendInfoEmail(to, subject, content);
-};
 
 export const sendHowToExpressInterestEmail = async (to: string, userName: string): Promise<void> => {
     const subject = 'How to Express Interest';

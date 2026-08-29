@@ -23,6 +23,22 @@ export class ApplicationController {
         }
     }
 
+    public async draftApplication(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = (req as any).user.id;
+            const jobId = parseInt(req.body.jobId, 10);
+            const application = await applicationService.draftApplication(userId, jobId);
+            res.status(CONSTANTS.HTTP_STATUS.CREATED).json(application);
+        } catch (error: any) {
+            console.error('[ApplicationController.draftApplication]', error);
+            if (error.message === CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND) {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: error.message });
+                return;
+            }
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+
     // Maps to STK-APP-APPLY-005, DM-001
     public async advanceApplication(req: Request, res: Response): Promise<void> {
         try {
@@ -365,17 +381,31 @@ export class ApplicationController {
     public async createContract(req: Request, res: Response): Promise<void> {
         try {
             const id = parseInt(req.params.id as string, 10);
-            const { company, role } = req.body;
-            const contract = await applicationService.createContract(id, company, role);
+            const { company, role, adminDocumentUrl } = req.body;
+            const contract = await applicationService.createContract(id, company, role, adminDocumentUrl);
 
             try {
                 // Fetch app to get applicant's userId
                 const app = await applicationService.getApplicationDetails(id);
                 if (app && app.userId) {
                     await applicationService.updateLatestApplicationStageStatus(app.userId, 'ongoing');
+
+                    // Send the contract email to the applicant
+                    if (app.User && app.User.email && adminDocumentUrl) {
+                        const subject = 'Action Required: Your Training and Ticket Acquisition Contract';
+                        const content = `
+                            <p>Dear ${app.User.fullName || 'Candidate'},</p>
+                            <p>Blue Collar Recruitment Pty Limited has generated your Official Training and Ticket Acquisition Contract for the <strong>${role}</strong> position at <strong>${company}</strong>.</p>
+                            <p>Please find your contract document attached. Kindly review, sign, and return it within the stipulated time frame.</p>
+                            <p>You may also download and upload the signed document directly through your applicant dashboard.</p>
+                            <p>Best regards,<br>The Blue Collar Recruitment Team</p>
+                        `;
+                        const attachments = [{ filename: 'Contract_Document.pdf', path: adminDocumentUrl }];
+                        await sendInfoEmail(app.User.email, subject, content, attachments);
+                    }
                 }
             } catch (err) {
-                console.error('[ApplicationController.createContract] stage update error:', err);
+                console.error('[ApplicationController.createContract] stage update or email error:', err);
             }
 
             res.status(CONSTANTS.HTTP_STATUS.CREATED).json(contract);

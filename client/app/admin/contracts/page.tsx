@@ -378,17 +378,6 @@ export default function ContractsPage() {
             const pdfBlob = await generateContractPDF(applicant, selectedNomination, getToday(), tickets);
             const pdfFile = new File([pdfBlob], `BCR-FIFO-CON-0810_${applicant.fullName.replace(/\s+/g, '_')}.pdf`, { type: 'application/pdf' });
 
-            const formData = new FormData();
-            formData.append('email', applicant.email);
-            formData.append('subject', 'Action Required: Your Training and Ticket Acquisition Contract');
-            formData.append('message', emailBody);
-            formData.append('fromType', 'info');
-            formData.append('attachments', pdfFile);
-
-            await sendMail({
-                data: formData,
-                headers: { 'Content-Type': undefined }
-            });
 
             // Upload generated PDF to Cloudinary
             const uploadedPdfUrl = await uploadFile(pdfFile, 'image');

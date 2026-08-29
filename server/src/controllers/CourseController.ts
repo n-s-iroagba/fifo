@@ -107,16 +107,19 @@ export class CourseController {
                 const gapCourseIds = missingTickets.map((t: any) => t.courseId);
                 const subsidyPercentage = user?.subsidyPercentage || 0;
 
-                const enrichedData = data.map((c: any) => {
+                const enrichedData = data.reduce((acc: any[], c: any) => {
                     const plain = c.toJSON ? c.toJSON() : c;
                     const isGap = gapCourseIds.includes(plain.id);
-                    if (isGap && subsidyPercentage > 0) {
-                        plain.isGapRecommended = true;
-                        plain.subsidyAmount = Math.round(plain.price * (subsidyPercentage / 100));
-                        plain.subsidyReason = 'Corporate Subsidy applied';
+                    if (isGap) {
+                        if (subsidyPercentage > 0) {
+                            plain.isGapRecommended = true;
+                            plain.subsidyAmount = Math.round(plain.price * (subsidyPercentage / 100));
+                            plain.subsidyReason = 'Corporate Subsidy applied';
+                        }
+                        acc.push(plain);
                     }
-                    return plain;
-                });
+                    return acc;
+                }, []);
                 
                 return res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: enrichedData });
             }

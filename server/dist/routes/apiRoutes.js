@@ -59,6 +59,7 @@ const applicantMW = [auth_1.requireAuth, (0, rbac_1.requireRole)([constants_1.CO
 // STK-APP-DASH-001..003
 router.get('/dashboard', ...applicantMW, ApplicationController_1.applicationController.getDashboardSummary.bind(ApplicationController_1.applicationController));
 // STK-APP-APPLY-001..005
+router.post('/applications/draft', ...applicantMW, ApplicationController_1.applicationController.draftApplication.bind(ApplicationController_1.applicationController));
 router.post('/applications', ...applicantMW, ApplicationController_1.applicationController.startApplication.bind(ApplicationController_1.applicationController));
 router.get('/applications', ...applicantMW, ApplicationController_1.applicationController.getUserApplications.bind(ApplicationController_1.applicationController));
 router.get('/applications/:id', ...applicantMW, ApplicationController_1.applicationController.getApplicationDetails.bind(ApplicationController_1.applicationController));
@@ -78,10 +79,8 @@ router.get('/tickets', ...applicantMW, TicketController_1.ticketController.getUs
 router.get('/tickets/:id', ...applicantMW, TicketController_1.ticketController.getTicketById.bind(TicketController_1.ticketController));
 router.post('/tickets', ...applicantMW, TicketController_1.ticketController.createTicket.bind(TicketController_1.ticketController));
 router.put('/tickets/:id', ...applicantMW, TicketController_1.ticketController.updateTicket.bind(TicketController_1.ticketController));
-router.post('/tickets/:id/apply-sponsorship', ...applicantMW, TicketController_1.ticketController.applySponsorship.bind(TicketController_1.ticketController));
 router.post('/tickets/:id/request-retake', ...applicantMW, TicketController_1.ticketController.requestRetake.bind(TicketController_1.ticketController));
 router.post('/tickets/:id/refund-choice', ...applicantMW, TicketController_1.ticketController.processRefundChoice.bind(TicketController_1.ticketController));
-router.post('/tickets/:id/pay-aveling', ...applicantMW, TicketController_1.ticketController.payTicketOnAveling.bind(TicketController_1.ticketController));
 router.post('/tickets/:id/exam-outcome', ...applicantMW, TicketController_1.ticketController.recordExamOutcome.bind(TicketController_1.ticketController));
 router.post('/tickets/:id/set-review-awaiting', ...applicantMW, TicketController_1.ticketController.setExamReviewAwaiting.bind(TicketController_1.ticketController));
 // STK-APP-NOTIF-001..003, TRUST-008: notifications
@@ -159,43 +158,22 @@ router.put('/admin/users/:id/subsidy-percentage', ...adminMW, AdminController_1.
 router.put('/admin/applicants/:id/aveling-credentials', ...adminMW, AdminController_1.adminController.updateAvelingCredentials.bind(AdminController_1.adminController));
 // Candidate Portal Lookup & Payment Email Routes
 router.post('/candidate/lookup', rateLimiter_1.apiLimiter, TicketController_1.ticketController.candidateLookup.bind(TicketController_1.ticketController));
-router.post('/tickets/:id/checkout-email', rateLimiter_1.apiLimiter, TicketController_1.ticketController.sendCheckoutPaymentEmail.bind(TicketController_1.ticketController));
 // Admin Ticket Management Routes
 router.get('/admin/tickets', ...adminMW, TicketController_1.ticketController.adminGetAllTickets.bind(TicketController_1.ticketController));
 router.put('/admin/tickets/:id', ...adminMW, TicketController_1.ticketController.adminUpdateTicket.bind(TicketController_1.ticketController));
 router.delete('/admin/tickets/:id', ...adminMW, TicketController_1.ticketController.adminDeleteTicket.bind(TicketController_1.ticketController));
-router.post('/admin/tickets/:id/approve-receipt', ...adminMW, TicketController_1.ticketController.adminApproveReceipt.bind(TicketController_1.ticketController));
 router.post('/admin/applications/:id/tickets', ...adminMW, TicketController_1.ticketController.adminAddApplicationTicket.bind(TicketController_1.ticketController));
 router.post('/admin/applications/:id/tickets/batch', ...adminMW, TicketController_1.ticketController.adminBatchAddApplicationTickets.bind(TicketController_1.ticketController));
 router.post('/admin/tickets/:id/generate-credentials', ...adminMW, TicketController_1.ticketController.adminGenerateAvelingCredentials.bind(TicketController_1.ticketController));
-router.post('/admin/tickets/:id/validate-payment', ...adminMW, TicketController_1.ticketController.adminValidatePayment.bind(TicketController_1.ticketController));
-router.post('/admin/tickets/:id/approve-exam', ...adminMW, TicketController_1.ticketController.adminApproveExamResult.bind(TicketController_1.ticketController));
 router.get('/admin/tickets/:id/exams', ...adminMW, TicketController_1.ticketController.getExamAttempts.bind(TicketController_1.ticketController));
-// Clause 7.4: Wallet statement (admin view) — itemised ledger on demand
-router.get('/admin/users/:userId/wallet-statement', ...adminMW, TicketController_1.ticketController.getCandidateWalletStatement.bind(TicketController_1.ticketController));
-// Clause 9.2: Admin remediation options after second_attempt_failed
-router.post('/admin/tickets/:id/remediate-second-fail', ...adminMW, TicketController_1.ticketController.adminRemediateSecondFail.bind(TicketController_1.ticketController));
-// Schedule 1 / Clause 5.1: Payment Milestone Gate
-// Admin verifies A$500 deposit → unlocks Tickets 1-3
-router.post('/admin/users/:userId/verify-deposit', ...adminMW, TicketController_1.ticketController.adminVerifyDeposit.bind(TicketController_1.ticketController));
-// Admin verifies full balance → unlocks all tickets
-router.post('/admin/users/:userId/verify-full-balance', ...adminMW, TicketController_1.ticketController.adminVerifyFullBalance.bind(TicketController_1.ticketController));
-// Admin / applicant views milestone status
 router.get('/admin/users/:userId/payment-milestone', ...adminMW, TicketController_1.ticketController.getPaymentMilestoneStatus.bind(TicketController_1.ticketController));
 // Applicant self-service: view their own payment milestone status
 router.get('/payment-milestone', ...applicantMW, TicketController_1.ticketController.getOwnPaymentMilestoneStatus.bind(TicketController_1.ticketController));
 // Batch Ticket Sponsorship & Invoice Operations
 router.post('/admin/users/:userId/assign-all-tickets', ...adminMW, TicketController_1.ticketController.assignAllTicketsToUser.bind(TicketController_1.ticketController));
-router.post('/tickets/apply-batch-sponsorship', ...applicantMW, TicketController_1.ticketController.applyBatchPackageSponsorship.bind(TicketController_1.ticketController));
-router.post('/admin/users/:userId/approve-package-invoice', ...adminMW, TicketController_1.ticketController.approvePackageAndSendInvoice.bind(TicketController_1.ticketController));
-// Payment status milestone (partial / complete) & Custom Invoicing
-router.post('/admin/users/:userId/update-payment-status', ...adminMW, TicketController_1.ticketController.adminUpdatePaymentStatus.bind(TicketController_1.ticketController));
 router.post('/admin/invoices/dispatch', upload.any(), ...adminMW, AdminController_1.adminController.dispatchInvoiceEmail.bind(AdminController_1.adminController));
 router.get('/admin/invoices', ...adminMW, AdminController_1.adminController.getAllInvoices.bind(AdminController_1.adminController));
 router.post('/admin/invoices/:id/receipt', ...adminMW, AdminController_1.adminController.generateInvoiceReceipt.bind(AdminController_1.adminController));
-// Prefill Stages removed
-// Candidate receipt submission (public or candidate authenticated)
-router.post('/tickets/:id/submit-receipt', TicketController_1.ticketController.submitReceipt.bind(TicketController_1.ticketController));
 // Admin Psychometric Test Review
 router.get('/admin/psychometric/attempts', ...adminMW, PsychometricController_1.psychometricController.getAdminAttempts.bind(PsychometricController_1.psychometricController));
 router.post('/admin/psychometric/attempts/:id/approve', ...adminMW, PsychometricController_1.psychometricController.approveAttempt.bind(PsychometricController_1.psychometricController));

@@ -26,6 +26,8 @@ class ExamAttemptController {
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data });
         }
         catch (error) {
+            if (error.message === 'ALREADY_POSSESSED')
+                return res.status(400).json({ code: 400, message: 'You already possess the ticket for this course. Exam is not required.' });
             if (error.message === 'RETAKE_LIMIT_EXCEEDED')
                 return res.status(403).json({ code: 403, message: 'Retake limit exceeded. A maximum of 2 attempts are permitted under the Sponsorship Agreement.' });
             if (error.message === 'PAYMENT_REQUIRED')

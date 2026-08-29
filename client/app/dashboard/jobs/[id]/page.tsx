@@ -14,13 +14,23 @@ export default function JobDetailPage() {
     const queryClient = useQueryClient();
     const { data: job, isLoading } = useApiQuery<any>(['job', jobId], `/jobs/${jobId}`);
     const { data: userData } = useApiQuery<any>(['auth', 'me'], '/auth/me');
+    const { data: userAppsData } = useApiQuery<any>(['applications'], '/applications');
+
+    const draftMutation = useApiMutation('post', '/applications/draft', {
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['applications'] });
+        }
+    });
 
     const applyMutation = useApiMutation('post', '/applications', {
         onSuccess: (data: any) => {
             queryClient.invalidateQueries({ queryKey: ['applicant', 'dashboard'] });
+            queryClient.invalidateQueries({ queryKey: ['applications'] });
             router.push(`${CONSTANTS.ROUTES.APPLICATIONS}/${data.id}`);
         }
     });
+
+    const hasDraft = userAppsData?.rows?.some((app: any) => app.jobId === parseInt(jobId, 10) && app.status === 'draft');
 
     const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
     // possessedIds = set of ticket catalog IDs the user says they already hold
@@ -34,6 +44,11 @@ export default function JobDetailPage() {
             return next;
         });
     };
+
+    const handleStartApplicationClick = () => {
+        draftMutation.mutate({ jobId: parseInt(jobId, 10) });
+    };
+
     const handleInitialApplyClick = () => {
         const user = userData?.user;
         const isBiodataComplete = !!(user?.fullName && user?.phoneNumber && user?.nationality);
@@ -213,43 +228,55 @@ export default function JobDetailPage() {
                 </div>
 
                 <div className="w-full xl:w-96 flex flex-col gap-6">
-                    <button
-                        onClick={handleInitialApplyClick}
-                        disabled={applyMutation.isPending}
-                        className={`w-full py-6 rounded-3xl font-black text-[8.5px] uppercase tracking-[0.4em] transition-all active:scale-95 disabled:opacity-50 shadow-2xl ${isReadyToApply ? 'bg-blue-900 text-white shadow-blue-900/20 hover:bg-black' : 'bg-blue-100 text-blue-400'}`}
-                    >
-                        {applyMutation.isPending ? 'Processing...' : isReadyToApply ? 'Submit Application' : 'Complete Your Profile To Apply'}
-                    </button>
+                    {!hasDraft ? (
+                        <button
+                            onClick={handleStartApplicationClick}
+                            disabled={draftMutation.isPending}
+                            className="w-full py-6 rounded-3xl font-black text-[8.5px] uppercase tracking-[0.4em] transition-all active:scale-95 shadow-2xl bg-blue-900 text-white shadow-blue-900/20 hover:bg-black disabled:opacity-50"
+                        >
+                            {draftMutation.isPending ? 'Starting...' : 'Start Application'}
+                        </button>
+                    ) : (
+                        <>
+                            <button
+                                onClick={handleInitialApplyClick}
+                                disabled={applyMutation.isPending}
+                                className={`w-full py-6 rounded-3xl font-black text-[8.5px] uppercase tracking-[0.4em] transition-all active:scale-95 disabled:opacity-50 shadow-2xl ${isReadyToApply ? 'bg-blue-900 text-white shadow-blue-900/20 hover:bg-black' : 'bg-blue-100 text-blue-400'}`}
+                            >
+                                {applyMutation.isPending ? 'Processing...' : isReadyToApply ? 'Submit Application' : 'Complete Your Profile To Apply'}
+                            </button>
 
-                    <div className="bg-white p-8 rounded-[2.5rem] border border-blue-100 shadow-sm space-y-6">
-                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-900 flex items-center gap-3">
-                            <span className="material-symbols-outlined text-base">task_alt</span>
-                            Application Readiness
-                        </h4>
+                            <div className="bg-white p-8 rounded-[2.5rem] border border-blue-100 shadow-sm space-y-6">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-900 flex items-center gap-3">
+                                    <span className="material-symbols-outlined text-base">task_alt</span>
+                                    Application Readiness
+                                </h4>
 
-                        <div className="space-y-4">
-                            <ReadinessItem
-                                label="Personal Information"
-                                isComplete={!!(userData?.user?.fullName && userData?.user?.phoneNumber && userData?.user?.nationality)}
-                                link={`${CONSTANTS.ROUTES.PROFILE}?redirect=/dashboard/jobs/${jobId}`}
-                            />
-                            <ReadinessItem
-                                label="Aveling Psychometric Test"
-                                isComplete={!!(userData?.user?.psychometricModule1Passed && userData?.user?.psychometricModule2Passed)}
-                                link={`https://aveling.online/psychometric?token=${typeof window !== 'undefined' ? localStorage.getItem('accessToken') : ''}`}
-                                external={true}
-                            />
-                            <ReadinessItem
-                                label="CV / Career History"
-                                isComplete={!!userData?.user?.cvUrl}
-                                link={`${CONSTANTS.ROUTES.CV}?redirect=/dashboard/jobs/${jobId}`}
-                            />
-                        </div>
+                                <div className="space-y-4">
+                                    <ReadinessItem
+                                        label="Personal Information"
+                                        isComplete={!!(userData?.user?.fullName && userData?.user?.phoneNumber && userData?.user?.nationality)}
+                                        link={`${CONSTANTS.ROUTES.PROFILE}?redirect=/dashboard/jobs/${jobId}`}
+                                    />
+                                    <ReadinessItem
+                                        label="Aveling Psychometric Test"
+                                        isComplete={!!(userData?.user?.psychometricModule1Passed && userData?.user?.psychometricModule2Passed)}
+                                        link={`https://aveling.online/psychometric?token=${typeof window !== 'undefined' ? localStorage.getItem('accessToken') : ''}`}
+                                        external={true}
+                                    />
+                                    <ReadinessItem
+                                        label="CV / Career History"
+                                        isComplete={!!userData?.user?.cvUrl}
+                                        link={`${CONSTANTS.ROUTES.CV}?redirect=/dashboard/jobs/${jobId}`}
+                                    />
+                                </div>
 
-                        <p className="text-[9px] text-blue-400 font-bold uppercase tracking-widest leading-relaxed pt-2 border-t border-blue-50">
-                            Status: {isReadyToApply ? 'Ready to Apply' : 'Action Required'}
-                        </p>
-                    </div>
+                                <p className="text-[9px] text-blue-400 font-bold uppercase tracking-widest leading-relaxed pt-2 border-t border-blue-50">
+                                    Status: {isReadyToApply ? 'Ready to Apply' : 'Action Required'}
+                                </p>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 

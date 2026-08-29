@@ -24,8 +24,28 @@ export class ApplicationService {
         const completedGroups: any[] = [];
 
         for (const app of appsList) {
+            // Collect draft applications
+            if (app.status === CONSTANTS.APPLICATION_STATUSES.DRAFT) {
+                pendingStages.push({
+                    applicationId: app.id,
+                    jobTitle: app.JobListing?.title,
+                    jobCompany: app.JobListing?.company,
+                    jobLocation: app.JobListing?.location,
+                    jobSalary: app.JobListing?.salary,
+                    jobId: app.jobId,
+                    stageId: null,
+                    requiresPayment: false,
+                    isCompleted: false,
+                    amount: 0,
+                    currency: 'USD',
+                    stageName: 'Draft Application',
+                    stageDescription: 'You have started this application but not yet submitted it. Click Details to continue.',
+                    paymentStatus: 'Unpaid',
+                    stageStatus: 'draft',
+                });
+            }
             // Collect pending stages (active apps with a current stage)
-            if (app.status === CONSTANTS.APPLICATION_STATUSES.ACTIVE && app.currentStageId) {
+            else if (app.status === CONSTANTS.APPLICATION_STATUSES.ACTIVE && app.currentStageId) {
                 const currentStage = await jobStageRepository.findById(app.currentStageId);
                 pendingStages.push({
                     applicationId: app.id,
@@ -33,6 +53,7 @@ export class ApplicationService {
                     jobCompany: app.JobListing?.company,
                     jobLocation: app.JobListing?.location,
                     jobSalary: app.JobListing?.salary,
+                    jobId: app.jobId,
                     stageId: app.currentStageId,
                     requiresPayment: false,
                     isCompleted: currentStage?.status === 'completed',
@@ -102,12 +123,45 @@ export class ApplicationService {
         return app;
     }
 
+    public async draftApplication(userId: number, jobId: number) {
+        const t = await sequelize.transaction();
+        try {
+            const job = await jobRepository.findById(jobId, t);
+            if (!job) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+
+            // Create application in draft status
+            const newApp = await applicationRepository.create({
+                userId,
+                jobId,
+                status: CONSTANTS.APPLICATION_STATUSES.DRAFT,
+                currentStageId: null
+            }, t);
+
+            await t.commit();
+            return applicationRepository.findById(newApp.id);
+        } catch (error) {
+            await t.rollback();
+            throw error;
+        }
+    }
+
     // UPDATED: Only create "Credential Screening" on application start
     public async startApplication(userId: number, jobId: number, ticketsData: any[] = []) {
         const t = await sequelize.transaction();
         try {
             const job = await jobRepository.findById(jobId, t);
             if (!job) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+
+            // Delete any existing draft applications for this user and job
+            const { Application } = require('../models');
+            await Application.destroy({
+                where: {
+                    userId,
+                    jobId,
+                    status: CONSTANTS.APPLICATION_STATUSES.DRAFT
+                },
+                transaction: t
+            });
 
             const newApp = await applicationRepository.create({
                 userId,

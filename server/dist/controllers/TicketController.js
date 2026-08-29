@@ -54,29 +54,6 @@ class TicketController {
             next(error);
         }
     }
-    async applySponsorship(req, res, next) {
-        try {
-            const userId = req.user.id;
-            const ticketId = parseInt(req.params.id, 10);
-            const { bankName, accountNumber, accountName } = req.body;
-            if (!bankName || !accountNumber || !accountName) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({
-                    code: 400,
-                    message: 'Please carefully provide complete USDT TRC-20 wallet details for refund processing.'
-                });
-                return;
-            }
-            const ticket = await TicketService_1.ticketService.applySponsorship(ticketId, userId, { bankName, accountNumber, accountName });
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: ticket });
-        }
-        catch (error) {
-            if (error.message === 'TICKET_NOT_FOUND') {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Ticket not found.' });
-                return;
-            }
-            next(error);
-        }
-    }
     async requestRetake(req, res, next) {
         try {
             const userId = req.user.id;
@@ -198,9 +175,15 @@ class TicketController {
                 await user.update({ candidateNumber: generatedNum });
                 user.candidateNumber = generatedNum;
             }
-            // Fetch sponsored tickets for candidate
+            // Fetch sponsored tickets for candidate (excluding possessed ones as they don't need courses/exams)
+            const { Op } = require('sequelize');
             const tickets = await Ticket.findAll({
-                where: { userId: user.id },
+                where: {
+                    userId: user.id,
+                    status: {
+                        [Op.ne]: 'possessed'
+                    }
+                },
                 order: [['createdAt', 'DESC']]
             });
             // Fetch course details if courseId is associated
@@ -231,20 +214,6 @@ class TicketController {
             });
         }
         catch (error) {
-            next(error);
-        }
-    }
-    async sendCheckoutPaymentEmail(req, res, next) {
-        try {
-            const ticketId = parseInt(req.params.id, 10);
-            const result = await TicketService_1.ticketService.sendCheckoutPaymentEmail(ticketId);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result });
-        }
-        catch (error) {
-            if (error.message === 'TICKET_NOT_FOUND') {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Ticket not found.' });
-                return;
-            }
             next(error);
         }
     }
@@ -372,50 +341,6 @@ class TicketController {
             next(error);
         }
     }
-    async submitReceipt(req, res, next) {
-        try {
-            const ticketId = parseInt(req.params.id, 10);
-            const userId = req.user?.id || (req.body?.userId ? parseInt(req.body.userId, 10) : undefined);
-            const ticket = await TicketService_1.ticketService.submitReceipt(ticketId, userId, req.body);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: ticket });
-        }
-        catch (error) {
-            if (error.message === 'TICKET_NOT_FOUND') {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Ticket not found.' });
-                return;
-            }
-            next(error);
-        }
-    }
-    async adminValidatePayment(req, res, next) {
-        try {
-            const ticketId = parseInt(req.params.id, 10);
-            const ticket = await TicketService_1.ticketService.adminValidatePayment(ticketId);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: ticket });
-        }
-        catch (error) {
-            if (error.message === 'TICKET_NOT_FOUND') {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Ticket not found.' });
-                return;
-            }
-            next(error);
-        }
-    }
-    async adminApproveExamResult(req, res, next) {
-        try {
-            const ticketId = parseInt(req.params.id, 10);
-            const { passed } = req.body;
-            const ticket = await TicketService_1.ticketService.adminApproveExamResult(ticketId, passed);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: ticket });
-        }
-        catch (error) {
-            if (error.message === 'TICKET_NOT_FOUND') {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Ticket not found.' });
-                return;
-            }
-            next(error);
-        }
-    }
     async getExamAttempts(req, res, next) {
         try {
             const ticketId = parseInt(req.params.id, 10);
@@ -430,36 +355,7 @@ class TicketController {
             next(error);
         }
     }
-    async cloneTicketForApplicant(req, res, next) {
-        try {
-            const { targetUserId, sourceTicketId, sourceCatalogId, applicationId, ticketType, description, customPurchasePrice, customRealPrice, customSubsidisedPrice, customCourseId, canApplySponsorship } = req.body;
-            if (!targetUserId) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'targetUserId is required' });
-                return;
-            }
-            const ticket = await TicketService_1.ticketService.cloneTicketForApplicant({
-                targetUserId,
-                sourceTicketId,
-                sourceCatalogId,
-                applicationId,
-                ticketType,
-                description,
-                customPurchasePrice,
-                customRealPrice,
-                customSubsidisedPrice,
-                customCourseId,
-                canApplySponsorship
-            });
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json({ success: true, data: ticket, message: 'Ticket cloned successfully for applicant with custom pricing' });
-        }
-        catch (error) {
-            if (error.message === 'USER_NOT_FOUND') {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Applicant user not found' });
-                return;
-            }
-            next(error);
-        }
-    }
+    ;
     // Clause 7.4: Itemised wallet statement for a candidate (admin view)
     async getCandidateWalletStatement(req, res, next) {
         try {
@@ -470,76 +366,6 @@ class TicketController {
             }
             const statement = await TicketService_1.ticketService.getCandidateWalletStatement(userId);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: statement });
-        }
-        catch (error) {
-            if (error.message === 'USER_NOT_FOUND') {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Candidate not found.' });
-                return;
-            }
-            next(error);
-        }
-    }
-    // Clause 9.2: Admin remediation options after second_attempt_failed
-    async adminRemediateSecondFail(req, res, next) {
-        try {
-            const ticketId = parseInt(req.params.id, 10);
-            const { action, notes } = req.body;
-            if (!['paid_third_attempt', 'role_reassignment', 'terminate'].includes(action)) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({
-                    code: 400,
-                    message: 'action must be one of: paid_third_attempt, role_reassignment, terminate'
-                });
-                return;
-            }
-            const ticket = await TicketService_1.ticketService.adminRemediateSecondFail(ticketId, action, notes);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: ticket });
-        }
-        catch (error) {
-            if (error.message === 'TICKET_NOT_FOUND') {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Ticket not found.' });
-                return;
-            }
-            if (error.message === 'TICKET_NOT_IN_SECOND_FAIL_STATE') {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({
-                    code: 400,
-                    message: 'Ticket is not in second_attempt_failed state. Remediation only applies after both attempts are exhausted.'
-                });
-                return;
-            }
-            next(error);
-        }
-    }
-    // Schedule 1 / Clause 5.1: Admin verifies A$500 initial deposit
-    async adminVerifyDeposit(req, res, next) {
-        try {
-            const userId = parseInt(req.params.userId, 10);
-            const { receiptReference } = req.body;
-            if (!userId || isNaN(userId)) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
-                return;
-            }
-            const result = await TicketService_1.ticketService.adminVerifyDeposit(userId, receiptReference);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: `Deposit verified. ${result.ticketsUnlocked.length} ticket(s) unlocked.` });
-        }
-        catch (error) {
-            if (error.message === 'USER_NOT_FOUND') {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Candidate not found.' });
-                return;
-            }
-            next(error);
-        }
-    }
-    // Schedule 1 / Clause 5.1: Admin verifies full programme balance
-    async adminVerifyFullBalance(req, res, next) {
-        try {
-            const userId = parseInt(req.params.userId, 10);
-            const { receiptReference } = req.body;
-            if (!userId || isNaN(userId)) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
-                return;
-            }
-            const result = await TicketService_1.ticketService.adminVerifyFullBalance(userId, receiptReference);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: `Full balance verified. ${result.ticketsUnlocked.length} ticket(s) unlocked.` });
         }
         catch (error) {
             if (error.message === 'USER_NOT_FOUND') {
@@ -599,92 +425,6 @@ class TicketController {
                 res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Candidate not found.' });
                 return;
             }
-            next(error);
-        }
-    }
-    // Applicant: Apply for batch sponsorship of assigned package
-    async applyBatchPackageSponsorship(req, res, next) {
-        try {
-            const userId = req.user?.id;
-            if (!userId) {
-                res.status(401).json({ code: 401, message: 'Unauthorized.' });
-                return;
-            }
-            const { bankName, accountNumber, accountName } = req.body;
-            if (!bankName || !accountNumber || !accountName) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Complete USDT TRC-20 wallet details are required.' });
-                return;
-            }
-            const result = await TicketService_1.ticketService.applyBatchPackageSponsorship(userId, { bankName, accountNumber, accountName });
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: 'Batch sponsorship application submitted successfully.' });
-        }
-        catch (error) {
-            if (error.message === 'NO_ELIGIBLE_TICKETS_FOR_SPONSORSHIP') {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'No eligible tickets available for sponsorship application.' });
-                return;
-            }
-            next(error);
-        }
-    }
-    // Admin: Approve candidate's sponsorship package (invoice sent later by cron)
-    async approvePackageAndSendInvoice(req, res, next) {
-        try {
-            const userId = parseInt(req.params.userId, 10);
-            const { adminNotes } = req.body; // Removed strict bankAccount requirement as it's handled at application stage now
-            if (!userId || isNaN(userId)) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
-                return;
-            }
-            const result = await TicketService_1.ticketService.approveSponsorshipPackage(userId, adminNotes);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: 'Sponsorship package approved. Corporate invoice will be dispatched by automated workflow.' });
-        }
-        catch (error) {
-            if (error.message === 'USER_NOT_FOUND') {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'Candidate not found.' });
-                return;
-            }
-            next(error);
-        }
-    }
-    async adminUpdatePaymentStatus(req, res, next) {
-        try {
-            const userId = parseInt(req.params.userId, 10);
-            const { status } = req.body;
-            if (!userId || isNaN(userId)) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
-                return;
-            }
-            if (!['partial', 'complete', 'unpaid'].includes(status)) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Status must be partial, complete, or unpaid.' });
-                return;
-            }
-            const result = await TicketService_1.ticketService.adminUpdatePaymentStatus(userId, status);
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: `Payment status updated to ${status}.` });
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async createAndSendCustomInvoice(req, res, next) {
-        try {
-            const userId = parseInt(req.body.userId, 10);
-            const { bankAccountId, amountAud, currency, exchangeRate, convertedAmount, description, lineItems } = req.body;
-            if (!userId || isNaN(userId)) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
-                return;
-            }
-            const result = await TicketService_1.ticketService.createAndSendCustomInvoice(userId, {
-                bankAccountId,
-                amountAud: parseFloat(amountAud) || 0,
-                currency: currency || 'USD',
-                exchangeRate: parseFloat(exchangeRate) || 1.0,
-                convertedAmount: parseFloat(convertedAmount) || 0,
-                description,
-                lineItems
-            });
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result, message: `Invoice ${result.invoiceNumber} created and emailed.` });
-        }
-        catch (error) {
             next(error);
         }
     }

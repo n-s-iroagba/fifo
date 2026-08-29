@@ -356,41 +356,6 @@ class TicketService {
         });
         return ticket;
     }
-    async applySponsorship(ticketId, userId, bankDetails) {
-        const ticket = await this.getTicketById(ticketId, userId);
-        await ticket.update({
-            ticketSponsorship: 'applied'
-        });
-        const { Application, JobStage } = require('../models');
-        const application = await Application.findOne({
-            where: { userId },
-            order: [['createdAt', 'DESC']]
-        });
-        if (application) {
-            const stage = await JobStage.findOne({
-                where: { applicationId: application.id, name: 'TicketSponsorship' }
-            });
-            if (stage) {
-                await stage.update({ status: 'under-review' });
-            }
-        }
-        const user = await models_1.User.findByPk(userId);
-        if (user) {
-            await user.update({
-                bankName: bankDetails.bankName,
-                accountNumber: bankDetails.accountNumber,
-                accountName: bankDetails.accountName,
-            });
-        }
-        await NotificationService_1.notificationService.sendNotification(userId, 'Sponsorship Application Received', `Your sponsorship request for ${ticket.ticketType} is now being processed by administration.`);
-        if (user && user.email) {
-            await this.sendCustomEmail(user.email, 'Sponsorship Application Review Confirmation', `<p>Dear ${user.fullName},</p>
-                 <p>Your sponsorship application for <strong>${ticket.ticketType}</strong> has been successfully submitted and is currently under review.</p>
-                 <p>Our team will review your application and you will receive an approval notice with further instructions shortly.</p>
-                 <p>Thank you,<br>Blue Collar Recruitment</p>`);
-        }
-        return ticket;
-    }
     async requestRetake(ticketId, userId) {
         const ticket = await this.getTicketById(ticketId, userId);
         if (ticket.ticketSponsorship !== 'first_attempt_failed') {
@@ -771,51 +736,6 @@ class TicketService {
             courseAccessGranted: false
         });
         return clonedTicket;
-    }
-    async sendCheckoutPaymentEmail(ticketId) {
-        const ticket = await models_1.Ticket.findByPk(ticketId, { include: [{ model: models_1.User }] });
-        if (!ticket)
-            throw new Error('TICKET_NOT_FOUND');
-        const user = ticket.User;
-        if (!user)
-            return { success: false, message: 'User not found' };
-        // Ensure candidate number exists
-        if (!user.candidateNumber) {
-            const candidateNum = `CND-${10000 + user.id}`;
-            await user.update({ candidateNumber: candidateNum });
-        }
-        const candidateNum = user.candidateNumber;
-        const checkoutUrl = `https://aveling.online/checkout?ticketId=${ticket.id}&candidateNumber=${candidateNum}`;
-        const { BankAccount } = require('../models');
-        const bank = await BankAccount.findOne({ where: { isActive: true } });
-        const bankName = bank?.bankName || 'Corporate Binance Wallet';
-        const accountNumber = bank?.accountNumber || 'T...';
-        const accountName = bank?.bankName ? 'FIFO Training Operations' : 'Aveling Training PTY LTD';
-        const subject = `Payment Details & Instructions for ${ticket.ticketType} (Candidate #${candidateNum})`;
-        const html = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px;">
-                <h2 style="color: #1e3a8a; margin-top: 0;">Sponsored Course Payment Instructions</h2>
-                <p>Hello <strong>${user.fullName}</strong>,</p>
-                <p>Your candidate registration number is: <strong style="font-size: 16px; color: #d97706;">${candidateNum}</strong></p>
-                <p>Here are the payment details for your sponsored ticket course <strong>${ticket.ticketType}</strong>:</p>
-                
-                <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 16px; margin: 20px 0;">
-                    <h3 style="margin: 0 0 12px; font-size: 14px; text-transform: uppercase; color: #1e3a8a;">USDT (TRC-20) Transfer Details</h3>
-                    <p style="margin: 4px 0;"><strong>Wallet Name:</strong> ${bankName}</p>
-                    <p style="margin: 4px 0;"><strong>Network:</strong> TRC-20</p>
-                    <p style="margin: 4px 0;"><strong>USDT Wallet Address:</strong> ${accountNumber}</p>
-                    <p style="margin: 4px 0;"><strong>Account Name:</strong> ${accountName}</p>
-                    <p style="margin: 4px 0;"><strong>Payment Reference:</strong> ${candidateNum}-${ticket.id}</p>
-                    <p style="margin: 4px 0; font-size: 16px; font-weight: bold; color: #166534;"><strong>Amount Due:</strong> $${ticket.purchasePrice || 150} AUD (Equiv. USDT)</p>
-                    <p style="margin: 8px 0 0; font-size: 12px; color: #991b1b;">* Note: All incoming candidate transfers must execute strictly via USDT on the TRC-20 (Tron) network. Other networks or currencies are rejected.</p>
-                </div>
-
-                <p>Please complete your USDT Transfer and click the button below to upload your payment receipt proof:</p>
-                <p><a href="${checkoutUrl}" style="background:#1e3a8a;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold;">Go to Checkout & Upload Transaction Receipt</a></p>
-            </div>
-        `;
-        await this.sendCustomEmail(user.email, subject, html);
-        return { success: true, candidateNum, checkoutUrl };
     }
     async sendTicketEmailNotification(ticket, user, sponsorshipStatus) {
         if (!user?.email)
@@ -1298,16 +1218,16 @@ class TicketService {
             }
         }
         if (user.email) {
-            await this.sendCustomEmail(user.email, 'Sponsorship Application Review Confirmation', `<p>Dear ${user.fullName},</p>
+            await (0, email_1.sendInfoEmail)(user.email, 'Sponsorship Application Review Confirmation', `<p>Dear ${user.fullName},</p>
                  <p>Your full package sponsorship application for ${tickets.length} ticket requirement(s) has been successfully submitted and is currently under review.</p>
-                 <p>Our team will review your application and you will receive an official corporate invoice and approval notice shortly.</p>
+                 <p>Our team will review your application and you will receive an official approval notice shortly.</p>
                  <p>Thank you,<br>Blue Collar Recruitment</p>`);
         }
         await NotificationService_1.notificationService.sendNotification(userId, 'Package Sponsorship Application Submitted', `Your sponsorship application for ${tickets.length} ticket requirement(s) has been submitted for administrative review. An invoice and approval notice will be issued shortly.`);
         return { count: tickets.length, tickets };
     }
     // Admin approves candidate's ticket package and dispatches official corporate invoice with selected bank account
-    async approveSponsorshipPackage(userId, adminNotes) {
+    async approveSponsorshipPackage(userId) {
         const { User: UserModel } = require('../models');
         const user = await UserModel.findByPk(userId);
         if (!user)

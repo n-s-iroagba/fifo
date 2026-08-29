@@ -45,7 +45,7 @@ export default function CourseCatalogPage() {
                         <BookOpen className="h-3.5 w-3.5" /> Aveling Training
                     </div>
                     <h1 className="text-4xl font-black text-zinc-900 tracking-tight">Course Catalog</h1>
-                    <p className="text-sm font-medium text-zinc-500 mt-2">Enroll in accredited certification courses tailored to your assigned FIFO role requirements.</p>
+                    <p className="text-sm font-medium text-zinc-500 mt-2">Enroll in accredited certification courses tailored to your assigned FIFO role requirements. Save over 50% with our partner labour hiring companies.</p>
                 </div>
                 {cart.length > 0 && (
                     <Link href="/checkout" className="inline-flex items-center gap-2 bg-zinc-900 text-[#FFC700] px-5 py-3 rounded-xl text-xs font-extrabold uppercase tracking-wider shadow-md hover:bg-black transition-all">
