@@ -17,8 +17,8 @@ export class ApplicationRepository {
             offset: options.offset || 0,
             include: [
                 { model: JobListing },
-                { 
-                    model: JobStage, 
+                {
+                    model: JobStage,
                     as: 'JobStages'
                 }
             ],
@@ -30,16 +30,16 @@ export class ApplicationRepository {
             if (!app.JobListing && app.jobId) {
                 const job = await JobListing.findByPk(app.jobId, { transaction });
                 if (job) {
-                    (app as any).setDataValue('JobListing', job.toJSON());
+                    (app as any).setDataValue('JobListing', job);
                 } else {
-                    (app as any).setDataValue('JobListing', {
+                    (app as any).setDataValue('JobListing', JobListing.build({
                         id: app.jobId,
                         title: 'General FIFO Application',
                         company: 'BlueCollar Recruitment',
                         location: 'Australia',
                         salary: 'Competitive',
                         visaSponsorship: false
-                    });
+                    }));
                 }
             }
 
@@ -50,7 +50,7 @@ export class ApplicationRepository {
                     status: 'not started'
                 }, { transaction });
 
-                (app as any).setDataValue('JobStages', [defaultStage.toJSON()]);
+                (app as any).setDataValue('JobStages', [defaultStage]);
                 (app as any).setDataValue('currentStageId', defaultStage.id);
             } else if (!app.currentStageId && app.JobStages && app.JobStages.length > 0) {
                 (app as any).setDataValue('currentStageId', app.JobStages[0].id);
@@ -77,8 +77,8 @@ export class ApplicationRepository {
             include: [
                 { model: User, attributes: ['id', 'fullName', 'email'] },
                 { model: JobListing },
-                { 
-                    model: JobStage, 
+                {
+                    model: JobStage,
                     as: 'JobStages'
                 }
             ],
@@ -90,13 +90,13 @@ export class ApplicationRepository {
             if (!app.JobListing && app.jobId) {
                 const job = await JobListing.findByPk(app.jobId, { transaction });
                 if (job) {
-                    (app as any).setDataValue('JobListing', job.toJSON());
+                    (app as any).setDataValue('JobListing', job);
                 } else {
-                    (app as any).setDataValue('JobListing', {
+                    (app as any).setDataValue('JobListing', JobListing.build({
                         id: app.jobId,
                         title: 'General FIFO Application',
                         company: 'BlueCollar Recruitment'
-                    });
+                    }));
                 }
             }
 
@@ -107,7 +107,7 @@ export class ApplicationRepository {
                     status: 'not started'
                 }, { transaction });
 
-                (app as any).setDataValue('JobStages', [defaultStage.toJSON()]);
+                (app as any).setDataValue('JobStages', [defaultStage]);
                 (app as any).setDataValue('currentStageId', defaultStage.id);
             } else if (!app.currentStageId && app.JobStages && app.JobStages.length > 0) {
                 (app as any).setDataValue('currentStageId', app.JobStages[0].id);
@@ -128,8 +128,8 @@ export class ApplicationRepository {
                 JobListing,
                 User,
                 { model: Ticket, as: 'Tickets' },
-                { 
-                    model: JobStage, 
+                {
+                    model: JobStage,
                     as: 'JobStages'
                 }
             ],
@@ -140,9 +140,9 @@ export class ApplicationRepository {
             if (!app.JobListing && app.jobId) {
                 const job = await JobListing.findByPk(app.jobId, { transaction });
                 if (job) {
-                    (app as any).setDataValue('JobListing', job.toJSON());
+                    (app as any).setDataValue('JobListing', job);
                 } else {
-                    (app as any).setDataValue('JobListing', {
+                    (app as any).setDataValue('JobListing', JobListing.build({
                         id: app.jobId,
                         title: 'General FIFO Application',
                         company: 'BlueCollar Recruitment',
@@ -150,7 +150,7 @@ export class ApplicationRepository {
                         salary: 'Competitive',
                         description: 'Application details for FIFO position.',
                         visaSponsorship: false
-                    });
+                    }));
                 }
             }
 
@@ -161,7 +161,7 @@ export class ApplicationRepository {
                     status: 'not started'
                 }, { transaction });
 
-                (app as any).setDataValue('JobStages', [defaultStage.toJSON()]);
+                (app as any).setDataValue('JobStages', [defaultStage]);
                 (app as any).setDataValue('currentStageId', defaultStage.id);
             } else if (!app.currentStageId && app.JobStages && app.JobStages.length > 0) {
                 (app as any).setDataValue('currentStageId', app.JobStages[0].id);
@@ -192,6 +192,7 @@ export class ApplicationRepository {
 
     // Maps to STK-APP-APPLY-001, TRUST-009
     public async create(appData: any, transaction?: Transaction): Promise<Application> {
+
         return Application.create(appData, { transaction });
     }
 

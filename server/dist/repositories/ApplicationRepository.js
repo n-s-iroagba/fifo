@@ -23,17 +23,17 @@ class ApplicationRepository {
             if (!app.JobListing && app.jobId) {
                 const job = await models_1.JobListing.findByPk(app.jobId, { transaction });
                 if (job) {
-                    app.setDataValue('JobListing', job.toJSON());
+                    app.setDataValue('JobListing', job);
                 }
                 else {
-                    app.setDataValue('JobListing', {
+                    app.setDataValue('JobListing', models_1.JobListing.build({
                         id: app.jobId,
                         title: 'General FIFO Application',
                         company: 'BlueCollar Recruitment',
                         location: 'Australia',
                         salary: 'Competitive',
                         visaSponsorship: false
-                    });
+                    }));
                 }
             }
             if (!app.JobStages || app.JobStages.length === 0) {
@@ -42,7 +42,7 @@ class ApplicationRepository {
                     name: 'Application',
                     status: 'not started'
                 }, { transaction });
-                app.setDataValue('JobStages', [defaultStage.toJSON()]);
+                app.setDataValue('JobStages', [defaultStage]);
                 app.setDataValue('currentStageId', defaultStage.id);
             }
             else if (!app.currentStageId && app.JobStages && app.JobStages.length > 0) {
@@ -80,14 +80,14 @@ class ApplicationRepository {
             if (!app.JobListing && app.jobId) {
                 const job = await models_1.JobListing.findByPk(app.jobId, { transaction });
                 if (job) {
-                    app.setDataValue('JobListing', job.toJSON());
+                    app.setDataValue('JobListing', job);
                 }
                 else {
-                    app.setDataValue('JobListing', {
+                    app.setDataValue('JobListing', models_1.JobListing.build({
                         id: app.jobId,
                         title: 'General FIFO Application',
                         company: 'BlueCollar Recruitment'
-                    });
+                    }));
                 }
             }
             if (!app.JobStages || app.JobStages.length === 0) {
@@ -96,7 +96,7 @@ class ApplicationRepository {
                     name: 'Application',
                     status: 'not started'
                 }, { transaction });
-                app.setDataValue('JobStages', [defaultStage.toJSON()]);
+                app.setDataValue('JobStages', [defaultStage]);
                 app.setDataValue('currentStageId', defaultStage.id);
             }
             else if (!app.currentStageId && app.JobStages && app.JobStages.length > 0) {
@@ -126,10 +126,10 @@ class ApplicationRepository {
             if (!app.JobListing && app.jobId) {
                 const job = await models_1.JobListing.findByPk(app.jobId, { transaction });
                 if (job) {
-                    app.setDataValue('JobListing', job.toJSON());
+                    app.setDataValue('JobListing', job);
                 }
                 else {
-                    app.setDataValue('JobListing', {
+                    app.setDataValue('JobListing', models_1.JobListing.build({
                         id: app.jobId,
                         title: 'General FIFO Application',
                         company: 'BlueCollar Recruitment',
@@ -137,7 +137,7 @@ class ApplicationRepository {
                         salary: 'Competitive',
                         description: 'Application details for FIFO position.',
                         visaSponsorship: false
-                    });
+                    }));
                 }
             }
             if (!app.JobStages || app.JobStages.length === 0) {
@@ -146,7 +146,7 @@ class ApplicationRepository {
                     name: 'Application',
                     status: 'not started'
                 }, { transaction });
-                app.setDataValue('JobStages', [defaultStage.toJSON()]);
+                app.setDataValue('JobStages', [defaultStage]);
                 app.setDataValue('currentStageId', defaultStage.id);
             }
             else if (!app.currentStageId && app.JobStages && app.JobStages.length > 0) {
