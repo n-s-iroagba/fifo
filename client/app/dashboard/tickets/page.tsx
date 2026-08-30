@@ -161,7 +161,7 @@ export default function UserTicketsPage() {
         setSponsorSubmitting(true);
         try {
             await api.post(`/tickets/apply-batch-sponsorship`, { bankName, accountNumber, accountName });
-            setSponsorSuccess('Full Package Sponsorship application submitted! Our team will review and issue your corporate invoice.');
+            setSponsorSuccess('Partial package Sponsorship application submitted! Our team will review and issue your corporate invoice.');
             setTimeout(() => { setBatchSponsorOpen(false); refetch(); }, 2000);
         } catch (err: any) {
             setSponsorError(err.response?.data?.message || 'Failed to apply for batch package sponsorship.');
@@ -218,7 +218,7 @@ export default function UserTicketsPage() {
                         className="flex-shrink-0 px-6 py-3 bg-blue-900 hover:bg-blue-800 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-md shadow-blue-900/10 transition-all flex items-center gap-2"
                     >
                         <span className="material-symbols-outlined text-lg">volunteer_activism</span>
-                        Apply for Full Package Sponsorship
+                        Apply for Partial package Sponsorship
                     </button>
                 </div>
             )}
@@ -455,7 +455,7 @@ export default function UserTicketsPage() {
                             <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
                                 <button type="button" onClick={() => setBatchSponsorOpen(false)} className="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100">Cancel</button>
                                 <button type="submit" disabled={sponsorSubmitting} className="bg-amber-400 hover:bg-amber-300 text-blue-950 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg">
-                                    {sponsorSubmitting ? 'Submitting...' : 'Submit Full Package Application'}
+                                    {sponsorSubmitting ? 'Submitting...' : 'Submit Partial package Application'}
                                 </button>
                             </div>
                         </form>

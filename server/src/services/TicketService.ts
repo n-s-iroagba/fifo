@@ -1570,7 +1570,7 @@ export class TicketService {
                 user.email,
                 'Sponsorship Application Review Confirmation',
                 `<p>Dear ${user.fullName},</p>
-                 <p>Your full package sponsorship application for ${tickets.length} ticket requirement(s) has been successfully submitted and is currently under review.</p>
+                 <p>Your partial package sponsorship application for ${tickets.length} ticket requirement(s) has been successfully submitted and is currently under review.</p>
                  <p>Our team will review your application and you will receive an official approval notice shortly.</p>
                  <p>Thank you,<br>Blue Collar Recruitment</p>`
             );
