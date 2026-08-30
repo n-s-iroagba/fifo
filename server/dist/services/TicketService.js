@@ -14,10 +14,28 @@ const SCHEDULE_1_NET_CANDIDATE_TOTAL = 2830.95; // A$1,240.75 + A$1,405.25 + A$1
 const MAX_CANDIDATE_LIABILITY = 3599.20; // Clause 5.2 upper contractual liability ceiling cap
 class TicketService {
     async getUserTickets(userId) {
-        return await models_1.Ticket.findAll({
+        const { JobStage } = require('../models');
+        const tickets = await models_1.Ticket.findAll({
             where: { userId },
-            include: [{ model: models_1.Application, as: 'Application' }],
+            include: [
+                {
+                    model: models_1.Application,
+                    as: 'Application',
+                    include: [
+                        {
+                            model: JobStage,
+                            as: 'JobStages'
+                        }
+                    ]
+                }
+            ],
             order: [['createdAt', 'DESC']]
+        });
+        return tickets.filter((t) => {
+            if (!t.Application)
+                return true; // Global ticket or old data
+            const stages = t.Application.JobStages || [];
+            return stages.some((s) => s.name === 'TicketSponsorship' || s.name === 'Ticket Sponsorship');
         });
     }
     /**

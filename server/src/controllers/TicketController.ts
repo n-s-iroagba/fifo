@@ -51,6 +51,16 @@ export class TicketController {
 
 
 
+    public async applyBatchSponsorship(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = (req as any).user.id;
+            const result = await ticketService.applyBatchPackageSponsorship(userId, req.body);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result });
+        } catch (error: any) {
+            res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: error.message || 'Failed to apply batch sponsorship' });
+        }
+    }
+
     public async requestRetake(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const userId = (req as any).user.id;

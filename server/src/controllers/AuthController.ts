@@ -169,7 +169,8 @@ export class AuthController {
                     cvUrl: user.cvUrl,
                     languages: user.languages,
                     psychometricModule1Passed: user.psychometricModule1Passed,
-                    psychometricModule2Passed: user.psychometricModule2Passed
+                    psychometricModule2Passed: user.psychometricModule2Passed,
+                    subsidyPercentage: user.subsidyPercentage
                 }
             });
         } catch (error: any) {

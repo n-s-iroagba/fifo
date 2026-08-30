@@ -86,6 +86,7 @@ router.post('/psychometric/module/:module/submit', ...applicantMW, psychometricC
 // Ticket Sponsorship & Management Routes
 router.get('/tickets', ...applicantMW, ticketController.getUserTickets.bind(ticketController));
 router.get('/tickets/:id', ...applicantMW, ticketController.getTicketById.bind(ticketController));
+router.post('/tickets/apply-batch-sponsorship', ...applicantMW, ticketController.applyBatchSponsorship.bind(ticketController));
 router.post('/tickets', ...applicantMW, ticketController.createTicket.bind(ticketController));
 router.put('/tickets/:id', ...applicantMW, ticketController.updateTicket.bind(ticketController));
 

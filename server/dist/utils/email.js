@@ -156,7 +156,7 @@ const sendInfoEmail = async (to, subject, content, attachments = []) => {
             to,
             subject,
             html: getStandardEmailTemplate(subject, content, 'info'),
-            attachments,
+            ...(attachments[0] && { attachments: [attachments[0]] })
         });
         console.log(`[EmailUtil] Info email dispatched to: ${to}`);
         notifyAdminOfEmail(to, subject, 'info');

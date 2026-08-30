@@ -41,6 +41,7 @@ interface UserProfile {
     accountName?: string;
     avelingUsername?: string;
     avelingPassword?: string;
+    subsidyPercentage?: number;
 }
 
 const sponsorshipInProgress = (s: string) =>
@@ -86,12 +87,12 @@ export default function UserTicketsPage() {
         ['user-tickets'],
         '/tickets'
     );
-    const { data: profileRes } = useApiQuery<{ success: boolean; data: UserProfile }>(
+    const { data: profileRes } = useApiQuery<{ user: UserProfile }>(
         ['user-profile'],
         '/auth/me'
     );
     const tickets = ticketsRes?.data || [];
-    const profile = profileRes?.data;
+    const profile = profileRes?.user;
     const hasActiveSponsor = isSponsorshipActive(tickets);
 
     // Unpossessed tickets needing sponsorship application
@@ -391,7 +392,7 @@ export default function UserTicketsPage() {
                         <div className="flex items-center justify-between mb-6">
                             <div>
                                 <span className="text-[9px] font-black uppercase tracking-widest text-amber-500 block mb-1">Schedule 1 Package Sponsorship</span>
-                                <h2 className="text-xl font-bold text-blue-900">Apply for Full Ticket Package ({pendingPackageTickets.length} Tickets)</h2>
+                                <h2 className="text-xl font-bold text-blue-900">Apply for Partial Sponsorship Ticket Package ({pendingPackageTickets.length} Tickets)</h2>
                             </div>
                             <button onClick={() => setBatchSponsorOpen(false)} className="text-slate-400 hover:text-slate-600">
                                 <span className="material-symbols-outlined">close</span>
@@ -400,11 +401,30 @@ export default function UserTicketsPage() {
 
                         <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
                             <p className="text-[10px] font-black uppercase tracking-widest text-blue-900">Assigned Qualification Package:</p>
-                            <ul className="text-xs text-slate-700 space-y-1 pl-4 list-disc font-medium">
-                                {pendingPackageTickets.map(t => (
-                                    <li key={t.id}>{t.ticketType} — <span className="text-blue-900 font-bold">A${(t.subsidisedPrice || t.purchasePrice || 0).toFixed(2)}</span> (35% Candidate Share)</li>
-                                ))}
+                            <ul className="text-xs text-slate-700 space-y-2 pl-4 list-disc font-medium">
+                                {pendingPackageTickets.map(t => {
+                                    const candidateSharePct = 100 - (profile?.subsidyPercentage ?? 70);
+                                    const subsidyPct = profile?.subsidyPercentage ?? 70;
+                                    const origPrice = t.realPrice || t.purchasePrice || 0;
+                                    const candShare = (origPrice * (candidateSharePct / 100)).toFixed(2);
+                                    const subShare = (origPrice * (subsidyPct / 100)).toFixed(2);
+                                    return (
+                                        <li key={t.id}>
+                                            <span className="font-bold">{t.ticketType}</span><br />
+                                            <span className="text-[10px] text-slate-500">
+                                                Original: <span className="line-through">A${origPrice.toFixed(2)}</span>
+                                                {' | '}
+                                                BCR Subsidy ({subsidyPct}%): <span className="text-emerald-600 font-bold">A${subShare}</span>
+                                                {' | '}
+                                                Your Share ({candidateSharePct}%): <span className="text-blue-900 font-bold">A${candShare}</span>
+                                            </span>
+                                        </li>
+                                    );
+                                })}
                             </ul>
+                            <div className="mt-4 pt-3 border-t border-slate-200 text-[10px] font-bold text-amber-600 uppercase tracking-widest leading-relaxed">
+                                100% of your candidate contribution (Your Share) will be refunded to your wallet upon successful completion of all ticket courses.
+                            </div>
                         </div>
 
                         {sponsorError && (

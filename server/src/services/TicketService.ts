@@ -229,9 +229,9 @@ export class TicketService {
         const { Ticket, Enrollment, Course } = require('../models');
         const user = await User.findByPk(userId);
         if (!user) return;
-        
+
         let ticketsToUnlock = [];
-        
+
         if (invoicePurpose === 'aveling-partial') {
             await user.update({ depositPaid: true, depositPaidAt: user.depositPaidAt || new Date() });
             const tickets = await Ticket.findAll({ where: { userId }, order: [['createdAt', 'ASC']] });
@@ -240,10 +240,10 @@ export class TicketService {
             await user.update({ depositPaid: true, fullBalancePaid: true, depositPaidAt: user.depositPaidAt || new Date() });
             ticketsToUnlock = await Ticket.findAll({ where: { userId } });
         }
-        
+
         for (const ticket of ticketsToUnlock) {
             await ticket.update({ paymentStatus: 'payment_verified', courseAccessGranted: true });
-            
+
             if (ticket.courseId) {
                 const validCourse = await Course.findByPk(ticket.courseId);
                 if (validCourse) {
@@ -467,6 +467,8 @@ export class TicketService {
 
         return ticket;
     }
+
+
 
     public async updateTicket(ticketId: number, userId: number, data: any) {
         const ticket = await this.getTicketById(ticketId, userId);
