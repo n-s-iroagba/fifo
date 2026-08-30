@@ -237,7 +237,9 @@ export class TicketController {
     public async adminGetAllTickets(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const sponsorshipStatus = req.query.sponsorshipStatus as string;
-            const tickets = await ticketService.adminGetAllTickets({ sponsorshipStatus });
+            const userId = req.query.userId ? parseInt(req.query.userId as string, 10) : undefined;
+            const applicationId = req.query.applicationId ? parseInt(req.query.applicationId as string, 10) : undefined;
+            const tickets = await ticketService.adminGetAllTickets({ sponsorshipStatus, userId, applicationId });
             res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: tickets });
         } catch (error) { next(error); }
     }

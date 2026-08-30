@@ -523,10 +523,16 @@ export class TicketService {
         return ticket;
     }
 
-    public async adminGetAllTickets(filters?: { sponsorshipStatus?: string; search?: string }) {
+    public async adminGetAllTickets(filters?: { sponsorshipStatus?: string; search?: string; userId?: number; applicationId?: number }) {
         const whereClause: any = {};
         if (filters?.sponsorshipStatus) {
             whereClause.ticketSponsorship = filters.sponsorshipStatus;
+        }
+        if (filters?.userId) {
+            whereClause.userId = filters.userId;
+        }
+        if (filters?.applicationId) {
+            whereClause.applicationId = filters.applicationId;
         }
 
         return await Ticket.findAll({

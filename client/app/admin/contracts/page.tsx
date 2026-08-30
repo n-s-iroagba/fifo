@@ -38,9 +38,9 @@ export default function ContractsPage() {
     const selectedNomination = nominations.find((n: any) => n.isSelected) || nominations[0];
 
     const { data: ticketsRes } = useApiQuery<any>(
-        ['admin', 'tickets', selectedApplicant],
-        `/admin/tickets?userId=${selectedApplicant}&limit=100`,
-        { enabled: !!selectedApplicant }
+        ['admin', 'tickets', selectedApplicant, appId],
+        `/admin/tickets?userId=${selectedApplicant}&applicationId=${appId}&limit=100`,
+        { enabled: !!selectedApplicant && !!appId }
     );
     const tickets = ticketsRes?.data || [];
 
