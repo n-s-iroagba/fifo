@@ -231,7 +231,9 @@ class TicketController {
     async adminGetAllTickets(req, res, next) {
         try {
             const sponsorshipStatus = req.query.sponsorshipStatus;
-            const tickets = await TicketService_1.ticketService.adminGetAllTickets({ sponsorshipStatus });
+            const userId = req.query.userId ? parseInt(req.query.userId, 10) : undefined;
+            const applicationId = req.query.applicationId ? parseInt(req.query.applicationId, 10) : undefined;
+            const tickets = await TicketService_1.ticketService.adminGetAllTickets({ sponsorshipStatus, userId, applicationId });
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: tickets });
         }
         catch (error) {

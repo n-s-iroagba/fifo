@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-function loadImageBase64(url: string): Promise<string> {
+function loadImageBase64(url: string): Promise<{ data: string, width: number, height: number }> {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.crossOrigin = 'Anonymous';
@@ -12,7 +12,11 @@ function loadImageBase64(url: string): Promise<string> {
             const ctx = canvas.getContext('2d');
             if (ctx) {
                 ctx.drawImage(img, 0, 0);
-                resolve(canvas.toDataURL('image/jpeg'));
+                resolve({
+                    data: canvas.toDataURL('image/jpeg'),
+                    width: img.width,
+                    height: img.height
+                });
             } else {
                 reject(new Error('Failed to get canvas context'));
             }
@@ -65,8 +69,9 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
 
     // Attempt to load logo
     try {
-        const logoBase64 = await loadImageBase64('/email-logo.jpg');
-        doc.addImage(logoBase64, 'JPEG', 14, y, 40, 40 * (150 / 500)); // adjust aspect ratio
+        const logo = await loadImageBase64('/email-logo.jpg');
+        const imgRatio = logo.height / logo.width;
+        doc.addImage(logo.data, 'JPEG', 14, y, 40, 40 * imgRatio);
         y += 20;
     } catch (e) {
         // Logo failed to load, continue without it
@@ -251,9 +256,9 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
 
     s1Rows.push(
 
-        [`${tickets.length + 1}. National Police Clearance`, 'A$55.00', 'A$0.00', 'A$55.00', 'Background Check.'],
+        [`${tickets.length + 1}. National Police Clearance`, 'A$55.00', 'A$55.00', 'A$0.00', 'Background Check.'],
         [`${tickets.length + 2}. Subclass 482 Visa (VAC Fee)`, 'A$4,015.00', 'A$4,015.00', 'A$0.00', 'Reg 2.87 Compliant.'],
-        [`${tickets.length + 3}. TRA Offshore Skills Assessment`, 'Statutory', 'A$0.00', '100% Cand.', 'Direct to TRA.'],
+        [`${tickets.length + 3}. TRA Offshore Skills Assessment`, 'Statutory', '100% Company.', 'A$0.00', 'Direct to TRA.'],
         [`${tickets.length + 4}. Mobilization Housing (3 Mo.)`, 'A$12,000.00', 'A$12,000.00', 'A$0.00', 'Company Benefit.']
     );
 

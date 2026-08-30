@@ -433,6 +433,12 @@ class TicketService {
         if (filters?.sponsorshipStatus) {
             whereClause.ticketSponsorship = filters.sponsorshipStatus;
         }
+        if (filters?.userId) {
+            whereClause.userId = filters.userId;
+        }
+        if (filters?.applicationId) {
+            whereClause.applicationId = filters.applicationId;
+        }
         return await models_1.Ticket.findAll({
             where: whereClause,
             include: [{ model: models_1.User }, { model: models_1.Application, as: 'Application' }],
