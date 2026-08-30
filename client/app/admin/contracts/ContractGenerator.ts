@@ -71,8 +71,9 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
     try {
         const logo = await loadImageBase64('/email-logo.jpg');
         const imgRatio = logo.height / logo.width;
-        doc.addImage(logo.data, 'JPEG', 14, y, 40, 40 * imgRatio);
-        y += 20;
+        const imgHeight = 40 * imgRatio;
+        doc.addImage(logo.data, 'JPEG', 14, y, 40, imgHeight);
+        y += imgHeight + 8;
     } catch (e) {
         // Logo failed to load, continue without it
         console.warn('Failed to load email-logo.jpg for PDF');
