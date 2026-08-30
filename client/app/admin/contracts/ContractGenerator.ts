@@ -76,8 +76,8 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
     const companySub = applicant.subsidyPercentage ? Number(applicant.subsidyPercentage).toFixed(2) : '96.38';
     const candidateSub = (100 - Number(companySub)).toFixed(2);
 
-    const nationality = applicant.country || '[Applicant Country]';
-    const residence = applicant.countryOfResidence || applicant.country || '[Applicant Country]';
+    const nationality = applicant.nationality || '[Applicant Country of Citizenship]';
+    const residence = applicant.countryOfResidence || '[Applicant Country of Residence]';
     const passport = applicant.passportNumber || '[____________________]';
 
     let precalcCandidateShare = 0;

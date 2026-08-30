@@ -42,7 +42,7 @@ export default function ContractsPage() {
         `/admin/tickets?userId=${selectedApplicant}&limit=100`,
         { enabled: !!selectedApplicant }
     );
-    const tickets = ticketsRes?.rows || [];
+    const tickets = ticketsRes?.data || [];
 
     const { data: contracts = [], refetch } = useApiQuery<any[]>(
         ['admin', 'contracts', appId],
@@ -50,9 +50,9 @@ export default function ContractsPage() {
         { enabled: !!appId }
     );
 
-    const { mutateAsync: sendMail, isPending: sendingMail } = useApiMutation<any, any>('post', '/admin/mail');
+
     const { mutateAsync: createContract, isPending: creatingContract } = useApiMutation<any, any>('post', `/admin/applications/${appId}/contracts`);
-    const isPending = sendingMail || creatingContract;
+    const isPending = creatingContract;
 
     const getToday = () => {
         const d = new Date();
@@ -81,7 +81,7 @@ export default function ContractsPage() {
     const handleSendContract = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedApplicant) return;
-        
+
         setError(null);
         setSuccess(false);
 
@@ -93,13 +93,7 @@ export default function ContractsPage() {
             return;
         }
 
-        const emailBody = `
-            <p>Dear ${applicant.fullName},</p>
-            <p>Following your successful application review and nomination acceptance, please find attached your Training and Ticket Acquisition Contract.</p>
-            <p>Kindly read the attached contract document carefully, sign where indicated, and reply to this email within the stipulated timeframe to confirm your acceptance of the contract terms.</p>
-            <p>We look forward to welcoming you aboard!</p>
-            <p>Yours sincerely,<br>Troy Latuff<br>Chief Executive Officer<br>Blue Collar Recruitment Pty Ltd</p>
-        `;
+
 
         try {
             const pdfBlob = await generateContractPDF(applicant, selectedNomination, getToday(), tickets);
@@ -117,7 +111,7 @@ export default function ContractsPage() {
                     adminDocumentUrl: uploadedPdfUrl
                 }
             });
-            
+
             setSuccess(true);
             setSelectedApplicant('');
             setTimeout(() => setSuccess(false), 5000);
@@ -157,7 +151,7 @@ export default function ContractsPage() {
                     <form onSubmit={handleSendContract} className="space-y-6">
                         <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1">Select Candidate</label>
-                            <select 
+                            <select
                                 value={selectedApplicant}
                                 onChange={(e) => setSelectedApplicant(e.target.value)}
                                 required
@@ -177,7 +171,7 @@ export default function ContractsPage() {
                                 <p className="text-xs text-blue-700">Host Employer: {selectedNomination.hostEmployer}</p>
                             </div>
                         )}
-                        
+
                         {selectedApplicant && !selectedNomination && (
                             <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
                                 <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">No selected nomination found for this candidate.</p>
@@ -231,11 +225,10 @@ export default function ContractsPage() {
                                             <h3 className="text-xs font-bold text-blue-900 uppercase tracking-widest">{contract.role}</h3>
                                             <p className="text-xs text-blue-600 font-medium">{contract.company}</p>
                                         </div>
-                                        <div className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest ${
-                                            contract.status === 'accepted' ? 'bg-emerald-100 text-emerald-700' :
-                                            contract.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                                            'bg-amber-100 text-amber-700'
-                                        }`}>
+                                        <div className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest ${contract.status === 'accepted' ? 'bg-emerald-100 text-emerald-700' :
+                                                contract.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                                    'bg-amber-100 text-amber-700'
+                                            }`}>
                                             {contract.status}
                                         </div>
                                     </div>
