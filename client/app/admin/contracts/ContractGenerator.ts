@@ -80,6 +80,20 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
     const residence = applicant.countryOfResidence || applicant.country || 'Guinea';
     const passport = applicant.passportNumber || '[____________________]';
 
+    let precalcCandidateShare = 0;
+    if (tickets && tickets.length > 0) {
+        tickets.forEach((ticket: any) => {
+            if (ticket.status === 'not_possessed') {
+                const totalCost = ticket.realPrice || ticket.purchasePrice || 0;
+                const compAmount = (totalCost * Number(companySub)) / 100;
+                const candAmount = totalCost - compAmount;
+                precalcCandidateShare += candAmount;
+            }
+        });
+    }
+    const audTotal = precalcCandidateShare.toFixed(2);
+    const usdtTotal = (precalcCandidateShare * 0.67).toFixed(2);
+
     const contentBlocks = [
         { type: 'header', text: 'Blue Collar Recruitment Pty Limited', size: 14, bold: true, color: [0,0,128] },
         { type: 'spacer', space: 2 },
@@ -127,7 +141,7 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
         { type: 'spacer', space: 4 },
 
         { type: 'header', text: '5. CANDIDATE FINANCIAL OBLIGATIONS & DEPOSIT PROTOCOLS', size: 11, bold: true },
-        { type: 'text', text: '5.1 Initial Commitment Deposit: Prior to the booking, scheduling, or corporate funding of any individual online module or Certification block with the Training Partner, the Candidate shall transfer a security deposit of 250 USDT. This deposit serves as an essential instrument of mutual commercial assurance, confirming the Candidate’s earnest and binding commitment to complete the workflow and protecting the corporate capital of the Company from losses arising due to sudden, un-notified candidate withdrawal.' },
+        { type: 'text', text: `5.1 Initial Commitment Deposit: Prior to the booking, scheduling, or corporate funding of any individual online module or Certification block with the Training Partner, the Candidate shall transfer a security deposit of ${usdtTotal} USDT. This deposit serves as an essential instrument of mutual commercial assurance, confirming the Candidate’s earnest and binding commitment to complete the workflow and protecting the corporate capital of the Company from losses arising due to sudden, un-notified candidate withdrawal.` },
         { type: 'text', text: `5.2 Expense Caps & Balance Accountability: The Candidate retains absolute personal liability for the remaining ${candidateSub} percent (${candidateSub}%) balance of itemized Ticket and Induction training costs, 100% of individual regional Western Australian regulatory driving licensing outlays, and 100% of statutory fees levied by Trades Recognition Australia (TRA). The Candidate’s absolute cumulative financial exposure under this entire Instrument is strictly capped subject to downward adjustment upon the activation of success-based wallet credits as defined within Clause 7.` },
         { type: 'spacer', space: 4 },
 
@@ -199,9 +213,9 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
 
     contentBlocks.forEach(block => {
         if (block.type === 'header') {
-            addText(block.text as string, block.size, block.bold, 14, block.color || [0,0,0]);
+            addText(block.text as string, block.size, block.bold, 14, (block.color as [number, number, number]) || [0,0,0]);
         } else if (block.type === 'text') {
-            addText(block.text as string, block.size, false, 14, block.color || [0,0,0]);
+            addText(block.text as string, block.size, false, 14, (block.color as [number, number, number]) || [0,0,0]);
         } else if (block.type === 'spacer') {
             checkPageBreak(block.space || 2);
             y += (block.space || 2);
@@ -258,7 +272,7 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
     y = (doc as any).lastAutoTable.finalY + 6;
 
     addText('Official Payment Protocols & Financial Channels:', 10, true);
-    addText(`- Commitment Security: The primary initial commitment deposit of A$500.00 must be transferred to the Company's verified institutional bank account prior to course portal unlocking.\n- Channel Architecture: All incoming candidate transfers must execute strictly via standard International Wire Transfer (SWIFT Wire) using the verified routing coordinates issued exclusively within our corporate invoice paperwork. Independent third-party payment platforms or cash handovers are rejected.\n- Settlement Schedule: The foundational 250 USDT deposit is required immediately post-signing to secure the primary instructional allocations. Partial Payment above 50% of the above stated amount can be made with mandatory completion after 3 tickets.`, 9);
+    addText(`- Commitment Security: The primary initial commitment deposit of A$${audTotal} must be transferred to the Company's verified institutional bank account prior to course portal unlocking.\n- Channel Architecture: All incoming candidate transfers must execute strictly via standard International Wire Transfer (SWIFT Wire) using the verified routing coordinates issued exclusively within our corporate invoice paperwork. Independent third-party payment platforms or cash handovers are rejected.\n- Settlement Schedule: The foundational ${usdtTotal} USDT deposit is required immediately post-signing to secure the primary instructional allocations. Partial Payment above 50% of the above stated amount can be made with mandatory completion after 3 tickets.`, 9);
     y += 4;
 
     doc.addPage();
@@ -271,7 +285,7 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
         head: [['Milestone Stage', 'Target Deadline', 'Compliance Path']],
         body: [
             ['Binding Execution', 'Within 24 Hours', 'Return Page 14 to lock placement.'],
-            ['Core Commitment Deposit', 'Prior to Portal Booking', 'Transfer 250 USDT or partial payment.'],
+            ['Core Commitment Deposit', 'Prior to Portal Booking', `Transfer ${usdtTotal} USDT or partial payment.`],
             ['Passport Submission', 'Within 3 Weeks', 'High-res digital color scan.'],
             ['Aveling Online Exams', 'Within 2 Weeks', 'Done remotely. Max 2 attempts.'],
             ['Arrival & Practical Exams', 'First 7 Days (Arrival)', 'Practical verification in Perth. Max 2 attempts.'],
