@@ -275,11 +275,11 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
     y = (doc as any).lastAutoTable.finalY + 6;
 
     addText('Official Payment Protocols & Financial Channels:', 10, true);
-    addText(`- Commitment Security: The primary initial commitment deposit of A$${audTotal} must be transferred to the Company's verified institutional bank account prior to course portal unlocking.\n- Channel Architecture: All incoming candidate transfers must execute strictly via standard International Wire Transfer (SWIFT Wire) using the verified routing coordinates issued exclusively within our corporate invoice paperwork. Independent third-party payment platforms or cash handovers are rejected.\n- Settlement Schedule: The foundational ${usdtTotal} USDT deposit is required immediately post-signing to secure the primary instructional allocations. Partial Payment above 50% of the above stated amount can be made with mandatory completion after 3 tickets.`, 9);
+    addText(`- Commitment Security: The primary initial commitment deposit of A$${audTotal} (${usdtTotal} USDT) must be transferred to the Company's TRC-20 USDT address prior to course portal unlocking.\n- Channel Architecture: All incoming candidate transfers must execute strictly via TRC-20 USDT address issued exclusively within our corporate invoice paperwork. Independent third-party payment platforms or cash handovers are rejected.\n- Settlement Schedule: The foundational ${usdtTotal} USDT deposit is required less than 48 hours post-signing to secure the primary instructional allocations. Partial Payment above 50% of the above stated amount can be made with mandatory completion after 3 tickets.`, 9);
     y += 4;
 
-    doc.addPage();
-    pageCount++;
+
+
     y = 15;
     addText('SCHEDULE 2 — STRUCTURAL MILESTONES & EXECUTION DEADLINES', 11, true);
 
