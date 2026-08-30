@@ -397,7 +397,7 @@ export class ApplicationController {
                             <p>Dear ${app.User.fullName || 'Candidate'},</p>
                             <p>Blue Collar Recruitment Pty Limited has generated your Official Training and Ticket Acquisition Contract for the <strong>${role}</strong> position at <strong>${company}</strong>.</p>
                             <p>Please find your contract document attached. Kindly review, sign, and return it within the stipulated time frame.</p>
-                            <p>You may also download and upload the signed document directly through your applicant dashboard.</p>
+                            <p>To return it, upload the signed document directly through your applicant dashboard.</p>
                             <p>Best regards,<br>The Blue Collar Recruitment Team</p>
                         `;
                         const attachments = [{ filename: 'Contract_Document.pdf', path: adminDocumentUrl }];

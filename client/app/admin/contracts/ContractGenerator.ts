@@ -51,10 +51,10 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
         doc.setFontSize(size);
         doc.setFont('helvetica', isBold ? 'bold' : 'normal');
         doc.setTextColor(color[0], color[1], color[2]);
-        
+
         const maxWidth = 210 - indent - 14;
         const lines = doc.splitTextToSize(text, maxWidth);
-        
+
         lines.forEach((line: string) => {
             checkPageBreak(size * 0.4 + 2);
             doc.text(line, indent, y);
@@ -66,7 +66,7 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
     // Attempt to load logo
     try {
         const logoBase64 = await loadImageBase64('/email-logo.jpg');
-        doc.addImage(logoBase64, 'JPEG', 14, y, 40, 40 * (150/500)); // adjust aspect ratio
+        doc.addImage(logoBase64, 'JPEG', 14, y, 40, 40 * (150 / 500)); // adjust aspect ratio
         y += 20;
     } catch (e) {
         // Logo failed to load, continue without it
@@ -76,15 +76,15 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
     const companySub = applicant.subsidyPercentage ? Number(applicant.subsidyPercentage).toFixed(2) : '96.38';
     const candidateSub = (100 - Number(companySub)).toFixed(2);
 
-    const nationality = applicant.country || 'Guinea';
-    const residence = applicant.countryOfResidence || applicant.country || 'Guinea';
+    const nationality = applicant.country || '[Applicant Country]';
+    const residence = applicant.countryOfResidence || applicant.country || '[Applicant Country]';
     const passport = applicant.passportNumber || '[____________________]';
 
     let precalcCandidateShare = 0;
     if (tickets && tickets.length > 0) {
         tickets.forEach((ticket: any) => {
             if (ticket.status === 'not_possessed') {
-                const totalCost = ticket.realPrice || ticket.purchasePrice || 0;
+                const totalCost = parseFloat(ticket.realPrice || ticket.purchasePrice || '0');
                 const compAmount = (totalCost * Number(companySub)) / 100;
                 const candAmount = totalCost - compAmount;
                 precalcCandidateShare += candAmount;
@@ -95,12 +95,12 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
     const usdtTotal = (precalcCandidateShare * 0.67).toFixed(2);
 
     const contentBlocks = [
-        { type: 'header', text: 'Blue Collar Recruitment Pty Limited', size: 14, bold: true, color: [0,0,128] },
+        { type: 'header', text: 'Blue Collar Recruitment Pty Limited', size: 14, bold: true, color: [0, 0, 128] },
         { type: 'spacer', space: 2 },
         { type: 'header', text: 'FIFO EMPLOYMENT TICKETING, TRAINING & VISA SPONSORSHIP CANDIDATE AGREEMENT', size: 11, bold: true },
-        { type: 'text', text: 'DOCUMENT REF: BCR-FIFO-2026-0810', size: 9, color: [80,80,80] },
-        { type: 'text', text: 'STRICTLY CONFIDENTIAL', size: 9, color: [80,80,80] },
-        { type: 'text', text: `DATE OF INSTRUMENT: ${dateStr}`, size: 9, color: [80,80,80] },
+        { type: 'text', text: 'DOCUMENT REF: BCR-FIFO-2026-0810', size: 9, color: [80, 80, 80] },
+        { type: 'text', text: 'STRICTLY CONFIDENTIAL', size: 9, color: [80, 80, 80] },
+        { type: 'text', text: `DATE OF INSTRUMENT: ${dateStr}`, size: 9, color: [80, 80, 80] },
         { type: 'spacer', space: 4 },
 
         { type: 'header', text: '1. PARTIES', size: 11, bold: true },
@@ -213,9 +213,9 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
 
     contentBlocks.forEach(block => {
         if (block.type === 'header') {
-            addText(block.text as string, block.size, block.bold, 14, (block.color as [number, number, number]) || [0,0,0]);
+            addText(block.text as string, block.size, block.bold, 14, (block.color as [number, number, number]) || [0, 0, 0]);
         } else if (block.type === 'text') {
-            addText(block.text as string, block.size, false, 14, (block.color as [number, number, number]) || [0,0,0]);
+            addText(block.text as string, block.size, false, 14, (block.color as [number, number, number]) || [0, 0, 0]);
         } else if (block.type === 'spacer') {
             checkPageBreak(block.space || 2);
             y += (block.space || 2);
@@ -228,12 +228,13 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
 
     const s1Rows: string[][] = [];
     let totalCandidateShare = 0;
-    
+    let baseIndex = 0;
+
     // Gap tickets first
     if (tickets && tickets.length > 0) {
         tickets.forEach((ticket: any, index: number) => {
             if (ticket.status === 'not_possessed') {
-                const totalCost = ticket.realPrice || ticket.purchasePrice || 0;
+                const totalCost = parseFloat(ticket.realPrice || ticket.purchasePrice || '0');
                 const compAmount = (totalCost * Number(companySub)) / 100;
                 const candAmount = totalCost - compAmount;
                 totalCandidateShare += candAmount;
@@ -248,18 +249,14 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
         });
     }
 
-    const baseIndex = s1Rows.length + 1;
     s1Rows.push(
-        [`${baseIndex}. Manual Driver's Licence (Class C)`, 'A$185.50', 'A$0.00', 'A$185.50', 'DoT Fees. Max 2.'],
-        [`${baseIndex + 1}. National Police Clearance`, 'A$55.00', 'A$0.00', 'A$55.00', 'Background Check.'],
-        [`${baseIndex + 2}. Subclass 482 Visa (VAC Fee)`, 'A$4,015.00', 'A$4,015.00', 'A$0.00', 'Reg 2.87 Compliant.'],
-        [`${baseIndex + 3}. TRA Offshore Skills Assessment`, 'Statutory', 'A$0.00', '100% Cand.', 'Direct to TRA.'],
-        [`${baseIndex + 4}. Mobilization Housing (3 Mo.)`, 'A$12,000.00', 'A$12,000.00', 'A$0.00', 'Company Benefit.']
+
+        [`${tickets.length + 1}. National Police Clearance`, 'A$55.00', 'A$0.00', 'A$55.00', 'Background Check.'],
+        [`${tickets.length + 2}. Subclass 482 Visa (VAC Fee)`, 'A$4,015.00', 'A$4,015.00', 'A$0.00', 'Reg 2.87 Compliant.'],
+        [`${tickets.length + 3}. TRA Offshore Skills Assessment`, 'Statutory', 'A$0.00', '100% Cand.', 'Direct to TRA.'],
+        [`${tickets.length + 4}. Mobilization Housing (3 Mo.)`, 'A$12,000.00', 'A$12,000.00', 'A$0.00', 'Company Benefit.']
     );
-    
-    const visaShare = 1405.25;
-    const licensingShare = 185.50;
-    const totalLiability = totalCandidateShare + visaShare + licensingShare;
+
 
     checkPageBreak(80);
     autoTable(doc, {
@@ -279,7 +276,7 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
     pageCount++;
     y = 15;
     addText('SCHEDULE 2 — STRUCTURAL MILESTONES & EXECUTION DEADLINES', 11, true);
-    
+
     autoTable(doc, {
         startY: y,
         head: [['Milestone Stage', 'Target Deadline', 'Compliance Path']],
@@ -296,11 +293,11 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
         headStyles: { fillColor: [0, 0, 128], textColor: 255 },
     });
     y = (doc as any).lastAutoTable.finalY + 10;
-    
+
     checkPageBreak(50);
     addText('15. CONTRACTUAL EXECUTION & SIGNATURES', 12, true);
     addText(`IN WITNESS WHEREOF, the Parties hereto have caused this Candidate Agreement to be duly executed by their respective authorized signatures, creating a binding, reciprocal legal instrument effective as of ${dateStr}.`);
-    
+
     y += 10;
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
