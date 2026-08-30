@@ -28,7 +28,7 @@ const startServer = async () => {
                 try {
                     const queryInterface = sequelize.getQueryInterface();
                     const Sequelize = require('sequelize');
-                    
+
                     const addColumnSafe = async (tableName: string, columnName: string, options: any) => {
                         try {
                             await queryInterface.addColumn(tableName, columnName, options);
@@ -42,18 +42,6 @@ const startServer = async () => {
                         }
                     };
 
-                    await addColumnSafe('tickets', 'receipt_url', { type: Sequelize.TEXT, allowNull: true });
-                    await addColumnSafe('tickets', 'receipt_reference', { type: Sequelize.STRING, allowNull: true });
-                    await addColumnSafe('tickets', 'payment_status', { type: Sequelize.ENUM('unpaid', 'receipt_submitted', 'payment_verified'), defaultValue: 'unpaid', allowNull: false });
-                    await addColumnSafe('tickets', 'course_access_granted', { type: Sequelize.BOOLEAN, defaultValue: false, allowNull: false });
-                    await addColumnSafe('tickets', 'ticket_sequence_number', { type: Sequelize.INTEGER, allowNull: true });
-                    await addColumnSafe('users', 'subsidyPercentage', { type: Sequelize.INTEGER, allowNull: true, defaultValue: 70 });
-                    await addColumnSafe('users', 'psychometricModule1Passed', { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false });
-                    await addColumnSafe('users', 'psychometricModule2Passed', { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false });
-                    await addColumnSafe('users', 'psychometricCompletedAt', { type: Sequelize.DATE, allowNull: true });
-                    await addColumnSafe('users', 'depositPaid', { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false });
-                    await addColumnSafe('users', 'depositPaidAt', { type: Sequelize.DATE, allowNull: true });
-                    await addColumnSafe('users', 'fullBalancePaid', { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false });
 
                     // Fix tickets for existing applications
                     const { Application, JobListing, TicketCatalog, Course, Ticket, User } = require('./models');
@@ -90,7 +78,7 @@ const startServer = async () => {
                                         }
                                     });
 
-                                    const applicant = await User.findByPk(app.userId);
+
                                     const normalPrice = cat.normalPrice || 0;
 
                                     await Ticket.create({

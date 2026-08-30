@@ -154,6 +154,18 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
                     <span className="material-symbols-outlined text-base">add_task</span> Select Ticket Gaps from Catalogue
                 </button>
             </div>
+            
+            {tickets.length > 0 && (
+                <div className="mb-4 flex items-center justify-between bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-900">Total Ticket Gaps Cost</span>
+                    <div className="text-right">
+                        <span className="text-sm font-black text-blue-900">${tickets.reduce((sum, t) => sum + (t.subsidisedPrice != null ? t.subsidisedPrice : (t.realPrice || 0)), 0).toFixed(2)}</span>
+                        {tickets.some(t => t.subsidisedPrice != null && t.realPrice != null && t.realPrice > t.subsidisedPrice) && (
+                            <span className="block text-[9px] text-slate-500 line-through">Original: ${tickets.reduce((sum, t) => sum + (t.realPrice || 0), 0).toFixed(2)}</span>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {tickets.length === 0 ? (
                 <div className="py-12 text-center bg-slate-50/50 rounded-2xl border-2 border-dashed border-blue-100">
@@ -592,6 +604,14 @@ export default function ApplicationDetailPage() {
         { onSuccess: () => refetch() }
     );
 
+    const updateSubsidyMutation = useApiMutation(
+        'put',
+        `/admin/users/${application?.User?.id}/subsidy-percentage`,
+        {
+            onSuccess: () => refetch()
+        }
+    );
+
     const advanceMutation = useApiMutation(
         'post',
         `/admin/applications/${id}/advance`,
@@ -723,7 +743,7 @@ export default function ApplicationDetailPage() {
                         Application Target: {job?.title}
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                     <span className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-xl border ${application.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                         application.status === 'COMPLETED' ? 'bg-blue-900 text-white shadow-lg shadow-blue-900/10' :
                             'bg-blue-100 text-blue-600'
@@ -731,18 +751,26 @@ export default function ApplicationDetailPage() {
                         {application.status}
                     </span>
                     <Link
+                        href={`/admin/nominations?applicantId=${user?.id || ''}`}
+                        className="bg-purple-50 text-purple-700 border border-purple-100 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-purple-100 transition-all flex items-center gap-2 active:scale-95"
+                    >
+                        <span className="material-symbols-outlined text-sm font-bold">assignment_ind</span>
+                        Nomination
+                    </Link>
+                    <Link
+                        href={`/admin/contracts?applicantId=${user?.id || ''}`}
+                        className="bg-amber-50 text-amber-700 border border-amber-100 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-amber-100 transition-all flex items-center gap-2 active:scale-95"
+                    >
+                        <span className="material-symbols-outlined text-sm font-bold">contract</span>
+                        Contract
+                    </Link>
+                    <Link
                         href={`/admin/mail?to=${encodeURIComponent(user?.email || '')}&applicantId=${user?.id || ''}`}
                         className="bg-indigo-50 text-indigo-700 border border-indigo-100 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-100 transition-all flex items-center gap-2 active:scale-95"
                     >
                         <span className="material-symbols-outlined text-sm font-bold">mail</span>
                         Email Applicant
                     </Link>
-                    <button
-                        onClick={() => setShowAddStage(true)}
-                        className="bg-blue-900 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all shadow-xl shadow-blue-900/10 active:scale-95"
-                    >
-                        Add Workflow Stage
-                    </button>
                 </div>
             </div>
 
@@ -824,20 +852,6 @@ export default function ApplicationDetailPage() {
                                                             <span className="hidden sm:inline">Mark Complete</span>
                                                         </button>
                                                     )}
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); handleEditClick(stage); }}
-                                                        className="px-3 py-1.5 flex items-center justify-center gap-1.5 text-[9px] font-black uppercase text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all border border-blue-100"
-                                                    >
-                                                        <span className="material-symbols-outlined text-[14px]">edit</span>
-                                                        <span className="hidden sm:inline">Edit</span>
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); if (confirm('Delete Stage: Permanently delete this stage?')) deleteStageMutation.mutate({ params: { stageId: stage.id } }); }}
-                                                        className="px-3 py-1.5 flex items-center justify-center gap-1.5 text-[9px] font-black uppercase text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all border border-red-100"
-                                                    >
-                                                        <span className="material-symbols-outlined text-[14px]">delete</span>
-                                                        <span className="hidden sm:inline">Delete</span>
-                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -891,6 +905,26 @@ export default function ApplicationDetailPage() {
                                 <DataItem label="Phone Number" value={user?.phoneNumber} />
                                 <div className="col-span-1">
                                     <DataItem label="Residential Address" value={user?.address} />
+                                </div>
+                                <div className="col-span-1 bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
+                                    <label className="block text-[8px] font-black uppercase tracking-[0.2em] text-blue-400 mb-1">Subsidy Percentage</label>
+                                    <div className="flex items-center gap-2">
+                                        <input 
+                                            type="number" 
+                                            defaultValue={user?.subsidyPercentage ?? 70} 
+                                            onBlur={(e) => {
+                                                const val = parseInt(e.target.value);
+                                                if (val >= 0 && val <= 100 && val !== user?.subsidyPercentage) {
+                                                    updateSubsidyMutation.mutate({ data: { subsidyPercentage: val } });
+                                                }
+                                            }}
+                                            className="w-20 bg-white border border-blue-200 rounded p-1.5 text-xs font-bold text-blue-900 text-center" 
+                                            min="0" max="100" 
+                                        />
+                                        <span className="text-xs font-bold text-blue-900">%</span>
+                                        {updateSubsidyMutation.isPending && <span className="text-[9px] text-amber-600 animate-pulse ml-2 font-bold">Saving...</span>}
+                                    </div>
+                                    <p className="text-[8px] text-slate-400 mt-1">Click outside to save</p>
                                 </div>
                             </div>
 
@@ -968,58 +1002,7 @@ export default function ApplicationDetailPage() {
                 </div>
             </div>
 
-            {/* Stage Addition/Edit Modal */}
-            {(showAddStage || editingStage) && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
-                    <div className="absolute inset-0 bg-blue-900/80 backdrop-blur-xl animate-in fade-in duration-500" onClick={() => { setShowAddStage(false); setEditingStage(null); }}></div>
-                    <div className="relative bg-white rounded-[3rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300">
-                        <div className="p-10 border-b border-blue-50 flex items-center justify-between shrink-0">
-                            <div>
-                                <h3 className="text-xs font-black text-blue-900 uppercase tracking-[0.3em]">{editingStage ? 'Edit Stage' : 'Add New Stage'}</h3>
-                                <p className="text-[9px] font-bold text-blue-400 uppercase mt-1">Configuring application process stage</p>
-                            </div>
-                            <button onClick={() => { setShowAddStage(false); setEditingStage(null); }} className="w-10 h-10 rounded-xl hover:bg-blue-50 text-blue-400 hover:text-blue-900 transition-all flex items-center justify-center">
-                                <span className="material-symbols-outlined">close</span>
-                            </button>
-                        </div>
-                        <form onSubmit={handleSaveStage} className="p-10 space-y-8 overflow-y-auto custom-scrollbar">
-                            <div className="space-y-2">
-                                <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Stage Name</label>
-                                <input
-                                    required
-                                    type="text"
-                                    value={stageName}
-                                    onChange={(e) => setStageName(e.target.value)}
-                                    placeholder="Enter stage name"
-                                    className="w-full px-6 py-4 bg-blue-50 border border-transparent rounded-2xl text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 outline-none transition-all"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="block text-[9px] font-black text-blue-400 uppercase tracking-widest">Stage Status</label>
-                                <select
-                                    required
-                                    value={status}
-                                    onChange={(e) => setStatus(e.target.value)}
-                                    className="w-full px-6 py-4 bg-blue-50 border border-transparent rounded-2xl text-sm font-bold text-blue-900 focus:bg-white focus:border-blue-900 outline-none transition-all"
-                                >
-                                    <option value="pending">Pending</option>
-                                    <option value="completed">Completed</option>
-                                    <option value="failed">Failed</option>
-                                    <option value="approved">Approved</option>
-                                    <option value="rejected">Rejected</option>
-                                </select>
-                            </div>
-                            <button
-                                type="submit"
-                                disabled={addStageMutation.isPending || updateStageMutation.isPending}
-                                className="w-full py-5 bg-blue-900 text-white font-black text-[10px] uppercase tracking-[0.4em] rounded-2xl hover:bg-black transition-all shadow-2xl shadow-blue-900/20 disabled:opacity-50 active:scale-95"
-                            >
-                                {addStageMutation.isPending || updateStageMutation.isPending ? 'Loading...' : 'Save Stage Configuration'}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
+
 
             {/* Proof Verification Modal */}
             {verifyingPayment && (

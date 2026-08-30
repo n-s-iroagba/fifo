@@ -3,13 +3,16 @@
 import React, { useState } from 'react';
 import { useApiQuery, useApiMutation } from '@/lib/hooks';
 import { uploadFile } from '@/lib/utils';
+import { useSearchParams } from 'next/navigation';
 
 import { generateContractPDF } from './ContractGenerator';
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function ContractsPage() {
-    const [selectedApplicant, setSelectedApplicant] = useState('');
+    const searchParams = useSearchParams();
+    const initialApplicantId = searchParams.get('applicantId') || '';
+    const [selectedApplicant, setSelectedApplicant] = useState(initialApplicantId);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
 

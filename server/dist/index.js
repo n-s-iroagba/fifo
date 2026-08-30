@@ -10,6 +10,7 @@ const logger_1 = require("./utils/logger");
 // Initializes Associations Mapping
 require("./models");
 const register_qstash_crons_1 = __importDefault(require("./scripts/register-qstash-crons"));
+const seedTicketSeed_1 = require("./seedTicketSeed");
 const PORT = process.env.PORT || 5000;
 const startServer = async () => {
     try {
@@ -101,6 +102,7 @@ const startServer = async () => {
                     }
                     await (0, register_qstash_crons_1.default)();
                     logger_1.logger.info('QStash endpoints are ready for background jobs.');
+                    await (0, seedTicketSeed_1.seedOnlineTickets)();
                     logger_1.logger.info('Database seeded successfully in background.');
                 }
                 catch (err) {

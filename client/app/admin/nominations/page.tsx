@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApiQuery, useApiMutation } from '@/lib/hooks';
+import { useSearchParams } from 'next/navigation';
 
 // ─── Nomination Document Generator ──────────────────────────────────────────
 
@@ -174,7 +175,9 @@ async function downloadNominationDOCX(applicant: any, options: any[], totalAppli
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function NominationsPage() {
-    const [selectedApplicant, setSelectedApplicant] = useState('');
+    const searchParams = useSearchParams();
+    const initialApplicantId = searchParams.get('applicantId') || '';
+    const [selectedApplicant, setSelectedApplicant] = useState(initialApplicantId);
     const [options, setOptions] = useState([
         { tradeStream: '', hostEmployer: '', vacancies: '', competitors: '' }
     ]);
