@@ -101,40 +101,40 @@ export default function ApplicationsListPage() {
                                         <h3 className="text-lg font-bold text-blue-900 tracking-tight group-hover:text-blue-600 transition-colors uppercase">{app.JobListing?.title}</h3>
                                     </div>
 
-                                <div className="flex md:flex-col items-end gap-2 shrink-0">
-                                    {app.status === 'Draft' ? (
-                                        <Link
-                                            href={`/dashboard/jobs/${app.JobListing?.id || app.jobId}`}
-                                            className="bg-slate-50 text-slate-600 px-6 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-slate-100 transition-all border border-slate-200 text-center w-full"
-                                        >
-                                            Continue Application
-                                        </Link>
-                                    ) : (
-                                        <Link
-                                            href={`/dashboard/applications/${app.id}`}
-                                            className="bg-blue-50 text-blue-900 px-6 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-blue-100 transition-all border border-blue-100 text-center w-full"
-                                        >
-                                            View Detail
-                                        </Link>
-                                    )}
-                                    {app.JobListing?.visaSponsorship && app.status !== 'Draft' && (
-                                        <div className="w-full relative group">
+                                    <div className="flex md:flex-col items-end gap-2 shrink-0">
+                                        {app.status === 'Draft' ? (
                                             <Link
-                                                href={`/dashboard/applications/${app.id}/sponsorship`}
+                                                href={`/dashboard/jobs/${app.JobListing?.id || app.jobId}`}
+                                                className="bg-slate-50 text-slate-600 px-6 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-slate-100 transition-all border border-slate-200 text-center w-full"
+                                            >
+                                                Continue Application
+                                            </Link>
+                                        ) : (
+                                            <Link
+                                                href={`/dashboard/applications/${app.id}`}
+                                                className="bg-blue-50 text-blue-900 px-6 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-blue-100 transition-all border border-blue-100 text-center w-full"
+                                            >
+                                                View Detail
+                                            </Link>
+                                        )}
+                                        {/* {app.JobListing?.visaSponsorship && app.status !== 'Draft' && (
+                                        <div className="w-full relative group">
+                                            <button
+                                                // href={`/dashboard/applications/${app.id}/sponsorship`}
                                                 className="block bg-blue-900 text-white px-6 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-blue-800 transition-all shadow-md text-center w-full"
                                             >
                                                 Apply for Visa Sponsorship
-                                            </Link>
-                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[200px] md:max-w-[250px] bg-blue-950 text-white text-[9px] font-bold tracking-wider rounded-lg py-2 px-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none shadow-xl z-10 text-center leading-relaxed">
-                                                Visa sponsorship can only be applied for after tickets are completely acquired
-                                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-blue-950"></div>
-                                            </div>
+                                            </button> */}
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[200px] md:max-w-[250px] bg-blue-950 text-white text-[9px] font-bold tracking-wider rounded-lg py-2 px-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none shadow-xl z-10 text-center leading-relaxed">
+                                            Visa sponsorship can only be applied for after tickets are completely acquired
+                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-blue-950"></div>
                                         </div>
-                                    )}
+                                        {/* </div>
+                                    )} */}
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
                     </div>
                 )}
             </section>
