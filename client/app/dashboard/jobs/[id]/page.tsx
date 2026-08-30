@@ -30,7 +30,7 @@ export default function JobDetailPage() {
         }
     });
 
-    const hasDraft = userAppsData?.rows?.some((app: any) => app.jobId === parseInt(jobId, 10) && app.status === 'draft');
+    const hasDraft = userAppsData?.rows?.some((app: any) => app.jobId === parseInt(jobId, 10) && (app.status === 'Draft' || app.status === 'draft'));
 
     const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
     // possessedIds = set of ticket catalog IDs the user says they already hold
