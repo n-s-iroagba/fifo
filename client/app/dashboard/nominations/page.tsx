@@ -132,9 +132,9 @@ export default function NominationsPage() {
                 {stageInfo && (
                     <div className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest
                         ${stageInfo.color === 'emerald' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-                          stageInfo.color === 'amber' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
-                          stageInfo.color === 'red' ? 'bg-red-50 text-red-600 border border-red-100' :
-                          'bg-blue-50 text-blue-700 border border-blue-100'}`}
+                            stageInfo.color === 'amber' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
+                                stageInfo.color === 'red' ? 'bg-red-50 text-red-600 border border-red-100' :
+                                    'bg-blue-50 text-blue-700 border border-blue-100'}`}
                     >
                         <span className="material-symbols-outlined text-base">{stageInfo.icon}</span>
                         {stageInfo.label}
@@ -186,65 +186,6 @@ export default function NominationsPage() {
                             </a>
                         )}
                     </div>
-
-                    {/* Nomination Cards with Checkboxes */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {nominations.map((nom: any) => {
-                            const isApproved = nom.status === 'approved' || (nom.isSelected && hasTicketSponsorshipStage);
-                            const isSelected = nom.isSelected;
-                            const isChecked = selectedIds.has(nom.id) || isSelected;
-
-                            return (
-                                <div
-                                    key={nom.id}
-                                    onClick={() => !isLocked && handleCheckbox(nom.id)}
-                                    className={`p-6 bg-white rounded-2xl border-2 transition-all cursor-pointer select-none
-                                        ${isApproved ? 'border-emerald-500 bg-emerald-50/20 shadow-emerald-500/10 shadow-lg' :
-                                          isChecked ? 'border-blue-900 shadow-blue-900/10 shadow-lg' :
-                                          'border-blue-100 shadow-sm hover:border-blue-300'}
-                                        ${isLocked ? 'cursor-default' : ''}`}
-                                >
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex items-start gap-3">
-                                            {/* Checkbox */}
-                                            {!isLocked && (
-                                                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all
-                                                    ${isChecked ? 'bg-blue-900 border-blue-900' : 'border-blue-300 bg-white'}`}
-                                                >
-                                                    {isChecked && (
-                                                        <span className="material-symbols-outlined text-white text-[14px]">check</span>
-                                                    )}
-                                                </div>
-                                            )}
-                                            <div>
-                                                <h3 className="text-sm font-bold text-blue-900 uppercase tracking-widest">{nom.tradeStream || nom.role}</h3>
-                                                <p className="text-xs text-blue-500 font-medium mt-0.5">{nom.hostEmployer || nom.company}</p>
-                                            </div>
-                                        </div>
-                                        <div className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest shrink-0
-                                            ${isApproved ? 'bg-emerald-100 text-emerald-700' :
-                                              nom.documentUrl ? 'bg-amber-100 text-amber-700' :
-                                              'bg-blue-50 text-blue-600'}`}
-                                        >
-                                            {isApproved ? 'Approved' : nom.documentUrl ? 'Under Review' : 'Pending'}
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between text-xs">
-                                            <span className="text-blue-400 font-medium">Vacancies</span>
-                                            <span className="text-blue-900 font-bold">{nom.vacancies || '—'}</span>
-                                        </div>
-                                        <div className="flex justify-between text-xs">
-                                            <span className="text-blue-400 font-medium">Competitors</span>
-                                            <span className="text-blue-900 font-bold">{nom.competitors || '—'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {/* Upload Section — shown after selection is confirmed or if under review/approved */}
                     {(selectedIds.size > 0 || isLocked || underReview) && (
                         <div className="bg-white p-8 rounded-2xl border border-blue-100 shadow-sm space-y-6">
                             <div>
@@ -299,7 +240,7 @@ export default function NominationsPage() {
                                             <p className="text-[10px] text-blue-400 mt-1">PDF, JPG, or PNG accepted</p>
                                         )}
                                     </label>
-                                    
+
                                     <div className="flex justify-end">
                                         <button
                                             onClick={handleSubmitNomination}
@@ -313,6 +254,66 @@ export default function NominationsPage() {
                             )}
                         </div>
                     )}
+
+                    {/* Nomination Cards with Checkboxes */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {nominations.map((nom: any) => {
+                            const isApproved = nom.status === 'approved' || (nom.isSelected && hasTicketSponsorshipStage);
+                            const isSelected = nom.isSelected;
+                            const isChecked = selectedIds.has(nom.id) || isSelected;
+
+                            return (
+                                <div
+                                    key={nom.id}
+                                    onClick={() => !isLocked && handleCheckbox(nom.id)}
+                                    className={`p-6 bg-white rounded-2xl border-2 transition-all cursor-pointer select-none
+                                        ${isApproved ? 'border-emerald-500 bg-emerald-50/20 shadow-emerald-500/10 shadow-lg' :
+                                            isChecked ? 'border-blue-900 shadow-blue-900/10 shadow-lg' :
+                                                'border-blue-100 shadow-sm hover:border-blue-300'}
+                                        ${isLocked ? 'cursor-default' : ''}`}
+                                >
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex items-start gap-3">
+                                            {/* Checkbox */}
+                                            {!isLocked && (
+                                                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all
+                                                    ${isChecked ? 'bg-blue-900 border-blue-900' : 'border-blue-300 bg-white'}`}
+                                                >
+                                                    {isChecked && (
+                                                        <span className="material-symbols-outlined text-white text-[14px]">check</span>
+                                                    )}
+                                                </div>
+                                            )}
+                                            <div>
+                                                <h3 className="text-sm font-bold text-blue-900 uppercase tracking-widest">{nom.tradeStream || nom.role}</h3>
+                                                <p className="text-xs text-blue-500 font-medium mt-0.5">{nom.hostEmployer || nom.company}</p>
+                                            </div>
+                                        </div>
+                                        <div className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest shrink-0
+                                            ${isApproved ? 'bg-emerald-100 text-emerald-700' :
+                                                nom.documentUrl ? 'bg-amber-100 text-amber-700' :
+                                                    'bg-blue-50 text-blue-600'}`}
+                                        >
+                                            {isApproved ? 'Approved' : nom.documentUrl ? 'Under Review' : 'Pending'}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-blue-400 font-medium">Vacancies</span>
+                                            <span className="text-blue-900 font-bold">{nom.vacancies || '—'}</span>
+                                        </div>
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-blue-400 font-medium">Competitors</span>
+                                            <span className="text-blue-900 font-bold">{nom.competitors || '—'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Upload Section — shown after selection is confirmed or if under review/approved */}
+
                 </div>
             )}
         </div>
