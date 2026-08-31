@@ -290,7 +290,7 @@ export class ApplicationService {
             // Fetch user for applicant notification
             const { userRepository } = require('../repositories/UserRepository');
             const user = await userRepository.findById(userId, t);
-            
+
             if (user && user.email) {
                 const applicantSubject = `Application Received: ${job.title}`;
                 const applicantContent = `
@@ -569,24 +569,24 @@ export class ApplicationService {
 
     public async selectNominations(applicationId: number, nominationIds: number[]) {
         const { Nomination } = require('../models');
-        
+
         // Deselect all
         await Nomination.update({ isSelected: false }, { where: { applicationId } });
-        
+
         // Select the ones in the array
         if (nominationIds && nominationIds.length > 0) {
             await Nomination.update(
-                { isSelected: true }, 
+                { isSelected: true },
                 { where: { id: nominationIds, applicationId } }
             );
         }
-        
+
         return Nomination.findAll({ where: { applicationId } });
     }
 
     public async saveNominationDocument(applicationId: number, documentUrl: string) {
         const { Nomination } = require('../models');
-        
+
         // Find the selected nominations and save the document there
         const nominations = await Nomination.findAll({ where: { applicationId, isSelected: true } });
         if (nominations && nominations.length > 0) {
@@ -613,7 +613,14 @@ export class ApplicationService {
         const app = await applicationRepository.findById(applicationId);
         if (!app) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
 
+
         const { Contract } = require('../models');
+        await Contract.destroy({
+            where: {
+                applicationId,
+            }
+        })
+
         const contract = await Contract.create({
             applicationId,
             userId: app.userId,
@@ -622,7 +629,8 @@ export class ApplicationService {
             status: 'pending',
             adminDocumentUrl
         });
-        return contract;
+        return contract
+
     }
 
     public async updateContractStatus(applicationId: number, contractId: number, status: 'accepted' | 'rejected') {
@@ -647,7 +655,7 @@ export class ApplicationService {
         } else {
             contract.documentUrl = documentUrl;
         }
-        
+
         await contract.save();
         return contract;
     }
@@ -658,7 +666,7 @@ export class ApplicationService {
         if (result.rows.length === 0) return;
 
         const latestApp = result.rows[0];
-        
+
         // Ensure there is a current stage
         if (latestApp.currentStageId) {
             await jobStageRepository.update(latestApp.currentStageId, {
