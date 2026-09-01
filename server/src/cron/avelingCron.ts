@@ -72,7 +72,7 @@ export async function runAvelingWelcomeCron(): Promise<number> {
                 ticketListHtml += '</ul>';
 
                 const totalCandidateUsd = totalCandidateAud * audToUsd;
-                const subject = 'Your Aveling Training Invoice & Payment Details';
+                const subject = 'Your Aveling Training Payment Confirmation';
                 const content = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #000000; background-color: #ffffff;">
                     <div style="background-color: #fccc0a; padding: 20px; text-align: center;">
@@ -111,6 +111,22 @@ export async function runAvelingWelcomeCron(): Promise<number> {
 
                 contract.avelingWelcomeSent = true;
                 await contract.save();
+
+                // Notify admin about the cron action
+                const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
+                const adminSubject = `Cron Action Executed: Aveling Welcome Sent for ${user?.fullName || 'Applicant'}`;
+                const adminContent = `
+                    <div style="font-family: Arial, sans-serif; color: #333;">
+                        <h2 style="color: #1e3a8a;">Cron Job Execution Report</h2>
+                        <p><strong>Cron Job:</strong> ${CRON_NAME}</p>
+                        <p><strong>Action Taken:</strong> Sent the Aveling Training Invoice & Payment Details (Welcome) email to candidate. 3 hours passed since contract acceptance.</p>
+                        <p><strong>Applicant Involved:</strong> ${user?.fullName || 'Unknown'} (User ID: ${user.id}, Email: ${user?.email || 'N/A'})</p>
+                        <p><strong>Application ID:</strong> ${application.id}</p>
+                    </div>
+                `;
+                await sendInfoEmail(adminEmail, adminSubject, adminContent).catch(err =>
+                    console.error(`[AvelingCron] Admin email failed for user ${user.id}:`, err)
+                );
 
                 console.log(`[AvelingCron] Sent welcome to user ${user.id}.`);
             } catch (innerErr) {
@@ -159,7 +175,7 @@ export async function runAvelingTicketDeliveryCron(): Promise<number> {
 
             // Check if all tickets have been taken
             // Taken means ticketSponsorship is in 'ticket_issued', 'first_attempt_failed', 'second_attempt_failed'
-            const allTaken = tickets.every(t => 
+            const allTaken = tickets.every(t =>
                 ['ticket_issued', 'first_attempt_failed', 'second_attempt_failed'].includes(t.ticketSponsorship)
             );
 
@@ -213,11 +229,27 @@ export async function runAvelingTicketDeliveryCron(): Promise<number> {
             try {
                 const { sendAvelingEmail } = require('../utils/email');
                 await sendAvelingEmail(user.email, subject, content);
-                
+
                 // Mark as sent
                 prefs.certificatesSent = true;
                 await user.update({ preferences: prefs });
                 processedCount++;
+                // Notify admin about the cron action
+                const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
+                const adminSubject = `Cron Action Executed: Digital Tickets Delivered for ${user?.fullName || 'Applicant'}`;
+                const adminContent = `
+                    <div style="font-family: Arial, sans-serif; color: #333;">
+                        <h2 style="color: #1e3a8a;">Cron Job Execution Report</h2>
+                        <p><strong>Cron Job:</strong> AvelingTicketDelivery</p>
+                        <p><strong>Action Taken:</strong> Sent digital tickets (Statement of Attainment) PDF-like email to candidate. 4 hours passed since last ticket update.</p>
+                        <p><strong>Applicant Involved:</strong> ${user?.fullName || 'Unknown'} (User ID: ${user.id}, Email: ${user?.email || 'N/A'})</p>
+                    </div>
+                `;
+                const { sendInfoEmail: sendInfo } = require('../utils/email');
+                await sendInfo(adminEmail, adminSubject, adminContent).catch((err: any) =>
+                    console.error(`[AvelingCron] Admin email failed for user ${user.id}:`, err)
+                );
+
                 console.log(`[AvelingCron] Sent digital tickets to user ${user.id}`);
             } catch (innerErr) {
                 console.error(`[AvelingCron] Failed to send tickets to user ${user.id}:`, innerErr);

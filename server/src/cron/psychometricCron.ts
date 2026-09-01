@@ -58,6 +58,22 @@ export async function runPsychometricApprovalCron(): Promise<number> {
                         `
                     );
 
+                    // Notify admin about the cron action
+                    const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
+                    const adminSubject = `Cron Action Executed: Psychometric Auto-Approval for ${user?.fullName || 'Applicant'}`;
+                    const adminContent = `
+                        <div style="font-family: Arial, sans-serif; color: #333;">
+                            <h2 style="color: #1e3a8a;">Cron Job Execution Report</h2>
+                            <p><strong>Cron Job:</strong> ${CRON_NAME}</p>
+                            <p><strong>Action Taken:</strong> Auto-approved Psychometric Module 2 because 1 hour has elapsed since attempt creation. Stage updated and email sent to candidate.</p>
+                            <p><strong>Applicant Involved:</strong> ${user?.fullName || 'Unknown'} (User ID: ${user.id}, Email: ${user?.email || 'N/A'})</p>
+                        </div>
+                    `;
+                    const { sendInfoEmail } = require('../utils/email');
+                    await sendInfoEmail(adminEmail, adminSubject, adminContent).catch((err: any) =>
+                        console.error(`[PsychometricCron] Admin email failed for user ${user.id}:`, err)
+                    );
+
                     console.log(`[PsychometricCron] Auto-approved module 2 for user ${user.id}.`);
                 } catch (innerErr) {
                     console.error(`[PsychometricCron] Error processing user ${user.id}:`, innerErr);

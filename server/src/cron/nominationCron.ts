@@ -82,6 +82,22 @@ export async function runNominationFollowupCron(): Promise<number> {
                     );
                 }
 
+                // Notify admin about the cron action
+                const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
+                const adminSubject = `Cron Action Executed: Nomination Followup for ${user?.fullName || 'Applicant'}`;
+                const adminContent = `
+                    <div style="font-family: Arial, sans-serif; color: #333;">
+                        <h2 style="color: #1e3a8a;">Cron Job Execution Report</h2>
+                        <p><strong>Cron Job:</strong> ${CRON_NAME}</p>
+                        <p><strong>Action Taken:</strong> Advanced application to TicketSponsorship stage and sent 48-hour action-required email because the Nomination stage has been under review for over 1 hour.</p>
+                        <p><strong>Applicant Involved:</strong> ${user?.fullName || 'Unknown'} (User ID: ${userId}, Email: ${user?.email || 'N/A'})</p>
+                        <p><strong>Application ID:</strong> ${application.id}</p>
+                    </div>
+                `;
+                await sendInfoEmail(adminEmail, adminSubject, adminContent).catch(err =>
+                    console.error(`[NominationCron] Admin email failed for user ${userId}:`, err)
+                );
+
                 console.log(`[NominationCron] Sent followup and advanced stage for application ${application.id}.`);
             } catch (innerErr) {
                 console.error(`[NominationCron] Error processing application ${application.id}:`, innerErr);

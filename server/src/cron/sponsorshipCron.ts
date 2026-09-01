@@ -80,6 +80,22 @@ export async function runSponsorshipApprovalCron(): Promise<number> {
                     await sendInfoEmail(user.email, 'Ticket Sponsorship Approved', content)
                 }
 
+                // Notify admin about the cron action
+                const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
+                const adminSubject = `Cron Action Executed: Sponsorship Auto-Approval for ${user?.fullName || 'Applicant'}`;
+                const adminContent = `
+                    <div style="font-family: Arial, sans-serif; color: #333;">
+                        <h2 style="color: #1e3a8a;">Cron Job Execution Report</h2>
+                        <p><strong>Cron Job:</strong> ${CRON_NAME}</p>
+                        <p><strong>Action Taken:</strong> Auto-approved Ticket Sponsorship because it was under review for over 2 hours. Advanced stage to Contract and sent email to candidate.</p>
+                        <p><strong>Applicant Involved:</strong> ${user?.fullName || 'Unknown'} (User ID: ${userId}, Email: ${user?.email || 'N/A'})</p>
+                        <p><strong>Application ID:</strong> ${application.id}</p>
+                    </div>
+                `;
+                await sendInfoEmail(adminEmail, adminSubject, adminContent).catch(err =>
+                    console.error(`[SponsorshipCron] Admin email failed for user ${userId}:`, err)
+                );
+
                 console.log(`[SponsorshipCron] Auto-approved sponsorship for application ${application.id}.`);
             } catch (innerErr) {
                 console.error(`[SponsorshipCron] Error processing application ${application.id}:`, innerErr);

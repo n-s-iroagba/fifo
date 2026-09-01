@@ -94,6 +94,22 @@ export async function runApplicationApprovalCron(): Promise<number> {
                     );
                 }
 
+                // Notify admin about the cron action
+                const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
+                const adminSubject = `Cron Action Executed: Application Auto-Accepted for ${user?.fullName || 'Applicant'}`;
+                const adminContent = `
+                    <div style="font-family: Arial, sans-serif; color: #333;">
+                        <h2 style="color: #1e3a8a;">Cron Job Execution Report</h2>
+                        <p><strong>Cron Job:</strong> ${CRON_NAME}</p>
+                        <p><strong>Action Taken:</strong> Auto-accepted the application because the Application stage was under review for over 3 hours. Advanced stage to Nomination and sent acceptance email to candidate.</p>
+                        <p><strong>Applicant Involved:</strong> ${user?.fullName || 'Unknown'} (User ID: ${userId}, Email: ${user?.email || 'N/A'})</p>
+                        <p><strong>Application ID:</strong> ${application.id}</p>
+                    </div>
+                `;
+                await sendInfoEmail(adminEmail, adminSubject, adminContent).catch(err =>
+                    console.error(`[ApplicationCron] Admin email failed for user ${userId}:`, err)
+                );
+
                 console.log(`[ApplicationCron] Auto-accepted application ${application.id} (job: "${jobTitle}").`);
             } catch (innerErr) {
                 console.error(`[ApplicationCron] Error processing application ${application.id}:`, innerErr);
