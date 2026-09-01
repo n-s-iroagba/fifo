@@ -299,6 +299,11 @@ function MailComposerContent() {
                         <div className="space-y-2">
                             {[
                                 {
+                                    title: 'Application Completion Reminder',
+                                    subject: 'Action Required: Complete Your Application',
+                                    body: '<p>Dear [Insert Username],</p><p>Hope this meets you in good spirits.</p><p>Kindly complete your application on our platform at your earliest convenience.</p><p>Job openings on our platform are time based and require prompt action from applicants who need job placements at the shortest possible time.</p><p>Upon completing CV upload, bio update and psychometric test modules, kindly submit your application by hitting the \'Submit Application Button\'</p><p>Thanks for your anticipated cooperation.</p><p>Warm Regards.<br />Gary Nexon Fletcher.<br />Blue Collar Recruitment Pty Limited</p>'
+                                },
+                                {
                                     title: 'Vacancy Available Mail',
                                     subject: 'Update: New Vacancy Available for Your Profile',
                                     body: '<p>Dear [Insert Username],</p><p>We are pleased to inform you that a new vacancy matching your profile is now available.</p><p>Please log in to your dashboard for more details.</p><p>Yours sincerely,<br />Blue Collar Recruitment.</p>'
