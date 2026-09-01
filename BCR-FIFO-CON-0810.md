@@ -185,7 +185,7 @@ This instrument, alongside its appended operational Schedules, constitutes the a
 ### **14\. STATUTORY SUBMISSION REQUIREMENTS**
 
 14\. STATUTORY SUBMISSION REQUIREMENTS  
-Page 15 (The Execution and Signature Page) must be executed and returned by the Candidate within exactly twenty-four(24)  hours of receipt.  
+Page 15 (The Execution and Signature Page) must be executed and returned by the Candidate within exactly forty-eight (48)  hours of receipt.  
 Page 1 (The Identification Block) must be populated with the Candidate's official passport details and certified copy uploads within exactly three (3) weeks of receipt.
 
 SCHEDULE 1 — ITEMIZED FINANCIAL ARCHITECTURE & APPORTIONMENT BREAKDOWN  

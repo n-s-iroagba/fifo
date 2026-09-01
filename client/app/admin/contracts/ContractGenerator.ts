@@ -212,7 +212,7 @@ export async function generateContractPDF(applicant: any, nomination: any, dateS
         { type: 'spacer', space: 4 },
 
         { type: 'header', text: '14. STATUTORY SUBMISSION REQUIREMENTS', size: 11, bold: true },
-        { type: 'text', text: 'Page 9 (The Execution and Signature Page) must be executed and returned by the Candidate within exactly twenty-four(24) hours of receipt.' },
+        { type: 'text', text: 'Page 9 (The Execution and Signature Page) must be executed and returned by the Candidate within exactly forty-eight (48) hours of receipt.' },
         { type: 'text', text: 'Page 1 (The Identification Block) must be populated with the Candidate\'s official passport details and certified copy uploads within exactly three (3) weeks of receipt.' },
         { type: 'spacer', space: 6 },
     ];
