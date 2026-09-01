@@ -82,7 +82,7 @@ Conditional upon the Candidate remaining in absolute standing and fulfilling eve
 
 The Candidate explicitly covenants to execute every milestone detailed below within the rigorous parameters of the chronological timeline, which is summarized visually within Schedule 2\. Time is of the essence in respect of all obligations contained inside this Clause:
 
-6.1 Execution and Return Window: The Candidate must execute and return this complete, unaltered Agreement via authorized digital or physical channels within exactly twenty four (24) hours of receipt from the Company.
+6.1 Execution and Return Window: The Candidate must execute and return this complete, unaltered Agreement via authorized digital or physical channels within exactly forty eight (48) hours of receipt from the Company.
 
 6.2 Identity and Passport Documentation: The Candidate must provide a certified, high-resolution digital color scan of their valid passport to the Company within a maximum duration of three (3) weeks calculated from the initial transmittal date of this Agreement.
 
