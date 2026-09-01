@@ -161,7 +161,7 @@ The Company pledges its corporate infrastructure to the following clear performa
 
 9.5 Corporate Withdrawal and Termination Without Fault: If the Company dissolves this Agreement for reasons completely detached from a verifiable candidate breach (including corporate restructuring, shifting client demands, or macroeconomic market adjustments), the Company shall execute a mandatory, full refund of all cash deposits advanced by the Candidate within fourteen (14) calendar days of contract termination, with zero administrative deductions.
 
-9.6 Failure to Meet Preliminary Windows: Failure by the Candidate to return the executed agreement within 24 hours, or to provide a valid passport within 3 weeks, empowers the Company to declare this Agreement lapsed without notice and to instantly reallocate the trainee placement to another candidate pool, subject only to a short final written warning window to cure the omission.
+9.6 Failure to Meet Preliminary Windows: Failure by the Candidate to return the executed agreement within 48 hours, or to provide a valid passport within 3 weeks, empowers the Company to declare this Agreement lapsed without notice and to instantly reallocate the trainee placement to another candidate pool, subject only to a short final written warning window to cure the omission.
 
 9.7 Absolute Penalty Prohibitions: The Parties explicitly covenant that neither shall seek, enforce, or claim punitive damages, structural exit penalties, or speculative financial compensation against the other. Legal remedies following contract dissolution are strictly bounded to the restitution of actual un-expended capital deposits and the settlement of demonstrable, real-world third-party costs actually incurred. This instrument is not intended to create a punitive exit barrier or a system of debt-bonded employment.
 
@@ -214,7 +214,7 @@ SCHEDULE 2 — STRUCTURAL MILESTONES & EXECUTION DEADLINES
 
 | Milestone Stage | Target Deadline | Compliance Path |
 | :---- | :---- | :---- |
-| Binding Execution | Within 24 Hours | Return Page 14 to lock placement. |
+| Binding Execution | Within 48 hours | Return Page 14 to lock placement. |
 | Core Commitment Deposit | Prior to Portal Booking | Transfer 250 USDT or partial payment. |
 | Passport Submission | Within 3 Weeks | High-res digital color scan. |
 | Aveling Online Exams | Within 2 Weeks | Done remotely. Max 2 attempts. |
