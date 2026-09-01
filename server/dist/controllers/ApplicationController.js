@@ -306,6 +306,16 @@ class ApplicationController {
             res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
+    async getAllNominations(req, res) {
+        try {
+            const nominations = await ApplicationService_1.applicationService.getAllNominations();
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(nominations);
+        }
+        catch (error) {
+            console.error('[ApplicationController.getAllNominations]', error);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
     async uploadNominationDocument(req, res) {
         try {
             const userId = req.user.id;

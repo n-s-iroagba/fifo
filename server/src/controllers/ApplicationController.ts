@@ -306,6 +306,16 @@ export class ApplicationController {
         }
     }
 
+    public async getAllNominations(req: Request, res: Response): Promise<void> {
+        try {
+            const nominations = await applicationService.getAllNominations();
+            res.status(CONSTANTS.HTTP_STATUS.OK).json(nominations);
+        } catch (error: any) {
+            console.error('[ApplicationController.getAllNominations]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+
     public async uploadNominationDocument(req: Request, res: Response): Promise<void> {
         try {
             const userId = (req as any).user.id;

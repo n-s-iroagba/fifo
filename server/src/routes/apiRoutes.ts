@@ -130,6 +130,7 @@ router.delete('/admin/applications/:id', ...adminMW, applicationController.delet
 router.get('/admin/applications/:id', ...adminMW, applicationController.getApplicationDetails.bind(applicationController));
 router.put('/admin/applications/:id/visa-sponsorship', ...adminMW, applicationController.updateVisaSponsorshipStatus.bind(applicationController));
 
+router.get('/admin/nominations', ...adminMW, applicationController.getAllNominations.bind(applicationController));
 router.post('/admin/applications/:id/nominations', ...adminMW, applicationController.createNominations.bind(applicationController));
 router.get('/admin/applications/:id/nominations', ...adminMW, applicationController.getNominations.bind(applicationController));
 

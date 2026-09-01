@@ -489,6 +489,21 @@ class ApplicationService {
         const { Nomination } = require('../models');
         return Nomination.findAll({ where: { applicationId } });
     }
+    async getAllNominations() {
+        const { Nomination, Application, User, JobListing } = require('../models');
+        return Nomination.findAll({
+            include: [
+                {
+                    model: Application,
+                    include: [
+                        { model: User, attributes: ['id', 'fullName', 'email'] },
+                        { model: JobListing, attributes: ['id', 'title'] }
+                    ]
+                }
+            ],
+            order: [['createdAt', 'DESC']]
+        });
+    }
     async selectNominations(applicationId, nominationIds) {
         const { Nomination } = require('../models');
         // Deselect all
@@ -527,6 +542,11 @@ class ApplicationService {
         if (!app)
             throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
         const { Contract } = require('../models');
+        await Contract.destroy({
+            where: {
+                applicationId,
+            }
+        });
         const contract = await Contract.create({
             applicationId,
             userId: app.userId,
@@ -534,6 +554,13 @@ class ApplicationService {
             role,
             status: 'pending',
             adminDocumentUrl
+        });
+        await this.addStageToApplication(applicationId, {
+            name: 'Contract',
+            status: 'on-going',
+            setAsCurrent: true,
+            notifyInApp: true,
+            notifyEmail: false
         });
         return contract;
     }

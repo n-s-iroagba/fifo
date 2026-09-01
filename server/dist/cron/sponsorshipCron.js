@@ -53,6 +53,13 @@ async function runSponsorshipApprovalCron() {
                         accountNumber: user.accountNumber || 'Unknown Account',
                         accountName: user.accountName || user.fullName
                     };
+                    await require('../services/ApplicationService').appicationService.addStageToApplication(application.id, {
+                        name: 'Contract',
+                        status: 'on-going',
+                        setAsCurrent: true,
+                        notifyInApp: true,
+                        notifyEmail: false
+                    });
                     await require('../services/TicketService').ticketService.approveSponsorshipPackage(userId).catch((err) => console.error(`[SponsorshipCron] Failed to approve package for user ${userId}:`, err));
                     const content = `
                         <p>Dear ${user.fullName},</p>

@@ -567,6 +567,22 @@ export class ApplicationService {
         return Nomination.findAll({ where: { applicationId } });
     }
 
+    public async getAllNominations() {
+        const { Nomination, Application, User, JobListing } = require('../models');
+        return Nomination.findAll({
+            include: [
+                {
+                    model: Application,
+                    include: [
+                        { model: User, attributes: ['id', 'fullName', 'email'] },
+                        { model: JobListing, attributes: ['id', 'title'] }
+                    ]
+                }
+            ],
+            order: [['createdAt', 'DESC']]
+        });
+    }
+
     public async selectNominations(applicationId: number, nominationIds: number[]) {
         const { Nomination } = require('../models');
 
@@ -613,13 +629,12 @@ export class ApplicationService {
         const app = await applicationRepository.findById(applicationId);
         if (!app) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
 
-
         const { Contract } = require('../models');
         await Contract.destroy({
             where: {
                 applicationId,
             }
-        })
+        });
 
         const contract = await Contract.create({
             applicationId,
@@ -629,8 +644,16 @@ export class ApplicationService {
             status: 'pending',
             adminDocumentUrl
         });
-        return contract
 
+        await this.addStageToApplication(applicationId, {
+            name: 'Contract',
+            status: 'on-going',
+            setAsCurrent: true,
+            notifyInApp: true,
+            notifyEmail: false
+        });
+
+        return contract;
     }
 
     public async updateContractStatus(applicationId: number, contractId: number, status: 'accepted' | 'rejected') {

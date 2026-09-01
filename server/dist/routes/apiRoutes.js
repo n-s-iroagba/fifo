@@ -110,6 +110,7 @@ router.post('/admin/applications/:id/complete', ...adminMW, ApplicationControlle
 router.delete('/admin/applications/:id', ...adminMW, ApplicationController_1.applicationController.deleteApplication.bind(ApplicationController_1.applicationController));
 router.get('/admin/applications/:id', ...adminMW, ApplicationController_1.applicationController.getApplicationDetails.bind(ApplicationController_1.applicationController));
 router.put('/admin/applications/:id/visa-sponsorship', ...adminMW, ApplicationController_1.applicationController.updateVisaSponsorshipStatus.bind(ApplicationController_1.applicationController));
+router.get('/admin/nominations', ...adminMW, ApplicationController_1.applicationController.getAllNominations.bind(ApplicationController_1.applicationController));
 router.post('/admin/applications/:id/nominations', ...adminMW, ApplicationController_1.applicationController.createNominations.bind(ApplicationController_1.applicationController));
 router.get('/admin/applications/:id/nominations', ...adminMW, ApplicationController_1.applicationController.getNominations.bind(ApplicationController_1.applicationController));
 // Applicant Nomination Upload
