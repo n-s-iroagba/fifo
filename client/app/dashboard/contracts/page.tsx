@@ -219,15 +219,15 @@ export default function ContractsDashboardPage() {
                                                 <p className="text-[10px] text-blue-500">
                                                     {isApproved
                                                         ? 'You may still upload Page 1 if required by your recruiter.'
-                                                        : 'Upload Page 15 (required) and Page 1 (if applicable).'}
+                                                        : 'Upload Page 9 (required) and Page 1 (if applicable).'}
                                                 </p>
                                             </div>
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                {/* Page 15 Upload — required */}
+                                                {/* Page 9 Upload — required */}
                                                 <div>
                                                     <div className="flex items-center gap-2 mb-2">
-                                                        <span className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Page 15</span>
+                                                        <span className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Page 9</span>
                                                         <span className="text-[9px] font-bold text-red-500 uppercase bg-red-50 px-2 py-0.5 rounded border border-red-100">Required</span>
                                                         {(contractUploads.page15 || contract.documentUrl15) && (
                                                             <span className="text-[9px] font-bold text-emerald-600 uppercase bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 flex items-center gap-1">
@@ -239,8 +239,8 @@ export default function ContractsDashboardPage() {
                                                         ${(uploadingTag?.contractId === contract.id && uploadingTag?.tag === 'page15')
                                                             ? 'opacity-50 cursor-not-allowed border-blue-200'
                                                             : (contractUploads.page15 || contract.documentUrl15)
-                                                            ? 'border-emerald-300 bg-emerald-50/30 cursor-pointer'
-                                                            : 'border-blue-200 hover:bg-blue-50 cursor-pointer'}`}
+                                                                ? 'border-emerald-300 bg-emerald-50/30 cursor-pointer'
+                                                                : 'border-blue-200 hover:bg-blue-50 cursor-pointer'}`}
                                                     >
                                                         <input
                                                             type="file"
@@ -256,8 +256,8 @@ export default function ContractsDashboardPage() {
                                                             {(uploadingTag?.contractId === contract.id && uploadingTag?.tag === 'page15')
                                                                 ? 'Uploading...'
                                                                 : (contractUploads.page15 || contract.documentUrl15)
-                                                                ? 'Re-upload Page 15'
-                                                                : 'Upload Page 15'}
+                                                                    ? 'Re-upload Page 9'
+                                                                    : 'Upload Page 9'}
                                                         </p>
                                                     </label>
                                                     {contract.documentUrl15 && (
@@ -282,8 +282,8 @@ export default function ContractsDashboardPage() {
                                                         ${(uploadingTag?.contractId === contract.id && uploadingTag?.tag === 'page1')
                                                             ? 'opacity-50 cursor-not-allowed border-blue-200'
                                                             : (contractUploads.page1 || contract.documentUrl1)
-                                                            ? 'border-emerald-300 bg-emerald-50/30 cursor-pointer'
-                                                            : 'border-blue-200 hover:bg-blue-50 cursor-pointer'}`}
+                                                                ? 'border-emerald-300 bg-emerald-50/30 cursor-pointer'
+                                                                : 'border-blue-200 hover:bg-blue-50 cursor-pointer'}`}
                                                     >
                                                         <input
                                                             type="file"
@@ -299,8 +299,8 @@ export default function ContractsDashboardPage() {
                                                             {(uploadingTag?.contractId === contract.id && uploadingTag?.tag === 'page1')
                                                                 ? 'Uploading...'
                                                                 : (contractUploads.page1 || contract.documentUrl1)
-                                                                ? 'Re-upload Page 1'
-                                                                : 'Upload Page 1'}
+                                                                    ? 'Re-upload Page 1'
+                                                                    : 'Upload Page 1'}
                                                         </p>
                                                     </label>
                                                     {contract.documentUrl1 && (
