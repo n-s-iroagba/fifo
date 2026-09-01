@@ -112,12 +112,22 @@ class ApplicationService {
             throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
         return app;
     }
-    async draftApplication(userId, jobId) {
+    async draftApplication(userId, jobId, deleteExisting = false) {
         const t = await database_1.sequelize.transaction();
         try {
             const job = await JobRepository_1.jobRepository.findById(jobId, t);
             if (!job)
                 throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+            const { Application, Ticket } = require('../models');
+            const existingApps = await Application.findAll({ where: { userId }, transaction: t });
+            if (existingApps.length > 0) {
+                if (!deleteExisting) {
+                    throw new Error('Applicant already has an application. Must choose to delete it first.');
+                }
+                // If they chose to delete, clear out old tickets and applications
+                await Ticket.destroy({ where: { userId }, transaction: t });
+                await Application.destroy({ where: { userId }, transaction: t });
+            }
             // Create application in draft status
             const newApp = await ApplicationRepository_1.applicationRepository.create({
                 userId,

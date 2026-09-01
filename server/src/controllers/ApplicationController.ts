@@ -27,7 +27,8 @@ export class ApplicationController {
         try {
             const userId = (req as any).user.id;
             const jobId = parseInt(req.body.jobId, 10);
-            const application = await applicationService.draftApplication(userId, jobId);
+            const deleteExisting = req.body.deleteExisting === true;
+            const application = await applicationService.draftApplication(userId, jobId, deleteExisting);
             res.status(CONSTANTS.HTTP_STATUS.CREATED).json(application);
         } catch (error: any) {
             console.error('[ApplicationController.draftApplication]', error);

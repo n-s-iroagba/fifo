@@ -33,6 +33,7 @@ export default function JobDetailPage() {
     const hasDraft = userAppsData?.rows?.some((app: any) => app.jobId === parseInt(jobId, 10) && (app.status === 'Draft' || app.status === 'draft'));
 
     const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+    const [showDeletePrompt, setShowDeletePrompt] = useState(false);
     // possessedIds = set of ticket catalog IDs the user says they already hold
     const [possessedIds, setPossessedIds] = useState<Set<number>>(new Set());
 
@@ -46,7 +47,11 @@ export default function JobDetailPage() {
     };
 
     const handleStartApplicationClick = () => {
-        draftMutation.mutate({ jobId: parseInt(jobId, 10) });
+        if (userAppsData?.rows?.length > 0) {
+            setShowDeletePrompt(true);
+        } else {
+            draftMutation.mutate({ jobId: parseInt(jobId, 10), deleteExisting: false });
+        }
     };
 
     const handleInitialApplyClick = () => {
@@ -457,6 +462,35 @@ export default function JobDetailPage() {
                             >
                                 Submit Application
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {showDeletePrompt && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-blue-900/60 backdrop-blur-sm">
+                    <div className="bg-white rounded-[2rem] w-full max-w-lg overflow-hidden shadow-2xl">
+                        <div className="p-8">
+                            <h3 className="text-xl font-bold text-blue-900 mb-4">Existing Application Found</h3>
+                            <p className="text-slate-600 mb-6">
+                                You already have an active or draft application. You can only have one application at a time. Do you want to delete your existing application and its associated tickets to proceed with this new one?
+                            </p>
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => setShowDeletePrompt(false)}
+                                    className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setShowDeletePrompt(false);
+                                        draftMutation.mutate({ jobId: parseInt(jobId, 10), deleteExisting: true });
+                                    }}
+                                    className="flex-1 py-4 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-colors"
+                                >
+                                    Delete & Proceed
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

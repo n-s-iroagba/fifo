@@ -28,7 +28,8 @@ class ApplicationController {
         try {
             const userId = req.user.id;
             const jobId = parseInt(req.body.jobId, 10);
-            const application = await ApplicationService_1.applicationService.draftApplication(userId, jobId);
+            const deleteExisting = req.body.deleteExisting === true;
+            const application = await ApplicationService_1.applicationService.draftApplication(userId, jobId, deleteExisting);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.CREATED).json(application);
         }
         catch (error) {
