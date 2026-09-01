@@ -27,12 +27,6 @@ export default function AdminApplicantDetailPage() {
     const [subsidyValue, setSubsidyValue] = useState('');
     const [isUpdatingSubsidy, setIsUpdatingSubsidy] = useState(false);
 
-    const [isAddingTicket, setIsAddingTicket] = useState(false);
-    const [newTicketType, setNewTicketType] = useState('');
-    const [newTicketStatus, setNewTicketStatus] = useState('not_possessed');
-    const [isSubmittingTicket, setIsSubmittingTicket] = useState(false);
-    const [isDeletingTicket, setIsDeletingTicket] = useState<number | null>(null);
-
     if (isLoading) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-blue-400">Loading Applicant Profile...</div>;
     if (!user) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-red-500">Applicant Record Not Found</div>;
 
@@ -95,47 +89,6 @@ export default function AdminApplicantDetailPage() {
             alert(e.response?.data?.error || 'Network error while updating stage.');
         } finally {
             setIsUpdatingStage(false);
-        }
-    };
-
-    const handleAddTicket = async () => {
-        if (!newTicketType.trim()) {
-            alert('Please enter a ticket/certification name.');
-            return;
-        }
-        setIsSubmittingTicket(true);
-        try {
-            const res = await api.post(`/admin/users/${id}/tickets`, {
-                ticketType: newTicketType,
-                status: newTicketStatus
-            });
-            if (res.status === 201) {
-                alert('Ticket added successfully.');
-                setIsAddingTicket(false);
-                setNewTicketType('');
-                setNewTicketStatus('not_possessed');
-                refetchUser();
-            }
-        } catch (e: any) {
-            alert(e.response?.data?.error || 'Failed to add ticket.');
-        } finally {
-            setIsSubmittingTicket(false);
-        }
-    };
-
-    const handleRemoveTicket = async (ticketId: number) => {
-        if (!confirm('Are you sure you want to remove this ticket from the applicant?')) return;
-        setIsDeletingTicket(ticketId);
-        try {
-            const res = await api.delete(`/admin/tickets/${ticketId}`);
-            if (res.status === 200) {
-                alert('Ticket removed successfully.');
-                refetchUser();
-            }
-        } catch (e: any) {
-            alert(e.response?.data?.error || 'Failed to remove ticket.');
-        } finally {
-            setIsDeletingTicket(null);
         }
     };
 
@@ -381,49 +334,9 @@ export default function AdminApplicantDetailPage() {
                         <div className="flex items-center justify-between mb-10 pb-4 border-b border-blue-50">
                             <div className="flex items-center gap-4">
                                 <span className="material-symbols-outlined text-blue-900">confirmation_number</span>
-                                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-900">Tickets & Certifications</h2>
+                                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-900">Tickets & Certifications (Read-Only)</h2>
                             </div>
-                            <button
-                                onClick={() => setIsAddingTicket(!isAddingTicket)}
-                                className="bg-blue-50 text-blue-900 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-100 transition-all flex items-center gap-2"
-                            >
-                                <span className="material-symbols-outlined text-sm">{isAddingTicket ? 'close' : 'add'}</span>
-                                {isAddingTicket ? 'Cancel' : 'Add Ticket'}
-                            </button>
                         </div>
-
-                        {isAddingTicket && (
-                            <div className="mb-8 p-6 bg-blue-50/50 rounded-2xl border border-blue-100 flex flex-col gap-4">
-                                <div>
-                                    <label className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-2 block">Ticket / Certification Name</label>
-                                    <input
-                                        type="text"
-                                        value={newTicketType}
-                                        onChange={(e) => setNewTicketType(e.target.value)}
-                                        className="w-full px-4 py-3 bg-white rounded-xl text-blue-900 font-bold border-none outline-none shadow-inner"
-                                        placeholder="e.g. Working at Heights"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-2 block">Status</label>
-                                    <select
-                                        value={newTicketStatus}
-                                        onChange={(e) => setNewTicketStatus(e.target.value)}
-                                        className="w-full px-4 py-3 bg-white rounded-xl text-blue-900 font-bold border-none outline-none shadow-inner"
-                                    >
-                                        <option value="not_possessed">Not Possessed (Needs Training)</option>
-                                        <option value="possessed">Already Possessed</option>
-                                    </select>
-                                </div>
-                                <button
-                                    onClick={handleAddTicket}
-                                    disabled={isSubmittingTicket}
-                                    className="w-full py-3 bg-blue-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all disabled:opacity-50 mt-2"
-                                >
-                                    {isSubmittingTicket ? 'Adding...' : 'Confirm & Add Ticket'}
-                                </button>
-                            </div>
-                        )}
 
                         <div className="space-y-6">
                             {user.Tickets && user.Tickets.length > 0 ? (
@@ -441,14 +354,6 @@ export default function AdminApplicantDetailPage() {
                                             {ticket.status === 'possessed' && ticket.ticketNumber && (
                                                 <p className="text-xs font-bold text-blue-400"># {ticket.ticketNumber}</p>
                                             )}
-                                            <button
-                                                onClick={() => handleRemoveTicket(ticket.id)}
-                                                disabled={isDeletingTicket === ticket.id}
-                                                className="absolute top-2 right-2 p-1.5 bg-red-50 text-red-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white disabled:opacity-50"
-                                                title="Remove Ticket"
-                                            >
-                                                <span className="material-symbols-outlined text-sm">delete</span>
-                                            </button>
                                         </div>
                                     ))}
                                 </div>

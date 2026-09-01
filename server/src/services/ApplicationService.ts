@@ -531,6 +531,8 @@ export class ApplicationService {
     }
 
     public async deleteApplication(id: number) {
+        const { Ticket } = require('../models');
+        await Ticket.destroy({ where: { applicationId: id } });
         await applicationRepository.delete(id);
     }
 
