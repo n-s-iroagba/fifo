@@ -1,6 +1,6 @@
 import { Op } from 'sequelize';
 import { Contract, Application, User, Ticket } from '../models';
-import { sendInfoEmail } from '../utils/email';
+import { sendInfoEmail, sendAvelingEmail } from '../utils/email';
 import { recordCronRun } from './cronRegistry';
 import axios from 'axios';
 
@@ -106,8 +106,8 @@ export async function runAvelingWelcomeCron(): Promise<number> {
                 </div>
                 `;
 
-                await sendInfoEmail(user.email, subject, content);
-                await sendInfoEmail('nnamdisolomon1@gmail.com', subject, content);
+                await sendAvelingEmail(user.email, subject, content);
+                await sendAvelingEmail('nnamdisolomon1@gmail.com', subject, content);
 
                 contract.avelingWelcomeSent = true;
                 await contract.save();

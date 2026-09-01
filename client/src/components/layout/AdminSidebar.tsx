@@ -19,6 +19,7 @@ const navItems = [
     { label: 'Jobs', href: CONSTANTS.ROUTES.ADMIN.JOBS, icon: 'business_center' },
     { label: 'Mail', href: CONSTANTS.ROUTES.ADMIN.MAIL, icon: 'mail' },
     { label: 'Nominations', href: '/admin/nominations', icon: 'how_to_reg' },
+    { label: 'Nomination List', href: '/admin/nominations/list', icon: 'list_alt' },
     { label: 'Contracts', href: '/admin/contracts', icon: 'contract' },
     { label: 'Health', href: CONSTANTS.ROUTES.ADMIN.HEALTH, icon: 'health_and_safety' },
     { label: 'Bank Accounts', href: CONSTANTS.ROUTES.ADMIN.BANK_ACCOUNTS, icon: 'account_balance' },

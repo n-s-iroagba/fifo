@@ -66,7 +66,7 @@ const getStandardEmailTemplate = (subject, content, fromType = 'info') => {
     const headerBgColor = isAveling ? '#FFC700' : '#0b3486';
     const primaryColor = isAveling ? '#000000' : '#0b3486';
     const altText = isAveling ? 'Aveling LMS Training' : 'BlueCollar Curated Career';
-    const logoStyle = isAveling ? 'display: block; width: 64px; height: 64px; margin: 20px auto; outline: none; border: none; text-decoration: none;' : 'display: block; width: 100%; height: auto; max-width: 600px; margin: 0 auto; outline: none; border: none; text-decoration: none;';
+    const logoStyle = isAveling ? 'display: block; width: auto; height: 56px; margin: 20px auto; outline: none; border: none; text-decoration: none;' : 'display: block; width: 100%; height: auto; max-width: 600px; margin: 0 auto; outline: none; border: none; text-decoration: none;';
     return `
     <!DOCTYPE html>
     <html>

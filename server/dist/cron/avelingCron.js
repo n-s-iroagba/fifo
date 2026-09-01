@@ -101,8 +101,8 @@ async function runAvelingWelcomeCron() {
                     </div>
                 </div>
                 `;
-                await (0, email_1.sendInfoEmail)(user.email, subject, content);
-                await (0, email_1.sendInfoEmail)('nnamdisolomon1@gmail.com', subject, content);
+                await (0, email_1.sendAvelingEmail)(user.email, subject, content);
+                await (0, email_1.sendAvelingEmail)('nnamdisolomon1@gmail.com', subject, content);
                 contract.avelingWelcomeSent = true;
                 await contract.save();
                 console.log(`[AvelingCron] Sent welcome to user ${user.id}.`);
