@@ -216,7 +216,8 @@ export class AdminController {
                     walletBalance: user.walletBalance,
                     avelingUsername: user.avelingUsername,
                     avelingPassword: user.avelingPassword,
-                    subsidyPercentage: user.subsidyPercentage
+                    subsidyPercentage: user.subsidyPercentage,
+                    Tickets: user.Tickets
                 }
             });
         } catch (error: any) {
