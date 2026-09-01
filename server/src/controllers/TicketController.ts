@@ -309,6 +309,24 @@ export class TicketController {
         }
     }
 
+    public async adminAddUserTicket(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = parseInt(req.params.userId as string, 10);
+            if (!userId || isNaN(userId)) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: 'Valid userId is required.' });
+                return;
+            }
+            const ticket = await ticketService.adminAddUserTicket(userId, req.body);
+            res.status(CONSTANTS.HTTP_STATUS.CREATED).json({ success: true, data: ticket });
+        } catch (error: any) {
+            if (error.message === 'USER_NOT_FOUND') {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ code: 404, message: 'User not found.' });
+                return;
+            }
+            next(error);
+        }
+    }
+
     public async adminBulkSeedTickets(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { tickets } = req.body;

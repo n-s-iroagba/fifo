@@ -742,6 +742,71 @@ class TicketService {
         }
         return createdTickets;
     }
+    async adminAddUserTicket(userId, data) {
+        const user = await models_1.User.findByPk(userId);
+        if (!user)
+            throw new Error('USER_NOT_FOUND');
+        const { TicketCatalog, Course } = require('../models');
+        let ticketType = data.ticketType;
+        let description = data.description || null;
+        let realPrice = data.realPrice ?? null;
+        let courseId = data.courseId || null;
+        let purchasePrice = data.purchasePrice ?? realPrice ?? 0;
+        // If cloning from a catalog template
+        if (data.catalogId) {
+            const catalog = await TicketCatalog.findByPk(data.catalogId);
+            if (catalog) {
+                ticketType = ticketType || catalog.name;
+                description = description || catalog.description;
+                if (realPrice === null)
+                    realPrice = catalog.normalPrice;
+                if (data.purchasePrice === undefined)
+                    purchasePrice = catalog.normalPrice;
+            }
+        }
+        // Auto-link matching course if courseId is not set
+        if (!courseId && ticketType) {
+            const allCourses = await Course.findAll();
+            const lowerType = ticketType.toLowerCase();
+            const matched = allCourses.find((c) => {
+                const cTitle = (c.title || '').toLowerCase();
+                const cCode = (c.code || '').toLowerCase();
+                return ((cCode && lowerType.includes(cCode)) ||
+                    (cTitle && lowerType.includes(cTitle)) ||
+                    (cTitle && cTitle.split(' ').some((word) => word.length > 3 && lowerType.includes(word))));
+            });
+            if (matched) {
+                courseId = matched.id;
+            }
+        }
+        // Avoid duplicate ticket gap for the same user and ticket type (unassociated with application)
+        if (ticketType) {
+            const existingTicket = await models_1.Ticket.findOne({
+                where: {
+                    userId,
+                    applicationId: null,
+                    ticketType
+                }
+            });
+            if (existingTicket) {
+                return existingTicket;
+            }
+        }
+        const ticket = await models_1.Ticket.create({
+            userId,
+            applicationId: null, // intentionally null
+            ticketType: ticketType || 'Certification Ticket Requirement',
+            status: data.status || 'not_possessed',
+            ticketSponsorship: data.status === 'possessed' ? 'no_application' : 'no_application',
+            description: description,
+            realPrice: realPrice,
+            purchasePrice: purchasePrice,
+            canApplySponsorship: data.canApplySponsorship ?? (data.status !== 'possessed'),
+            courseId: courseId,
+            ticketNumber: data.ticketNumber || null,
+        });
+        return ticket;
+    }
     async cloneTicketForApplicant(data) {
         const { User, TicketCatalog, Course } = require('../models');
         const user = await User.findByPk(data.targetUserId);

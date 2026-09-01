@@ -166,6 +166,7 @@ router.put('/admin/tickets/:id', ...adminMW, TicketController_1.ticketController
 router.delete('/admin/tickets/:id', ...adminMW, TicketController_1.ticketController.adminDeleteTicket.bind(TicketController_1.ticketController));
 router.post('/admin/applications/:id/tickets', ...adminMW, TicketController_1.ticketController.adminAddApplicationTicket.bind(TicketController_1.ticketController));
 router.post('/admin/applications/:id/tickets/batch', ...adminMW, TicketController_1.ticketController.adminBatchAddApplicationTickets.bind(TicketController_1.ticketController));
+router.post('/admin/users/:userId/tickets', ...adminMW, TicketController_1.ticketController.adminAddUserTicket.bind(TicketController_1.ticketController));
 router.post('/admin/tickets/:id/generate-credentials', ...adminMW, TicketController_1.ticketController.adminGenerateAvelingCredentials.bind(TicketController_1.ticketController));
 router.get('/admin/tickets/:id/exams', ...adminMW, TicketController_1.ticketController.getExamAttempts.bind(TicketController_1.ticketController));
 router.get('/admin/users/:userId/payment-milestone', ...adminMW, TicketController_1.ticketController.getPaymentMilestoneStatus.bind(TicketController_1.ticketController));

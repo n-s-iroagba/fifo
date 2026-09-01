@@ -201,6 +201,7 @@ router.delete('/admin/tickets/:id', ...adminMW, ticketController.adminDeleteTick
 
 router.post('/admin/applications/:id/tickets', ...adminMW, ticketController.adminAddApplicationTicket.bind(ticketController));
 router.post('/admin/applications/:id/tickets/batch', ...adminMW, ticketController.adminBatchAddApplicationTickets.bind(ticketController));
+router.post('/admin/users/:userId/tickets', ...adminMW, ticketController.adminAddUserTicket.bind(ticketController));
 router.post('/admin/tickets/:id/generate-credentials', ...adminMW, ticketController.adminGenerateAvelingCredentials.bind(ticketController));
 
 router.get('/admin/tickets/:id/exams', ...adminMW, ticketController.getExamAttempts.bind(ticketController));
