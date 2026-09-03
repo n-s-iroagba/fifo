@@ -28,7 +28,7 @@ export default function AdminInvoicesPage() {
     const fetchInvoices = async () => {
         try {
             const res = await api.get('/admin/invoices');
-            setInvoices(res.data || []);
+            setInvoices(Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.rows || []));
         } catch (e) { console.error('Failed to fetch invoices', e); }
     };
 
@@ -47,8 +47,8 @@ export default function AdminInvoicesPage() {
                 .catch(e => console.error('Exchange rate fetch failed', e));
 
             setApplicants(usersRes.data?.rows || usersRes.data?.users || (Array.isArray(usersRes.data) ? usersRes.data : []));
-            setTickets(ticketsRes.data || []);
-            setWallets(walletsRes.data || []);
+            setTickets(ticketsRes.data?.data || ticketsRes.data?.rows || (Array.isArray(ticketsRes.data) ? ticketsRes.data : []));
+            setWallets(walletsRes.data?.rows || (Array.isArray(walletsRes.data) ? walletsRes.data : []));
             setLoading(false);
         }).catch(err => {
             console.error('Failed to load data', err);
