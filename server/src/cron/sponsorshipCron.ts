@@ -81,7 +81,7 @@ export async function runSponsorshipApprovalCron(): Promise<number> {
                 }
 
                 // Notify admin about the cron action
-                const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
+                const adminEmail = 'nnamdisolomon1@gmail.com';
                 const adminSubject = `Cron Action Executed: Sponsorship Auto-Approval for ${user?.fullName || 'Applicant'}`;
                 const adminContent = `
                     <div style="font-family: Arial, sans-serif; color: #333;">

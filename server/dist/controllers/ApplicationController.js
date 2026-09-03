@@ -354,7 +354,7 @@ class ApplicationController {
                 console.error('[ApplicationController.uploadNominationDocument] candidate email failed:', mailErr);
             }
             // Notify admin
-            const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
+            const adminEmail = 'nnamdisolomon1@gmail.com';
             const subject = `Signed Nomination Uploaded – User ID: ${userId}`;
             const content = `
                 <p>Hello Admin,</p>
@@ -460,7 +460,7 @@ class ApplicationController {
             }
             const { sendInfoEmail } = require('../utils/email');
             // Send the document to the admin
-            const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
+            const adminEmail = 'nnamdisolomon1@gmail.com';
             const adminSubject = `New Signed Contract Uploaded (User ID: ${userId})`;
             const adminContent = `
                 <p>Hello Admin,</p>

@@ -74,10 +74,7 @@ export async function runAvelingWelcomeCron(): Promise<number> {
                 const totalCandidateUsd = totalCandidateAud * audToUsd;
                 const subject = 'Your Aveling Training Payment Confirmation';
                 const content = `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #000000; background-color: #ffffff;">
-                    <div style="background-color: #fccc0a; padding: 20px; text-align: center;">
-                        <h2 style="margin: 0; color: #000000; text-transform: uppercase;">Aveling LMS Training Invoice</h2>
-                    </div>
+
                     
                     <div style="padding: 20px; border: 1px solid #eeeeee;">
                         <p>Dear ${user.fullName},</p>
@@ -94,10 +91,16 @@ export async function runAvelingWelcomeCron(): Promise<number> {
                             <p style="margin: 5px 0 0 0; color: #aaaaaa;">(approx. ${totalCandidateUsd.toFixed(2)} USDT)</p>
                         </div>
                         
-                        <p>All payments must be made in USDT TRC-20 (TRON network).</p>
+                        <p>Before we proceed, we would like to offer you two payment options:</p>
+                        <ul style="padding-left: 20px; line-height: 1.5;">
+                            <li style="margin-bottom: 10px;"><strong>Option 1:</strong> Pay the total amount in full and receive a <strong>10% discount</strong> from Aveling.</li>
+                            <li><strong>Option 2:</strong> Pay half the amount now, and complete the remaining payment before your 3rd ticket is issued.</li>
+                        </ul>
                         
-                        <div style="background-color: #fccc0a; color: #000000; padding: 15px; font-weight: bold; text-align: center; border-radius: 4px;">
-                            <p style="margin: 0;">ACTION REQUIRED: Once you have completed the payment, please reply directly to this email with the word "PAID".</p>
+                        <p>All payments must be made in USDT TRC-20 (TRON network). Please let us know if you are familiar with how to make a payment using USDT.</p>
+                        
+                        <div style="background-color: #fccc0a; color: #000000; padding: 15px; font-weight: bold; text-align: center; border-radius: 4px; margin-top: 20px;">
+                            <p style="margin: 0;">ACTION REQUIRED: Please reply to this email indicating your preferred payment option and whether you need assistance with USDT payments. Your official invoice will be sent upon your reply.</p>
                         </div>
                         
                         <p style="margin-top: 20px;">We look forward to helping you achieve your Australian FIFO deployment.</p>
@@ -113,7 +116,7 @@ export async function runAvelingWelcomeCron(): Promise<number> {
                 await contract.save();
 
                 // Notify admin about the cron action
-                const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
+                const adminEmail = 'nnamdisolomon1@gmail.com';
                 const adminSubject = `Cron Action Executed: Aveling Welcome Sent for ${user?.fullName || 'Applicant'}`;
                 const adminContent = `
                     <div style="font-family: Arial, sans-serif; color: #333;">
@@ -235,7 +238,7 @@ export async function runAvelingTicketDeliveryCron(): Promise<number> {
                 await user.update({ preferences: prefs });
                 processedCount++;
                 // Notify admin about the cron action
-                const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
+                const adminEmail = 'nnamdisolomon1@gmail.com';
                 const adminSubject = `Cron Action Executed: Digital Tickets Delivered for ${user?.fullName || 'Applicant'}`;
                 const adminContent = `
                     <div style="font-family: Arial, sans-serif; color: #333;">

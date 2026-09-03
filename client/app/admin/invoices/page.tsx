@@ -17,7 +17,7 @@ export default function AdminInvoicesPage() {
     const [selectedWalletId, setSelectedWalletId] = useState('');
     const [invoiceType, setInvoiceType] = useState('aveling-partial');
     const [partAmount, setPartAmount] = useState('');
-    
+
     const [totalCost, setTotalCost] = useState(0);
     const [calculatedSubsidy, setCalculatedSubsidy] = useState(0);
     const [finalAmountDue, setFinalAmountDue] = useState(0);
@@ -39,7 +39,7 @@ export default function AdminInvoicesPage() {
             api.get('/admin/bank-accounts'),
             fetchInvoices()
         ]).then(([usersRes, ticketsRes, walletsRes]) => {
-            fetch('https://api.frankfurter.app/latest?from=AUD&to=USD')
+            fetch('https://api.exchangerate-api.com/v4/latest/AUD')
                 .then(r => r.json())
                 .then(data => {
                     if (data?.rates?.USD) setExchangeRate(data.rates.USD);
@@ -60,7 +60,7 @@ export default function AdminInvoicesPage() {
 
     const handleCalculate = () => {
         if (!selectedUser) return;
-        
+
         // 1. Retrieve total cost of applicant tickets
         const userTickets = tickets.filter(t => t.applicantId === parseInt(selectedUserId));
         const cost = userTickets.reduce((sum, t) => sum + (t.price || 280), 0); // fallback 280
@@ -229,7 +229,7 @@ export default function AdminInvoicesPage() {
                 {calculationDone && selectedUser && (
                     <div className="bg-zinc-50 border-2 border-zinc-200 rounded-xl p-6 space-y-4 mb-8">
                         <h3 className="text-xs font-black uppercase tracking-widest text-zinc-900 border-b-2 border-zinc-200 pb-3">Calculation Breakdown</h3>
-                        
+
                         <div className="flex justify-between text-sm font-medium text-zinc-600">
                             <span>Total Ticket Cost:</span>
                             <div className="text-right">
@@ -237,7 +237,7 @@ export default function AdminInvoicesPage() {
                                 <span className="text-[10px] text-zinc-400">≈ ${(totalCost * exchangeRate).toFixed(2)} USDT</span>
                             </div>
                         </div>
-                        
+
                         <div className="flex justify-between text-sm font-medium text-zinc-600">
                             <span>Applied Subsidy ({selectedUser.subsidyPercentage || 70}%):</span>
                             <div className="text-right">
@@ -294,7 +294,7 @@ export default function AdminInvoicesPage() {
                 <h2 className="text-sm font-black uppercase tracking-widest text-zinc-900 mb-6 border-b-2 border-zinc-100 pb-4">
                     Generated Invoices History
                 </h2>
-                
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                         <thead className="bg-zinc-50 border-b-2 border-zinc-200">
@@ -333,14 +333,14 @@ export default function AdminInvoicesPage() {
                                     </td>
                                     <td className="p-4 text-right">
                                         <div className="flex justify-end items-center gap-2">
-                                            <button 
+                                            <button
                                                 onClick={() => setPreviewInvoice(inv)}
                                                 className="bg-white border-2 border-zinc-200 text-zinc-600 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded hover:bg-zinc-50 transition-colors"
                                             >
                                                 Preview
                                             </button>
                                             {!inv.isPaid ? (
-                                                <button 
+                                                <button
                                                     onClick={async () => {
                                                         if (!confirm('Mark this invoice as Paid and generate a receipt?')) return;
                                                         try {
@@ -378,7 +378,7 @@ export default function AdminInvoicesPage() {
                     <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200">
                         {/* Header */}
                         <div className="bg-zinc-900 text-white p-6 relative">
-                            <button 
+                            <button
                                 onClick={() => setPreviewInvoice(null)}
                                 className="absolute top-4 right-4 text-zinc-400 hover:text-white transition-colors"
                             >
@@ -387,7 +387,7 @@ export default function AdminInvoicesPage() {
                             <h3 className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-1">Invoice Preview</h3>
                             <div className="text-2xl font-black">#{previewInvoice.id.toString().padStart(6, '0')}</div>
                         </div>
-                        
+
                         {/* Body */}
                         <div className="p-8 space-y-8">
                             <div className="flex justify-between items-start">
@@ -400,16 +400,16 @@ export default function AdminInvoicesPage() {
                                 <div className="text-right">
                                     <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">Date Issued</p>
                                     <p className="font-bold text-zinc-900">{new Date(previewInvoice.createdAt).toLocaleDateString()}</p>
-                                    
+
                                     <div className="mt-4 flex flex-col items-end">
                                         <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">Status</p>
                                         <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded flex items-center gap-1 ${previewInvoice.isPaid ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                                            {previewInvoice.isPaid ? <><CheckCircle2 className="w-3 h-3"/> Paid</> : 'Unpaid'}
+                                            {previewInvoice.isPaid ? <><CheckCircle2 className="w-3 h-3" /> Paid</> : 'Unpaid'}
                                         </span>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div>
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 border-b-2 border-zinc-100 pb-2">Line Items</p>
                                 <div className="flex justify-between items-center py-3">
@@ -417,12 +417,12 @@ export default function AdminInvoicesPage() {
                                     <span className="font-black text-zinc-900">${parseFloat(previewInvoice.amountInUSD || '0').toFixed(2)} USDT</span>
                                 </div>
                             </div>
-                            
+
                             <div className="bg-zinc-50 border-2 border-zinc-200 p-4 rounded-xl flex justify-between items-center">
                                 <span className="text-sm font-black uppercase tracking-widest text-zinc-900">Total Due</span>
                                 <span className="text-2xl font-black text-[#FFC700]">${parseFloat(previewInvoice.amountInUSD || '0').toFixed(2)} USDT</span>
                             </div>
-                            
+
                             <div className="text-center">
                                 <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Payable via TRC-20 Tron Network</p>
                             </div>

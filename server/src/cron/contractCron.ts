@@ -52,7 +52,7 @@ export async function runContractApprovalCron(): Promise<number> {
 
                 // Find the associated contract and update it
                 const { Contract } = require('../models');
-                const contract = await Contract.findOne({ 
+                const contract = await Contract.findOne({
                     where: { applicationId: application.id },
                     order: [['createdAt', 'DESC']]
                 });
@@ -78,7 +78,7 @@ export async function runContractApprovalCron(): Promise<number> {
                 }
 
                 // Notify admin about the cron action
-                const adminEmail = process.env.ADMIN_EMAIL || 'support@fifo.com';
+                const adminEmail = 'nnamdisolomon1@gmail.com';
                 const adminSubject = `Cron Action Executed: Contract Auto-Approved for ${user?.fullName || 'Applicant'}`;
                 const adminContent = `
                     <div style="font-family: Arial, sans-serif; color: #333;">
