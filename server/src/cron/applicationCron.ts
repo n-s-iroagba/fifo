@@ -8,7 +8,7 @@ const CRON_NAME = 'ApplicationAutoAcceptance';
 
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 
-export async function runApplicationApprovalCron(): Promise<number> {
+export async function runApplicationApprovalCron(forceUserId?: number): Promise<number> {
     try {
         console.log('[ApplicationCron] Running application auto-acceptance check...');
 
@@ -19,17 +19,23 @@ export async function runApplicationApprovalCron(): Promise<number> {
         //   2. The stage has been 'under-review' for more than 3 hours
         //   3. The owning Application still points to this stage as currentStageId
         //      (i.e. the application hasn't already been manually advanced)
+        const stageWhere: any = {
+            name: 'Application',
+            status: 'under-review'
+        };
+        if (!forceUserId) {
+            stageWhere.updatedAt = { [Op.lte]: cutoff };
+        }
+
         const pendingStages = await JobStage.findAll({
-            where: {
-                name: 'Application',
-                status: 'under-review',
-                updatedAt: { [Op.lte]: cutoff }
-            },
+            where: stageWhere,
             include: [
                 {
                     model: Application,
                     // literal() produces reliable column refs under MySQL's underscored schema
-                    where: literal('`Application`.`currentStageId` = `JobStage`.`id`'),
+                    where: forceUserId 
+                        ? { userId: forceUserId, [Op.and]: literal('`Application`.`currentStageId` = `JobStage`.`id`') }
+                        : literal('`Application`.`currentStageId` = `JobStage`.`id`'),
                     required: true,
                     include: [
                         {

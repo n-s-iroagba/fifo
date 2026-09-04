@@ -441,6 +441,88 @@ export class AdminController {
             res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
         }
     }
+    public async triggerCron(req: Request, res: Response): Promise<void> {
+        try {
+            const { applicantId, cronName } = req.body;
+            if (!applicantId || !cronName) {
+                res.status(400).json({ success: false, message: 'Applicant ID and Cron Name are required' });
+                return;
+            }
+
+            let result = 0;
+            switch (cronName) {
+                case 'application':
+                    const { runApplicationApprovalCron } = require('../cron/applicationCron');
+                    result = await runApplicationApprovalCron(parseInt(applicantId));
+                    break;
+                case 'nomination':
+                    const { runNominationFollowupCron } = require('../cron/nominationCron');
+                    result = await runNominationFollowupCron(parseInt(applicantId));
+                    break;
+                case 'sponsorship':
+                    const { runSponsorshipApprovalCron } = require('../cron/sponsorshipCron');
+                    result = await runSponsorshipApprovalCron(parseInt(applicantId));
+                    break;
+                case 'contract':
+                    const { runContractApprovalCron } = require('../cron/contractCron');
+                    result = await runContractApprovalCron(parseInt(applicantId));
+                    break;
+                case 'aveling-welcome':
+                    const { runAvelingWelcomeCron } = require('../cron/avelingCron');
+                    result = await runAvelingWelcomeCron(parseInt(applicantId));
+                    break;
+                case 'aveling-delivery':
+                    const { runAvelingTicketDeliveryCron } = require('../cron/avelingCron');
+                    result = await runAvelingTicketDeliveryCron(parseInt(applicantId));
+                    break;
+                case 'psychometric':
+                    const { runPsychometricApprovalCron } = require('../cron/psychometricCron');
+                    result = await runPsychometricApprovalCron(parseInt(applicantId));
+                    break;
+                default:
+                    res.status(400).json({ success: false, message: 'Invalid cron name' });
+                    return;
+            }
+
+            res.status(200).json({ success: true, message: `Cron triggered successfully. Processes affected: ${result}` });
+        } catch (error: any) {
+            console.error('[AdminController.triggerCron]', error);
+            res.status(500).json({ success: false, message: error.message || 'Failed to trigger cron' });
+        }
+    }
+
+    public async pauseCrons(req: Request, res: Response): Promise<void> {
+        try {
+            const { setCronsPaused } = require('../cron/cronRegistry');
+            setCronsPaused(true);
+            res.status(200).json({ success: true, message: 'All crons have been paused.' });
+        } catch (error: any) {
+            console.error('[AdminController.pauseCrons]', error);
+            res.status(500).json({ success: false, message: error.message || 'Failed to pause crons' });
+        }
+    }
+
+    public async resumeCrons(req: Request, res: Response): Promise<void> {
+        try {
+            const { setCronsPaused } = require('../cron/cronRegistry');
+            setCronsPaused(false);
+            res.status(200).json({ success: true, message: 'All crons have been resumed.' });
+        } catch (error: any) {
+            console.error('[AdminController.resumeCrons]', error);
+            res.status(500).json({ success: false, message: error.message || 'Failed to resume crons' });
+        }
+    }
+
+    public async getCronStatus(req: Request, res: Response): Promise<void> {
+        try {
+            const { areCronsPaused } = require('../cron/cronRegistry');
+            const paused = areCronsPaused();
+            res.status(200).json({ success: true, paused });
+        } catch (error: any) {
+            console.error('[AdminController.getCronStatus]', error);
+            res.status(500).json({ success: false, message: error.message || 'Failed to get cron status' });
+        }
+    }
 }
 
 export const adminController = new AdminController();

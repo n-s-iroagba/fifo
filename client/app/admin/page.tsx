@@ -1,6 +1,6 @@
 'use client';
 
-import { useApiQuery } from '@/lib/hooks';
+import { useApiQuery, useApiMutation } from '@/lib/hooks';
 import Link from 'next/link';
 import { CONSTANTS } from '@/constants';
 
@@ -9,6 +9,14 @@ export default function AdminDashboardPage() {
     const { data: unpaid } = useApiQuery<any>(['admin', 'payments', 'unpaid'], '/admin/payments/unpaid');
     const { data: health } = useApiQuery<any>(['admin', 'health'], '/admin/health');
     const { data: users } = useApiQuery<any>(['admin', 'users', 'total'], '/admin/users?limit=1');
+    const { data: cronStatus, refetch: refetchCronStatus } = useApiQuery<any>(['admin', 'crons', 'status'], '/admin/crons/status');
+
+    const pauseCronsMutation = useApiMutation('post', '/admin/crons/pause', {
+        onSuccess: () => refetchCronStatus()
+    });
+    const resumeCronsMutation = useApiMutation('post', '/admin/crons/resume', {
+        onSuccess: () => refetchCronStatus()
+    });
 
     const appCount = apps?.count || 0;
     const unpaidCount = unpaid?.count || 0;
@@ -117,6 +125,34 @@ export default function AdminDashboardPage() {
                                 <div className="h-1 w-full bg-blue-50 rounded-full overflow-hidden">
                                     <div className="h-full bg-blue-300 w-full"></div>
                                 </div>
+                            </div>
+                            
+                            {/* Cron Management */}
+                            <div className="space-y-4 pt-6 border-t border-blue-50">
+                                <div className="flex justify-between items-end mb-2">
+                                    <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest">Cron Services</span>
+                                    <span className={`text-[10px] font-black uppercase italic ${cronStatus?.paused ? 'text-amber-500' : 'text-emerald-500'}`}>
+                                        {cronStatus?.paused ? 'Paused' : 'Active'}
+                                    </span>
+                                </div>
+                                
+                                {cronStatus?.paused ? (
+                                    <button 
+                                        onClick={() => { if(confirm('Resume all automated background tasks?')) resumeCronsMutation.mutate({}); }}
+                                        disabled={resumeCronsMutation.isPending}
+                                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                    >
+                                        <span className="material-symbols-outlined text-[14px]">play_arrow</span> Resume Cron Jobs
+                                    </button>
+                                ) : (
+                                    <button 
+                                        onClick={() => { if(confirm('Pause all automated background tasks? This stops all periodic jobs from executing until resumed.')) pauseCronsMutation.mutate({}); }}
+                                        disabled={pauseCronsMutation.isPending}
+                                        className="w-full bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                    >
+                                        <span className="material-symbols-outlined text-[14px]">pause</span> Pause Cron Jobs
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

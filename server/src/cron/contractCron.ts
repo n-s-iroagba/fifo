@@ -8,23 +8,29 @@ const CRON_NAME = 'ContractAutoApproval';
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
-export async function runContractApprovalCron(): Promise<number> {
+export async function runContractApprovalCron(forceUserId?: number): Promise<number> {
     try {
         console.log('[ContractCron] Running contract auto-approval check...');
 
         const cutoff = new Date(Date.now() - THREE_HOURS_MS);
 
         // Find applications where the 'Contract' stage is 'under-review' for > 3 hours
+        const stageWhere: any = {
+            name: 'Contract',
+            status: 'under-review'
+        };
+        if (!forceUserId) {
+            stageWhere.updatedAt = { [Op.lte]: cutoff };
+        }
+
         const pendingStages = await JobStage.findAll({
-            where: {
-                name: 'Contract',
-                status: 'under-review',
-                updatedAt: { [Op.lte]: cutoff }
-            },
+            where: stageWhere,
             include: [
                 {
                     model: Application,
-                    where: literal('`Application`.`currentStageId` = `JobStage`.`id`'),
+                    where: forceUserId 
+                        ? { userId: forceUserId, [Op.and]: literal('`Application`.`currentStageId` = `JobStage`.`id`') }
+                        : literal('`Application`.`currentStageId` = `JobStage`.`id`'),
                     required: true,
                     include: [
                         {

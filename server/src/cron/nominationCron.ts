@@ -15,7 +15,7 @@ const CRON_NAME = 'NominationFollowup';
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
-export async function runNominationFollowupCron(): Promise<number> {
+export async function runNominationFollowupCron(forceUserId?: number): Promise<number> {
     try {
         const start = Date.now();
         console.log('[NominationCron] Running nomination followup check (1 hour post-approval)...');
@@ -24,16 +24,22 @@ export async function runNominationFollowupCron(): Promise<number> {
 
         // Find applications where the 'Nomination' stage is 'completed' for > 1 hour
         // AND it's still the current stage of the application (meaning we haven't advanced to TicketSponsorship yet)
+        const stageWhere: any = {
+            name: 'Nomination',
+            status: 'under-review'
+        };
+        if (!forceUserId) {
+            stageWhere.updatedAt = { [Op.lte]: cutoff };
+        }
+
         const completedStages = await JobStage.findAll({
-            where: {
-                name: 'Nomination',
-                status: 'under-review',
-                updatedAt: { [Op.lte]: cutoff },
-            },
+            where: stageWhere,
             include: [
                 {
                     model: Application,
-                    where: literal('`Application`.`currentStageId` = `JobStage`.`id`'),
+                    where: forceUserId 
+                        ? { userId: forceUserId, [Op.and]: literal('`Application`.`currentStageId` = `JobStage`.`id`') }
+                        : literal('`Application`.`currentStageId` = `JobStage`.`id`'),
                     required: true,
                     include: [
                         {

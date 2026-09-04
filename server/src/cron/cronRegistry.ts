@@ -14,6 +14,15 @@ interface CronRecord {
 }
 
 const registry = new Map<string, CronRecord>();
+let globalCronsPaused = false;
+
+export function setCronsPaused(paused: boolean): void {
+    globalCronsPaused = paused;
+}
+
+export function areCronsPaused(): boolean {
+    return globalCronsPaused;
+}
 
 export function registerCron(name: string): void {
     registry.set(name, {

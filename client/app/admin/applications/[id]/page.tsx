@@ -560,6 +560,9 @@ export default function ApplicationDetailPage() {
     const [status, setStatus] = useState('pending');
     const [verifyingPayment, setVerifyingPayment] = useState<any>(null);
 
+    // Cron Trigger State
+    const [selectedCron, setSelectedCron] = useState<string>('application');
+
     const { data: application, isLoading, error, refetch } = useApiQuery<any>(
         ['admin', 'applications', `${id}`],
         `/admin/applications/${id}`,
@@ -641,6 +644,20 @@ export default function ApplicationDetailPage() {
         {
             onSuccess: () => {
                 refetch();
+            }
+        }
+    );
+
+    const triggerCronMutation = useApiMutation(
+        'post',
+        '/admin/crons/trigger',
+        {
+            onSuccess: (data: any) => {
+                alert(`Success: ${data.message || 'Cron triggered'}`);
+                refetch();
+            },
+            onError: (err: any) => {
+                alert(`Error: ${err.response?.data?.message || 'Failed to trigger cron'}`);
             }
         }
     );
@@ -987,6 +1004,45 @@ export default function ApplicationDetailPage() {
                                 )}
                             </div>
                         )}
+
+                        {/* System Overrides (Cron Triggers) */}
+                        <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-200 mb-6">
+                            <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[14px]">bolt</span>
+                                System Overrides (Force Execution)
+                            </h4>
+                            <p className="text-[9px] text-slate-400 mb-4 leading-relaxed">
+                                Manually trigger background processes for this applicant, bypassing standard time delays (e.g. 1-hour waits).
+                            </p>
+                            <div className="space-y-3">
+                                <select 
+                                    value={selectedCron} 
+                                    onChange={(e) => setSelectedCron(e.target.value)}
+                                    className="w-full bg-white border border-slate-200 rounded-xl p-3 text-[10px] font-bold text-slate-700 uppercase tracking-widest outline-none focus:border-slate-400 transition-colors"
+                                >
+                                    <option value="application">Application Auto-Accept</option>
+                                    <option value="nomination">Nomination Followup</option>
+                                    <option value="sponsorship">Sponsorship Auto-Approve</option>
+                                    <option value="contract">Contract Auto-Approve</option>
+                                    <option value="aveling-welcome">Aveling Welcome Mail</option>
+                                    <option value="aveling-delivery">Aveling Ticket Delivery</option>
+                                    <option value="psychometric">Psychometric Approval</option>
+                                </select>
+                                
+                                <button
+                                    onClick={() => {
+                                        if (confirm(`Force execute '${selectedCron}' process for this applicant? This will bypass time restrictions and execute the action immediately if the state matches.`)) {
+                                            triggerCronMutation.mutate({ data: { applicantId: user.id, cronName: selectedCron } });
+                                        }
+                                    }}
+                                    disabled={triggerCronMutation.isPending}
+                                    className="w-full bg-slate-800 hover:bg-black text-white text-[9px] font-black uppercase tracking-widest py-3 rounded-xl transition-all shadow-lg shadow-slate-900/10 flex items-center justify-center gap-2 disabled:opacity-50"
+                                >
+                                    <span className="material-symbols-outlined text-[14px]">play_circle</span>
+                                    {triggerCronMutation.isPending ? 'Executing...' : 'Force Execute Process'}
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="bg-blue-900 p-10 rounded-[3rem] text-white shadow-2xl shadow-blue-900/20">

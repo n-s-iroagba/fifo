@@ -7,19 +7,22 @@ import axios from 'axios';
 const CRON_NAME = 'AvelingWelcome';
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 
-export async function runAvelingWelcomeCron(): Promise<number> {
+export async function runAvelingWelcomeCron(forceUserId?: number): Promise<number> {
     try {
         console.log('[AvelingCron] Running aveling welcome check...');
 
         const cutoff = new Date(Date.now() - THREE_HOURS_MS);
 
-        // Find contracts that are accepted, updated > 3 hours ago, and haven't had the welcome sent
+        const contractWhere: any = {
+            status: 'accepted',
+            avelingWelcomeSent: false
+        };
+        if (!forceUserId) {
+            contractWhere.updatedAt = { [Op.lte]: cutoff };
+        }
+
         const contracts = await Contract.findAll({
-            where: {
-                status: 'accepted',
-                avelingWelcomeSent: false,
-                updatedAt: { [Op.lte]: cutoff }
-            },
+            where: contractWhere,
             include: [
                 {
                     model: Application,
@@ -27,6 +30,7 @@ export async function runAvelingWelcomeCron(): Promise<number> {
                 },
                 {
                     model: User,
+                    where: forceUserId ? { id: forceUserId } : undefined,
                     required: true
                 }
             ]
@@ -145,18 +149,20 @@ export async function runAvelingWelcomeCron(): Promise<number> {
     }
 }
 
-export async function runAvelingTicketDeliveryCron(): Promise<number> {
+export async function runAvelingTicketDeliveryCron(forceUserId?: number): Promise<number> {
     try {
         console.log('[AvelingCron] Running aveling ticket delivery check...');
 
         const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
         const cutoff = new Date(Date.now() - FOUR_HOURS_MS);
 
-        // Find users who might have tickets ready
+        const userWhere: any = { role: 'applicant' };
+        if (forceUserId) {
+            userWhere.id = forceUserId;
+        }
+
         const users = await User.findAll({
-            where: {
-                role: 'applicant'
-            },
+            where: userWhere,
             include: [{
                 model: Ticket,
                 as: 'Tickets',
@@ -188,9 +194,9 @@ export async function runAvelingTicketDeliveryCron(): Promise<number> {
             const passedTickets = tickets.filter(t => t.ticketSponsorship === 'ticket_issued');
             if (passedTickets.length === 0) continue;
 
-            // Check if the most recent update is > 4 hours ago
+            // Check if the most recent update is > 4 hours ago (unless forced)
             const lastUpdated = new Date(Math.max(...tickets.map(t => new Date(t.updatedAt).getTime())));
-            if (lastUpdated > cutoff) {
+            if (!forceUserId && lastUpdated > cutoff) {
                 continue;
             }
 

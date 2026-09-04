@@ -7,19 +7,26 @@ import { recordCronRun } from './cronRegistry';
 const CRON_NAME = 'PsychometricAutoApproval';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
-export async function runPsychometricApprovalCron(): Promise<number> {
+export async function runPsychometricApprovalCron(forceUserId?: number): Promise<number> {
     try {
         console.log('[PsychometricCron] Running module 2 auto-approval check...');
 
         const cutoff = new Date(Date.now() - ONE_HOUR_MS);
 
         // Find users who have module 2 pending
+        const whereClause: any = {
+            module: 'module_2',
+            passed: false
+        };
+        
+        if (forceUserId) {
+            whereClause.userId = forceUserId;
+        } else {
+            whereClause.createdAt = { [Op.lte]: cutoff };
+        }
+
         const attempts = await PsychometricAttempt.findAll({
-            where: {
-                module: 'module_2',
-                passed: false,
-                createdAt: { [Op.lte]: cutoff }
-            },
+            where: whereClause,
             include: [{ model: User, required: true }]
         });
 

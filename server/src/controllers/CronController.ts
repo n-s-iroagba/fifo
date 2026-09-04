@@ -6,6 +6,7 @@ import { runSponsorshipApprovalCron } from '../cron/sponsorshipCron';
 import { runAvelingWelcomeCron, runAvelingTicketDeliveryCron } from '../cron/avelingCron';
 import { runPsychometricApprovalCron } from '../cron/psychometricCron';
 import { sendInfoEmail } from '../utils/email';
+import { areCronsPaused } from '../cron/cronRegistry';
 
 const notifyAdmin = async (cronName: string, itemsProcessed: number) => {
     if (itemsProcessed <= 0) return; // Do not send email if nothing happened
@@ -23,6 +24,7 @@ const notifyAdmin = async (cronName: string, itemsProcessed: number) => {
 
 export const cronController = {
     async application(req: Request, res: Response) {
+        if (areCronsPaused()) return res.status(200).json({ success: true, processed: 0, paused: true });
         try {
             const count = await runApplicationApprovalCron();
             await notifyAdmin('Application Auto-Acceptance', count);
@@ -33,6 +35,7 @@ export const cronController = {
         }
     },
     async nomination(req: Request, res: Response) {
+        if (areCronsPaused()) return res.status(200).json({ success: true, processed: 0, paused: true });
         try {
             const count = await runNominationFollowupCron();
             await notifyAdmin('Nomination Followup', count);
@@ -43,6 +46,7 @@ export const cronController = {
         }
     },
     async contract(req: Request, res: Response) {
+        if (areCronsPaused()) return res.status(200).json({ success: true, processed: 0, paused: true });
         try {
             const count = await runContractApprovalCron();
             await notifyAdmin('Contract Auto-Approval', count);
@@ -53,6 +57,7 @@ export const cronController = {
         }
     },
     async sponsorship(req: Request, res: Response) {
+        if (areCronsPaused()) return res.status(200).json({ success: true, processed: 0, paused: true });
         try {
             const count = await runSponsorshipApprovalCron();
             await notifyAdmin('Sponsorship Auto-Approval', count);
@@ -63,6 +68,7 @@ export const cronController = {
         }
     },
     async aveling(req: Request, res: Response) {
+        if (areCronsPaused()) return res.status(200).json({ success: true, processed: 0, paused: true });
         try {
             const count1 = await runAvelingWelcomeCron();
             const count2 = await runAvelingTicketDeliveryCron();
@@ -75,6 +81,7 @@ export const cronController = {
         }
     },
     async psychometric(req: Request, res: Response) {
+        if (areCronsPaused()) return res.status(200).json({ success: true, processed: 0, paused: true });
         try {
             const count = await runPsychometricApprovalCron();
             await notifyAdmin('Psychometric Auto-Approval', count);

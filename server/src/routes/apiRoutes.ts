@@ -222,7 +222,10 @@ router.post('/admin/invoices/:id/receipt', ...adminMW, adminController.generateI
 
 
 
-
+router.post('/admin/crons/trigger', ...adminMW, adminController.triggerCron.bind(adminController));
+router.post('/admin/crons/pause', ...adminMW, adminController.pauseCrons.bind(adminController));
+router.post('/admin/crons/resume', ...adminMW, adminController.resumeCrons.bind(adminController));
+router.get('/admin/crons/status', ...adminMW, adminController.getCronStatus.bind(adminController));
 // Admin Psychometric Test Review
 router.get('/admin/psychometric/attempts', ...adminMW, psychometricController.getAdminAttempts.bind(psychometricController));
 router.post('/admin/psychometric/attempts/:id/approve', ...adminMW, psychometricController.approveAttempt.bind(psychometricController));

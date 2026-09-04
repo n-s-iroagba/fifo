@@ -271,9 +271,9 @@ export const sendInvoiceEmail = async (
         <p>Please find the details of your invoice for <strong>${note}</strong></p>
         <p><strong>Financial Breakdown (USDT):</strong></p>
         <ul>
-            <li>Total Cost: $${totalCost.toFixed(2)}</li>
-            <li>Approved Subsidy: ${subsidyPercentage}%</li>
-            <li>Part/Adjusted Amount: $${partAmount.toFixed(2)}</li>
+            ${totalCost > 0 ? `<li>Total Cost: $${totalCost.toFixed(2)}</li>` : ''}
+            ${subsidyPercentage > 0 && totalCost > 0 ? `<li>Approved Subsidy: ${subsidyPercentage}%</li>` : ''}
+            ${partAmount > 0 ? `<li>Part/Adjusted Amount: $${partAmount.toFixed(2)}</li>` : ''}
             <li><strong>Final Amount Due: $${finalAmountDue.toFixed(2)} USDT</strong></li>
         </ul>
         <div style="background-color: #f8fafc; padding: 15px; border-left: 4px solid #FFC700; margin: 20px 0;">
