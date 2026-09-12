@@ -174,8 +174,11 @@ export const sendInfoEmail = async (to: string, subject: string, content: string
 
 export const sendAvelingEmail = async (to: string, subject: string, content: string, attachments: any[] = []): Promise<void> => {
     try {
-        await avelingTransporter.sendMail({
-            from: process.env.AV_SMTP_INFO_FROM || '"BlueCollarRecruitment Aveling" <info@jobnexe.com>',
+        // await avelingTransporter.sendMail({
+        //     from: process.env.AV_SMTP_INFO_FROM || '"BlueCollarRecruitment Aveling" <info@jobnexe.com>'
+        // ,
+        await infoTransporter.sendMail({
+            from: 'Aveling Via Blue Collar Recruitment',
             to,
             subject,
             html: getStandardEmailTemplate(subject, content, 'aveling'),
