@@ -55,6 +55,16 @@ export async function runSchemaPatches(): Promise<void> {
         await sequelize.query("ALTER TABLE invoices ADD COLUMN isPaid BOOLEAN NOT NULL DEFAULT false;");
         console.log("[Migration] Patched invoices table with isPaid.");
     } catch (e: any) {}
+    try {
+        await sequelize.query("ALTER TABLE invoices ADD COLUMN walletAddress VARCHAR(255) DEFAULT NULL;");
+        console.log("[Migration] Patched invoices table with walletAddress.");
+    } catch (e: any) {}
+    try {
+        await sequelize.query(
+            "ALTER TABLE invoices MODIFY COLUMN purpose ENUM('aveling-partial','aveling-complete-after-partial','aveling-complete','second-attempt','shipping','visa-blue-collar') NOT NULL;"
+        );
+        console.log("[Migration] Patched invoices.purpose ENUM to include visa-blue-collar.");
+    } catch (e: any) { console.error("[Migration] Failed to patch invoices purpose ENUM:", e.message); }
 
     // 6. Patch job_listings
     try {

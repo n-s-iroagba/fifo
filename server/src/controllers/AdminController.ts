@@ -267,7 +267,10 @@ export class AdminController {
 
     public async dispatchInvoiceEmail(req: Request, res: Response): Promise<void> {
         try {
-            const { applicantId, invoiceType, partAmount, totalCost, subsidyPercentage, finalAmountDue, email, walletAddress } = req.body;
+            const {
+                applicantId, invoiceType, partAmount, totalCost,
+                subsidyPercentage, finalAmountDue, email, walletAddress
+            } = req.body;
             const { sendInvoiceEmail } = require('../utils/email');
             const { User, Invoice } = require('../models');
 
@@ -284,23 +287,29 @@ export class AdminController {
                 contentType: file.mimetype
             })) || [];
 
+            const parsedFinalAmount = parseFloat(finalAmountDue || '0');
+            const parsedPartAmount = parseFloat(partAmount || '0');
+            const parsedTotalCost = parseFloat(totalCost || '0');
+            const parsedSubsidy = parseFloat(subsidyPercentage || String(user.subsidyPercentage || 0));
+
             await sendInvoiceEmail(
                 email || user.email,
                 user.fullName,
                 invoiceType,
-                parseFloat(partAmount || '0'),
-                parseFloat(totalCost || '0'),
-                parseFloat(subsidyPercentage || '0'),
-                parseFloat(finalAmountDue || '0'),
+                parsedPartAmount,
+                parsedTotalCost,
+                parsedSubsidy,
+                parsedFinalAmount,
                 attachments,
-                walletAddress
+                walletAddress || undefined
             );
 
-            // Record invoice in DB
+            // Persist the invoice record
             await Invoice.create({
                 applicantId: user.id,
                 purpose: invoiceType,
-                amountInUSD: parseFloat(finalAmountDue || '0')
+                amountInUSD: parsedFinalAmount,
+                walletAddress: walletAddress || null,
             });
 
             res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Invoice email dispatched successfully' });
@@ -329,7 +338,7 @@ export class AdminController {
             const { Invoice, User } = require('../models');
             const { sendReceiptEmail } = require('../utils/email');
             const id = parseInt(req.params.id as string, 10);
-            
+
             const invoice = await Invoice.findByPk(id, {
                 include: [{ model: User, as: 'applicant' }]
             });
@@ -343,14 +352,23 @@ export class AdminController {
             await invoice.save();
 
             const receiptType = invoice.purpose === 'visa-blue-collar' ? 'blue-collar' : 'aveling';
-            
+
+            const rawFiles = req.files as Express.Multer.File[];
+            const attachments = rawFiles?.map((file: any) => ({
+                filename: file.originalname,
+                content: file.buffer,
+                contentType: file.mimetype
+            })) || [];
+
             if (invoice.applicant && invoice.applicant.email) {
                 await sendReceiptEmail(
                     invoice.applicant.email,
                     invoice.applicant.fullName,
                     receiptType,
                     parseFloat(invoice.amountInUSD || '0'),
-                    invoice.id
+                    invoice.id,
+                    attachments,
+                    invoice.walletAddress || undefined
                 );
             }
 
@@ -359,7 +377,12 @@ export class AdminController {
                 await ticketService.processAvelingInvoicePayment(invoice.applicantId, invoice.purpose);
             }
 
-            res.status(200).json({ success: true, message: 'Receipt generated, marked as paid, and emailed.' });
+            const senderLabel = receiptType === 'blue-collar' ? 'BlueCollar Infrastructure' : 'Aveling LMS Training';
+            res.status(200).json({
+                success: true,
+                message: `Receipt generated, marked as paid, and dispatched via ${senderLabel}.`,
+                invoice
+            });
         } catch (error: any) {
             console.error('[AdminController.generateInvoiceReceipt]', error);
             res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });

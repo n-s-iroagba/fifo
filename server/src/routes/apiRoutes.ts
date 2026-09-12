@@ -217,7 +217,7 @@ router.post('/admin/users/:userId/assign-all-tickets', ...adminMW, ticketControl
 
 router.post('/admin/invoices/dispatch', upload.any(), ...adminMW, adminController.dispatchInvoiceEmail.bind(adminController));
 router.get('/admin/invoices', ...adminMW, adminController.getAllInvoices.bind(adminController));
-router.post('/admin/invoices/:id/receipt', ...adminMW, adminController.generateInvoiceReceipt.bind(adminController));
+router.post('/admin/invoices/:id/receipt', upload.any(), ...adminMW, adminController.generateInvoiceReceipt.bind(adminController));
 
 
 

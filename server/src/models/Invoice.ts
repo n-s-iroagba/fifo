@@ -6,10 +6,11 @@ export class Invoice extends Model {
     public applicantId!: number;
     public purpose!: string;
     public amountInUSD!: number;
+    public walletAddress!: string | null;
     public date!: Date;
     public receiptProofSubmission!: Date | null;
     public isPaid!: boolean;
-    
+
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 }
@@ -25,8 +26,19 @@ Invoice.init({
         allowNull: false
     },
     purpose: {
-        type: DataTypes.ENUM('aveling-partial', 'aveling-complete-after-partial', 'aveling-complete', 'second-attempt', 'shipping'),
+        type: DataTypes.ENUM(
+            'aveling-partial',
+            'aveling-complete-after-partial',
+            'aveling-complete',
+            'second-attempt',
+            'shipping',
+            'visa-blue-collar'
+        ),
         allowNull: false
+    },
+    walletAddress: {
+        type: DataTypes.STRING,
+        allowNull: true
     },
     amountInUSD: {
         type: DataTypes.FLOAT,

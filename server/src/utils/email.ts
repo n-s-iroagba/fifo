@@ -302,19 +302,22 @@ export const sendReceiptEmail = async (
     receiptType: 'aveling' | 'blue-collar',
     amountPaid: number,
     invoiceId: number,
-    attachments: any[] = []
+    attachments: any[] = [],
+    walletAddress?: string
 ): Promise<void> => {
     const emailServer: 'aveling' | 'info' = receiptType === 'aveling' ? 'aveling' : 'info';
-    const subject = `Payment Receipt - Invoice #${invoiceId}`;
+    const subject = `Official Payment Receipt - Invoice #${invoiceId}`;
 
     const content = `
         <p>Dear ${candidateName},</p>
-        <p>We have successfully received your payment.</p>
-        <p><strong>Receipt Details:</strong></p>
+        <p>We have successfully received and verified your payment.</p>
+        <p><strong>Official Receipt Particulars:</strong></p>
         <ul>
             <li>Linked Invoice ID: #${invoiceId}</li>
-            <li>Amount Paid: $${amountPaid.toFixed(2)}</li>
-            <li>Category: ${receiptType === 'aveling' ? 'Aveling LMS Training' : 'BlueCollar Infrastructure'}</li>
+            <li>Amount Paid: $${amountPaid.toFixed(2)} USDT</li>
+            <li>Issuing Entity: ${receiptType === 'aveling' ? 'Aveling LMS Training' : 'BlueCollar Infrastructure'}</li>
+            ${walletAddress ? `<li>Payment Network: TRC-20 Tron Network (${walletAddress})</li>` : ''}
+            <li>Verification Status: Confirmed & Paid</li>
         </ul>
         <p>Thank you for your prompt payment.</p>
     `;
