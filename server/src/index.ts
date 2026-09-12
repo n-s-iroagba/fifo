@@ -6,6 +6,7 @@ import { logger } from './utils/logger';
 // Initializes Associations Mapping
 import './models';
 import registerCrons from './scripts/register-qstash-crons';
+import { seedOnlineTickets } from './seedTicketSeed';
 
 
 

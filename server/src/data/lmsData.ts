@@ -11,6 +11,8 @@ import { commercialCookeryQuestions } from './questions/commercialCookeryQuestio
 import { foodSafetyQuestions } from './questions/foodSafetyQuestions';
 import { rsaQuestions } from './questions/rsaQuestions';
 import { forkliftQuestions } from './questions/forkliftQuestions';
+import { rigidHaulTruckQuestions } from './questions/rigidHaulTruckQuestions';
+import { articulatedHaulTruckQuestions } from './questions/articulatedHaulTruckQuestions';
 
 import { eehaModules } from './modules/eehaModules';
 import { std11Modules } from './modules/std11Modules';
@@ -25,6 +27,8 @@ import { commercialCookeryModules } from './modules/commercialCookeryModules';
 import { foodSafetyModules } from './modules/foodSafetyModules';
 import { rsaModules } from './modules/rsaModules';
 import { forkliftModules } from './modules/forkliftModules';
+import { rigidHaulTruckModules } from './modules/rigidHaulTruckModules';
+import { articulatedHaulTruckModules } from './modules/articulatedHaulTruckModules';
 
 export const lmsSeedData = [
     {
@@ -335,6 +339,56 @@ export const lmsSeedData = [
                 'Demonstrate ramp operation with load uphill in both ascending and descending directions',
                 'Demonstrate correct LPG cylinder changeover procedure from valve-off to seal-check',
                 'Navigate a pedestrian/forklift shared zone using horn at every blind intersection'
+            ]
+        }
+    },
+    {
+        certificationName: 'RIIMPO333ED Conduct rigid haul truck operations',
+        description: 'RII unit mandating competency in operating rear-dump rigid haul trucks (e.g., Komatsu 785, CAT 785, Liebherr T 264) on open-cut mine sites in Western Australia and Queensland.',
+        course: {
+            title: 'RIIMPO333ED Conduct rigid haul truck operations',
+            description: 'Nationally Recognised Unit of Competency RIIMPO333ED Conduct rigid haul truck operations under the Resources and Infrastructure Industry (RII) Training Package. Covers pre-start inspection of large rigid rear-dump trucks, payload monitoring and management, haul road rules, tip head procedures (berm verification, body-raise sequence, float return), grade and retarder management, TPMS monitoring, Traffic Management Plan compliance, blind spot and pedestrian hazard management, emergency procedures (brake failure, tyre blowout, engine fire), and fatigue risk management on FIFO rosters.',
+            format: 'Mixed',
+            price: 1350.00,
+            duration: 32,
+            capacity: 8,
+            modules: rigidHaulTruckModules,
+            examConfig: {
+                passThreshold: 80,
+                maxAttempts: 2
+            },
+            questions: rigidHaulTruckQuestions,
+            practicalCriteria: [
+                'Complete a full documented pre-start inspection of a rigid haul truck identifying at least 2 simulated defects and correctly classifying them as Category A (ground truck) or Category B (monitor)',
+                'Demonstrate correct dump body prop engagement and confirm body-in-float before simulated tramming',
+                'Demonstrate correct tip head approach, berm verification, reverse-to-berm procedure, and body raise/lower sequence',
+                'Perform a controlled downgrade run using retarder as primary speed control — maintain speed within posted limit without service brake application',
+                'Demonstrate the horn-before-move protocol and correct response to a simulated pedestrian intrusion in the blind spot zone'
+            ]
+        }
+    },
+    {
+        certificationName: 'RIIMPO337E Conduct articulated haul truck operations',
+        description: 'RII unit mandating competency in operating articulated dump trucks (ADTs — e.g., Volvo A40G, Bell B40E, CAT 745) on open-cut mining and civil construction sites across Australia.',
+        course: {
+            title: 'RIIMPO337E Conduct articulated haul truck operations',
+            description: 'Nationally Recognised Unit of Competency RIIMPO337E Conduct articulated (ADT) haul truck operations under the RII Training Package. Covers articulated dump truck (ADT) design and articulation zone crush hazards, pre-start inspection (including 6-tyre check, diff-oil levels, and articulation lock management), haul road rules, tipping procedures, differential lock engagement and disengagement, rollover prevention on side-slopes and soft dump edges, payload monitoring, Traffic Management Plan compliance, ADT-specific emergency procedures (bogged recovery, brake fade, rollover prevention techniques), and fatigue management on FIFO rosters.',
+            format: 'Mixed',
+            price: 1250.00,
+            duration: 24,
+            capacity: 8,
+            modules: articulatedHaulTruckModules,
+            examConfig: {
+                passThreshold: 80,
+                maxAttempts: 2
+            },
+            questions: articulatedHaulTruckQuestions,
+            practicalCriteria: [
+                'Complete a full documented pre-start inspection of an ADT including articulation joint check and confirm articulation lock is removed and stowed',
+                'Demonstrate correct diff-lock engagement on soft ground and disengagement before returning to firm haul road',
+                'Demonstrate correct tip head approach on soft ground, berm verification, body raise and float-return sequence',
+                'Perform a controlled downgrade on a simulated steep grade using retarder as primary speed control without turning the body raised',
+                'Correctly identify and respond to a simulated body-up travel alarm before commencing tramming'
             ]
         }
     },
