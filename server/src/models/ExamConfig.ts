@@ -24,7 +24,7 @@ ExamConfig.init({
   timeLimitMinutes: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: 30
+    defaultValue: 15
   }
 }, {
   sequelize,

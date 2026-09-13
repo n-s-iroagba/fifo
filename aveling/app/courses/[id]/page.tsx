@@ -183,7 +183,7 @@ export default function CoursePlayerPage() {
                         <div className="pt-6 mt-6 border-t-2 border-zinc-100">
                             <div className="mb-6 rounded-xl border-2 border-amber-200 bg-amber-50 p-4 text-xs font-bold text-amber-900 flex items-start gap-3">
                                 <Lock className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-                                <p><strong>Note:</strong> Starting the exam cannot be cancelled once initiated. Standard exam duration is 40 minutes. Ensure you have a stable connection.</p>
+                                <p><strong>Note:</strong> Starting the exam cannot be cancelled once initiated. Standard exam duration is 15 minutes. Ensure you have a stable connection.</p>
                             </div>
 
                             <button

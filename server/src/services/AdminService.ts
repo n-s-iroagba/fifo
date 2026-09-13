@@ -215,7 +215,12 @@ export class AdminService {
         return { success: true, walletBalance: user.walletBalance };
     }
 
-    public async updateAvelingCredentials(id: number, avelingUsername?: string | null, avelingPassword?: string | null) {
+    public async updateAvelingCredentials(
+        id: number,
+        avelingUsername?: string | null,
+        avelingPassword?: string | null,
+        sendEmail: boolean = true
+    ) {
         const user = await userRepository.findById(id);
         if (!user || user.role !== CONSTANTS.ROLES.APPLICANT) {
             throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
@@ -248,10 +253,27 @@ export class AdminService {
             }
         }
 
+        let emailDispatched = false;
+        if (sendEmail && user.email && user.avelingUsername) {
+            const { sendAvelingCredentialsEmail } = require('../utils/email');
+            try {
+                await sendAvelingCredentialsEmail(
+                    user.email,
+                    user.fullName,
+                    user.avelingUsername,
+                    user.avelingPassword || undefined
+                );
+                emailDispatched = true;
+            } catch (err) {
+                console.error('[AdminService.updateAvelingCredentials] Failed to dispatch Aveling email:', err);
+            }
+        }
+
         return {
             success: true,
             avelingUsername: user.avelingUsername,
-            avelingPassword: user.avelingPassword
+            avelingPassword: user.avelingPassword,
+            emailDispatched
         };
     }
 }

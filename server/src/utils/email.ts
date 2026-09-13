@@ -496,11 +496,28 @@ export const sendContractApprovedEmail = async (to: string, userName: string): P
     await sendInfoEmail(to, subject, content);
 };
 
-export const sendAvelingCredentialsEmail = async (to: string, userName: string): Promise<void> => {
-    const subject = 'Your Aveling LMS Credentials';
+export const sendAvelingCredentialsEmail = async (
+    to: string,
+    userName: string,
+    username?: string,
+    password?: string,
+    loginUrl?: string
+): Promise<void> => {
+    const subject = 'Your Official Aveling LMS Credentials';
+    const lmsUrl = loginUrl || process.env.AVELING_URL || 'https://aveling.online/login';
     const content = `
         <p>Dear ${userName},</p>
-        <p>Your Aveling training profile has been created. Please log in with the credentials provided on your dashboard.</p>
+        <p>Your official <strong>Aveling LMS Training Portal</strong> account has been configured. You can now log in, access your assigned competency tickets, review courseware modules, and sit for your online theory examinations.</p>
+        <div style="background-color: #f8fafc; border: 2px solid #FFC700; border-radius: 12px; padding: 20px; margin: 24px 0;">
+            <p style="margin: 0 0 12px 0; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #000000;">Aveling Portal Login Credentials</p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>LMS Portal URL:</strong> <a href="${lmsUrl}" style="color: #0b3486; font-weight: 700;">${lmsUrl}</a></p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>Candidate Username / ID:</strong> <span style="font-family: monospace; font-weight: bold; background: #e2e8f0; padding: 2px 8px; border-radius: 4px;">${username || 'See Dashboard'}</span></p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>Password:</strong> <span style="font-family: monospace; font-weight: bold; background: #e2e8f0; padding: 2px 8px; border-radius: 4px;">${password || 'See Dashboard'}</span></p>
+        </div>
+        <div class="cta-block">
+            <a href="${lmsUrl}" class="button">Log In to Aveling LMS</a>
+        </div>
+        <p style="margin-top: 24px; font-size: 13px; color: #64748b;"><strong>Exam Protocol:</strong> Each ticket theory assessment is timed at strictly <strong>15 minutes</strong>. Ensure you have an uninterrupted internet connection before launching an assessment.</p>
     `;
     await sendAvelingEmail(to, subject, content);
 };

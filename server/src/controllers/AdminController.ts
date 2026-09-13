@@ -416,8 +416,13 @@ export class AdminController {
     public async updateAvelingCredentials(req: Request, res: Response): Promise<void> {
         try {
             const id = parseInt(req.params.id as string, 10);
-            const { avelingUsername, avelingPassword } = req.body;
-            const result = await adminService.updateAvelingCredentials(id, avelingUsername, avelingPassword);
+            const { avelingUsername, avelingPassword, sendEmail } = req.body;
+            const result = await adminService.updateAvelingCredentials(
+                id,
+                avelingUsername,
+                avelingPassword,
+                sendEmail !== undefined ? Boolean(sendEmail) : true
+            );
             res.status(CONSTANTS.HTTP_STATUS.OK).json(result);
         } catch (error: any) {
             console.error('[AdminController.updateAvelingCredentials]', error);

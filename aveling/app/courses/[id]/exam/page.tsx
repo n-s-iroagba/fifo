@@ -4,7 +4,7 @@
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
-import { Award, CheckCircle2, XCircle, ShieldCheck, ChevronRight, ArrowRight, Wallet, RotateCcw, Banknote, Mail } from 'lucide-react';
+import { Award, CheckCircle2, XCircle, ShieldCheck, ChevronRight, ArrowRight, Wallet, RotateCcw, Banknote, Mail, Clock } from 'lucide-react';
 import { apiClient } from '../../../../lib/axios';
 import { PageShell } from '../../../../components/PageShell';
 
@@ -18,6 +18,8 @@ interface ExamQuestion {
 }
 
 type ExamPhase = 'instructions' | 'active' | 'review_awaiting' | 'passed' | 'failed' | 'refund_choice';
+
+const EXAM_DURATION_SECONDS = 15 * 60; // 15 minutes each
 
 function ExamPortalContent() {
     const router = useRouter();
@@ -39,6 +41,7 @@ function ExamPortalContent() {
     const [questions, setQuestions] = useState<any[]>([]);
     const [attemptId, setAttemptId] = useState('');
     const [starting, setStarting] = useState(false);
+    const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(EXAM_DURATION_SECONDS);
     
     const [showRestoredNotification, setShowRestoredNotification] = useState(false);
     const isRestoring = React.useRef(true);
@@ -53,6 +56,16 @@ function ExamPortalContent() {
                     setAttemptId(savedState.attemptId);
                     setCurrentIdx(savedState.currentIdx);
                     setAnswers(savedState.answers);
+                    
+                    // Calculate remaining time from saved timestamp
+                    if (savedState.startTime) {
+                        const elapsed = Math.floor((Date.now() - savedState.startTime) / 1000);
+                        const remaining = Math.max(0, EXAM_DURATION_SECONDS - elapsed);
+                        setTimeLeftSeconds(remaining);
+                    } else if (savedState.timeLeftSeconds) {
+                        setTimeLeftSeconds(savedState.timeLeftSeconds);
+                    }
+                    
                     setPhase('active');
                     setShowRestoredNotification(true);
                     setTimeout(() => setShowRestoredNotification(false), 5000);
@@ -67,15 +80,56 @@ function ExamPortalContent() {
     React.useEffect(() => {
         if (isRestoring.current) return;
         if (phase === 'active') {
+            const existingRaw = localStorage.getItem(`course_exam_state_${id}`);
+            let startTime = Date.now();
+            if (existingRaw) {
+                try {
+                    const parsed = JSON.parse(existingRaw);
+                    if (parsed.startTime) startTime = parsed.startTime;
+                } catch {}
+            }
+
             localStorage.setItem(`course_exam_state_${id}`, JSON.stringify({
                 phase,
                 questions,
                 attemptId,
                 currentIdx,
-                answers
+                answers,
+                startTime,
+                timeLeftSeconds
             }));
         }
-    }, [phase, questions, attemptId, currentIdx, answers, id]);
+    }, [phase, questions, attemptId, currentIdx, answers, timeLeftSeconds, id]);
+
+    // 15-minute countdown timer effect
+    React.useEffect(() => {
+        if (phase !== 'active') return;
+
+        if (timeLeftSeconds <= 0) {
+            // Timer expired: auto-submit exam
+            handleSubmitExam();
+            return;
+        }
+
+        const timer = setInterval(() => {
+            setTimeLeftSeconds(prev => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    handleSubmitExam();
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [phase, timeLeftSeconds, attemptId, answers]);
+
+    const formatTimer = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
 
     const startAssessment = async () => {
         setStarting(true);
@@ -89,6 +143,7 @@ function ExamPortalContent() {
                 const fetchedQuestions = detailsRes.data?.data?.questions || [];
                 if (fetchedQuestions.length > 0) {
                     setQuestions(fetchedQuestions);
+                    setTimeLeftSeconds(EXAM_DURATION_SECONDS);
                     setPhase('active');
                 } else {
                     alert("No questions configured in the database for this course exam.");
@@ -97,8 +152,13 @@ function ExamPortalContent() {
             }
         } catch (err: any) {
             console.error("Failed to start assessment:", err);
-            if (err.response?.status !== 401) {
-                alert(err.response?.data?.error || err.response?.data?.message || "Failed to start assessment");
+            const errCode = err.response?.data?.error;
+            const errMsg = err.response?.data?.message;
+
+            if (errCode === 'PARTIAL_LIMIT_EXCEEDED' || errMsg?.includes('partial')) {
+                alert("Candidates with only an Aveling partial payment cannot take the third ticket exam. Please settle your full payment balance to unlock the third ticket exam.");
+            } else if (err.response?.status !== 401) {
+                alert(errMsg || errCode || "Failed to start assessment");
             }
             setStarting(false);
         }
@@ -196,11 +256,13 @@ function ExamPortalContent() {
                         </div>
 
                         <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-6 text-sm text-amber-900 space-y-3">
-                            <p className="font-black uppercase tracking-widest text-xs">Assessment Structure:</p>
-                            <ul className="list-disc list-inside space-y-1.5 text-amber-800 font-medium">
-                                <li>Includes <strong>MCQ</strong>, <strong>Input Answer</strong>, and <strong>Essay Response</strong> question types.</li>
-                                <li>Submission sets status to <strong>Review-Awaiting</strong> while being graded.</li>
-                                <li>On passing, your ticket is issued and a refund is credited to your wallet.</li>
+                            <p className="font-black uppercase tracking-widest text-xs">Official Assessment Protocol:</p>
+                            <ul className="list-disc list-inside space-y-1.5 text-amber-800 font-medium text-xs">
+                                <li><strong>Time Limit:</strong> Each examination is strictly timed at <strong>15 minutes</strong> and will auto-submit when the countdown expires.</li>
+                                <li><strong>Grading Policy:</strong> Your first attempt is graded based on your true submitted answers. In case of a retake, your second attempt is an automatic pass at the pass mark.</li>
+                                <li><strong>Payment Milestone:</strong> Candidates with only an Aveling partial payment cannot sit for the third ticket examination without settling their final balance.</li>
+                                <li><strong>Question Formats:</strong> Includes Multiple Choice (MCQ), Keyword Input, and Short-form Practical Theory.</li>
+                                <li>On passing, your digital certification ticket is issued and candidate wallet refund credited.</li>
                             </ul>
                         </div>
 
@@ -209,7 +271,7 @@ function ExamPortalContent() {
                             disabled={starting}
                             className="w-full inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black py-4 text-sm font-black uppercase tracking-wider rounded-xl shadow-md hover:bg-yellow-400 transition-all disabled:opacity-50 group"
                         >
-                            {starting ? 'Preparing Exam Engine...' : 'Begin Assessment'}
+                            {starting ? 'Preparing Exam Engine...' : 'Begin Assessment (15 Minutes)'}
                             <ArrowRight className="h-5 w-5 stroke-[3] group-hover:translate-x-1 transition-transform" />
                         </button>
                     </div>
@@ -219,12 +281,33 @@ function ExamPortalContent() {
                 {phase === 'active' && questions.length > 0 && (
                     <div className="bg-white border-2 border-zinc-200 rounded-2xl shadow-sm overflow-hidden relative">
                         {showRestoredNotification && (
-                            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-full flex items-center gap-2 text-emerald-800 shadow-sm animate-fade-in">
+                            <div className="absolute top-16 left-1/2 -translate-x-1/2 z-10 px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-full flex items-center gap-2 text-emerald-800 shadow-sm animate-fade-in">
                                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                                 <span className="text-xs font-bold">Previous progress successfully restored.</span>
                             </div>
                         )}
-                        <div className="p-8 border-b-2 border-zinc-100 bg-zinc-50 pt-16">
+
+                        {/* Top Exam Header Strip with 15-Min Timer */}
+                        <div className="bg-zinc-900 text-white px-8 py-4 flex items-center justify-between border-b border-zinc-800">
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[#FFC700] bg-black/40 px-2.5 py-1 rounded">
+                                    Aveling Assessment
+                                </span>
+                                <span className="text-xs text-zinc-400 font-mono hidden sm:inline">Course: {id}</span>
+                            </div>
+                            <div className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-mono font-black border transition-all ${
+                                timeLeftSeconds < 60
+                                    ? 'bg-rose-950 border-rose-500 text-rose-300 animate-pulse'
+                                    : timeLeftSeconds < 300
+                                    ? 'bg-amber-950 border-amber-500 text-amber-300'
+                                    : 'bg-zinc-800 border-zinc-700 text-[#FFC700]'
+                            }`}>
+                                <Clock className="w-3.5 h-3.5" />
+                                <span>Time Remaining: {formatTimer(timeLeftSeconds)}</span>
+                            </div>
+                        </div>
+
+                        <div className="p-8 border-b-2 border-zinc-100 bg-zinc-50 pt-8">
                             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-2">
                                 Question {currentIdx + 1} of {questions.length} • {questions[currentIdx]?.questionType}
                             </span>

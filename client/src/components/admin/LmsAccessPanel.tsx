@@ -35,17 +35,23 @@ export function LmsAccessPanel({ applicantId, initialUsername, initialPassword, 
         }
     }, [applicantId]);
 
-    const handleSaveCredentials = async (e?: React.FormEvent) => {
+    const handleSaveCredentials = async (e?: React.FormEvent, sendEmail: boolean = true) => {
         if (e) e.preventDefault();
         setSaving(true);
         setMessage(null);
         setError(null);
         try {
-            await api.put(`/admin/users/${applicantId}/aveling-credentials`, {
+            const res = await api.put(`/admin/users/${applicantId}/aveling-credentials`, {
                 avelingUsername: candidateId || null,
-                avelingPassword: password || null
+                avelingPassword: password || null,
+                sendEmail
             });
-            setMessage('Aveling candidate credentials saved successfully.');
+            const emailSent = res.data?.emailDispatched;
+            setMessage(
+                emailSent
+                    ? 'Aveling credentials saved and dispatched via Aveling mail to candidate.'
+                    : 'Aveling candidate credentials saved successfully.'
+            );
             setIsEditing(false);
             if (onUpdated) onUpdated();
         } catch (err: any) {
@@ -55,7 +61,7 @@ export function LmsAccessPanel({ applicantId, initialUsername, initialPassword, 
         }
     };
 
-    const handleGenerateCredentials = async () => {
+    const handleGenerateCredentials = async (sendEmail: boolean = false) => {
         setGenerating(true);
         setMessage(null);
         setError(null);
@@ -65,7 +71,7 @@ export function LmsAccessPanel({ applicantId, initialUsername, initialPassword, 
             if (data?.lmsUsername) {
                 setCandidateId(data.lmsUsername);
                 setPassword(data.temporaryPassword || data.password || '');
-                setMessage('Aveling candidate credentials generated!');
+                setMessage('Aveling candidate credentials generated and emailed via Aveling LMS!');
                 if (onUpdated) onUpdated();
             }
         } catch (err: any) {
@@ -154,7 +160,7 @@ export function LmsAccessPanel({ applicantId, initialUsername, initialPassword, 
                     <div className="flex flex-col sm:flex-row gap-3 pt-2">
                         <button
                             type="button"
-                            onClick={handleGenerateCredentials}
+                            onClick={() => handleGenerateCredentials(false)}
                             disabled={generating}
                             className="flex-1 bg-blue-900 hover:bg-blue-800 disabled:opacity-50 text-white py-3 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-md flex items-center justify-center gap-2"
                         >
@@ -162,20 +168,31 @@ export function LmsAccessPanel({ applicantId, initialUsername, initialPassword, 
                             {generating ? 'Generating...' : 'Auto-Generate Credentials'}
                         </button>
                         {(candidateId || password) && (
-                            <button
-                                type="button"
-                                onClick={handleClearCredentials}
-                                disabled={saving}
-                                className="bg-red-50 hover:bg-red-100 text-red-600 py-3 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border border-red-100 flex items-center justify-center gap-1.5"
-                            >
-                                <span className="material-symbols-outlined text-sm">delete</span>
-                                Clear Credentials
-                            </button>
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={(e) => handleSaveCredentials(e, true)}
+                                    disabled={saving}
+                                    className="flex-1 bg-[#FFC700] hover:bg-yellow-400 text-black py-3 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50"
+                                >
+                                    <span className="material-symbols-outlined text-sm">send</span>
+                                    {saving ? 'Sending...' : 'Send via Aveling Mail'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleClearCredentials}
+                                    disabled={saving}
+                                    className="bg-red-50 hover:bg-red-100 text-red-600 py-3 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border border-red-100 flex items-center justify-center gap-1.5"
+                                >
+                                    <span className="material-symbols-outlined text-sm">delete</span>
+                                    Clear
+                                </button>
+                            </>
                         )}
                     </div>
                 </div>
             ) : (
-                <form onSubmit={handleSaveCredentials} className="space-y-4">
+                <form onSubmit={(e) => handleSaveCredentials(e, true)} className="space-y-4">
                     <div>
                         <label className="block text-[9px] font-black uppercase tracking-widest text-blue-900 mb-1.5">
                             Aveling Candidate ID / Username
@@ -201,18 +218,28 @@ export function LmsAccessPanel({ applicantId, initialUsername, initialPassword, 
                         />
                     </div>
 
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex flex-col sm:flex-row gap-2 pt-2">
                         <button
-                            type="submit"
+                            type="button"
+                            onClick={(e) => handleSaveCredentials(e, true)}
                             disabled={saving}
-                            className="flex-1 py-3 bg-blue-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all shadow-md disabled:opacity-50"
+                            className="flex-1 py-3 bg-[#FFC700] text-black text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-yellow-400 transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-1.5"
                         >
-                            {saving ? 'Saving...' : 'Save Credentials'}
+                            <span className="material-symbols-outlined text-sm">send</span>
+                            {saving ? 'Saving & Sending...' : 'Save & Send via Aveling Mail'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={(e) => handleSaveCredentials(e, false)}
+                            disabled={saving}
+                            className="flex-1 py-3 bg-blue-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-800 transition-all shadow-md disabled:opacity-50"
+                        >
+                            {saving ? 'Saving...' : 'Save Only'}
                         </button>
                         <button
                             type="button"
                             onClick={() => setIsEditing(false)}
-                            className="flex-1 py-3 bg-white text-slate-500 border border-slate-200 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 transition-all"
+                            className="py-3 px-4 bg-white text-slate-500 border border-slate-200 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 transition-all"
                         >
                             Cancel
                         </button>

@@ -28,15 +28,28 @@ export class ExamAttemptService {
         const hasPartial = userInvoices.some((i: any) => i.purpose === 'aveling-partial');
 
         if (!hasComplete && hasPartial) {
-            const distinctCoursesAttempted = await ExamAttempt.count({
+            // Rule: if applicant has only aveling partial invoice, they cannot take the third ticket exams
+            const userTickets = await Ticket.findAll({
                 where: { userId },
-                distinct: true,
-                col: 'courseId'
+                order: [['ticketSequenceNumber', 'ASC'], ['createdAt', 'ASC']]
             });
-            const hasAttemptedThisCourse = await ExamAttempt.count({ where: { userId, courseId } });
-            
-            if (hasAttemptedThisCourse === 0 && distinctCoursesAttempted >= 3) {
-                throw new Error('PARTIAL_LIMIT_EXCEEDED');
+            const currentTicket = userTickets.find((t: any) => t.courseId === courseId);
+            if (currentTicket) {
+                const ticketIndex = userTickets.findIndex((t: any) => t.id === currentTicket.id);
+                const seq = currentTicket.ticketSequenceNumber ?? (ticketIndex + 1);
+                if (seq >= 3 || ticketIndex >= 2) {
+                    throw new Error('PARTIAL_LIMIT_EXCEEDED');
+                }
+            } else {
+                const distinctCoursesAttempted = await ExamAttempt.count({
+                    where: { userId },
+                    distinct: true,
+                    col: 'courseId'
+                });
+                const hasAttemptedThisCourse = await ExamAttempt.count({ where: { userId, courseId } });
+                if (hasAttemptedThisCourse === 0 && distinctCoursesAttempted >= 2) {
+                    throw new Error('PARTIAL_LIMIT_EXCEEDED');
+                }
             }
         } else if (!hasComplete && !hasPartial) {
             // Strictly require payment to start (though ticket gate might also catch this)
@@ -130,16 +143,20 @@ export class ExamAttemptService {
         });
 
         const calculatedScore = totalWeight > 0 ? Math.round((earnedWeight / totalWeight) * 100) : 85;
-        let isPass = calculatedScore >= passThreshold;
+        let finalScore = calculatedScore;
+        let isPass = false;
 
-        // Auto-pass 2nd attempt at exactly the passThreshold if they originally failed it
-        if (!isPass && attempt.attemptNumber >= 2) {
-            isPass = true;
-            attempt.score = passThreshold;
+        // Rule: first attempt is graded correctly, second attempt is auto pass at pass mark
+        if (attempt.attemptNumber === 1) {
+            finalScore = calculatedScore;
+            isPass = calculatedScore >= passThreshold;
         } else {
-            attempt.score = calculatedScore;
+            // Second attempt is guaranteed auto pass at the pass mark
+            isPass = true;
+            finalScore = Math.max(calculatedScore, passThreshold);
         }
 
+        attempt.score = finalScore;
         attempt.isPass = isPass;
         await attempt.save();
 
@@ -180,12 +197,12 @@ export class ExamAttemptService {
 
         if (ticket) {
             const { ticketService } = require('./TicketService');
-            await ticketService.recordExamOutcome(ticket.id, isPass, attempt.attemptNumber, calculatedScore);
+            await ticketService.recordExamOutcome(ticket.id, isPass, attempt.attemptNumber, finalScore);
         }
 
         return {
             attempt,
-            score: calculatedScore,
+            score: finalScore,
             isPass,
             requiresManualReview,
             passThreshold
