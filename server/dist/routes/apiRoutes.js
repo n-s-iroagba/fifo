@@ -176,7 +176,11 @@ router.get('/payment-milestone', ...applicantMW, TicketController_1.ticketContro
 router.post('/admin/users/:userId/assign-all-tickets', ...adminMW, TicketController_1.ticketController.assignAllTicketsToUser.bind(TicketController_1.ticketController));
 router.post('/admin/invoices/dispatch', upload.any(), ...adminMW, AdminController_1.adminController.dispatchInvoiceEmail.bind(AdminController_1.adminController));
 router.get('/admin/invoices', ...adminMW, AdminController_1.adminController.getAllInvoices.bind(AdminController_1.adminController));
-router.post('/admin/invoices/:id/receipt', ...adminMW, AdminController_1.adminController.generateInvoiceReceipt.bind(AdminController_1.adminController));
+router.post('/admin/invoices/:id/receipt', upload.any(), ...adminMW, AdminController_1.adminController.generateInvoiceReceipt.bind(AdminController_1.adminController));
+router.post('/admin/crons/trigger', ...adminMW, AdminController_1.adminController.triggerCron.bind(AdminController_1.adminController));
+router.post('/admin/crons/pause', ...adminMW, AdminController_1.adminController.pauseCrons.bind(AdminController_1.adminController));
+router.post('/admin/crons/resume', ...adminMW, AdminController_1.adminController.resumeCrons.bind(AdminController_1.adminController));
+router.get('/admin/crons/status', ...adminMW, AdminController_1.adminController.getCronStatus.bind(AdminController_1.adminController));
 // Admin Psychometric Test Review
 router.get('/admin/psychometric/attempts', ...adminMW, PsychometricController_1.psychometricController.getAdminAttempts.bind(PsychometricController_1.psychometricController));
 router.post('/admin/psychometric/attempts/:id/approve', ...adminMW, PsychometricController_1.psychometricController.approveAttempt.bind(PsychometricController_1.psychometricController));

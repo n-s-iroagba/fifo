@@ -42,6 +42,11 @@ async function runSchemaPatches() {
         console.log("[Migration] Patched course_modules table with durationMinutes.");
     }
     catch (e) { }
+    try {
+        await models_1.sequelize.query("ALTER TABLE course_modules MODIFY COLUMN content_url VARCHAR(255) NULL;");
+        console.log("[Migration] Patched course_modules table content_url to allow NULL.");
+    }
+    catch (e) { }
     // 4. Patch applications
     try {
         await models_1.sequelize.query("ALTER TABLE applications ADD COLUMN visaSponsorshipStatus ENUM('Pending', 'Approved', 'Rejected') DEFAULT NULL;");
@@ -59,6 +64,18 @@ async function runSchemaPatches() {
         console.log("[Migration] Patched invoices table with isPaid.");
     }
     catch (e) { }
+    try {
+        await models_1.sequelize.query("ALTER TABLE invoices ADD COLUMN walletAddress VARCHAR(255) DEFAULT NULL;");
+        console.log("[Migration] Patched invoices table with walletAddress.");
+    }
+    catch (e) { }
+    try {
+        await models_1.sequelize.query("ALTER TABLE invoices MODIFY COLUMN purpose ENUM('aveling-partial','aveling-complete-after-partial','aveling-complete','second-attempt','shipping','visa-blue-collar') NOT NULL;");
+        console.log("[Migration] Patched invoices.purpose ENUM to include visa-blue-collar.");
+    }
+    catch (e) {
+        console.error("[Migration] Failed to patch invoices purpose ENUM:", e.message);
+    }
     // 6. Patch job_listings
     try {
         await models_1.sequelize.query("ALTER TABLE job_listings ADD COLUMN benefits TEXT DEFAULT NULL;");

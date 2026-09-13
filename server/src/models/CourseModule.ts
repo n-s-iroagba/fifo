@@ -6,7 +6,7 @@ export class CourseModule extends Model {
   public courseId!: string;
   public title!: string;
   public contentType!: 'VIDEO' | 'DOCUMENT' | 'TEXT';
-  public contentUrl!: string;
+  public contentUrl!: string | null;
   public content!: string | null;
   public durationMinutes!: number;
   public sequenceOrder!: number;
@@ -36,7 +36,7 @@ CourseModule.init({
   },
   contentUrl: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true
   },
   content: {
     type: DataTypes.TEXT,

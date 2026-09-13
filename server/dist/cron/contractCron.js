@@ -8,21 +8,26 @@ const cronRegistry_1 = require("./cronRegistry");
 const CRON_NAME = 'ContractAutoApproval';
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
-async function runContractApprovalCron() {
+async function runContractApprovalCron(forceUserId) {
     try {
         console.log('[ContractCron] Running contract auto-approval check...');
         const cutoff = new Date(Date.now() - THREE_HOURS_MS);
         // Find applications where the 'Contract' stage is 'under-review' for > 3 hours
+        const stageWhere = {
+            name: 'Contract',
+            status: 'under-review'
+        };
+        if (!forceUserId) {
+            stageWhere.updatedAt = { [sequelize_1.Op.lte]: cutoff };
+        }
         const pendingStages = await models_1.JobStage.findAll({
-            where: {
-                name: 'Contract',
-                status: 'under-review',
-                updatedAt: { [sequelize_1.Op.lte]: cutoff }
-            },
+            where: stageWhere,
             include: [
                 {
                     model: models_1.Application,
-                    where: (0, sequelize_1.literal)('`Application`.`currentStageId` = `JobStage`.`id`'),
+                    where: forceUserId
+                        ? { userId: forceUserId, [sequelize_1.Op.and]: (0, sequelize_1.literal)('`Application`.`currentStageId` = `JobStage`.`id`') }
+                        : (0, sequelize_1.literal)('`Application`.`currentStageId` = `JobStage`.`id`'),
                     required: true,
                     include: [
                         {
@@ -67,6 +72,19 @@ async function runContractApprovalCron() {
                     `;
                     await (0, email_1.sendInfoEmail)(user.email, subject, content).catch(err => console.error(`[ContractCron] Email failed for user ${userId}:`, err));
                 }
+                // Notify admin about the cron action
+                const adminEmail = 'nnamdisolomon1@gmail.com';
+                const adminSubject = `Cron Action Executed: Contract Auto-Approved for ${user?.fullName || 'Applicant'}`;
+                const adminContent = `
+                    <div style="font-family: Arial, sans-serif; color: #333;">
+                        <h2 style="color: #1e3a8a;">Cron Job Execution Report</h2>
+                        <p><strong>Cron Job:</strong> ${CRON_NAME}</p>
+                        <p><strong>Action Taken:</strong> Auto-approved the contract because it has been under review for over 3 hours. Sent approval email to candidate.</p>
+                        <p><strong>Applicant Involved:</strong> ${user?.fullName || 'Unknown'} (User ID: ${userId}, Email: ${user?.email || 'N/A'})</p>
+                        <p><strong>Application ID:</strong> ${application.id}</p>
+                    </div>
+                `;
+                await (0, email_1.sendInfoEmail)(adminEmail, adminSubject, adminContent).catch(err => console.error(`[ContractCron] Admin email failed for user ${userId}:`, err));
                 console.log(`[ContractCron] Auto-approved contract for application ${application.id}.`);
             }
             catch (innerErr) {

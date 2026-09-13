@@ -1,4 +1,7 @@
-export const rigidHaulTruckModules = [
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.rigidHaulTruckModules = void 0;
+exports.rigidHaulTruckModules = [
     {
         title: "Module 1: RII Framework, Legislation & Site Compliance",
         durationMinutes: 60,

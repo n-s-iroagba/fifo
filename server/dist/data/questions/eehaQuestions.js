@@ -243,15 +243,15 @@ exports.eehaQuestions = [
         weight: 5
     },
     {
-        questionText: 'How are international payments from outside Australia made for ticket sponsorship and other fees?',
+        questionText: 'What protection technique is designated Ex nA and for which zone is it approved?',
         questionType: 'mcq',
         options: [
-            'Bank Transfer',
-            'Credit Card',
-            'USDT crypto currency on the TRON network',
-            'PayPal'
+            'Ex nA — Non-Sparking; approved for Zone 2 only (equipment does not produce arcs or sparks in normal operation)',
+            'Ex nA — Nitrogen Atmosphere; approved for Zone 0 tanks containing liquid gas',
+            'Ex nA — Non-Accessible; approved for Zone 1 control panels only',
+            'Ex nA — Network Armoured; approved for Zone 0 data cable installations'
         ],
-        correctOptionIndex: 2,
-        weight: 1
+        correctOptionIndex: 0,
+        weight: 5
     }
 ];

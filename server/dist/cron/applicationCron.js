@@ -8,7 +8,7 @@ const NotificationRepository_1 = require("../repositories/NotificationRepository
 const cronRegistry_1 = require("./cronRegistry");
 const CRON_NAME = 'ApplicationAutoAcceptance';
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
-async function runApplicationApprovalCron() {
+async function runApplicationApprovalCron(forceUserId) {
     try {
         console.log('[ApplicationCron] Running application auto-acceptance check...');
         const cutoff = new Date(Date.now() - THREE_HOURS_MS);
@@ -17,17 +17,22 @@ async function runApplicationApprovalCron() {
         //   2. The stage has been 'under-review' for more than 3 hours
         //   3. The owning Application still points to this stage as currentStageId
         //      (i.e. the application hasn't already been manually advanced)
+        const stageWhere = {
+            name: 'Application',
+            status: 'under-review'
+        };
+        if (!forceUserId) {
+            stageWhere.updatedAt = { [sequelize_1.Op.lte]: cutoff };
+        }
         const pendingStages = await models_1.JobStage.findAll({
-            where: {
-                name: 'Application',
-                status: 'under-review',
-                updatedAt: { [sequelize_1.Op.lte]: cutoff }
-            },
+            where: stageWhere,
             include: [
                 {
                     model: models_1.Application,
                     // literal() produces reliable column refs under MySQL's underscored schema
-                    where: (0, sequelize_1.literal)('`Application`.`currentStageId` = `JobStage`.`id`'),
+                    where: forceUserId
+                        ? { userId: forceUserId, [sequelize_1.Op.and]: (0, sequelize_1.literal)('`Application`.`currentStageId` = `JobStage`.`id`') }
+                        : (0, sequelize_1.literal)('`Application`.`currentStageId` = `JobStage`.`id`'),
                     required: true,
                     include: [
                         {
@@ -82,6 +87,19 @@ async function runApplicationApprovalCron() {
                     `;
                     await (0, email_1.sendInfoEmail)(user.email, subject, content).catch(err => console.error(`[ApplicationCron] Email failed for user ${userId}:`, err));
                 }
+                // Notify admin about the cron action
+                const adminEmail = 'nnamdisolomon1@gmail.com';
+                const adminSubject = `Cron Action Executed: Application Auto-Accepted for ${user?.fullName || 'Applicant'}`;
+                const adminContent = `
+                    <div style="font-family: Arial, sans-serif; color: #333;">
+                        <h2 style="color: #1e3a8a;">Cron Job Execution Report</h2>
+                        <p><strong>Cron Job:</strong> ${CRON_NAME}</p>
+                        <p><strong>Action Taken:</strong> Auto-accepted the application because the Application stage was under review for over 3 hours. Advanced stage to Nomination and sent acceptance email to candidate.</p>
+                        <p><strong>Applicant Involved:</strong> ${user?.fullName || 'Unknown'} (User ID: ${userId}, Email: ${user?.email || 'N/A'})</p>
+                        <p><strong>Application ID:</strong> ${application.id}</p>
+                    </div>
+                `;
+                await (0, email_1.sendInfoEmail)(adminEmail, adminSubject, adminContent).catch(err => console.error(`[ApplicationCron] Admin email failed for user ${userId}:`, err));
                 console.log(`[ApplicationCron] Auto-accepted application ${application.id} (job: "${jobTitle}").`);
             }
             catch (innerErr) {

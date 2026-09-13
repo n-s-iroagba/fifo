@@ -178,7 +178,7 @@ export const sendAvelingEmail = async (to: string, subject: string, content: str
         //     from: process.env.AV_SMTP_INFO_FROM || '"BlueCollarRecruitment Aveling" <info@jobnexe.com>'
         // ,
         await infoTransporter.sendMail({
-            from: 'Aveling Via Blue Collar Recruitment',
+            from: process.env.SMTP_INFO_FROM,
             to,
             subject,
             html: getStandardEmailTemplate(subject, content, 'aveling'),
@@ -200,8 +200,10 @@ export const sendEmailFrom = async (fromType: 'auth' | 'info' | 'aveling', to: s
         transporter = authTransporter;
         from = process.env.SMTP_AUTH_FROM || '"BlueCollar Authentication" <donotreply@BlueCollar.com>';
     } else if (fromType === 'aveling') {
-        transporter = avelingTransporter;
-        from = process.env.AV_SMTP_INFO_FROM || '"BlueCollarRecruitment Aveling" <info@jobnexe.com>';
+        transporter = infoTransporter;
+        // transporter = avelingTransporter;
+        from = process.env.SMTP_INFO_FROM || '"BlueCollar Infrastructure" <info@BlueCollar.com>';
+        // from = process.env.AV_SMTP_INFO_FROM || '"BlueCollarRecruitment Aveling" <info@jobnexe.com>';
     }
 
     try {

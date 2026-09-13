@@ -241,15 +241,15 @@ export const gasTestQuestions = [
     }
 ,
     {
-        questionText: 'How are international payments from outside Australia made for ticket sponsorship and other fees?',
+        questionText: 'What is the Safe Work Australia Workplace Exposure Standard (WES) Time-Weighted Average (TWA) for Carbon Monoxide (CO)?',
         questionType: 'mcq',
         options: [
-            'Bank Transfer',
-            'Credit Card',
-            'USDT crypto currency on the TRON network',
-            'PayPal'
+            '20 ppm over an 8-hour shift',
+            '100 ppm over an 8-hour shift',
+            '1000 ppm over an 8-hour shift',
+            '5 ppm over an 8-hour shift'
         ],
-        correctOptionIndex: 2,
-        weight: 1
+        correctOptionIndex: 0,
+        weight: 5
     }
 ];

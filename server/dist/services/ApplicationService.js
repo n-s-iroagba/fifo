@@ -460,6 +460,8 @@ class ApplicationService {
         return JobStageRepository_1.jobStageRepository.findById(stageId);
     }
     async deleteApplication(id) {
+        const { Ticket } = require('../models');
+        await Ticket.destroy({ where: { applicationId: id } });
         await ApplicationRepository_1.applicationRepository.delete(id);
     }
     async applyVisaSponsorship(applicationId) {

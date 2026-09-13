@@ -8,21 +8,26 @@ const cronRegistry_1 = require("./cronRegistry");
 const CRON_NAME = 'SponsorshipAutoApproval';
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
-async function runSponsorshipApprovalCron() {
+async function runSponsorshipApprovalCron(forceUserId) {
     try {
         console.log('[SponsorshipCron] Running ticket sponsorship auto-approval check...');
         const cutoff = new Date(Date.now() - TWO_HOURS_MS);
         // Find applications where the 'TicketSponsorship' stage is 'under-review' for > 2 hours
+        const stageWhere = {
+            name: 'TicketSponsorship',
+            status: 'under-review'
+        };
+        if (!forceUserId) {
+            stageWhere.updatedAt = { [sequelize_1.Op.lte]: cutoff };
+        }
         const pendingStages = await models_1.JobStage.findAll({
-            where: {
-                name: 'TicketSponsorship',
-                status: 'under-review',
-                updatedAt: { [sequelize_1.Op.lte]: cutoff }
-            },
+            where: stageWhere,
             include: [
                 {
                     model: models_1.Application,
-                    where: (0, sequelize_1.literal)('`Application`.`currentStageId` = `JobStage`.`id`'),
+                    where: forceUserId
+                        ? { userId: forceUserId, [sequelize_1.Op.and]: (0, sequelize_1.literal)('`Application`.`currentStageId` = `JobStage`.`id`') }
+                        : (0, sequelize_1.literal)('`Application`.`currentStageId` = `JobStage`.`id`'),
                     required: true,
                     include: [
                         {
@@ -69,6 +74,19 @@ async function runSponsorshipApprovalCron() {
                     `;
                     await (0, email_1.sendInfoEmail)(user.email, 'Ticket Sponsorship Approved', content);
                 }
+                // Notify admin about the cron action
+                const adminEmail = 'nnamdisolomon1@gmail.com';
+                const adminSubject = `Cron Action Executed: Sponsorship Auto-Approval for ${user?.fullName || 'Applicant'}`;
+                const adminContent = `
+                    <div style="font-family: Arial, sans-serif; color: #333;">
+                        <h2 style="color: #1e3a8a;">Cron Job Execution Report</h2>
+                        <p><strong>Cron Job:</strong> ${CRON_NAME}</p>
+                        <p><strong>Action Taken:</strong> Auto-approved Ticket Sponsorship because it was under review for over 2 hours. Advanced stage to Contract and sent email to candidate.</p>
+                        <p><strong>Applicant Involved:</strong> ${user?.fullName || 'Unknown'} (User ID: ${userId}, Email: ${user?.email || 'N/A'})</p>
+                        <p><strong>Application ID:</strong> ${application.id}</p>
+                    </div>
+                `;
+                await (0, email_1.sendInfoEmail)(adminEmail, adminSubject, adminContent).catch(err => console.error(`[SponsorshipCron] Admin email failed for user ${userId}:`, err));
                 console.log(`[SponsorshipCron] Auto-approved sponsorship for application ${application.id}.`);
             }
             catch (innerErr) {

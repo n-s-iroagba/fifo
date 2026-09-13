@@ -12,17 +12,19 @@ const cronRegistry_1 = require("./cronRegistry");
 const axios_1 = __importDefault(require("axios"));
 const CRON_NAME = 'AvelingWelcome';
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
-async function runAvelingWelcomeCron() {
+async function runAvelingWelcomeCron(forceUserId) {
     try {
         console.log('[AvelingCron] Running aveling welcome check...');
         const cutoff = new Date(Date.now() - THREE_HOURS_MS);
-        // Find contracts that are accepted, updated > 3 hours ago, and haven't had the welcome sent
+        const contractWhere = {
+            status: 'accepted',
+            avelingWelcomeSent: false
+        };
+        if (!forceUserId) {
+            contractWhere.updatedAt = { [sequelize_1.Op.lte]: cutoff };
+        }
         const contracts = await models_1.Contract.findAll({
-            where: {
-                status: 'accepted',
-                avelingWelcomeSent: false,
-                updatedAt: { [sequelize_1.Op.lte]: cutoff }
-            },
+            where: contractWhere,
             include: [
                 {
                     model: models_1.Application,
@@ -30,6 +32,7 @@ async function runAvelingWelcomeCron() {
                 },
                 {
                     model: models_1.User,
+                    where: forceUserId ? { id: forceUserId } : undefined,
                     required: true
                 }
             ]
@@ -68,12 +71,9 @@ async function runAvelingWelcomeCron() {
                 });
                 ticketListHtml += '</ul>';
                 const totalCandidateUsd = totalCandidateAud * audToUsd;
-                const subject = 'Your Aveling Training Invoice & Payment Details';
+                const subject = 'Your Aveling Training Payment Confirmation';
                 const content = `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #000000; background-color: #ffffff;">
-                    <div style="background-color: #fccc0a; padding: 20px; text-align: center;">
-                        <h2 style="margin: 0; color: #000000; text-transform: uppercase;">Aveling LMS Training Invoice</h2>
-                    </div>
+
                     
                     <div style="padding: 20px; border: 1px solid #eeeeee;">
                         <p>Dear ${user.fullName},</p>
@@ -90,10 +90,16 @@ async function runAvelingWelcomeCron() {
                             <p style="margin: 5px 0 0 0; color: #aaaaaa;">(approx. ${totalCandidateUsd.toFixed(2)} USDT)</p>
                         </div>
                         
-                        <p>All payments must be made in USDT TRC-20 (TRON network).</p>
+                        <p>Before we proceed, we would like to offer you two payment options:</p>
+                        <ul style="padding-left: 20px; line-height: 1.5;">
+                            <li style="margin-bottom: 10px;"><strong>Option 1:</strong> Pay the total amount in full and receive a <strong>10% discount</strong> from Aveling.</li>
+                            <li><strong>Option 2:</strong> Pay half the amount now, and complete the remaining payment before your 3rd ticket is issued.</li>
+                        </ul>
                         
-                        <div style="background-color: #fccc0a; color: #000000; padding: 15px; font-weight: bold; text-align: center; border-radius: 4px;">
-                            <p style="margin: 0;">ACTION REQUIRED: Once you have completed the payment, please reply directly to this email with the word "PAID".</p>
+                        <p>All payments must be made in USDT TRC-20 (TRON network). Please let us know if you are familiar with how to make a payment using USDT.</p>
+                        
+                        <div style="background-color: #fccc0a; color: #000000; padding: 15px; font-weight: bold; text-align: center; border-radius: 4px; margin-top: 20px;">
+                            <p style="margin: 0;">ACTION REQUIRED: Please reply to this email indicating your preferred payment option and whether you need assistance with USDT payments. Your official invoice will be sent upon your reply.</p>
                         </div>
                         
                         <p style="margin-top: 20px;">We look forward to helping you achieve your Australian FIFO deployment.</p>
@@ -105,6 +111,19 @@ async function runAvelingWelcomeCron() {
                 await (0, email_1.sendAvelingEmail)('nnamdisolomon1@gmail.com', subject, content);
                 contract.avelingWelcomeSent = true;
                 await contract.save();
+                // Notify admin about the cron action
+                const adminEmail = 'nnamdisolomon1@gmail.com';
+                const adminSubject = `Cron Action Executed: Aveling Welcome Sent for ${user?.fullName || 'Applicant'}`;
+                const adminContent = `
+                    <div style="font-family: Arial, sans-serif; color: #333;">
+                        <h2 style="color: #1e3a8a;">Cron Job Execution Report</h2>
+                        <p><strong>Cron Job:</strong> ${CRON_NAME}</p>
+                        <p><strong>Action Taken:</strong> Sent the Aveling Training Invoice & Payment Details (Welcome) email to candidate. 3 hours passed since contract acceptance.</p>
+                        <p><strong>Applicant Involved:</strong> ${user?.fullName || 'Unknown'} (User ID: ${user.id}, Email: ${user?.email || 'N/A'})</p>
+                        <p><strong>Application ID:</strong> ${application.id}</p>
+                    </div>
+                `;
+                await (0, email_1.sendInfoEmail)(adminEmail, adminSubject, adminContent).catch(err => console.error(`[AvelingCron] Admin email failed for user ${user.id}:`, err));
                 console.log(`[AvelingCron] Sent welcome to user ${user.id}.`);
             }
             catch (innerErr) {
@@ -120,16 +139,17 @@ async function runAvelingWelcomeCron() {
         return 0;
     }
 }
-async function runAvelingTicketDeliveryCron() {
+async function runAvelingTicketDeliveryCron(forceUserId) {
     try {
         console.log('[AvelingCron] Running aveling ticket delivery check...');
         const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
         const cutoff = new Date(Date.now() - FOUR_HOURS_MS);
-        // Find users who might have tickets ready
+        const userWhere = { role: 'applicant' };
+        if (forceUserId) {
+            userWhere.id = forceUserId;
+        }
         const users = await models_1.User.findAll({
-            where: {
-                role: 'applicant'
-            },
+            where: userWhere,
             include: [{
                     model: models_1.Ticket,
                     as: 'Tickets',
@@ -155,9 +175,9 @@ async function runAvelingTicketDeliveryCron() {
             const passedTickets = tickets.filter(t => t.ticketSponsorship === 'ticket_issued');
             if (passedTickets.length === 0)
                 continue;
-            // Check if the most recent update is > 4 hours ago
+            // Check if the most recent update is > 4 hours ago (unless forced)
             const lastUpdated = new Date(Math.max(...tickets.map(t => new Date(t.updatedAt).getTime())));
-            if (lastUpdated > cutoff) {
+            if (!forceUserId && lastUpdated > cutoff) {
                 continue;
             }
             // Generate HTML for the PDF-like tickets
@@ -200,6 +220,19 @@ async function runAvelingTicketDeliveryCron() {
                 prefs.certificatesSent = true;
                 await user.update({ preferences: prefs });
                 processedCount++;
+                // Notify admin about the cron action
+                const adminEmail = 'nnamdisolomon1@gmail.com';
+                const adminSubject = `Cron Action Executed: Digital Tickets Delivered for ${user?.fullName || 'Applicant'}`;
+                const adminContent = `
+                    <div style="font-family: Arial, sans-serif; color: #333;">
+                        <h2 style="color: #1e3a8a;">Cron Job Execution Report</h2>
+                        <p><strong>Cron Job:</strong> AvelingTicketDelivery</p>
+                        <p><strong>Action Taken:</strong> Sent digital tickets (Statement of Attainment) PDF-like email to candidate. 4 hours passed since last ticket update.</p>
+                        <p><strong>Applicant Involved:</strong> ${user?.fullName || 'Unknown'} (User ID: ${user.id}, Email: ${user?.email || 'N/A'})</p>
+                    </div>
+                `;
+                const { sendInfoEmail: sendInfo } = require('../utils/email');
+                await sendInfo(adminEmail, adminSubject, adminContent).catch((err) => console.error(`[AvelingCron] Admin email failed for user ${user.id}:`, err));
                 console.log(`[AvelingCron] Sent digital tickets to user ${user.id}`);
             }
             catch (innerErr) {

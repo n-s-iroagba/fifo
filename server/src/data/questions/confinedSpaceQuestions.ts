@@ -241,15 +241,15 @@ export const confinedSpaceQuestions = [
     }
 ,
     {
-        questionText: 'How are international payments from outside Australia made for ticket sponsorship and other fees?',
+        questionText: 'Under AS 2865, what is the minimum number of gas tests that should be performed before issuing a confined space entry permit — and which gases must always be tested for?',
         questionType: 'mcq',
         options: [
-            'Bank Transfer',
-            'Credit Card',
-            'USDT crypto currency on the TRON network',
-            'PayPal'
+            'At least one full multi-gas atmospheric test covering oxygen (O2), flammable gas (LEL), hydrogen sulfide (H2S), and carbon monoxide (CO) at all levels of the space',
+            'Only a visual check for visible vapours; gas testing is optional if the space smells clean',
+            'A single reading at the entry opening is sufficient before the entry supervisor signs off',
+            'Gas testing is only required if the confined space is underground or in a mine environment'
         ],
-        correctOptionIndex: 2,
-        weight: 1
+        correctOptionIndex: 0,
+        weight: 5
     }
 ];

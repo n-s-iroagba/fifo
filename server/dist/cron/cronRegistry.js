@@ -6,10 +6,19 @@
  * Exposed via GET /health/crons for production observability.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.setCronsPaused = setCronsPaused;
+exports.areCronsPaused = areCronsPaused;
 exports.registerCron = registerCron;
 exports.recordCronRun = recordCronRun;
 exports.getCronStatus = getCronStatus;
 const registry = new Map();
+let globalCronsPaused = false;
+function setCronsPaused(paused) {
+    globalCronsPaused = paused;
+}
+function areCronsPaused() {
+    return globalCronsPaused;
+}
 function registerCron(name) {
     registry.set(name, {
         name,

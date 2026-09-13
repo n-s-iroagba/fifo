@@ -243,15 +243,15 @@ exports.firstAidQuestions = [
         weight: 5
     },
     {
-        questionText: 'How are international payments from outside Australia made for ticket sponsorship and other fees?',
+        questionText: 'Under ARC 2023 guidelines, how frequently must the CPR component of HLTAID011 Provide First Aid be renewed to remain current?',
         questionType: 'mcq',
         options: [
-            'Bank Transfer',
-            'Credit Card',
-            'USDT crypto currency on the TRON network',
-            'PayPal'
+            'Annually — the CPR (HLTAID009) component must be refreshed every 12 months even though the full HLTAID011 is valid for 3 years',
+            'Every 5 years at the same time as the full first aid certificate',
+            'Every 2 years, aligned with the national immunisation schedule',
+            'No renewal is required once HLTAID011 is issued — it is a lifetime qualification'
         ],
-        correctOptionIndex: 2,
-        weight: 1
+        correctOptionIndex: 0,
+        weight: 5
     }
 ];

@@ -267,12 +267,17 @@ class AdminController {
                 content: file.buffer,
                 contentType: file.mimetype
             })) || [];
-            await sendInvoiceEmail(email || user.email, user.fullName, invoiceType, parseFloat(partAmount || '0'), parseFloat(totalCost || '0'), parseFloat(subsidyPercentage || '0'), parseFloat(finalAmountDue || '0'), attachments, walletAddress);
-            // Record invoice in DB
+            const parsedFinalAmount = parseFloat(finalAmountDue || '0');
+            const parsedPartAmount = parseFloat(partAmount || '0');
+            const parsedTotalCost = parseFloat(totalCost || '0');
+            const parsedSubsidy = parseFloat(subsidyPercentage || String(user.subsidyPercentage || 0));
+            await sendInvoiceEmail(email || user.email, user.fullName, invoiceType, parsedPartAmount, parsedTotalCost, parsedSubsidy, parsedFinalAmount, attachments, walletAddress || undefined);
+            // Persist the invoice record
             await Invoice.create({
                 applicantId: user.id,
                 purpose: invoiceType,
-                amountInUSD: parseFloat(finalAmountDue || '0')
+                amountInUSD: parsedFinalAmount,
+                walletAddress: walletAddress || null,
             });
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Invoice email dispatched successfully' });
         }
@@ -311,14 +316,25 @@ class AdminController {
             invoice.receiptProofSubmission = new Date();
             await invoice.save();
             const receiptType = invoice.purpose === 'visa-blue-collar' ? 'blue-collar' : 'aveling';
+            const rawFiles = req.files;
+            const attachments = rawFiles?.map((file) => ({
+                filename: file.originalname,
+                content: file.buffer,
+                contentType: file.mimetype
+            })) || [];
             if (invoice.applicant && invoice.applicant.email) {
-                await sendReceiptEmail(invoice.applicant.email, invoice.applicant.fullName, receiptType, parseFloat(invoice.amountInUSD || '0'), invoice.id);
+                await sendReceiptEmail(invoice.applicant.email, invoice.applicant.fullName, receiptType, parseFloat(invoice.amountInUSD || '0'), invoice.id, attachments, invoice.walletAddress || undefined);
             }
             if (invoice.purpose && invoice.purpose.startsWith('aveling')) {
                 const { ticketService } = require('../services/TicketService');
                 await ticketService.processAvelingInvoicePayment(invoice.applicantId, invoice.purpose);
             }
-            res.status(200).json({ success: true, message: 'Receipt generated, marked as paid, and emailed.' });
+            const senderLabel = receiptType === 'blue-collar' ? 'BlueCollar Infrastructure' : 'Aveling LMS Training';
+            res.status(200).json({
+                success: true,
+                message: `Receipt generated, marked as paid, and dispatched via ${senderLabel}.`,
+                invoice
+            });
         }
         catch (error) {
             console.error('[AdminController.generateInvoiceReceipt]', error);
@@ -394,6 +410,87 @@ class AdminController {
         catch (error) {
             console.error('[AdminController.triggerSeed]', error);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || constants_1.CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
+        }
+    }
+    async triggerCron(req, res) {
+        try {
+            const { applicantId, cronName } = req.body;
+            if (!applicantId || !cronName) {
+                res.status(400).json({ success: false, message: 'Applicant ID and Cron Name are required' });
+                return;
+            }
+            let result = 0;
+            switch (cronName) {
+                case 'application':
+                    const { runApplicationApprovalCron } = require('../cron/applicationCron');
+                    result = await runApplicationApprovalCron(parseInt(applicantId));
+                    break;
+                case 'nomination':
+                    const { runNominationFollowupCron } = require('../cron/nominationCron');
+                    result = await runNominationFollowupCron(parseInt(applicantId));
+                    break;
+                case 'sponsorship':
+                    const { runSponsorshipApprovalCron } = require('../cron/sponsorshipCron');
+                    result = await runSponsorshipApprovalCron(parseInt(applicantId));
+                    break;
+                case 'contract':
+                    const { runContractApprovalCron } = require('../cron/contractCron');
+                    result = await runContractApprovalCron(parseInt(applicantId));
+                    break;
+                case 'aveling-welcome':
+                    const { runAvelingWelcomeCron } = require('../cron/avelingCron');
+                    result = await runAvelingWelcomeCron(parseInt(applicantId));
+                    break;
+                case 'aveling-delivery':
+                    const { runAvelingTicketDeliveryCron } = require('../cron/avelingCron');
+                    result = await runAvelingTicketDeliveryCron(parseInt(applicantId));
+                    break;
+                case 'psychometric':
+                    const { runPsychometricApprovalCron } = require('../cron/psychometricCron');
+                    result = await runPsychometricApprovalCron(parseInt(applicantId));
+                    break;
+                default:
+                    res.status(400).json({ success: false, message: 'Invalid cron name' });
+                    return;
+            }
+            res.status(200).json({ success: true, message: `Cron triggered successfully. Processes affected: ${result}` });
+        }
+        catch (error) {
+            console.error('[AdminController.triggerCron]', error);
+            res.status(500).json({ success: false, message: error.message || 'Failed to trigger cron' });
+        }
+    }
+    async pauseCrons(req, res) {
+        try {
+            const { setCronsPaused } = require('../cron/cronRegistry');
+            setCronsPaused(true);
+            res.status(200).json({ success: true, message: 'All crons have been paused.' });
+        }
+        catch (error) {
+            console.error('[AdminController.pauseCrons]', error);
+            res.status(500).json({ success: false, message: error.message || 'Failed to pause crons' });
+        }
+    }
+    async resumeCrons(req, res) {
+        try {
+            const { setCronsPaused } = require('../cron/cronRegistry');
+            setCronsPaused(false);
+            res.status(200).json({ success: true, message: 'All crons have been resumed.' });
+        }
+        catch (error) {
+            console.error('[AdminController.resumeCrons]', error);
+            res.status(500).json({ success: false, message: error.message || 'Failed to resume crons' });
+        }
+    }
+    async getCronStatus(req, res) {
+        try {
+            const { areCronsPaused } = require('../cron/cronRegistry');
+            const paused = areCronsPaused();
+            res.status(200).json({ success: true, paused });
+        }
+        catch (error) {
+            console.error('[AdminController.getCronStatus]', error);
+            res.status(500).json({ success: false, message: error.message || 'Failed to get cron status' });
         }
     }
 }

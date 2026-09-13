@@ -114,7 +114,7 @@ export async function seedOnlineTickets(): Promise<void> {
                 sequenceOrder: 1,
                 content: `Comprehensive online theory module for ${data.certificationName}.`,
                 contentType: 'TEXT',
-                contentUrl: 'local-content'
+                contentUrl: null
             }
         });
 

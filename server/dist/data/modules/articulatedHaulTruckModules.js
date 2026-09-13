@@ -1,4 +1,7 @@
-export const articulatedHaulTruckModules = [
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.articulatedHaulTruckModules = void 0;
+exports.articulatedHaulTruckModules = [
     {
         title: "Module 1: RII Framework, ADT Legislation & Site Compliance",
         durationMinutes: 60,

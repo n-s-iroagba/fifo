@@ -93,14 +93,14 @@ async function seedLmsAndTickets() {
                         sequenceOrder: m.sequenceOrder,
                         content: m.content,
                         contentType: m.contentType || 'TEXT',
-                        contentUrl: m.contentUrl || 'local-content'
+                        contentUrl: m.contentUrl !== undefined ? m.contentUrl : null
                     }
                 });
                 await mod.update({
                     content: m.content,
                     durationMinutes: m.durationMinutes,
                     contentType: m.contentType || 'TEXT',
-                    contentUrl: m.contentUrl || 'local-content',
+                    contentUrl: m.contentUrl !== undefined ? m.contentUrl : null,
                     sequenceOrder: m.sequenceOrder
                 });
             }
@@ -165,7 +165,9 @@ async function seedDatabase() {
     console.log('====================================================');
 }
 if (require.main === module) {
-    seedDatabase().catch(err => {
+    seedDatabase().then(() => {
+        process.exit(0);
+    }).catch(err => {
         console.error('Seeding failed:', err);
         process.exit(1);
     });

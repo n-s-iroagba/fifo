@@ -243,15 +243,15 @@ exports.workingAtHeightsQuestions = [
         weight: 5
     },
     {
-        questionText: 'How are international payments from outside Australia made for ticket sponsorship and other fees?',
+        questionText: 'What is the maximum free-fall distance permitted under AS/NZS 1891.1 before a shock-absorbing lanyard must activate and arrest a fall?',
         questionType: 'mcq',
         options: [
-            'Bank Transfer',
-            'Credit Card',
-            'USDT crypto currency on the TRON network',
-            'PayPal'
+            '2 metres of free fall, after which the energy absorber deploys — total fall distance including deployment is factored into fall clearance calculations',
+            '10 metres, as the absorber requires momentum to deploy correctly',
+            '0.5 metres — any greater free fall is prohibited on all sites',
+            'There is no regulated maximum; the anchor point height alone determines safety'
         ],
-        correctOptionIndex: 2,
-        weight: 1
+        correctOptionIndex: 0,
+        weight: 5
     }
 ];

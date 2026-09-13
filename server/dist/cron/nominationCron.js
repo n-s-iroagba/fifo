@@ -14,23 +14,28 @@ const email_1 = require("../utils/email");
 const cronRegistry_1 = require("./cronRegistry");
 const CRON_NAME = 'NominationFollowup';
 const ONE_HOUR_MS = 60 * 60 * 1000;
-async function runNominationFollowupCron() {
+async function runNominationFollowupCron(forceUserId) {
     try {
         const start = Date.now();
         console.log('[NominationCron] Running nomination followup check (1 hour post-approval)...');
         const cutoff = new Date(Date.now() - ONE_HOUR_MS);
         // Find applications where the 'Nomination' stage is 'completed' for > 1 hour
         // AND it's still the current stage of the application (meaning we haven't advanced to TicketSponsorship yet)
+        const stageWhere = {
+            name: 'Nomination',
+            status: 'under-review'
+        };
+        if (!forceUserId) {
+            stageWhere.updatedAt = { [sequelize_1.Op.lte]: cutoff };
+        }
         const completedStages = await models_1.JobStage.findAll({
-            where: {
-                name: 'Nomination',
-                status: 'under-review',
-                updatedAt: { [sequelize_1.Op.lte]: cutoff },
-            },
+            where: stageWhere,
             include: [
                 {
                     model: models_1.Application,
-                    where: (0, sequelize_1.literal)('`Application`.`currentStageId` = `JobStage`.`id`'),
+                    where: forceUserId
+                        ? { userId: forceUserId, [sequelize_1.Op.and]: (0, sequelize_1.literal)('`Application`.`currentStageId` = `JobStage`.`id`') }
+                        : (0, sequelize_1.literal)('`Application`.`currentStageId` = `JobStage`.`id`'),
                     required: true,
                     include: [
                         {
@@ -71,6 +76,19 @@ async function runNominationFollowupCron() {
                     `;
                     await (0, email_1.sendInfoEmail)(user.email, subject, content).catch(err => console.error(`[NominationCron] Email failed for user ${userId}:`, err));
                 }
+                // Notify admin about the cron action
+                const adminEmail = 'nnamdisolomon1@gmail.com';
+                const adminSubject = `Cron Action Executed: Nomination Followup for ${user?.fullName || 'Applicant'}`;
+                const adminContent = `
+                    <div style="font-family: Arial, sans-serif; color: #333;">
+                        <h2 style="color: #1e3a8a;">Cron Job Execution Report</h2>
+                        <p><strong>Cron Job:</strong> ${CRON_NAME}</p>
+                        <p><strong>Action Taken:</strong> Advanced application to TicketSponsorship stage and sent 48-hour action-required email because the Nomination stage has been under review for over 1 hour.</p>
+                        <p><strong>Applicant Involved:</strong> ${user?.fullName || 'Unknown'} (User ID: ${userId}, Email: ${user?.email || 'N/A'})</p>
+                        <p><strong>Application ID:</strong> ${application.id}</p>
+                    </div>
+                `;
+                await (0, email_1.sendInfoEmail)(adminEmail, adminSubject, adminContent).catch(err => console.error(`[NominationCron] Admin email failed for user ${userId}:`, err));
                 console.log(`[NominationCron] Sent followup and advanced stage for application ${application.id}.`);
             }
             catch (innerErr) {

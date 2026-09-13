@@ -8,17 +8,23 @@ const email_1 = require("../utils/email");
 const cronRegistry_1 = require("./cronRegistry");
 const CRON_NAME = 'PsychometricAutoApproval';
 const ONE_HOUR_MS = 60 * 60 * 1000;
-async function runPsychometricApprovalCron() {
+async function runPsychometricApprovalCron(forceUserId) {
     try {
         console.log('[PsychometricCron] Running module 2 auto-approval check...');
         const cutoff = new Date(Date.now() - ONE_HOUR_MS);
         // Find users who have module 2 pending
+        const whereClause = {
+            module: 'module_2',
+            passed: false
+        };
+        if (forceUserId) {
+            whereClause.userId = forceUserId;
+        }
+        else {
+            whereClause.createdAt = { [sequelize_1.Op.lte]: cutoff };
+        }
         const attempts = await models_1.PsychometricAttempt.findAll({
-            where: {
-                module: 'module_2',
-                passed: false,
-                createdAt: { [sequelize_1.Op.lte]: cutoff }
-            },
+            where: whereClause,
             include: [{ model: models_1.User, required: true }]
         });
         console.log(`[PsychometricCron] Found ${attempts.length} potential module 2 attempts to auto-approve.`);
@@ -45,6 +51,19 @@ async function runPsychometricApprovalCron() {
                         <p>If you have uploaded your CV and updated your details, kindly go back to your dashboard and visit the job listing and click the blue button that reads "Submit Application" to submit your application</p>
                         <p>Yours sincerely,<br>Blue Collar Recruitment Pty Ltd</p>
                         `);
+                    // Notify admin about the cron action
+                    const adminEmail = 'nnamdisolomon1@gmail.com';
+                    const adminSubject = `Cron Action Executed: Psychometric Auto-Approval for ${user?.fullName || 'Applicant'}`;
+                    const adminContent = `
+                        <div style="font-family: Arial, sans-serif; color: #333;">
+                            <h2 style="color: #1e3a8a;">Cron Job Execution Report</h2>
+                            <p><strong>Cron Job:</strong> ${CRON_NAME}</p>
+                            <p><strong>Action Taken:</strong> Auto-approved Psychometric Module 2 because 1 hour has elapsed since attempt creation. Stage updated and email sent to candidate.</p>
+                            <p><strong>Applicant Involved:</strong> ${user?.fullName || 'Unknown'} (User ID: ${user.id}, Email: ${user?.email || 'N/A'})</p>
+                        </div>
+                    `;
+                    const { sendInfoEmail } = require('../utils/email');
+                    await sendInfoEmail(adminEmail, adminSubject, adminContent).catch((err) => console.error(`[PsychometricCron] Admin email failed for user ${user.id}:`, err));
                     console.log(`[PsychometricCron] Auto-approved module 2 for user ${user.id}.`);
                 }
                 catch (innerErr) {

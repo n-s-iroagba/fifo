@@ -58,6 +58,20 @@ const seedData = [
         code: 'AUR20220',
         format: 'Mixed',
         price: 850.00
+    },
+    {
+        certificationName: 'RIIMPO333ED Conduct rigid haul truck operations',
+        description: 'RII competency for operating rear-dump rigid haul trucks (Komatsu 785, CAT 785, Liebherr T 264) on open-cut mine sites in WA and QLD',
+        code: 'RIIMPO333ED',
+        format: 'Mixed',
+        price: 1350.00
+    },
+    {
+        certificationName: 'RIIMPO337E Conduct articulated haul truck operations',
+        description: 'RII competency for operating articulated dump trucks (Volvo A40G, Bell B40E, CAT 745) on open-cut mining and civil construction sites',
+        code: 'RIIMPO337E',
+        format: 'Mixed',
+        price: 1250.00
     }
 ];
 async function seedOnlineTickets() {
@@ -91,7 +105,7 @@ async function seedOnlineTickets() {
                 sequenceOrder: 1,
                 content: `Comprehensive online theory module for ${data.certificationName}.`,
                 contentType: 'TEXT',
-                contentUrl: 'local-content'
+                contentUrl: null
             }
         });
         // Exam Config

@@ -241,15 +241,15 @@ export const whiteCardQuestions = [
     }
 ,
     {
-        questionText: 'How are international payments from outside Australia made for ticket sponsorship and other fees?',
+        questionText: 'What is the legal definition of "High Risk Construction Work" under the WHS Regulations 2022 that triggers the requirement for a SWMS?',
         questionType: 'mcq',
         options: [
-            'Bank Transfer',
-            'Credit Card',
-            'USDT crypto currency on the TRON network',
-            'PayPal'
+            'Work carried out on or near energised electrical installations, at height greater than 2 metres, in or near a confined space, or demolition work',
+            'Work carried out in a temperature below 10°C or above 35°C',
+            'Work requiring the use of power tools on any site with more than 5 workers present',
+            'Work that takes longer than 4 hours to complete on any single day'
         ],
-        correctOptionIndex: 2,
-        weight: 1
+        correctOptionIndex: 0,
+        weight: 5
     }
 ];

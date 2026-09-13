@@ -39,6 +39,10 @@ export async function runSchemaPatches(): Promise<void> {
         await sequelize.query("ALTER TABLE course_modules ADD COLUMN duration_minutes INTEGER DEFAULT 30;");
         console.log("[Migration] Patched course_modules table with durationMinutes.");
     } catch (e: any) {}
+    try {
+        await sequelize.query("ALTER TABLE course_modules MODIFY COLUMN content_url VARCHAR(255) NULL;");
+        console.log("[Migration] Patched course_modules table content_url to allow NULL.");
+    } catch (e: any) {}
 
     // 4. Patch applications
     try {

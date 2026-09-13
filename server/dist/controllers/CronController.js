@@ -8,6 +8,7 @@ const sponsorshipCron_1 = require("../cron/sponsorshipCron");
 const avelingCron_1 = require("../cron/avelingCron");
 const psychometricCron_1 = require("../cron/psychometricCron");
 const email_1 = require("../utils/email");
+const cronRegistry_1 = require("../cron/cronRegistry");
 const notifyAdmin = async (cronName, itemsProcessed) => {
     if (itemsProcessed <= 0)
         return; // Do not send email if nothing happened
@@ -20,6 +21,8 @@ const notifyAdmin = async (cronName, itemsProcessed) => {
 };
 exports.cronController = {
     async application(req, res) {
+        if ((0, cronRegistry_1.areCronsPaused)())
+            return res.status(200).json({ success: true, processed: 0, paused: true });
         try {
             const count = await (0, applicationCron_1.runApplicationApprovalCron)();
             await notifyAdmin('Application Auto-Acceptance', count);
@@ -31,6 +34,8 @@ exports.cronController = {
         }
     },
     async nomination(req, res) {
+        if ((0, cronRegistry_1.areCronsPaused)())
+            return res.status(200).json({ success: true, processed: 0, paused: true });
         try {
             const count = await (0, nominationCron_1.runNominationFollowupCron)();
             await notifyAdmin('Nomination Followup', count);
@@ -42,6 +47,8 @@ exports.cronController = {
         }
     },
     async contract(req, res) {
+        if ((0, cronRegistry_1.areCronsPaused)())
+            return res.status(200).json({ success: true, processed: 0, paused: true });
         try {
             const count = await (0, contractCron_1.runContractApprovalCron)();
             await notifyAdmin('Contract Auto-Approval', count);
@@ -53,6 +60,8 @@ exports.cronController = {
         }
     },
     async sponsorship(req, res) {
+        if ((0, cronRegistry_1.areCronsPaused)())
+            return res.status(200).json({ success: true, processed: 0, paused: true });
         try {
             const count = await (0, sponsorshipCron_1.runSponsorshipApprovalCron)();
             await notifyAdmin('Sponsorship Auto-Approval', count);
@@ -64,6 +73,8 @@ exports.cronController = {
         }
     },
     async aveling(req, res) {
+        if ((0, cronRegistry_1.areCronsPaused)())
+            return res.status(200).json({ success: true, processed: 0, paused: true });
         try {
             const count1 = await (0, avelingCron_1.runAvelingWelcomeCron)();
             const count2 = await (0, avelingCron_1.runAvelingTicketDeliveryCron)();
@@ -77,6 +88,8 @@ exports.cronController = {
         }
     },
     async psychometric(req, res) {
+        if ((0, cronRegistry_1.areCronsPaused)())
+            return res.status(200).json({ success: true, processed: 0, paused: true });
         try {
             const count = await (0, psychometricCron_1.runPsychometricApprovalCron)();
             await notifyAdmin('Psychometric Auto-Approval', count);

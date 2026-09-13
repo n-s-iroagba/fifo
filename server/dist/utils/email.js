@@ -169,8 +169,11 @@ const sendInfoEmail = async (to, subject, content, attachments = []) => {
 exports.sendInfoEmail = sendInfoEmail;
 const sendAvelingEmail = async (to, subject, content, attachments = []) => {
     try {
-        await avelingTransporter.sendMail({
-            from: process.env.AV_SMTP_INFO_FROM || '"BlueCollarRecruitment Aveling" <info@jobnexe.com>',
+        // await avelingTransporter.sendMail({
+        //     from: process.env.AV_SMTP_INFO_FROM || '"BlueCollarRecruitment Aveling" <info@jobnexe.com>'
+        // ,
+        await infoTransporter.sendMail({
+            from: process.env.SMTP_INFO_FROM,
             to,
             subject,
             html: getStandardEmailTemplate(subject, content, 'aveling'),
@@ -249,9 +252,9 @@ const sendInvoiceEmail = async (to, candidateName, invoiceType, partAmount, tota
         <p>Please find the details of your invoice for <strong>${note}</strong></p>
         <p><strong>Financial Breakdown (USDT):</strong></p>
         <ul>
-            <li>Total Cost: $${totalCost.toFixed(2)}</li>
-            <li>Approved Subsidy: ${subsidyPercentage}%</li>
-            <li>Part/Adjusted Amount: $${partAmount.toFixed(2)}</li>
+            ${totalCost > 0 ? `<li>Total Cost: $${totalCost.toFixed(2)}</li>` : ''}
+            ${subsidyPercentage > 0 && totalCost > 0 ? `<li>Approved Subsidy: ${subsidyPercentage}%</li>` : ''}
+            ${partAmount > 0 ? `<li>Part/Adjusted Amount: $${partAmount.toFixed(2)}</li>` : ''}
             <li><strong>Final Amount Due: $${finalAmountDue.toFixed(2)} USDT</strong></li>
         </ul>
         <div style="background-color: #f8fafc; padding: 15px; border-left: 4px solid #FFC700; margin: 20px 0;">
@@ -271,17 +274,19 @@ const sendInvoiceEmail = async (to, candidateName, invoiceType, partAmount, tota
 };
 exports.sendInvoiceEmail = sendInvoiceEmail;
 // 4. Receipt Email Template
-const sendReceiptEmail = async (to, candidateName, receiptType, amountPaid, invoiceId, attachments = []) => {
+const sendReceiptEmail = async (to, candidateName, receiptType, amountPaid, invoiceId, attachments = [], walletAddress) => {
     const emailServer = receiptType === 'aveling' ? 'aveling' : 'info';
-    const subject = `Payment Receipt - Invoice #${invoiceId}`;
+    const subject = `Official Payment Receipt - Invoice #${invoiceId}`;
     const content = `
         <p>Dear ${candidateName},</p>
-        <p>We have successfully received your payment.</p>
-        <p><strong>Receipt Details:</strong></p>
+        <p>We have successfully received and verified your payment.</p>
+        <p><strong>Official Receipt Particulars:</strong></p>
         <ul>
             <li>Linked Invoice ID: #${invoiceId}</li>
-            <li>Amount Paid: $${amountPaid.toFixed(2)}</li>
-            <li>Category: ${receiptType === 'aveling' ? 'Aveling LMS Training' : 'BlueCollar Infrastructure'}</li>
+            <li>Amount Paid: $${amountPaid.toFixed(2)} USDT</li>
+            <li>Issuing Entity: ${receiptType === 'aveling' ? 'Aveling LMS Training' : 'BlueCollar Infrastructure'}</li>
+            ${walletAddress ? `<li>Payment Network: TRC-20 Tron Network (${walletAddress})</li>` : ''}
+            <li>Verification Status: Confirmed & Paid</li>
         </ul>
         <p>Thank you for your prompt payment.</p>
     `;

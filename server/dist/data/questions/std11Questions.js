@@ -243,15 +243,15 @@ exports.std11Questions = [
         weight: 5
     },
     {
-        questionText: 'How are international payments from outside Australia made for ticket sponsorship and other fees?',
+        questionText: 'What is the purpose of a Hazard Observation Card (HOC) or Near Miss Report form on a mine site?',
         questionType: 'mcq',
         options: [
-            'Bank Transfer',
-            'Credit Card',
-            'USDT crypto currency on the TRON network',
-            'PayPal'
+            'To formally record a hazard, near miss, or unsafe condition so corrective actions can be implemented to prevent future incidents',
+            'To request annual leave from your supervisor during a busy production period',
+            'To report another worker\'s behaviour to management for disciplinary purposes',
+            'To document the quantity of materials used on a specific task'
         ],
-        correctOptionIndex: 2,
-        weight: 1
+        correctOptionIndex: 0,
+        weight: 5
     }
 ];

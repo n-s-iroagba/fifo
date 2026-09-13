@@ -28,7 +28,7 @@ CourseModule.init({
     },
     contentUrl: {
         type: sequelize_1.DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     content: {
         type: sequelize_1.DataTypes.TEXT,
