@@ -399,7 +399,7 @@ export default function NominationsPage() {
                                             <label className="text-[9px] font-bold text-blue-400 uppercase tracking-widest px-1">Competitor Count (auto: total pool)</label>
                                             <input
                                                 type="text"
-                                                value={opt.competitors || `${totalApplicants} Applicants`}
+                                                value={opt.competitors}
                                                 onChange={(e) => {
                                                     const n = [...options]; n[idx].competitors = e.target.value; setOptions(n);
                                                 }}
