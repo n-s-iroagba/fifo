@@ -222,7 +222,7 @@ export default function NominationsPage() {
             return;
         }
         try {
-            const uri = await generateNominationPDF(applicant, options, totalApplicants, getToday());
+            const uri = await generateNominationPDF(applicant, options, (options.reduce((sum, current) => sum + Number(current.competitors), 0)), getToday());
             setPreviewPdf(uri);
         } catch (err: any) {
             setError('PDF preview failed: ' + (err.message || err));
@@ -234,7 +234,7 @@ export default function NominationsPage() {
         const applicant = applicants.find((a: any) => a.id.toString() === selectedApplicant);
         if (!applicant) { setError('Please select a candidate.'); return; }
         try {
-            await downloadNominationDOCX(applicant, options, totalApplicants, getToday());
+            await downloadNominationDOCX(applicant, options, (options.reduce((sum, current) => sum + Number(current.competitors), 0)), getToday());
         } catch (err: any) {
             setError('DOCX download failed: ' + (err.message || err));
         }
@@ -243,7 +243,7 @@ export default function NominationsPage() {
     const handleSendNomination = async (e: React.FormEvent) => {
         e.preventDefault();
         if (isSubmittingLocal) return;
-        
+
         if (!selectedApplicant || options.length === 0 || !appId) {
             setError('Please select a candidate with an active application.');
             return;
@@ -259,7 +259,7 @@ export default function NominationsPage() {
         }
 
         try {
-            const pdfUri = await generateNominationPDF(applicant, options, totalApplicants, getToday());
+            const pdfUri = await generateNominationPDF(applicant, options, (options.reduce((sum, current) => sum + Number(current.competitors), 0)), getToday());
             const base64 = pdfUri.split(',')[1];
 
             // Create nominations on server (triggers stage update + email via controller)
