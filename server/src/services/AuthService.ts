@@ -149,17 +149,36 @@ export class AuthService {
                     A separate email will be sent detailing the Visa Sponsorship and Processing steps as you prepare for deployment.
                 </li>
             </ol>
+            <div style="background-color:#fff8e1;border-left:5px solid #FFC700;padding:18px 22px;border-radius:8px;margin:28px 0;">
+                <p style="margin:0 0 10px 0;font-weight:900;font-size:15px;color:#1a1a1a;text-transform:uppercase;letter-spacing:0.5px;">
+                    📄 ACTION REQUIRED: Read the Attached Hiring Process Document
+                </p>
+                <p style="margin:0 0 10px 0;color:#374151;font-size:14px;font-weight:600;line-height:1.6;">
+                    We have attached our <strong>Hiring Process Guide</strong> to this email. It contains critical information about every stage of your recruitment journey — timelines, required documents, and what to expect at each milestone.
+                </p>
+                <p style="margin:0;color:#374151;font-size:14px;font-weight:700;">
+                    ⚠️ You are expected to have read and understood this document before proceeding with your application. It will be referenced at each stage of the process.
+                </p>
+            </div>
             <div class="cta-block">
                 <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/profile" class="button">Complete Your Profile Now</a>
             </div>
             <p style="margin-top: 20px;">We look forward to helping you advance your career.</p>
         `;
 
+        const hiringProcessPath = path.resolve(__dirname, '../../assets/HIRING_PROCESS.pdf');
+
         await sendAuthEmail(
             user.email,
             welcomeSubject,
             welcomeContent,
-
+            [
+                {
+                    filename: 'BlueCollar_Hiring_Process_Guide.pdf',
+                    path: hiringProcessPath,
+                    contentType: 'application/pdf',
+                },
+            ]
         ).catch(err => console.error('[AuthService] Welcome email failed:', err));
     }
 
