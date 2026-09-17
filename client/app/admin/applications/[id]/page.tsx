@@ -17,7 +17,8 @@ const SPONS_MAP: Record<string, { label: string; cls: string }> = {
     ticket_issued: { label: 'Issued', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
     first_attempt_approved: { label: 'Approved', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
     second_attempt_approved: { label: 'Re-Approved', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
-    applied: { label: 'Under Review', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+    applied: { label: 'Sponsored', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
+    approved: { label: 'Approved', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
     first_attempt_failed: { label: 'Failed (1st)', cls: 'bg-red-50 text-red-700 border-red-200' },
     second_attempt_failed: { label: 'Failed (2nd)', cls: 'bg-red-50 text-red-700 border-red-200' },
     no_application: { label: 'No Sponsorship', cls: 'bg-slate-50 text-slate-600 border-slate-200' },
@@ -183,6 +184,8 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
                 <div className="space-y-3">
                     {tickets.map(t => {
                         const s = SPONS_MAP[t.ticketSponsorship] ?? SPONS_MAP.no_application;
+                        const isPossessed = t.status === 'possessed' || t.ticketSponsorship === 'ticket_issued';
+                        const isSponsored = t.ticketSponsorship === 'applied' || t.ticketSponsorship === 'approved' || t.ticketSponsorship === 'first_attempt_approved' || t.ticketSponsorship === 'second_attempt_approved';
                         const linkedCourse = courses.find((c: any) => c.id === t.courseId);
                         return (
                             <div key={t.id} className="flex items-start justify-between gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-blue-200 transition-all">
@@ -190,8 +193,14 @@ function TicketRequirementsPanel({ applicationId, tickets, refetch }: { applicat
                                     <div className="flex items-center gap-2 flex-wrap mb-1">
                                         <p className="text-xs font-black text-blue-900">{t.ticketType}</p>
                                         <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${s.cls}`}>{s.label}</span>
-                                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${t.status === 'possessed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200'}`}>
-                                            {t.status === 'possessed' ? 'Possessed' : 'Ticket Gap (Required)'}
+                                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${
+                                            isPossessed
+                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                : isSponsored
+                                                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                                : 'bg-amber-50 text-amber-800 border-amber-200'
+                                        }`}>
+                                            {isPossessed ? 'Possessed' : isSponsored ? 'LMS Access Granted' : 'Ticket Gap (Required)'}
                                         </span>
                                         {t.canApplySponsorship && <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-violet-50 text-violet-700 border border-violet-200">Sponsorship Eligible</span>}
                                     </div>

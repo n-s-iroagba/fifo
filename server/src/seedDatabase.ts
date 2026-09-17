@@ -60,6 +60,7 @@ export async function seedLmsAndTickets(): Promise<void> {
     console.log('[Seeding] Seeding LMS Data (Certifications, Courses, Modules, Questions & Ticket Catalogs)...');
 
     for (const data of lmsSeedData) {
+        console.log(`[Seeding] Processing certification: ${data.certificationName}`);
         // 1. CertificationType Model
         const certCode = data.certificationName.toUpperCase().replace(/\s+/g, '-');
         const [certType] = await CertificationType.findOrCreate({
@@ -94,7 +95,9 @@ export async function seedLmsAndTickets(): Promise<void> {
 
         // 3. CourseModule Model
         if (data.course.modules) {
+            console.log(`[Seeding]   -> Processing ${data.course.modules.length} modules for course: ${data.course.title}`);
             for (const m of data.course.modules) {
+                console.log(`[Seeding]     -> Module: ${m.title}`);
                 const [mod] = await CourseModule.findOrCreate({
                     where: { courseId: course.id, title: m.title },
                     defaults: {
@@ -128,7 +131,10 @@ export async function seedLmsAndTickets(): Promise<void> {
         });
 
         // 5. ExamQuestion Model
-        for (const q of data.course.questions) {
+        console.log(`[Seeding]   -> Processing ${data.course.questions.length} questions for course: ${data.course.title}`);
+        for (let i = 0; i < data.course.questions.length; i++) {
+            const q = data.course.questions[i];
+            if (i % 10 === 0) console.log(`[Seeding]     -> Question ${i + 1}/${data.course.questions.length}`);
             const [examQ] = await ExamQuestion.findOrCreate({
                 where: { courseId: course.id, questionText: q.questionText },
                 defaults: {
