@@ -166,7 +166,7 @@ export class AuthService {
             <p style="margin-top: 20px;">We look forward to helping you advance your career.</p>
         `;
 
-        const hiringProcessPath = path.resolve(__dirname, '../../assets/HIRING_PROCESS.pdf');
+        const hiringProcessPath = path.resolve(__dirname, '../assets/HIRING_PROCESS.pdf');
 
         await sendAuthEmail(
             user.email,

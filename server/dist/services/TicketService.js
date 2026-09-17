@@ -6,7 +6,7 @@ const NotificationService_1 = require("./NotificationService");
 const email_1 = require("../utils/email");
 /** Schedule 1 / Clause 5.1 — Payment Milestone & Liability Constants */
 const DEPOSIT_AMOUNT = 500; // A$500 initial commitment deposit
-const DEPOSIT_UNLOCKS_UP_TO = 3; // deposit unlocks tickets 1 through 3
+const DEPOSIT_UNLOCKS_UP_TO = 2; // deposit unlocks tickets 1 and 2 only (ticket 3+ requires full balance)
 const CANDIDATE_TRAINING_SHARE_TOTAL = 1240.75; // 35% candidate share for training items 1-7
 const CANDIDATE_VISA_SHARE = 1405.25; // 35% candidate share for Subclass 482 Visa VAC
 const CANDIDATE_LICENSING_SHARE = 185.50; // 100% candidate share for WA CTT, PDA, & License card
@@ -196,8 +196,8 @@ class TicketService {
         let ticketsToUnlock = [];
         if (invoicePurpose === 'aveling-partial') {
             await user.update({ depositPaid: true, depositPaidAt: user.depositPaidAt || new Date() });
-            const tickets = await Ticket.findAll({ where: { userId }, order: [['createdAt', 'ASC']] });
-            ticketsToUnlock = tickets.slice(0, 3);
+            const tickets = await Ticket.findAll({ where: { userId }, order: [['ticketSequenceNumber', 'ASC'], ['createdAt', 'ASC']] });
+            ticketsToUnlock = tickets.slice(0, 2);
         }
         else if (invoicePurpose === 'aveling-complete' || invoicePurpose === 'aveling-complete-after-partial') {
             await user.update({ depositPaid: true, fullBalancePaid: true, depositPaidAt: user.depositPaidAt || new Date() });

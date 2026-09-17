@@ -195,7 +195,7 @@ class AdminService {
         });
         return { success: true, walletBalance: user.walletBalance };
     }
-    async updateAvelingCredentials(id, avelingUsername, avelingPassword) {
+    async updateAvelingCredentials(id, avelingUsername, avelingPassword, sendEmail = true) {
         const user = await UserRepository_1.userRepository.findById(id);
         if (!user || user.role !== constants_1.CONSTANTS.ROLES.APPLICANT) {
             throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
@@ -226,10 +226,22 @@ class AdminService {
                 });
             }
         }
+        let emailDispatched = false;
+        if (sendEmail && user.email && user.avelingUsername) {
+            const { sendAvelingCredentialsEmail } = require('../utils/email');
+            try {
+                await sendAvelingCredentialsEmail(user.email, user.fullName, user.avelingUsername, user.avelingPassword || undefined);
+                emailDispatched = true;
+            }
+            catch (err) {
+                console.error('[AdminService.updateAvelingCredentials] Failed to dispatch Aveling email:', err);
+            }
+        }
         return {
             success: true,
             avelingUsername: user.avelingUsername,
-            avelingPassword: user.avelingPassword
+            avelingPassword: user.avelingPassword,
+            emailDispatched
         };
     }
 }

@@ -1,26 +1,91 @@
 export const policeClearanceModules = [
     {
-        title: "Module 1: What Is a National Police Clearance?",
+        title: "Module 1: The National Police Certificate (NPC) in Mining",
         durationMinutes: 30,
         sequenceOrder: 1,
         contentType: 'TEXT',
         contentUrl: null,
-        content: "NATIONAL POLICE CLEARANCES: DEFINITION, PURPOSE & ISSUING AUTHORITIES\n\n1. What Is an Australian National Police Clearance (NPC)?\n- A National Police Clearance (NPC), officially termed a National Police Check or National Police History Check, is an official document that lists an individual's disclosable court outcomes and pending criminal charges sourced from police database records across all Australian states and territories.\n- Purpose in FIFO Mining: The mining and resources sector in Australia enforces strict site security, safety, and background vetting standards. An NPC is a mandatory prerequisite for site access passes, port security cards (MSIC), and employment verification.\n\n2. Authorized Issuing Bodies\nIn Australia, official National Police Clearances can legally be issued ONLY by:\n- Australian State or Territory Police Forces (e.g. Western Australia Police Force, Queensland Police Service, NSW Police Force, Victoria Police).\n- The Australian Federal Police (AFP) for Commonwealth purposes.\n- Accredited Screening Bodies authorized by the Australian Criminal Intelligence Commission (ACIC / formerly CrimTrac).\n- Clearances from unaccredited private companies or overseas unverified checks will be rejected by Australian employers.\n\n3. Document Outcomes: NDCO vs. DCO\nAn official National Police Clearance results in one of two formal outcomes:\n- NDCO (No Disclosable Court Outcomes): The applicant has no criminal record, or any previous minor convictions are legally classified as 'spent' under state and Commonwealth Spent Convictions Schemes. This represents a clean criminal clearance.\n- DCO (Disclosable Court Outcomes): The clearance document lists specific past convictions, findings of guilt without conviction, or pending court appearances that are disclosable by law.\n\n4. Validity Period of an NPC\n- An NPC is a 'point-in-time' document. It reflects criminal history records up to the exact date and timestamp of issue.\n- While the document itself does not have an official legal expiration date, FIFO employers, recruitment agencies, and mine operators strictly enforce policy limits: most employers require a clearance issued within the past 3 to 12 MONTHS (commonly within the last 3 or 6 months). Clearances older than this will be rejected."
+        content: `NATIONAL POLICE CERTIFICATE (NPC) — OVERVIEW
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: WHY DO MINING COMPANIES REQUIRE A POLICE CLEARANCE?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A National Police Certificate (NPC) is a mandatory pre-employment requirement for almost all Fly-In Fly-Out (FIFO) and mining roles in Australia.
+
+The mining environment is unique:
+1. High-Value Assets: Mining operations process and transport millions of dollars worth of commodities (gold, diamonds, copper) and operate heavy machinery worth millions of dollars.
+2. Explosives: Drill and blast operations use commercial explosives (Ammonium Nitrate Fuel Oil - ANFO). Strict security is required to prevent theft for illicit purposes.
+3. Isolated Communities: A FIFO camp is a closed, isolated community where hundreds of people live in close proximity. The employer has a strict duty of care to ensure the camp is a safe environment free from violence, theft, or illicit drug distribution.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: WHAT DOES THE NPC SHOW?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A National Police Certificate is a document issued by the Australian Federal Police (AFP) or a state/territory police force that lists an individual's Disclosable Court Outcomes (DCO).
+
+The certificate will display:
+→ All unspent convictions (findings of guilt).
+→ Pending charges (where you have been charged but the court has not yet finalized the matter).
+→ Certain driving offenses (if they resulted in a court conviction, such as severe DUI or reckless driving).
+
+The certificate will NOT generally display:
+→ Spent convictions (old, minor convictions that have surpassed the rehabilitation period—usually 10 years for adults, provided no further offenses occurred).
+→ Infringement notices (speeding tickets, parking fines) that did not go to court.
+→ Diversion programs or cautions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: VALIDITY AND CURRENCY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An NPC is a point-in-time document. It is only entirely accurate on the day it was printed.
+→ For mining pre-employment, the clearance must usually be less than 3 to 6 months old.
+→ You cannot use an old police clearance from a previous employer if it exceeds this timeframe; you must apply for a new one.`
     },
     {
-        title: "Module 2: How to Apply \u2014 State Police & CrimTrac Process",
-        durationMinutes: 45,
+        title: "Module 2: Disclosable Outcomes and FIFO Employment",
+        durationMinutes: 30,
         sequenceOrder: 2,
         contentType: 'TEXT',
         contentUrl: null,
-        content: "APPLICATION PROCEDURES, ID REQUIREMENTS & PROCESSING TIMEFRAMES\n\n1. How to Apply Online\nApplicants can apply directly online through:\n- State Police Websites (e.g. WA Police Force online clearance portal).\n- ACIC-Accredited Online Verification Providers.\n- Applications require digital document uploads, biometric identity matching (liveness selfie verification), and payment of the statutory fee.\n\n2. The 100-Point Identification Verification System\nApplicants must provide certified identity documents totaling at least 100 points:\n- Primary Document (70 Points) - Must provide at least one:\n  * Australian Birth Certificate or Australian Citizenship Certificate.\n  * Current Australian Passport (or international passport with valid visa).\n- Secondary Category 1 (40 Points):\n  * Current Australian Driver's Licence or Learner's Permit with photo.\n  * State Government Proof of Age Card / Photo Card.\n- Secondary Category 2 (25 Points each):\n  * Medicare Card.\n  * Credit Card or Bank Account Card from an Australian financial institution.\n  * Utility Bill (electricity, gas, water) or Council Rates notice displaying your residential address.\n  * Australian Electoral Roll registration confirmation.\n- Document Quality: Scans or photos must be in high-resolution, full color, with all four corners visible, no glare, and all text perfectly legible.\n\n3. ACIC Matching Algorithm & Processing Timeframes\n- Standard Online Processing: Approximately 70% of police clearance applications processed through ACIC-accredited portals are completed and returned within minutes to 1-2 business days.\n- Manual Police Review: If an applicant's name and date of birth match or resemble a record in the National Police Database, the application is referred for manual inspection by police agencies in the relevant states. This manual vetting process takes between 1 and 10 to 15 business days to resolve."
-    },
-    {
-        title: "Module 3: Reading and Submitting Your Clearance",
-        durationMinutes: 30,
-        sequenceOrder: 3,
-        contentType: 'TEXT',
-        contentUrl: null,
-        content: "DOCUMENT VERIFICATION, REJECTION CAUSES & SPENT CONVICTIONS\n\n1. Submission Format Requirements for FIFO Verification\n- When uploading your National Police Clearance to employer portals or HR onboarding systems:\n  * Upload the ORIGINAL FULL-PAGE DIGITAL PDF issued by the police force or ACIC agency.\n  * Never crop the document: All borders, security watermarks, page numbers (e.g. Page 1 of 2), and digital verification QR codes must be fully intact.\n  * Scans of paper certificates must be high-resolution full-color scans (minimum 300 DPI), not crooked smartphone photos taken in dim lighting.\n\n2. Common Reasons Employer Portals Reject Clearances\n- Age of Document: Document was issued more than 3, 6, or 12 months prior to the submission date.\n- Cropped or Partial Upload: Submitting only page 1 when the certificate indicates multiple pages, or cropping off the authentication barcode.\n- Name Discrepancy: The legal name on the police check does not match the name on the applicant's primary ID (e.g. missing middle name or unregistered maiden name).\n- Unofficial Issuing Agency: Using an unaccredited third-party background provider rather than State Police or an ACIC-accredited agency.\n- Incorrect Category: Submitting a clearance designated for volunteer work when applying for paid commercial/mining employment.\n\n3. Spent Convictions Legislation\n- Under Commonwealth and State Spent Convictions Schemes, minor criminal convictions are considered 'spent' (erased from public disclosure) after a crime-free waiting period:\n  * Adult Convictions: Typically 10 consecutive years of not re-offending.\n  * Juvenile Convictions: Typically 5 consecutive years.\n- Spent convictions do not appear on standard employment NPCs, allowing individuals with minor, non-recurring past records to present a clean NDCO clearance."
+        content: `DISCLOSABLE OUTCOMES AND FIFO EMPLOYMENT
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: DOES A CRIMINAL RECORD MEAN I CANNOT WORK IN FIFO?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A criminal record is NOT an automatic ban from working in the mining industry.
+
+Under Australian anti-discrimination laws, an employer cannot refuse to hire you simply because you have a criminal record. They can only refuse to hire you if your specific criminal record means you cannot fulfill the "inherent requirements" of the job.
+
+Employers assess records on a case-by-case basis using a Risk Matrix:
+1. The Nature of the Offense: What actually happened? (e.g., A minor public nuisance charge is viewed differently than armed robbery).
+2. The Relevance to the Role: Does the offense relate to the job? (e.g., A fraud conviction is highly relevant if applying to be the payroll manager, but less relevant for a dump truck operator. Conversely, a severe violent offense is highly relevant for anyone living in a camp).
+3. The Age of the Offense: Did this happen 8 years ago when you were 19, or did it happen 6 months ago?
+4. The Pattern of Offending: Was it a single, isolated mistake, or is there a 10-year history of repeated offenses?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: "RED FLAG" OFFENSES IN MINING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+While many offenses can be contextualised, certain offenses are major "red flags" for mining companies and will likely result in an application being rejected:
+
+1. Serious Drug Offenses:
+→ Trafficking, manufacturing, or large-scale supply of illicit substances. Mining companies conduct intense drug testing. Someone with a history of drug supply will not be permitted into a closed FIFO camp.
+2. Serious Violence and Assault:
+→ Grievous Bodily Harm (GBH), aggravated assault, or domestic violence. Camps must be safe environments. A history of violent outbursts is a severe liability.
+3. Theft and Dishonesty:
+→ Stealing as a servant, burglary, or fraud. Given the high-value equipment and commodities on site, dishonesty offenses are viewed harshly.
+4. Severe Driving Offenses (For Operator Roles):
+→ If you are applying to drive a 600-tonne haul truck or a light vehicle, a recent history of severe driving offenses (multiple DUI convictions, reckless driving causing injury) demonstrates a lack of respect for safety protocols.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: ONGOING OBLIGATIONS (DUTY TO DISCLOSE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Your obligation does not end once you are hired.
+If you are employed on a mine site and you are subsequently arrested, charged, or convicted of a criminal offense during your R&R (leave), you have a contractual obligation to notify your employer (usually HR or your Site Manager) immediately.
+
+Failing to disclose a new criminal charge, which is later discovered during a routine site audit or security background check, will almost certainly result in instant termination for breach of trust.`
     }
 ];

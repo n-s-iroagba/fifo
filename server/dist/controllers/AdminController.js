@@ -369,8 +369,8 @@ class AdminController {
     async updateAvelingCredentials(req, res) {
         try {
             const id = parseInt(req.params.id, 10);
-            const { avelingUsername, avelingPassword } = req.body;
-            const result = await AdminService_1.adminService.updateAvelingCredentials(id, avelingUsername, avelingPassword);
+            const { avelingUsername, avelingPassword, sendEmail } = req.body;
+            const result = await AdminService_1.adminService.updateAvelingCredentials(id, avelingUsername, avelingPassword, sendEmail !== undefined ? Boolean(sendEmail) : true);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(result);
         }
         catch (error) {

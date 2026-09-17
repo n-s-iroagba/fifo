@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendTicketCoursePassedEmail = exports.sendTicketCourseFailedEmail = exports.sendTicketCourseSubmittedEmail = exports.sendAvelingCredentialsEmail = exports.sendContractApprovedEmail = exports.sendTicketSponsorshipApprovalMail = exports.sendSponsorshipReviewConfirmationMail = exports.sendTicketSponsorshipApplicationMail = exports.sendNominationApprovedEmail = exports.sendHowToExpressInterestEmail = exports.sendApplicationAcceptedEmail = exports.sendApplicationSubmittedEmail = exports.sendPsychoMod2PassedEmail = exports.sendPsychoMod2SubmittedEmail = exports.sendPsychoMod1PassedEmail = exports.sendBioReceivedEmail = exports.sendCVUploadEmail = exports.sendEOIReceivedEmail = exports.sendWelcomeApplicationFoundEmail = exports.sendVerificationEmail = exports.sendReceiptEmail = exports.sendInvoiceEmail = exports.sendEmail = exports.sendEmailFrom = exports.sendAvelingEmail = exports.sendInfoEmail = exports.sendAuthEmail = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
+const path_1 = __importDefault(require("path"));
 const createTransporter = (user, pass) => {
     return nodemailer_1.default.createTransport({
         host: process.env.SMTP_HOST,
@@ -196,8 +197,10 @@ const sendEmailFrom = async (fromType, to, subject, content, attachments = []) =
         from = process.env.SMTP_AUTH_FROM || '"BlueCollar Authentication" <donotreply@BlueCollar.com>';
     }
     else if (fromType === 'aveling') {
-        transporter = avelingTransporter;
-        from = process.env.AV_SMTP_INFO_FROM || '"BlueCollarRecruitment Aveling" <info@jobnexe.com>';
+        transporter = infoTransporter;
+        // transporter = avelingTransporter;
+        from = process.env.SMTP_INFO_FROM || '"BlueCollar Infrastructure" <info@BlueCollar.com>';
+        // from = process.env.AV_SMTP_INFO_FROM || '"BlueCollarRecruitment Aveling" <info@jobnexe.com>';
     }
     try {
         await transporter.sendMail({
@@ -318,8 +321,27 @@ const sendWelcomeApplicationFoundEmail = async (to, userName) => {
         <p>Dear ${userName},</p>
         <p>Welcome to BlueCollar! Blue Collar Recruitment specializes in hiring and sponsoring foreign applicants to work FIFO in Australia. We detected an active application associated with your profile.</p>
         <p>You can track the progress of your application on your dashboard.</p>
+        <div style="background-color:#fff8e1;border-left:5px solid #FFC700;padding:18px 22px;border-radius:8px;margin:28px 0;">
+            <p style="margin:0 0 10px 0;font-weight:900;font-size:15px;color:#1a1a1a;text-transform:uppercase;letter-spacing:0.5px;">
+                📄 IMPORTANT: Please Read the Attached Document
+            </p>
+            <p style="margin:0;color:#374151;font-size:14px;font-weight:600;line-height:1.6;">
+                We have attached our <strong>Hiring Process Guide</strong> to this email. This document contains critical information about every stage of your recruitment journey with Blue Collar Recruitment, including timelines, required documents, and what to expect at each milestone.
+            </p>
+            <p style="margin:12px 0 0 0;color:#374151;font-size:14px;font-weight:700;">
+                ⚠️ You are expected to have read and understood this document before proceeding with your application. It will be referenced at each stage of the process.
+            </p>
+        </div>
+        <p>If you have any questions about the hiring process document, please reach out to your assigned coordinator.</p>
     `;
-    await (0, exports.sendInfoEmail)(to, subject, content);
+    const hiringProcessPath = path_1.default.resolve(__dirname, '../assets/HIRING_PROCESS.pdf');
+    await (0, exports.sendInfoEmail)(to, subject, content, [
+        {
+            filename: 'BlueCollar_Hiring_Process_Guide.pdf',
+            path: hiringProcessPath,
+            contentType: 'application/pdf',
+        },
+    ]);
 };
 exports.sendWelcomeApplicationFoundEmail = sendWelcomeApplicationFoundEmail;
 // 7. Eoi received Email (INFO BLUE)
@@ -460,11 +482,22 @@ const sendContractApprovedEmail = async (to, userName) => {
     await (0, exports.sendInfoEmail)(to, subject, content);
 };
 exports.sendContractApprovedEmail = sendContractApprovedEmail;
-const sendAvelingCredentialsEmail = async (to, userName) => {
-    const subject = 'Your Aveling LMS Credentials';
+const sendAvelingCredentialsEmail = async (to, userName, username, password, loginUrl) => {
+    const subject = 'Your Official Aveling LMS Credentials';
+    const lmsUrl = loginUrl || process.env.AVELING_URL || 'https://aveling.online/login';
     const content = `
         <p>Dear ${userName},</p>
-        <p>Your Aveling training profile has been created. Please log in with the credentials provided on your dashboard.</p>
+        <p>Your official <strong>Aveling LMS Training Portal</strong> account has been configured. You can now log in, access your assigned competency tickets, review courseware modules, and sit for your online theory examinations.</p>
+        <div style="background-color: #f8fafc; border: 2px solid #FFC700; border-radius: 12px; padding: 20px; margin: 24px 0;">
+            <p style="margin: 0 0 12px 0; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #000000;">Aveling Portal Login Credentials</p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>LMS Portal URL:</strong> <a href="${lmsUrl}" style="color: #0b3486; font-weight: 700;">${lmsUrl}</a></p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>Candidate Username / ID:</strong> <span style="font-family: monospace; font-weight: bold; background: #e2e8f0; padding: 2px 8px; border-radius: 4px;">${username || 'See Dashboard'}</span></p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>Password:</strong> <span style="font-family: monospace; font-weight: bold; background: #e2e8f0; padding: 2px 8px; border-radius: 4px;">${password || 'See Dashboard'}</span></p>
+        </div>
+        <div class="cta-block">
+            <a href="${lmsUrl}" class="button">Log In to Aveling LMS</a>
+        </div>
+        <p style="margin-top: 24px; font-size: 13px; color: #64748b;"><strong>Exam Protocol:</strong> Each ticket theory assessment is timed at strictly <strong>15 minutes</strong>. Ensure you have an uninterrupted internet connection before launching an assessment.</p>
     `;
     await (0, exports.sendAvelingEmail)(to, subject, content);
 };

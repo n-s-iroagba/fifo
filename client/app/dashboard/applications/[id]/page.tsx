@@ -78,7 +78,7 @@ export default function ApplicationDetailPage() {
     const totalRequiredTickets = requiredCatalogs.length;
     const possessedTicketsCount = requiredCatalogs.filter(catalog => {
         const userTicket = userTickets.find(t => t.ticketType === catalog.name);
-        return userTicket?.status === 'possessed' || userTicket?.status === 'ticket_issued';
+        return userTicket?.status === 'possessed' || userTicket?.status === 'ticket_issued' || userTicket?.ticketSponsorship === 'applied' || userTicket?.ticketSponsorship === 'approved';
     }).length;
     const missingTicketsCount = Math.max(0, totalRequiredTickets - possessedTicketsCount);
     const readinessPercentage = totalRequiredTickets > 0
@@ -303,15 +303,21 @@ export default function ApplicationDetailPage() {
                                 {requiredCatalogs.map(catalog => {
                                     const userTicket = userTickets.find(t => t.ticketType === catalog.name);
                                     const isPossessed = userTicket?.status === 'possessed' || userTicket?.status === 'ticket_issued';
+                                    const isSponsored = userTicket?.ticketSponsorship === 'applied' || userTicket?.ticketSponsorship === 'approved';
+                                    const isSatisfied = isPossessed || isSponsored;
 
                                     return (
-                                        <div key={catalog.id} className={`p-6 rounded-2xl border flex flex-col justify-between transition-all ${isPossessed ? 'border-emerald-200 bg-emerald-50/20' : 'border-amber-200/80 bg-amber-50/10'}`}>
+                                        <div key={catalog.id} className={`p-6 rounded-2xl border flex flex-col justify-between transition-all ${isSatisfied ? 'border-emerald-200 bg-emerald-50/20' : 'border-amber-200/80 bg-amber-50/10'}`}>
                                             <div>
                                                 <div className="flex items-start justify-between mb-2 gap-3">
                                                     <h3 className="font-bold text-blue-900 tracking-tight leading-tight uppercase text-sm">{catalog.name}</h3>
                                                     {isPossessed ? (
                                                         <span className="bg-emerald-100 text-emerald-700 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0">
                                                             <span className="material-symbols-outlined text-xs">check_circle</span> Verified
+                                                        </span>
+                                                    ) : isSponsored ? (
+                                                        <span className="bg-blue-100 text-blue-700 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0">
+                                                            <span className="material-symbols-outlined text-xs">school</span> Sponsored
                                                         </span>
                                                     ) : (
                                                         <span className="bg-amber-100 text-amber-800 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0">
@@ -326,6 +332,10 @@ export default function ApplicationDetailPage() {
                                                 {isPossessed ? (
                                                     <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 flex items-center gap-1">
                                                         <span className="material-symbols-outlined text-sm">verified_user</span> Certificate Uploaded
+                                                    </span>
+                                                ) : isSponsored ? (
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 flex items-center gap-1">
+                                                        <span className="material-symbols-outlined text-sm">vpn_key</span> LMS Access Granted
                                                     </span>
                                                 ) : (
                                                     <div className="w-full flex items-center justify-between gap-4">

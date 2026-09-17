@@ -501,25 +501,25 @@ function ExamPortalContent() {
                             <p className="text-sm font-medium text-zinc-500 max-w-sm mx-auto mt-4 leading-relaxed">
                                 {attemptParam >= 2
                                     ? 'You have exhausted both attempts for this ticket sponsorship.'
-                                    : 'You need to pay the course fee again to attempt the exam a second time.'}
+                                    : 'You have failed the exam. Please review the course materials and try again.'}
                             </p>
                         </div>
 
                         {attemptParam < 2 && (
                             <div className="max-w-md mx-auto bg-amber-50 border-2 border-amber-200 rounded-xl p-6 text-sm text-amber-900 space-y-2 text-left">
                                 <p className="font-black uppercase tracking-widest text-[10px]">Second Attempt Available</p>
-                                <p className="font-medium text-amber-800">To retake this exam, you will need to return to checkout and pay the course fee again. Upon passing your second attempt, your refund will be doubled (purchase price × 2).</p>
+                                <p className="font-medium text-amber-800">You may retake this exam. Please review the modules carefully before your final attempt.</p>
                             </div>
                         )}
 
                         <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
                             {attemptParam < 2 && (
                                 <Link
-                                    href={`/checkout?ticketId=${ticketId}&candidateNumber=${searchParams.get('candidateNumber') || ''}&attempt=2`}
+                                    href={`/courses/${id}`}
                                     className="inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black px-8 py-4 text-xs font-black uppercase tracking-wider rounded-xl shadow-md hover:bg-yellow-400 transition-all"
                                 >
                                     <RotateCcw className="h-4 w-4 stroke-[3]" />
-                                    Pay & Book Second Attempt
+                                    Review Course & Retake
                                 </Link>
                             )}
                             <Link

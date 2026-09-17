@@ -5,7 +5,7 @@
   "scripts": {
     "test": "test",
     "dev": "nodemon --watch src --exec ts-node src/index.ts",
-    "build": "tsc",
+    "build": "tsc && cp -r src/assets dist/assets",
     "start": "node dist/index.js",
     "seed": "ts-node src/seedDatabase.ts",
     "seed:prod": "node dist/seedDatabase.js",

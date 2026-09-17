@@ -47,11 +47,7 @@ export default function CourseCatalogPage() {
                     <h1 className="text-4xl font-black text-zinc-900 tracking-tight">Course Catalog</h1>
                     <p className="text-sm font-medium text-zinc-500 mt-2">Enroll in accredited certification courses tailored to your assigned FIFO role requirements. Save over 50% with our partner labour hiring companies.</p>
                 </div>
-                {cart.length > 0 && (
-                    <Link href="/checkout" className="inline-flex items-center gap-2 bg-zinc-900 text-[#FFC700] px-5 py-3 rounded-xl text-xs font-extrabold uppercase tracking-wider shadow-md hover:bg-black transition-all">
-                        <ShoppingBag className="h-4 w-4" /> Checkout ({cart.length})
-                    </Link>
-                )}
+                </div>
             </div>
             <div className="w-full h-0.5 bg-[#FFC700] mb-10" />
 
@@ -108,16 +104,9 @@ export default function CourseCatalogPage() {
                                                         {isSubsidized && <span className="text-xs text-zinc-400 line-through">${course.price.toFixed(2)}</span>}
                                                     </div>
                                                 </div>
-                                                {inCart ? (
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="text-xs font-bold text-emerald-600 flex items-center gap-1"><CheckCircle2 className="h-4 w-4" /> Added</span>
-                                                        <button onClick={() => removeFromCart(course.id)} className="text-xs text-rose-500 underline hover:text-rose-700">Remove</button>
-                                                    </div>
-                                                ) : (
-                                                    <button onClick={() => addToCart(course)} className="inline-flex items-center gap-2 bg-[#FFC700] text-black px-5 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider hover:bg-yellow-400 shadow-sm transition-all">
-                                                        Enroll <ArrowRight className="h-3.5 w-3.5" />
-                                                    </button>
-                                                )}
+                                                <button onClick={() => router.push('/dashboard')} className="inline-flex items-center gap-2 bg-[#FFC700] text-black px-5 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider hover:bg-yellow-400 shadow-sm transition-all">
+                                                    Go to Dashboard <ArrowRight className="h-3.5 w-3.5" />
+                                                </button>
                                             </div>
                                         </div>
                                     );
@@ -149,15 +138,11 @@ export default function CourseCatalogPage() {
                                         </div>
                                         <div className="mt-6 flex items-center justify-between border-t border-zinc-100 pt-4">
                                             <span className="text-xl font-black text-zinc-900">${course.price}</span>
-                                            {inCart ? (
-                                                <span className="text-xs font-bold text-emerald-600 flex items-center gap-1"><CheckCircle2 className="h-4 w-4" /> Added</span>
-                                            ) : (
-                                                <button onClick={() => addToCart(course)} className="inline-flex items-center gap-1.5 border-2 border-zinc-900 bg-white px-4 py-2 rounded-xl text-xs font-extrabold text-zinc-900 hover:bg-zinc-900 hover:text-white transition-all uppercase tracking-wider">
-                                                    Add to Cart
+                                                <button onClick={() => router.push('/dashboard')} className="inline-flex items-center gap-1.5 border-2 border-zinc-900 bg-white px-4 py-2 rounded-xl text-xs font-extrabold text-zinc-900 hover:bg-zinc-900 hover:text-white transition-all uppercase tracking-wider">
+                                                    Go to Dashboard
                                                 </button>
-                                            )}
+                                            </div>
                                         </div>
-                                    </div>
                                 );
                             })}
                         </div>

@@ -61,7 +61,7 @@ class LmsAuthService {
         const { sendAvelingCredentialsEmail } = require('../utils/email');
         if (user.email) {
             try {
-                await sendAvelingCredentialsEmail(user.email, user.fullName);
+                await sendAvelingCredentialsEmail(user.email, user.fullName, lmsUsername, temporaryPassword);
             }
             catch (err) {
                 console.error('[LmsAuthService] Failed to send credentials email', err);

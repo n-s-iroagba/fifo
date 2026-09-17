@@ -1,255 +1,122 @@
 export const gasTestQuestions = [
     {
-        questionText: 'What does LEL stand for in gas atmosphere testing and what action must be taken if a reading exceeds 5% LEL?',
+        questionText: 'When testing the atmosphere in a confined space, what is the STRICT order of testing?',
         questionType: 'mcq',
         options: [
-            'Lower Explosive Limit — the minimum gas concentration that will ignite; above 5% LEL the area must be evacuated or not entered until ventilated',
-            'Low Electrical Level — no action required below 10%',
-            'Liquid Environmental Limit — reading is recorded in logbook only',
-            'Long Exposure Level — SCBA must be worn but work may continue'
+            '1. Oxygen (O2) levels. 2. Flammable gases (LEL). 3. Toxic gases (e.g., H2S, CO).',
+            '1. Toxic gases. 2. Flammable gases. 3. Oxygen levels.',
+            '1. Flammable gases. 2. Oxygen levels. 3. Toxic gases.',
+            'It does not matter, as long as all three are tested.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What is the Safe Work Australia WES Short-Term Exposure Limit (STEL) for Hydrogen Sulfide (H2S)?',
+        questionText: 'Why MUST Oxygen (O2) be tested first?',
         questionType: 'mcq',
         options: [
-            '5 ppm (15-minute average, not to be exceeded)',
-            '100 ppm',
-            '1000 ppm',
-            '50 ppm'
+            'Because LEL (flammability) sensors require a minimum amount of oxygen to work accurately; testing LEL in an oxygen-depleted environment gives a false zero reading.',
+            'Because oxygen is the most toxic gas in a confined space.',
+            'Because the oxygen sensor takes the longest to warm up.',
+            'Because oxygen is heavier than air and sinks to the bottom.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What is the purpose of conducting a Bump Test on a multi-gas monitor before each shift?',
+        questionText: 'What does LEL stand for in gas testing?',
         questionType: 'mcq',
         options: [
-            'To briefly expose sensors to a known concentration of test gas to verify sensor response and that audible/visual alarms activate correctly',
-            'To check if the outer casing survives a drop impact',
-            'To clear historical alarm data from internal memory',
-            'To fully recalibrate the instrument to factory settings'
+            'Lower Explosive Limit: The lowest concentration of a gas or vapour in air capable of producing a flash of fire in the presence of an ignition source.',
+            'Level of Environmental Leak: The amount of gas escaping into the atmosphere.',
+            'Liquid Exposure Limit: The maximum amount of liquid allowed in the space.',
+            'Lethal Exposure Limit: The concentration at which a toxic gas kills instantly.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'Why is Carbon Monoxide (CO) considered extremely dangerous on mine sites near diesel-powered equipment?',
+        questionText: 'What is a "Bump Test" (Functional Test) on a gas monitor?',
         questionType: 'mcq',
         options: [
-            'It is colorless, odorless, and tasteless — it binds to haemoglobin up to 240x more readily than oxygen, causing fatal hypoxia with no warning',
-            'It has a bright orange glow visible in low light',
-            'It causes immediate skin chemical burns on contact',
-            'It has a strong rotten egg smell detectable at safe levels'
+            'A brief exposure of the monitor to a known concentration of test gas to verify that the sensors respond and the alarms activate. It must be done before each day\'s use.',
+            'Dropping the monitor on the ground from 1 metre to test its shock resistance.',
+            'Sending the monitor back to the manufacturer for a 6-monthly internal recalibration.',
+            'Pressing the "Test" button to see if the battery has enough charge.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'When testing a confined space atmosphere, in what sequence must gas sampling be performed inside the space?',
+        questionText: 'Hydrogen Sulphide (H2S) is a common hazard in sewers, sumps, and mining. What are its characteristics?',
         questionType: 'mcq',
         options: [
-            'Low level first (for heavier-than-air gases like H2S), then mid-level, then top (for lighter-than-air gases like methane) — test all zones before entry',
-            'Top first, then exit without testing lower levels',
-            'Only test at the entry point opening from outside the space',
-            'One random sample at any height is sufficient'
+            'It is highly toxic, heavier than air (pools at the bottom), and smells like rotten eggs at low levels but deadens the sense of smell at high, lethal levels.',
+            'It is lighter than air (floats to the top) and has a sweet, fruity smell.',
+            'It is completely odourless at all concentrations.',
+            'It is highly flammable but completely non-toxic to breathe.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'Who has authority to issue a Gas Test Clearance Certificate (GTCC) authorizing confined space or hazardous atmosphere entry?',
+        questionText: 'Carbon Monoxide (CO) is often produced by running petrol/diesel engines near a confined space. What are its characteristics?',
         questionType: 'mcq',
         options: [
-            'Only a person who holds a current MSMWHS217 (or equivalent) Gas Testing competency and has performed the required atmospheric tests',
-            'Any worker on site regardless of training',
-            'The site safety officer by signing off remotely',
-            'The equipment hire company that supplied the gas detector'
+            'It is highly toxic, invisible, completely odourless, and roughly the same weight as air. It binds to red blood cells 200 times faster than oxygen, causing asphyxiation.',
+            'It is highly toxic, has a strong smell of burnt plastic, and is much heavier than air.',
+            'It is a green gas that causes immediate chemical burns to the lungs.',
+            'It is entirely harmless unless ignited by a spark.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What is a "Fresh Air Calibration" (or Zero Calibration) on a gas detector?',
+        questionText: 'If a gas (like Methane) is lighter than air, where should you drop your probe to test for it in a deep shaft?',
         questionType: 'mcq',
         options: [
-            'Resetting the sensors to read baseline levels (20.9% O2, 0% LEL, 0ppm toxic) in a known clean, uncontaminated environment',
-            'Blowing into the sensor to see if it moves',
-            'Exposing the sensor to test gas to check the high alarm',
-            'Replacing the internal pump filter'
+            'You must test all levels (stratified testing), but the highest concentration of lighter-than-air gases will gather at the top (the roof or upper sections).',
+            'You only need to test the very bottom of the shaft.',
+            'You only need to test the middle layer.',
+            'Lighter than air gases do not gather in shafts; they instantly disperse.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What is a common characteristic of Hydrogen Sulfide (H2S) that makes it particularly treacherous at higher concentrations?',
+        questionText: 'What is the safe atmospheric range for Oxygen (O2) before a person can enter a confined space without supplied air?',
         questionType: 'mcq',
         options: [
-            'It paralyzes the olfactory nerve (sense of smell) very quickly, giving a false sense of safety that the gas has cleared',
-            'It forms a visible thick white cloud that blinds workers',
-            'It makes the air feel icy cold',
-            'It smells like sweet perfume at high levels'
+            'Between 19.5% and 23.5%.',
+            'Between 15.0% and 19.0%.',
+            'Exactly 20.9% only.',
+            'Between 25% and 30%.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'Which gas is heavier than air and likely to settle in trenches, pits, or the bottom of tanks?',
+        questionText: 'What is the hazard of an oxygen-enriched atmosphere (above 23.5% O2)?',
         questionType: 'mcq',
         options: [
-            'Hydrogen Sulfide (H2S)',
-            'Methane (CH4)',
-            'Helium (He)',
-            'Hydrogen (H2)'
+            'Extreme fire and explosion risk. Flammable materials (like clothing or hair) can ignite instantly and burn with extreme ferocity.',
+            'It causes workers to become dizzy and fall asleep.',
+            'It causes the gas monitor battery to drain extremely fast.',
+            'There is no hazard; more oxygen is healthier for the workers.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What does the Workplace Exposure Standard (WES) Time-Weighted Average (TWA) represent?',
+        questionText: 'When lowering a sample hose into a deep tank to test the atmosphere, what must you account for?',
         questionType: 'mcq',
         options: [
-            'The maximum average airborne concentration of a chemical over an 8-hour working day, 5-day working week, without adverse health effects',
-            'The absolute maximum peak level a person can endure for 1 second',
-            'The time it takes to weigh a gas cylinder',
-            'The average time a worker should spend wearing a respirator'
+            'The sample delay time. It takes time for the pump to draw the gas up the hose to the sensors (typically 1 to 2 seconds per metre of hose). You must wait before moving the hose.',
+            'The hose getting too cold and freezing the gas.',
+            'The hose absorbing all the oxygen before it reaches the sensor.',
+            'The weight of the hose pulling the monitor out of your hand.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
-    {
-        questionText: 'What happens to a Catalytic Bead LEL sensor if it is exposed to an environment with very low oxygen (e.g., less than 10%)?',
-        questionType: 'mcq',
-        options: [
-            'It may read incorrectly low (false negative) because it relies on oxygen to burn the gas on the bead to take a measurement',
-            'It will read exactly the same; oxygen does not affect it',
-            'It will read 100% LEL immediately',
-            'It will switch to infrared mode automatically'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What is meant by "Sensor Poisoning" in relation to gas detectors?',
-        questionType: 'mcq',
-        options: [
-            'Chemicals (like silicone sprays, lead, or sulfur) permanently damage the sensor, causing it to fail or lose sensitivity',
-            'The battery acid leaking into the circuit board',
-            'A worker drinking the calibration gas',
-            'The detector getting covered in mud'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'How can you verify if a sensor has been poisoned and is no longer responding correctly?',
-        questionType: 'mcq',
-        options: [
-            'By performing a bump test with known calibration gas and checking if it responds and reaches the alarm threshold',
-            'By shaking it and listening for rattles',
-            'By looking at it with a magnifying glass',
-            'By pressing the zero button twice'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'At what oxygen concentration is an environment legally defined as "Oxygen Deficient" requiring immediate evacuation or SCBA?',
-        questionType: 'mcq',
-        options: [
-            'Below 19.5%',
-            'Below 20.9%',
-            'Below 15.0%',
-            'Below 10.0%'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What are the early physical symptoms of working in a mildly oxygen-deficient atmosphere (e.g., 15-19%)?',
-        questionType: 'mcq',
-        options: [
-            'Increased breathing rate, accelerated heart rate, impaired thinking, and reduced coordination',
-            'Euphoria and extreme energy bursts',
-            'Sudden hair loss',
-            'A strong metallic taste in the mouth'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What is "Cross-Sensitivity" in electrochemical gas sensors?',
-        questionType: 'mcq',
-        options: [
-            'When a sensor designed for one gas (e.g., CO) reacts to the presence of a different interfering gas (e.g., H2), giving a false reading',
-            'When two gas detectors beep at the same time',
-            'When the detector becomes sensitive to radio waves',
-            'When the operator is allergic to the plastic casing'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'If you are lowering a gas detector on a sample line into a 5-meter deep pit, why must you pause and wait before taking a reading?',
-        questionType: 'mcq',
-        options: [
-            'To allow time for the sample to travel up the hose to the sensors (typically 1-2 seconds per meter of hose) plus the sensor response time (T90)',
-            'To let the air in the pit settle down',
-            'To ensure the battery doesn\'t drain too fast',
-            'To cool the sensors down'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What does the Upper Explosive Limit (UEL) mean?',
-        questionType: 'mcq',
-        options: [
-            'The highest concentration of gas in air that will burn; above this, the mixture is "too rich" to ignite',
-            'The highest level on the ladder you can climb',
-            'The maximum weight of explosives you can carry',
-            'The highest point in a tank where gas is found'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What environmental factors can affect the accuracy of a gas detector reading?',
-        questionType: 'mcq',
-        options: [
-            'Extreme temperatures, high humidity, and rapid changes in barometric pressure',
-            'The color of the worker\'s PPE',
-            'The phase of the moon',
-            'The time of day, but only on weekends'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'If your personal multi-gas monitor alarms while you are walking through the plant, what is your FIRST responsibility?',
-        questionType: 'mcq',
-        options: [
-            'Evacuate the immediate area to a safe location, check the display to identify the hazard, and notify your supervisor/control room',
-            'Take off the monitor and leave it on the ground',
-            'Try to find the leak using your hands',
-            'Keep working but breathe shallowly'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    }
-,
-    {
-        questionText: 'What is the Safe Work Australia Workplace Exposure Standard (WES) Time-Weighted Average (TWA) for Carbon Monoxide (CO)?',
-        questionType: 'mcq',
-        options: [
-            '20 ppm over an 8-hour shift',
-            '100 ppm over an 8-hour shift',
-            '1000 ppm over an 8-hour shift',
-            '5 ppm over an 8-hour shift'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    }
 ];

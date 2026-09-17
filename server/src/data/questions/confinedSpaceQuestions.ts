@@ -1,255 +1,122 @@
 export const confinedSpaceQuestions = [
     {
-        questionText: 'Under AS 2865, what is the acceptable safe concentration range of oxygen for confined space entry without breathing apparatus?',
+        questionText: 'Under Australian Standard AS 2865, what defines a Confined Space?',
         questionType: 'mcq',
         options: [
-            '19.5% to 23.5% by volume',
-            '15% to 20% by volume',
-            '25% to 30% by volume',
-            '100% pure oxygen'
+            'An enclosed or partially enclosed space not intended primarily for human occupancy, with restricted entry/exit, and representing a risk of hazardous atmosphere or engulfment.',
+            'Any room that is smaller than 4 square metres.',
+            'Any trench deeper than 1 metre.',
+            'A standard office building elevator.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'Which of the following is considered a primary duty of the Standby Person (Hole Watch)?',
+        questionText: 'What is the role of the Standby Person (Sentry) during a confined space entry?',
         questionType: 'mcq',
         options: [
-            'Maintain continuous communication with entrants and NEVER enter the confined space during an emergency',
-            'Enter the space to assist workers if they feel tired',
-            'Leave the entry point to fetch tools',
-            'Perform electrical wiring inside the tank'
+            'To remain outside the space continuously, monitor the workers inside, maintain communication, and initiate the rescue plan if required. They MUST NEVER enter the space themselves.',
+            'To enter the space if a worker collapses, to pull them out.',
+            'To go and fetch tools from the workshop while the entrants are working inside.',
+            'To operate the heavy machinery adjacent to the confined space.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'Before entering a vessel, at what height levels inside the space should atmospheric gas testing be conducted?',
+        questionText: 'Why is atmospheric testing absolutely critical before entering a confined space?',
         questionType: 'mcq',
         options: [
-            'Top, middle, and bottom (gases may be lighter or heavier than air)',
-            'Top opening only',
-            'Bottom floor only',
-            'Outside the entrance only'
+            'Because hazardous atmospheres (low oxygen, toxic gases, or explosive gases) are often invisible and odourless, and can cause instant incapacitation or death.',
+            'To determine if the air conditioning needs to be turned on.',
+            'To check the humidity levels to ensure paint will dry correctly.',
+            'Because the WorkSafe inspector requires a printed receipt.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What action is required if atmospheric testing indicates a Flammable Gas level above 5% LEL (Lower Explosive Limit)?',
+        questionText: 'What are the safe oxygen levels for entry into a confined space?',
         questionType: 'mcq',
         options: [
-            'Evacuate immediately or do not enter, investigate source and purge/ventilate',
-            'Proceed with entry using non-sparking boots only',
-            'Turn off the gas detector alarm',
-            'Light a match to test ignition'
+            'Between 19.5% and 23.5%.',
+            'Exactly 100%.',
+            'Between 10% and 15%.',
+            'Less than 19.5%.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'Under AS 2865, what written authority must be issued before any person enters a confined space?',
+        questionText: 'What hazard does Hydrogen Sulphide (H2S) present in a confined space?',
         questionType: 'mcq',
         options: [
-            'A Confined Space Entry Permit signed by the Entry Supervisor listing hazards, controls, and attendant details',
-            'A verbal instruction from the site foreman',
-            'A standard safety induction certificate',
-            'A purchase order for gas monitoring equipment'
+            'It is a highly toxic gas (often smelling like rotten eggs at low levels) that deadens the sense of smell at high levels and causes rapid asphyxiation.',
+            'It makes the air heavier and harder to breathe, but is not toxic.',
+            'It is a harmless gas used to purge tanks.',
+            'It only presents a freezing hazard.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'Which of the following describes a "Confined Space" under AS 2865?',
+        questionText: 'What does "engulfment" mean in the context of a confined space?',
         questionType: 'mcq',
         options: [
-            'An enclosed or partially enclosed space, not intended for human occupancy, with restricted entry/exit, which may contain a hazardous atmosphere or engulfment risk',
-            'Any small room like a broom closet',
-            'An open-cut trench 0.5 meters deep',
-            'The cab of a mobile crane'
+            'Being swallowed up or smothered by a solid material (like grain, coal dust, or sand) or a liquid stored in the space.',
+            'Being overwhelmed by the heat inside the space.',
+            'A fire rapidly consuming all the oxygen.',
+            'Being trapped by the heavy access hatch falling shut.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What is the primary risk of an oxygen-enriched atmosphere (above 23.5% oxygen)?',
+        questionText: 'When MUST a Confined Space Entry Permit be issued?',
         questionType: 'mcq',
         options: [
-            'Increased risk of severe fire and explosion; materials burn much faster and hotter',
-            'It makes workers dizzy and sleepy',
-            'It creates a freezing environment',
-            'It causes instant suffocation'
+            'Before any person\'s head or upper body enters the boundary of the confined space.',
+            'Only if the work inside will take longer than 4 hours.',
+            'Only if hot work (welding/grinding) is being performed inside.',
+            'After the work is finished, for record-keeping purposes.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'If a worker inside a confined space collapses suddenly and silently, what is the most likely unseen hazard?',
+        questionText: 'What is the purpose of Positive Isolation (Lock Out Tag Out - LOTO) before entering a confined space?',
         questionType: 'mcq',
         options: [
-            'An oxygen-deficient or toxic atmosphere (e.g., Hydrogen Sulfide or Carbon Monoxide)',
-            'Heat stroke from wearing heavy PPE',
-            'Electrocution from a battery-powered drill',
-            'A slip and fall on the flat floor'
+            'To ensure all hazardous energy sources (electrical, mechanical, hydraulic, and pipework valves) are physically disconnected, locked, and cannot be accidentally turned on.',
+            'To isolate the workers so they are not disturbed by noise.',
+            'To keep unauthorized personnel from walking into the area.',
+            'To ensure the rescue equipment is locked securely in a box.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'Why MUST all energy sources (electrical, mechanical, fluid) connected to a confined space be isolated (LOTO) before entry?',
+        questionText: 'Why is it highly dangerous to use a standard petrol generator or diesel pump inside or immediately adjacent to a confined space?',
         questionType: 'mcq',
         options: [
-            'To prevent accidental activation of machinery (e.g., agitators) or sudden ingress of hazardous fluids/gases while workers are inside',
-            'To save electricity and reduce operational costs',
-            'To keep the temperature inside the space comfortable',
-            'Because the energy company requires it'
+            'The exhaust produces Carbon Monoxide (CO), an invisible, odourless, and lethal gas that will rapidly fill the confined space and kill the entrants.',
+            'The noise will damage the entrants\' hearing permanently.',
+            'The vibrations will cause the walls of the space to collapse.',
+            'It is against the environmental policy due to fuel spills.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What does "engulfment" mean in the context of confined spaces?',
+        questionText: 'If the Standby Person sees an entrant collapse inside the confined space, what is their immediate action?',
         questionType: 'mcq',
         options: [
-            'The risk of being buried or smothered by a solid substance (like sand, grain, or coal) or drowned by a liquid filling the space',
-            'Being overwhelmed by the amount of paperwork required',
-            'Being surrounded by other workers in a tight space',
-            'The sudden darkening of the space due to light failure'
+            'Raise the alarm, call for the designated rescue team, and attempt a non-entry rescue (using a retrieval winch/winch line if attached). Do NOT enter the space.',
+            'Hold their breath and rush inside to drag the entrant out.',
+            'Wait 5 minutes to see if the entrant wakes up.',
+            'Climb inside with a spare oxygen bottle to give to the entrant.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
-    {
-        questionText: 'What is the preferred method for removing hazardous gases from a confined space before entry?',
-        questionType: 'mcq',
-        options: [
-            'Purging the space with an inert gas or steam (if required), followed by mechanical forced ventilation with fresh air',
-            'Leaving the hatch open for 10 minutes and hoping the wind blows it out',
-            'Spraying air freshener into the space',
-            'Lighting a small fire to burn off the gases'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'Can pure oxygen be used to ventilate a confined space to "freshen" the air?',
-        questionType: 'mcq',
-        options: [
-            'NEVER. Introducing pure oxygen creates an oxygen-enriched atmosphere, creating a massive explosion and fire hazard',
-            'Yes, it is the best way to ensure workers do not suffocate',
-            'Only if the workers are wearing fireproof suits',
-            'Yes, but only for 5 minutes at a time'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What equipment is typically used for non-entry emergency rescue from a deep vertical confined space (e.g., a sewer manhole)?',
-        questionType: 'mcq',
-        options: [
-            'A rescue tripod positioned over the hole with a mechanical winch attached to the entrant\'s full-body harness',
-            'A long rope tied around the entrant\'s waist',
-            'An extension ladder and a strong co-worker',
-            'A helicopter winch line'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'If a gas detector alarm sounds while you are working inside a confined space, what is your immediate action?',
-        questionType: 'mcq',
-        options: [
-            'Stop work immediately, evacuate the space via the agreed route, and notify the Standby Person/Supervisor',
-            'Turn the alarm off and finish the task quickly',
-            'Call the equipment manufacturer to ask why it is beeping',
-            'Take off your mask to smell if the gas is dangerous'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'How long must a Confined Space Entry Permit typically be kept on file after the work is completed?',
-        questionType: 'mcq',
-        options: [
-            'For at least 1 month, or longer (often years) if a reportable incident occurred during the entry',
-            'It can be thrown away as soon as the workers exit the space',
-            'Exactly 24 hours',
-            'Forever, stored in a bank vault'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'When completing the entry log, what details must the Standby Person record?',
-        questionType: 'mcq',
-        options: [
-            'The name of every entrant, their exact time of entry, and their exact time of exit',
-            'Only the total number of people inside',
-            'The names of the tools they took inside',
-            'The time they took their lunch break'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'Is a standard dust mask (e.g., N95 or P2) suitable protection against toxic gases or oxygen deficiency in a confined space?',
-        questionType: 'mcq',
-        options: [
-            'No, dust masks only filter particles. Toxic gases or low oxygen require Supplied Air Breathing Apparatus (SABA) or Self-Contained Breathing Apparatus (SCBA)',
-            'Yes, if you wear two masks at the same time',
-            'Yes, they block all known hazards',
-            'Only if the mask is wet'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What physical hazard involves the shape of the space causing a worker to become trapped or asphyxiated?',
-        questionType: 'mcq',
-        options: [
-            'Internal configuration (e.g., sloping walls converging to a small cross-section like a hopper or silo)',
-            'Slippery floors',
-            'Loud noises echoing',
-            'Bright lights causing temporary blindness'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'Why is continuous gas monitoring often required during confined space work, rather than just pre-entry testing?',
-        questionType: 'mcq',
-        options: [
-            'Because the atmosphere can change rapidly due to the work being performed (e.g., welding, painting, disturbing sludge) or temperature changes',
-            'To drain the batteries of the gas detector so they can be replaced daily',
-            'Because the supervisor needs something to look at',
-            'To measure the air pressure for the weather report'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What must happen when the confined space task is complete and all personnel have exited?',
-        questionType: 'mcq',
-        options: [
-            'The space is checked for tools, secured/barricaded, isolation locks removed, and the permit is formally closed out/signed off',
-            'The space is left open for ventilation for the next crew tomorrow',
-            'The Standby Person goes home immediately',
-            'The permit is erased so it can be reused'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    }
-,
-    {
-        questionText: 'Under AS 2865, what is the minimum number of gas tests that should be performed before issuing a confined space entry permit — and which gases must always be tested for?',
-        questionType: 'mcq',
-        options: [
-            'At least one full multi-gas atmospheric test covering oxygen (O2), flammable gas (LEL), hydrogen sulfide (H2S), and carbon monoxide (CO) at all levels of the space',
-            'Only a visual check for visible vapours; gas testing is optional if the space smells clean',
-            'A single reading at the entry opening is sufficient before the entry supervisor signs off',
-            'Gas testing is only required if the confined space is underground or in a mine environment'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    }
 ];

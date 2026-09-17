@@ -140,13 +140,9 @@ export default function SponsoredCourseLookupPage() {
                                                     <button onClick={() => router.push(tkt.Course?.id ? `/courses/${tkt.Course.id}` : '/courses/default')} className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 text-white font-extrabold text-xs px-8 py-4 rounded-xl hover:bg-emerald-500 uppercase tracking-wider shadow-md">
                                                         Start Course <ArrowRight className="h-4 w-4 stroke-[3]" />
                                                     </button>
-                                                ) : (tkt.paymentStatus && tkt.paymentStatus !== 'unpaid') ? (
-                                                    <button disabled className="w-full inline-flex items-center justify-center gap-2 bg-amber-100 text-amber-800 font-extrabold text-xs px-8 py-4 rounded-xl uppercase tracking-wider cursor-not-allowed">
-                                                        <Lock className="h-4 w-4 stroke-[3]" /> Awaiting Approval
-                                                    </button>
                                                 ) : (
-                                                    <button onClick={() => router.push(`/checkout?ticketId=${tkt.id}&candidateNumber=${profile.candidateNumber}&courseId=${tkt.Course?.id || ''}&price=${coursePrice}&wallet=${profile.walletBalance}`)} className="w-full inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black font-extrabold text-xs px-8 py-4 rounded-xl hover:bg-yellow-400 uppercase tracking-wider shadow-md">
-                                                        <CreditCard className="h-4 w-4" /> Start & Checkout <ArrowRight className="h-4 w-4 stroke-[3]" />
+                                                    <button onClick={() => router.push(tkt.Course?.id ? `/courses/${tkt.Course.id}` : '/courses/default')} className="w-full inline-flex items-center justify-center gap-2 bg-[#FFC700] text-black font-extrabold text-xs px-8 py-4 rounded-xl hover:bg-yellow-400 uppercase tracking-wider shadow-md">
+                                                        Start Course <ArrowRight className="h-4 w-4 stroke-[3]" />
                                                     </button>
                                                 )}
                                             </div>
