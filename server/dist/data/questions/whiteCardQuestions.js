@@ -3,255 +3,123 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.whiteCardQuestions = void 0;
 exports.whiteCardQuestions = [
     {
-        questionText: 'Under the Work Health and Safety (WHS) Act 2011, who has the primary duty of care to ensure, so far as is reasonably practicable, the health and safety of workers?',
+        questionText: 'Under the WHS Act, who is the primary duty holder responsible for ensuring the health and safety of workers?',
         questionType: 'mcq',
         options: [
-            'The Person Conducting a Business or Undertaking (PCBU / Employer)',
-            'The local police department',
-            'Individual sub-contractors on an individual basis only',
-            'The safety equipment supplier'
+            'The PCBU (Person Conducting a Business or Undertaking)',
+            'The site Health and Safety Representative (HSR)',
+            'The individual worker',
+            'The local council safety inspector',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What document MUST be prepared before performing any high-risk construction work (e.g., risk of fall >2m, demolition, trenching)?',
+        questionText: 'What is a worker\'s legal obligation under the WHS Act regarding safety instructions?',
         questionType: 'mcq',
         options: [
-            'Safe Work Method Statement (SWMS)',
-            'Standard Operating Invoice',
-            'Annual Tax Declaration',
-            'Purchase Order Clearance'
+            'Workers must take reasonable care of their own safety and comply with any reasonable instruction given by the PCBU.',
+            'Workers can choose whether to follow safety instructions based on their experience level.',
+            'Workers only need to follow instructions if they are written in their contract.',
+            'Workers are exempt from safety duties if the PCBU fails to provide adequate supervision.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'Which level of the Hierarchy of Risk Control is considered the MOST effective way to protect workers?',
+        questionText: 'In the Hierarchy of Risk Controls, which is the most effective and preferred level of control?',
         questionType: 'mcq',
         options: [
-            'Elimination (completely removing the hazard)',
-            'Personal Protective Equipment (PPE)',
-            'Administrative controls (warning signs)',
-            'Engineering controls (guard rails)'
+            'Level 1: Elimination (Physically removing the hazard altogether)',
+            'Level 2: Engineering Controls (Machine guards and edge protection)',
+            'Level 3: Administrative Controls (Toolbox talks and permit systems)',
+            'Level 3: Personal Protective Equipment (PPE)',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What color and shape signifies a DANGER sign on an Australian construction site (e.g. Danger High Voltage)?',
+        questionText: 'When MUST a Safe Work Method Statement (SWMS) be prepared?',
         questionType: 'mcq',
         options: [
-            'Red oval inside a black rectangle with the word DANGER in white text',
-            'Green circle with white lettering',
-            'Blue triangle with black border',
-            'Yellow square with black dots'
+            'Before any High-Risk Construction Work (HRCW) begins.',
+            'Only after an incident has occurred on site.',
+            'Every morning for every task, regardless of risk level.',
+            'Only when requested by a WorkSafe inspector.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'If a worker discovers damaged or faulty personal protective equipment (e.g. cracked hard hat or torn harness), what is the correct action under WHS regulations?',
+        questionText: 'According to Australian Standard AS 1319, what does a solid BLUE circular sign with a white symbol represent?',
         questionType: 'mcq',
         options: [
-            'Immediately tag it out of service, report it to the site supervisor, and replace it',
-            'Continue using it until the end of the shift',
-            'Pass it on to a junior co-worker',
-            'Tape it up with duct tape and keep working'
+            'A Mandatory Sign, specifying an action that must be performed (e.g., "Hard Hat Must Be Worn").',
+            'A Danger Sign, warning of immediately life-threatening hazards.',
+            'A Prohibition Sign, forbidding a specific action.',
+            'An Emergency Information Sign, showing the location of safety equipment.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'Which four pieces of Personal Protective Equipment (PPE) are mandatory basic requirements on almost all Australian construction sites?',
+        questionText: 'What constitutes a "Notifiable Incident" that must be reported to the WHS regulator immediately?',
         questionType: 'mcq',
         options: [
-            'Hard hat, High-visibility vest/shirt, Steel-cap boots, Eye protection (Safety glasses)',
-            'Sun hat, Flip flops, T-shirt, Shorts',
-            'Leather apron, Welding mask, Rubber boots, Gloves',
-            'Dust mask, Ear muffs, Rain jacket, Sandals'
+            'A death, a serious injury requiring immediate hospital admission, or a dangerous incident that exposed someone to serious risk.',
+            'Any incident resulting in a worker needing a band-aid.',
+            'A noise complaint from a neighbouring property.',
+            'A worker calling in sick due to the flu.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What must a worker do IMMEDIATELY if an uncontrolled emergency or fire occurs on site?',
+        questionText: 'During a site emergency, what is your FIRST priority?',
         questionType: 'mcq',
         options: [
-            'Raise the alarm, notify supervisor, evacuate via safe routes to designated emergency assembly point',
-            'Finish current task before leaving',
-            'Call site HR department to request leave',
-            'Hide in the nearest portaloo'
+            'Make Safe: Ensure you do not become a second casualty before assisting anyone else.',
+            'Immediately run to the casualty and pull them out of the danger zone.',
+            'Go back to your vehicle to retrieve your phone to call for help.',
+            'Start recording the incident for the safety investigation.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What is the definition of a "Hazard" in the workplace?',
+        questionText: 'Why is asbestos considered so dangerous in construction and demolition?',
         questionType: 'mcq',
         options: [
-            'Anything that has the potential to cause harm, injury, disease, or property damage',
-            'The likelihood that someone will be injured',
-            'A safety officer\'s report',
-            'A warning sign'
+            'When disturbed, it releases microscopic fibres that are inhaled deep into the lungs, causing incurable diseases like Mesothelioma decades later.',
+            'It is highly flammable and acts as an accelerant in building fires.',
+            'It emits harmful radiation when exposed to sunlight.',
+            'It causes immediate chemical burns upon skin contact.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What does a WARNING sign look like?',
+        questionText: 'What is the most effective engineering control for preventing Respirable Crystalline Silica (RCS) dust when cutting concrete?',
         questionType: 'mcq',
         options: [
-            'Yellow triangle with a black border and black symbol',
-            'Blue circle with white text',
-            'Red circle with a slash',
-            'Green rectangle with white text'
+            'Using water suppression hoses attached directly to the cutting tools to suppress dust at the source.',
+            'Providing paper dust masks to workers.',
+            'Waiting for a windy day to blow the dust away from the site.',
+            'Sweeping the dust up vigorously with a dry broom after cutting.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What do MANDATORY signs (blue circle with white symbol) indicate?',
+        questionText: 'What is the most dangerous assumption a worker can make when walking near heavy mobile plant (e.g., excavators or haul trucks)?',
         questionType: 'mcq',
         options: [
-            'An instruction that must be carried out (e.g., "Hearing Protection Must Be Worn")',
-            'A suggestion for safer work',
-            'The location of emergency exits',
-            'An action that is strictly forbidden'
+            'Assuming the operator can see them, ignoring the massive blind spots around the machine.',
+            'Assuming the machine is turned off because it is not moving.',
+            'Assuming the machine is moving slower than walking speed.',
+            'Assuming the operator has a radio.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
-    {
-        questionText: 'Who is responsible for providing workers with the required Personal Protective Equipment (PPE) for a job?',
-        questionType: 'mcq',
-        options: [
-            'The Employer (PCBU)',
-            'The worker must buy it themselves',
-            'The local council',
-            'The site security guard'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'Why is it important to report all workplace injuries, no matter how minor they seem?',
-        questionType: 'mcq',
-        options: [
-            'To ensure the injured worker gets medical treatment, prevent the injury from worsening, and allow the PCBU to fix the hazard to protect others',
-            'To get time off work with pay',
-            'To complain to the union',
-            'To create paperwork for the site office'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What is a common health risk associated with prolonged exposure to loud noise on a construction site?',
-        questionType: 'mcq',
-        options: [
-            'Noise-Induced Hearing Loss (NIHL) or Tinnitus',
-            'Improved ability to hear low frequencies',
-            'Skin rashes',
-            'Asthma'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'How can workers protect themselves from the harmful effects of UV radiation (sun exposure) when working outdoors?',
-        questionType: 'mcq',
-        options: [
-            'Wear long sleeves/trousers, apply broad-spectrum SPF 30+ sunscreen, wear a broad-brimmed attachment on hard hat, and take breaks in the shade',
-            'Work only between 10am and 2pm to get maximum vitamin D',
-            'Take off shirts to stay cool',
-            'Drink energy drinks'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What is the most common cause of injury in the construction industry?',
-        questionType: 'mcq',
-        options: [
-            'Manual handling (lifting, pushing, pulling causing musculoskeletal disorders)',
-            'Lightning strikes',
-            'Chemical burns',
-            'Animal bites'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'If you are asked to perform a task that you believe is unsafe or for which you have not been trained, what should you do?',
-        questionType: 'mcq',
-        options: [
-            'Stop, refuse the unsafe work, and immediately report your concerns to your supervisor or Health and Safety Representative (HSR)',
-            'Do it anyway but be very careful',
-            'Ask a friend to do it for you',
-            'Do it quickly so it is over fast'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What does a PROHIBITION sign (red circle with a diagonal slash over a black symbol) mean?',
-        questionType: 'mcq',
-        options: [
-            'You must NOT do something (e.g., "No Smoking")',
-            'You must be careful when doing something',
-            'First aid equipment is located here',
-            'A hazard is nearby'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What is "Asbestos" and why is it dangerous?',
-        questionType: 'mcq',
-        options: [
-            'A naturally occurring mineral fiber used in older building materials; inhaling its dust can cause fatal lung diseases like mesothelioma',
-            'A type of non-toxic expanding foam',
-            'A chemical used to treat timber against termites',
-            'A synthetic fabric used in high-vis vests'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What is the correct action if you suspect you have uncovered asbestos-containing material during demolition or excavation?',
-        questionType: 'mcq',
-        options: [
-            'Stop work immediately, isolate the area, warn others, and report it to the supervisor',
-            'Sweep it up and put it in the general waste bin',
-            'Wet it down and keep working',
-            'Break it into smaller pieces for easier removal'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'When working around mobile plant (e.g., excavators, forklifts), what is a "blind spot"?',
-        questionType: 'mcq',
-        options: [
-            'An area around the machine where the operator cannot see pedestrians or other vehicles from their seat',
-            'A bright light that shines in the operator\'s eyes',
-            'A muddy patch of ground that machines get stuck in',
-            'The designated parking area for machines'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What is the legal definition of "High Risk Construction Work" under the WHS Regulations 2022 that triggers the requirement for a SWMS?',
-        questionType: 'mcq',
-        options: [
-            'Work carried out on or near energised electrical installations, at height greater than 2 metres, in or near a confined space, or demolition work',
-            'Work carried out in a temperature below 10°C or above 35°C',
-            'Work requiring the use of power tools on any site with more than 5 workers present',
-            'Work that takes longer than 4 hours to complete on any single day'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    }
 ];

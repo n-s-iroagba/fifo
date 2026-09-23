@@ -24,6 +24,8 @@ const CertificateController_1 = require("../controllers/CertificateController");
 const TicketController_1 = require("../controllers/TicketController");
 // Removed requirePsychometricClear import
 const PsychometricController_1 = require("../controllers/PsychometricController");
+const ScheduleCatalogueController_1 = require("../controllers/ScheduleCatalogueController");
+const InterviewController_1 = require("../controllers/InterviewController");
 const upload = (0, multer_1.default)({
     storage: multer_1.default.memoryStorage(),
     limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit per file
@@ -238,4 +240,23 @@ router.get('/exams/attempts/:attemptId/result', ...applicantMW, ExamAttemptContr
 // Certificates
 router.get('/certificates/learner/me', ...applicantMW, CertificateController_1.certificateController.getMyCertificates.bind(CertificateController_1.certificateController));
 router.post('/certificates/issue', ...adminMW, CertificateController_1.certificateController.issueCertificate.bind(CertificateController_1.certificateController));
+// ============================================
+// Schedule Catalogue & Interview Routes
+// ============================================
+// Schedule Catalogues (Public / Applicant read, Admin CRUD)
+router.get('/schedule-catalogues', ScheduleCatalogueController_1.scheduleCatalogueController.getAll.bind(ScheduleCatalogueController_1.scheduleCatalogueController));
+router.get('/schedule-catalogues/:id', ScheduleCatalogueController_1.scheduleCatalogueController.getById.bind(ScheduleCatalogueController_1.scheduleCatalogueController));
+router.post('/admin/schedule-catalogues', ...adminMW, ScheduleCatalogueController_1.scheduleCatalogueController.create.bind(ScheduleCatalogueController_1.scheduleCatalogueController));
+router.put('/admin/schedule-catalogues/:id', ...adminMW, ScheduleCatalogueController_1.scheduleCatalogueController.update.bind(ScheduleCatalogueController_1.scheduleCatalogueController));
+router.delete('/admin/schedule-catalogues/:id', ...adminMW, ScheduleCatalogueController_1.scheduleCatalogueController.delete.bind(ScheduleCatalogueController_1.scheduleCatalogueController));
+// Admin Interview Management (View, CRUD, and Authorization toggle)
+router.get('/admin/interviews', ...adminMW, InterviewController_1.interviewController.getAll.bind(InterviewController_1.interviewController));
+router.get('/admin/interviews/:id', ...adminMW, InterviewController_1.interviewController.getById.bind(InterviewController_1.interviewController));
+router.post('/admin/interviews', ...adminMW, InterviewController_1.interviewController.create.bind(InterviewController_1.interviewController));
+router.put('/admin/interviews/:id', ...adminMW, InterviewController_1.interviewController.update.bind(InterviewController_1.interviewController));
+router.delete('/admin/interviews/:id', ...adminMW, InterviewController_1.interviewController.delete.bind(InterviewController_1.interviewController));
+router.put('/admin/users/:userId/can-pick-schedule', ...adminMW, InterviewController_1.interviewController.setCanPickSchedule.bind(InterviewController_1.interviewController));
+// Applicant Interview Routes
+router.get('/interviews/my-interview', ...applicantMW, InterviewController_1.interviewController.getApplicantInterview.bind(InterviewController_1.interviewController));
+router.post('/interviews/book', ...applicantMW, InterviewController_1.interviewController.bookSchedule.bind(InterviewController_1.interviewController));
 exports.default = router;

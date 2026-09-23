@@ -3,6 +3,7 @@ import { runSchemaPatches } from './schema_patches_migration';
 import { migrateAccountingAndSubsidy } from './accounting_migration';
 import { migratePaymentMilestone } from './payment_milestone_migration';
 import { runLmsDeduplication } from './lms_deduplication_migration';
+import { migrateInterviewFeature } from './interview_feature_migration';
 
 /**
  * Runs all database migrations cleanly in execution order.
@@ -17,8 +18,10 @@ export async function runAllMigrations(): Promise<void> {
     await migrateAccountingAndSubsidy();
     await migratePaymentMilestone();
     await runLmsDeduplication();
+    await migrateInterviewFeature();
 
     console.log('====================================================');
     console.log('[Migrations] All Migrations Completed Successfully!');
     console.log('====================================================');
 }
+

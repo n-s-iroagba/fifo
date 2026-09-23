@@ -26,6 +26,24 @@ export default function AdminApplicantDetailPage() {
     const [isEditingSubsidy, setIsEditingSubsidy] = useState(false);
     const [subsidyValue, setSubsidyValue] = useState('');
     const [isUpdatingSubsidy, setIsUpdatingSubsidy] = useState(false);
+    const [isUpdatingScheduleAuth, setIsUpdatingScheduleAuth] = useState(false);
+
+    const handleToggleCanPickSchedule = async () => {
+        setIsUpdatingScheduleAuth(true);
+        try {
+            const nextVal = !user?.canPickSchedule;
+            const res = await api.put(`/admin/users/${id}/can-pick-schedule`, { canPickSchedule: nextVal });
+            if (res.data?.success) {
+                refetchUser();
+            } else {
+                alert(res.data?.error || 'Failed to update schedule authorization.');
+            }
+        } catch (e: any) {
+            alert(e.response?.data?.error || 'Network error while updating schedule authorization.');
+        } finally {
+            setIsUpdatingScheduleAuth(false);
+        }
+    };
 
     if (isLoading) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-blue-400">Loading Applicant Profile...</div>;
     if (!user) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-red-500">Applicant Record Not Found</div>;
@@ -272,6 +290,67 @@ export default function AdminApplicantDetailPage() {
                                 </div>
                             </div>
                         )}
+                    </div>
+
+                    {/* Interview Scheduling Authorization Card */}
+                    <div className="bg-white p-10 rounded-[2.5rem] border border-blue-100 shadow-2xl shadow-blue-900/5">
+                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-blue-50">
+                            <div className="flex items-center gap-4">
+                                <span className="material-symbols-outlined text-blue-900">video_camera_front</span>
+                                <h3 className="text-[10px] font-black text-blue-900 uppercase tracking-[0.2em]">Interview Authorization</h3>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col items-center text-center space-y-4">
+                            <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                                user.canPickSchedule
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                    : 'bg-amber-50 text-amber-700 border-amber-200'
+                            }`}>
+                                {user.canPickSchedule ? 'Authorized to Pick Slot' : 'Unauthorized (Pending Exam 3)'}
+                            </span>
+
+                            <p className="text-xs text-slate-500 font-medium">
+                                {user.canPickSchedule
+                                    ? 'Applicant can currently view the Schedule Catalogue and pick an interview slot.'
+                                    : 'Applicant is blocked from booking. Screen instructs them that an interview will be set after passing their 3rd ticket examination.'}
+                            </p>
+
+                            <button
+                                onClick={handleToggleCanPickSchedule}
+                                disabled={isUpdatingScheduleAuth}
+                                className={`w-full py-3.5 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 ${
+                                    user.canPickSchedule
+                                        ? 'bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-200'
+                                        : 'bg-blue-900 text-white hover:bg-black shadow-blue-900/20'
+                                }`}
+                            >
+                                {isUpdatingScheduleAuth ? (
+                                    <>
+                                        <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                        Updating...
+                                    </>
+                                ) : user.canPickSchedule ? (
+                                    <>
+                                        <span className="material-symbols-outlined text-sm">lock</span>
+                                        Revoke Schedule Authorization
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="material-symbols-outlined text-sm">key</span>
+                                        Authorize Candidate to Schedule
+                                    </>
+                                )}
+                            </button>
+
+                            <Link
+                                href={`/admin/interviews?search=${encodeURIComponent(user.email || user.fullName || '')}`}
+                                className="text-[9px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-900 underline flex items-center gap-1 pt-1"
+                            >
+                                <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                                View in Interviews Manager
+                            </Link>
+                        </div>
                     </div>
 
                     {/* LMS Access Management */}

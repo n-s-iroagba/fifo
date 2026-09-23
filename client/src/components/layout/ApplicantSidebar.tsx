@@ -12,12 +12,13 @@ const navItems = [
     { label: 'Active Opportunities', href: CONSTANTS.ROUTES.JOBS, icon: 'search' },
     { label: 'CV / Resume', href: CONSTANTS.ROUTES.CV, icon: 'description' },
     { label: 'Tickets & Sponsorship', href: '/dashboard/tickets', icon: 'confirmation_number' },
+    { label: 'Interviews', href: '/dashboard/interviews', icon: 'video_camera_front' },
     { label: 'Nominations', href: '/dashboard/nominations', icon: 'stars' },
     { label: 'Contracts', href: '/dashboard/contracts', icon: 'handshake' },
     { label: 'Bio', href: CONSTANTS.ROUTES.PROFILE, icon: 'person' },
     { label: 'Notifications', href: CONSTANTS.ROUTES.NOTIFICATIONS, icon: 'notifications' },
-
 ];
+
 
 export function ApplicantSidebar({
     isCollapsed,

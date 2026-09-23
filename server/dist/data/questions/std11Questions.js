@@ -3,255 +3,123 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.std11Questions = void 0;
 exports.std11Questions = [
     {
-        questionText: 'What is the primary purpose of a Yellow/Black Out of Service Tag on a mine site?',
+        questionText: 'What is the primary purpose of the Standard 11 (Standard 11 Mine Safety Induction) program in Queensland?',
         questionType: 'mcq',
         options: [
-            'To indicate that equipment or machinery is unsafe or damaged and must not be operated',
-            'To reserve the machine for a specific operator shift',
-            'To indicate that routine servicing is completed',
-            'To mark equipment for relocation to another mine site'
+            'To provide a mandatory, standardized baseline of safety knowledge for all surface coal mining workers to ensure consistent safety culture across different sites.',
+            'To teach workers how to operate heavy machinery like haul trucks.',
+            'To provide advanced first aid training for paramedics.',
+            'To replace the need for site-specific inductions.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'When performing a personal isolation under mine LOTO rules, what MUST be done after applying your lock and tag?',
+        questionText: 'When completing a Risk Assessment Matrix (e.g., JSEA or Take 5), how is the "Risk Score" calculated?',
         questionType: 'mcq',
         options: [
-            'Test and verify zero energy state (try to start/energize equipment locally before commencing work)',
-            'Immediately begin work without testing',
-            'Hand your key to the site supervisor',
-            'Leave the area unattended for 30 minutes'
+            'By multiplying or plotting the Likelihood of an event occurring against the Consequence (severity) of that event.',
+            'By adding the number of workers to the number of hours the job will take.',
+            'By estimating the financial cost of the equipment being used.',
+            'By guessing a number between 1 and 10.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'In the Hierarchy of Risk Control, where does Personal Protective Equipment (PPE) sit?',
+        questionText: 'What is "Positive Communication" when interacting with heavy mobile equipment?',
         questionType: 'mcq',
         options: [
-            'As the last line of defense (lowest level of control)',
-            'As the primary and most effective control measure',
-            'Above Elimination and Substitution',
-            'It is not recognized as a control measure'
+            'A three-way acknowledged radio conversation where you state your position, the operator acknowledges you and states their intentions, and you confirm before proceeding.',
+            'Giving the operator a thumbs up from 100 metres away.',
+            'Flashing your headlights twice.',
+            'Calling them on the radio; if they do not reply, you assume they heard you.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What step should a worker take if they identify an uncontrolled critical hazard on a haul road or processing plant?',
+        questionText: 'In surface coal mining, what hazard does coal dust present besides respiratory issues?',
         questionType: 'mcq',
         options: [
-            'Stop work immediately, isolate/barricade the area if safe to do so, and notify site radio dispatch/supervisor',
-            'Ignore it if it is outside your assigned work area',
-            'Wait until shift handover to mention it',
-            'Post a photo on social media'
+            'It is highly combustible and can cause massive secondary dust explosions if kicked up into the air and ignited.',
+            'It makes the haul roads too slippery to drive on.',
+            'It rusts the equipment faster than iron ore dust.',
+            'It causes instant chemical burns to the skin.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'Under the Mines Safety and Inspection Act 1994 (WA), what is the maximum speed limit for light vehicles on unsealed haul roads on mine sites unless otherwise signed?',
+        questionText: 'What is the "Fundamental V" parking rule?',
         questionType: 'mcq',
         options: [
-            '40 km/h (site-specific speed limits apply and must be followed as instructed)',
-            '100 km/h',
-            '80 km/h',
-            'There is no speed limit on mine site internal roads'
+            'Parking your Light Vehicle at a safe distance, facing the heavy equipment, directly within the operator\'s forward line of sight (forming a "V" shape with their vision).',
+            'Parking exactly 5 metres behind a haul truck.',
+            'Parking your vehicle in the shape of a V with another vehicle.',
+            'Reversing down a ramp in a V-pattern.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'Who holds the primary "Duty of Care" under Workplace Health and Safety legislation?',
+        questionText: 'During an emergency on a mine site, what does a continuous, uninterrupted siren usually indicate?',
         questionType: 'mcq',
         options: [
-            'Everyone on site (Employer/PCBU has primary duty, workers have duty to take reasonable care)',
-            'Only the Mine Manager',
-            'Only the Safety Officer',
-            'Only the Government Inspectors'
+            'Evacuate immediately to the designated Emergency Assembly Point.',
+            'Take cover due to an impending blast.',
+            'Smoko (break time) has started.',
+            'A vehicle is reversing nearby.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What is the main purpose of a Take 5 or SLAM (Stop, Look, Assess, Manage) risk assessment?',
+        questionText: 'What is a JSEA or JHA?',
         questionType: 'mcq',
         options: [
-            'To take a moment before starting a task to identify hazards and implement controls',
-            'To document that a worker took a 5-minute break',
-            'To calculate the cost of a specific job',
-            'To report an incident that has already occurred'
+            'Job Safety and Environment Analysis (or Job Hazard Analysis): A documented process of breaking a task into steps, identifying hazards, and implementing controls before work begins.',
+            'Joint Safety Equipment Agreement: A contract to share PPE.',
+            'Job Security and Employment Act: A union document.',
+            'Just Say Emergency Aloud: A verbal reporting tool.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'When is a Job Hazard Analysis (JHA) or Job Safety Analysis (JSA) required?',
+        questionText: 'Why must you NEVER enter an active blast exclusion zone?',
         questionType: 'mcq',
         options: [
-            'When the task is non-routine, complex, high-risk, or lacks a standard operating procedure',
-            'For every single task, including walking to the crib room',
-            'Only when a government inspector requests it',
-            'Only after an accident has occurred during a task'
+            'There is a severe risk of death from flyrock (rock blasted through the air), overpressure, and toxic blast fumes (NOx gases).',
+            'The dust will make your vehicle dirty.',
+            'You might get a flat tyre from the explosive wires.',
+            'It is too noisy and you won\'t hear the radio.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What is a "Red Danger Tag" used for in an isolation procedure?',
+        questionText: 'In the hierarchy of controls, what is the difference between Isolation and Administration controls?',
         questionType: 'mcq',
         options: [
-            'It is a personal tag applied with a personal lock to protect the individual worker from energy release',
-            'It means the equipment is broken but can still be used',
-            'It indicates the equipment belongs to the electrical department',
-            'It is used to warn others about a slippery floor'
+            'Isolation physically separates the worker from the hazard (e.g., a barricade); Administration changes how people work (e.g., a permit system).',
+            'Isolation uses PPE; Administration uses barricades.',
+            'Isolation is for electrical work only; Administration is for paperwork.',
+            'There is no difference; they are on the same level of the hierarchy.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'If you need to remove your personal lock and tag at the end of your shift but the job is not finished, what should happen?',
+        questionText: 'What should you do if you find a defect on a piece of equipment during your pre-start inspection that makes it unsafe to operate?',
         questionType: 'mcq',
         options: [
-            'Remove your personal lock/tag and replace it with an Out of Service tag or departmental isolation lock/tag',
-            'Leave your personal lock on and give the key to the next shift worker',
-            'Leave the equipment unsecured',
-            'Cut the lock off and throw it away'
+            'Do not operate it. Place an "Out of Service" (Danger/Defect) tag on the isolation point or steering wheel, and report it to your supervisor immediately.',
+            'Operate it carefully and tell the next shift about it.',
+            'Try to fix it yourself even if you are not qualified.',
+            'Ignore it if you only need to use the equipment for 10 minutes.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
-    {
-        questionText: 'Which of the following is considered a "confined space" on a mine site?',
-        questionType: 'mcq',
-        options: [
-            'An enclosed or partially enclosed space not designed for human occupancy, with restricted entry/exit, that may contain a hazardous atmosphere',
-            'Any small office with the door closed',
-            'The cab of a haul truck',
-            'An open-cut mine pit'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What is the correct way to lift a heavy object to prevent manual handling injuries?',
-        questionType: 'mcq',
-        options: [
-            'Keep the load close to your body, bend your knees, keep your back straight, and lift with your leg muscles',
-            'Keep your legs straight, bend at the waist, and lift with your back',
-            'Hold the load as far away from your body as possible',
-            'Twist your spine while lifting to gain momentum'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What should you do if you are involved in a "near miss" incident where no one was hurt but someone could have been?',
-        questionType: 'mcq',
-        options: [
-            'Report it immediately to your supervisor and complete an incident report so controls can be improved',
-            'Ignore it since nobody was injured',
-            'Tell your friends but do not tell management',
-            'Wait until the end of your swing to report it'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'How can fatigue affect a worker\'s performance on a mine site?',
-        questionType: 'mcq',
-        options: [
-            'It decreases alertness, slows reaction times, impairs judgement, and increases the risk of accidents',
-            'It improves focus and concentration',
-            'It only affects physical strength, not mental awareness',
-            'It has no impact on safety as long as coffee is consumed'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What is the standard emergency signal (horn blast) for EVACUATION on many mine sites?',
-        questionType: 'mcq',
-        options: [
-            'Continuous long blast or specific wailing siren tone',
-            'One short blast',
-            'Two short blasts',
-            'Three short blasts'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'When communicating on a two-way radio on site, what does the term "Copy" or "Roger" mean?',
-        questionType: 'mcq',
-        options: [
-            'Message received and understood',
-            'Please repeat the message',
-            'Emergency situation',
-            'Wait, I am busy'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'If you encounter a chemical spill (e.g., diesel or hydraulic oil), what is your first action if safe to do so?',
-        questionType: 'mcq',
-        options: [
-            'Control the source, contain the spill using a spill kit, and report it',
-            'Wash it down the nearest drain with water',
-            'Leave it to evaporate',
-            'Cover it with dirt and walk away'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What is the "Fitness for Work" policy regarding drugs and alcohol on most Australian mine sites?',
-        questionType: 'mcq',
-        options: [
-            'Zero tolerance (0.00% BAC) and no impairment from illicit or prescription drugs while on site',
-            'One standard drink is permitted during crib break',
-            'Only hard drugs are banned; alcohol is acceptable',
-            'Management is exempt from the policy'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What is the primary risk associated with working in extreme heat on a site, and how is it managed?',
-        questionType: 'mcq',
-        options: [
-            'Heat stress/stroke; managed by frequent hydration, rest breaks in shade/AC, and monitoring urine color',
-            'Sunburn; managed only by wearing a hat',
-            'Hypothermia; managed by wearing extra layers',
-            'Increased appetite; managed by eating more snacks'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'When approaching heavy mobile equipment (e.g., a haul truck) on foot or in a light vehicle, what is the mandatory communication procedure?',
-        questionType: 'mcq',
-        options: [
-            'Maintain safe distance (e.g., 50m), establish positive radio contact with the operator, and wait for verbal clearance to approach',
-            'Drive up close and honk your horn until they see you',
-            'Flash your headlights rapidly while approaching',
-            'Walk behind the equipment where you are in the shade'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What is the purpose of a Hazard Observation Card (HOC) or Near Miss Report form on a mine site?',
-        questionType: 'mcq',
-        options: [
-            'To formally record a hazard, near miss, or unsafe condition so corrective actions can be implemented to prevent future incidents',
-            'To request annual leave from your supervisor during a busy production period',
-            'To report another worker\'s behaviour to management for disciplinary purposes',
-            'To document the quantity of materials used on a specific task'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    }
 ];

@@ -25,6 +25,8 @@ import { TicketCatalog } from './TicketCatalog';
 import { PsychometricAttempt } from './PsychometricAttempt';
 import { Nomination } from './Nomination';
 import { Contract } from './Contract';
+import { ScheduleCatalogue } from './ScheduleCatalogue';
+import { Interview } from './Interview';
 
 // User <-> Ticket
 User.hasMany(Ticket, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
@@ -141,6 +143,14 @@ Certificate.belongsTo(CertificationType, { foreignKey: 'certificationTypeId' });
 User.hasMany(PsychometricAttempt, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
 PsychometricAttempt.belongsTo(User, { foreignKey: 'userId' });
 
+// ScheduleCatalogue <-> Interview (1:1)
+ScheduleCatalogue.hasOne(Interview, { foreignKey: 'scheduleCatalogueId', as: 'interview', onDelete: 'CASCADE', hooks: true });
+Interview.belongsTo(ScheduleCatalogue, { foreignKey: 'scheduleCatalogueId', as: 'selectedSchedule' });
+
+// User <-> Interview (1:N)
+User.hasMany(Interview, { foreignKey: 'applicantId', as: 'interviews', onDelete: 'CASCADE', hooks: true });
+Interview.belongsTo(User, { foreignKey: 'applicantId', as: 'applicant' });
+
 export {
     sequelize,
     User,
@@ -168,5 +178,8 @@ export {
     TicketCatalog,
     PsychometricAttempt,
     Nomination,
-    Contract
+    Contract,
+    ScheduleCatalogue,
+    Interview
 };
+

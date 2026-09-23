@@ -3,35 +3,339 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.eehaModules = void 0;
 exports.eehaModules = [
     {
-        title: "Module 1: Explosive Atmospheres & Zone Classifications",
+        title: "Module 1: Hazardous Area Classification — Zones, Groups & Temperature",
         durationMinutes: 45,
         sequenceOrder: 1,
         contentType: 'TEXT',
         contentUrl: null,
-        content: "EXPLOSIVE ATMOSPHERES & HAZARDOUS AREA CLASSIFICATIONS (AS/NZS 60079.10)\n\n1. Principles of Combustion and Explosive Atmospheres\nAn explosive atmosphere exists when flammable gases, vapours, mists, or combustible dusts mix with air (oxygen) in proportions such that an ignition source (electric spark, arc, or hot surface) will trigger a self-sustaining explosion. The Fire Triangle requires Fuel, Oxygen, and an Ignition Source. In dust explosions, the Explosion Pentagram additionally requires Dispersion of dust particles and Confinement of the cloud.\n\n2. Hazardous Area Zone Definitions for Gases and Vapours (AS/NZS 60079.10.1)\nHazardous areas are classified based on the frequency of occurrence and duration of an explosive gas atmosphere:\n- Zone 0: An area in which an explosive gas atmosphere is present continuously, or for long periods (>1000 hours per year), or frequently. Examples: Inside fuel storage tanks, vapour spaces of vented chemical vessels.\n- Zone 1: An area in which an explosive gas atmosphere is likely to occur in normal operation occasionally (10 to 1000 hours per year). Examples: Sampling points, relief valve discharge areas, pump seals in enclosed compressor houses.\n- Zone 2: An area in which an explosive gas atmosphere is NOT likely to occur in normal operation, and if it does occur, will persist for a short period only (<10 hours per year). Examples: Areas surrounding Zone 1 boundaries, flange joints in open-air process plants.\n- Non-Hazardous (Safe) Area: Areas where flammable atmospheres are not expected in quantities requiring special electrical precautions.\n\n3. Combustible Dust Zone Classifications (AS/NZS 60079.10.2)\nDust hazards are categorized by similar duration criteria:\n- Zone 20: Explosive dust cloud present continuously or for long periods (>1000 hours/year), such as inside hoppers, silos, and cyclone separators.\n- Zone 21: Explosive dust cloud likely to occur in normal operation (10 to 1000 hours/year).\n- Zone 22: Explosive dust cloud not likely to occur in normal operation, persisting for short durations only.\n\n4. Gas Groups and Explosion Characteristics\nGases are divided into Groups based on their Minimum Ignition Energy (MIE) and Maximum Experimental Safe Gap (MESG):\n- Group I: Methane / firedamp found in underground coal mines.\n- Group II: Surface industrial gases, subdivided into:\n  * Gas Group IIA: Representative gas is Propane (least easily ignited, high MIE > 200 microjoules).\n  * Gas Group IIB: Representative gas is Ethylene (moderate ignition energy).\n  * Gas Group IIC: Representative gases are Hydrogen and Acetylene (most easily ignited, very low MIE < 20 microjoules, highly volatile).\nCRITICAL RULE: Equipment certified for Gas Group IIC is rated for the most severe gas hazards and MAY be installed in Group IIB and Group IIA locations. Conversely, equipment certified only for Group IIA or IIB is NEVER permitted in a Group IIC environment.\n- Group III: Combustible dusts (IIIA: Combustible flyings; IIIB: Non-conductive dust; IIIC: Conductive dust).\n\n5. Temperature Classes (T-Class Ratings)\nElectrical equipment surface temperatures must not exceed the auto-ignition temperature of the surrounding atmosphere. Rated under an ambient reference of 40\u00b0C:\n- T1: Max surface temperature 450\u00b0C\n- T2: Max surface temperature 300\u00b0C\n- T3: Max surface temperature 200\u00b0C\n- T4: Max surface temperature 135\u00b0C\n- T5: Max surface temperature 100\u00b0C\n- T6: Max surface temperature 85\u00b0C (Lowest maximum surface temperature limit; most restrictive and safest rating).\n\n6. Equipment Protection Levels (EPL)\nEquipment markings under IEC/AS/NZS 60079 use EPL designations:\n- Ga / Da: Very high protection level for Zone 0 (gas) / Zone 20 (dust).\n- Gb / Db: High protection level for Zone 1 (gas) / Zone 21 (dust).\n- Gc / Dc: Enhanced protection level for Zone 2 (gas) / Zone 22 (dust).\nExample Marking: 'Ex db eb IIB T4 Gb' designates flameproof (db) and increased safety (eb) protection, certified for Gas Group IIB, Temperature Class T4 (max 135\u00b0C), with EPL Gb suitable for Zone 1."
+        content: `ELECTRICAL EQUIPMENT IN HAZARDOUS AREAS (EEHA) — CLASSIFICATION
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: WHAT IS A HAZARDOUS AREA?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A Hazardous Area is defined under Australian Standard AS/NZS 60079 as an area in which an explosive atmosphere is present, or may be expected to be present, in quantities such as to require special precautions for the construction, installation, and use of electrical equipment.
+
+The Fire Triangle dictates that for an explosion to occur, you need:
+1. Fuel (Flammable Gas, Vapour, or Combustible Dust)
+2. Oxygen (Air)
+3. Ignition Source (Electrical spark, hot surface, static discharge, friction)
+
+EEHA engineering is entirely focused on eliminating the third leg of the triangle: The Ignition Source. Standard electrical equipment (switches, motors, contactors) arcs and sparks during normal operation and generates heat. If standard equipment is placed in a hazardous area, an explosion is guaranteed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: ZONAL CLASSIFICATION (PROBABILITY)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Hazardous areas are divided into "Zones" based on the probability and duration of an explosive atmosphere occurring. The Zones dictate exactly what type of protection technique can be used.
+
+GAS AND VAPOUR ZONES
+→ Zone 0: An area where an explosive gas atmosphere is present continuously, for long periods, or frequently (e.g., Inside a petrol storage tank). Only the highest level of protection is allowed here.
+→ Zone 1: An area where an explosive gas atmosphere is likely to occur in normal operation occasionally (e.g., The area immediately surrounding the vent of a storage tank, or a pump room handling volatile solvents).
+→ Zone 2: An area where an explosive gas atmosphere is NOT likely to occur in normal operation, and if it does occur, it will exist for a short period only (e.g., Outside a tank farm where a spill or pipe rupture would have to occur for gas to be present).
+
+COMBUSTIBLE DUST ZONES
+Dust explosions are often more devastating than gas explosions because of the "secondary explosion" effect (an initial small pop kicks up settled dust throughout the factory, which then detonates massively).
+→ Zone 20: A place where an explosive dust cloud is present continuously, for long periods, or frequently (e.g., Inside a flour mill silo or a coal dust baghouse).
+→ Zone 21: A place where an explosive dust cloud is likely to occur in normal operation occasionally.
+→ Zone 22: A place where an explosive dust cloud is NOT likely to occur in normal operation, but if it does, it will only exist for a short period.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: GAS AND DUST GROUPS (THE NATURE OF THE FUEL)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Not all gases and dusts explode with the same ferocity or require the same amount of energy to ignite. Equipment must be rated for the specific group of gas or dust it will be exposed to.
+
+GAS GROUPS (Group II - Surface Industry)
+Group II is subdivided based on the Minimum Ignition Energy (MIE) and Maximum Experimental Safe Gap (MESG) of the gas.
+→ Group IIA: Typical gases like Propane, Methane (surface), Petrol, and Diesel. These are the "least easily ignited" gases.
+→ Group IIB: Typical gases like Ethylene and Town Gas. More easily ignited.
+→ Group IIC: Typical gases like Hydrogen and Acetylene. These are the most easily ignited and most dangerous gases. Equipment rated for IIC is the most heavily engineered and can be safely used in IIA and IIB areas.
+
+DUST GROUPS (Group III - Surface Industry)
+→ Group IIIA: Combustible flyings (e.g., cotton lint, wood shavings).
+→ Group IIIB: Non-conductive dust (e.g., flour, grain dust, coal dust).
+→ Group IIIC: Conductive dust (e.g., magnesium dust, aluminium dust). Conductive dusts are extremely dangerous because if they settle inside an electrical enclosure, they create massive short circuits.
+
+(Note: Group I is strictly reserved for Underground Coal Mining, focusing on Methane/Firedamp and coal dust).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4: TEMPERATURE CLASSIFICATION (T-CLASS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A spark is not required to ignite an explosive gas. If a surface (like a motor casing or a light fitting glass) gets hot enough, it will spontaneously ignite the surrounding gas. This is called the Auto-Ignition Temperature (AIT).
+
+Every hazardous gas has an AIT. For example, Hydrogen will spontaneously ignite if it touches a surface at 560°C. Carbon Disulphide will ignite if it touches a surface at just 90°C.
+
+Therefore, every piece of EEHA equipment is given a Temperature Class (T-Class) from T1 to T6. The T-Class states the absolute MAXIMUM surface temperature that the equipment will ever reach under worst-case fault conditions (in a 40°C ambient environment).
+
+The T-Classes:
+→ T1: Max surface temp 450°C
+→ T2: Max surface temp 300°C
+→ T3: Max surface temp 200°C
+→ T4: Max surface temp 135°C
+→ T5: Max surface temp 100°C
+→ T6: Max surface temp 85°C
+
+The Golden Rule of T-Class:
+The T-Class of the equipment MUST BE LOWER than the Auto-Ignition Temperature of the gas in the area.
+For example, if you are working in an area with Carbon Disulphide (AIT 90°C), you MUST use T6 equipment (max 85°C). If you use T4 equipment (max 135°C), the equipment will get too hot and cause an explosion without a single spark occurring.`
     },
     {
-        title: "Module 2: Explosion Protection Techniques (Ex d, Ex e, Ex i, Ex p)",
-        durationMinutes: 60,
+        title: "Module 2: Explosion Protection Techniques (Ex d, Ex e, Ex i, Ex n)",
+        durationMinutes: 45,
         sequenceOrder: 2,
         contentType: 'TEXT',
         contentUrl: null,
-        content: "EXPLOSION PROTECTION TECHNIQUES & EQUIPMENT SELECTION\n\n1. Flameproof Enclosures - Ex d / Ex db (AS/NZS 60079.1)\n- Operational Mechanism: Ex d does NOT prevent gas from entering the enclosure. Instead, it is built with sufficient mechanical strength to withstand an internal explosion without rupturing, and contains precision-engineered 'flamepaths' (flanged, spigoted, or threaded joints) that cool exiting hot gases and flames below the auto-ignition temperature of the external atmosphere before they reach the outside.\n- Critical Requirements:\n  * Flamepath Gap & Width: Gaps must be verified with calibrated feeler gauges against certified limits.\n  * Fasteners: Only high-tensile steel bolts of the specified grade and length may be used. Missing or loose bolts destroy flameproof integrity.\n  * Barrier Cable Glands: Mandatory when entering Ex d enclosures if the cable has gas-permeable bedding or interstices. Ex d compound barrier glands seal around individual cable cores, preventing gas migration or internal flame transmission through the cable bundle.\n\n2. Increased Safety - Ex e / Ex eb / Ex ec (AS/NZS 60079.7)\n- Operational Mechanism: Applied to electrical equipment that does not produce sparks, arcs, or dangerous temperatures in normal service (terminal boxes, luminaires, squirrel-cage motors).\n- Critical Requirements:\n  * High-grade insulation and derated thermal limits.\n  * Enhanced creepage and clearance distances between conductive terminals.\n  * Terminal Tightness: Loose terminal connections lead to increased contact resistance, arcing, and localized overheating, which can cause ignition.\n  * Ingress Protection: Minimum IP54 ingress protection rating is mandatory for Ex e enclosures containing uninsulated live conductors (IP44 for insulated conductors).\n\n3. Intrinsic Safety - Ex i / Ex ia / Ex ib / Ex ic (AS/NZS 60079.11)\n- Operational Mechanism: Low-power protection technique that limits both electrical spark energy and surface temperature below the ignition energy of the specific gas group, even under fault conditions.\n  * Ex ia: Safe with two independent faults (suitable for Zone 0, 1, 2).\n  * Ex ib: Safe with one fault (suitable for Zone 1, 2).\n  * Ex ic: Safe in normal operation (suitable for Zone 2).\n- Entity Parameter Matching: Safety barrier output parameters must not exceed the certified input limits of the field apparatus:\n  * Uo <= Ui (Barrier maximum open-circuit voltage <= Device maximum input voltage)\n  * Io <= Ii (Barrier maximum short-circuit current <= Device maximum input current)\n  * Po <= Pi (Barrier maximum output power <= Device maximum input power)\n  * Co >= Ci + Ccable (Barrier allowable capacitance >= Device internal capacitance + cable capacitance)\n  * Lo >= Li + Lcable (Barrier allowable inductance >= Device internal inductance + cable inductance)\n\n4. Pressurization and Purging - Ex p / Ex pxb / Ex pyb / Ex pzc (AS/NZS 60079.2)\n- Operational Mechanism: Maintains an overpressure of a protective gas (clean instrument air or inert gas like nitrogen) inside the enclosure relative to the external hazardous atmosphere, preventing the ingress of flammable gases or dusts.\n- Safety Interlocks: Enclosure must undergo pre-purging before energization. Loss of positive pressure in Zone 1 (Ex pxb) requires automatic electrical de-energization; in Zone 2 (Ex pzc), it triggers an audible/visual alarm.\n\n5. Encapsulation - Ex m / Ex ma / Ex mb (AS/NZS 60079.18)\n- Operational Mechanism: Sparking, arcing, or hot components are completely embedded (potted) in an insulating resin compound, physically preventing flammable gas or dust from reaching the ignition source.\n\n6. Non-Sparking Protection - Ex nA / Ex ec (AS/NZS 60079.15)\n- Designed specifically for Zone 2 ONLY. Relies on construction methods that eliminate sparking contacts and hot spots during normal, steady-state operation."
+        content: `EXPLOSION PROTECTION TECHNIQUES
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: THE "Ex" PHILOSOPHY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Because we cannot eliminate the gas (the fuel) or the air (the oxygen) in a hazardous area, we must eliminate the ignition source. This is achieved through specific, highly engineered protection techniques.
+
+Each technique is designated by the letters "Ex" followed by a specific letter code indicating the method used.
+
+There are three primary philosophies of protection:
+1. Contain the explosion (Let it explode inside the box, but don't let it out).
+2. Segregate the ignition source (Keep the gas away from the spark).
+3. Limit the energy (Make the spark so weak it cannot ignite the gas).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: CONTAINMENT — Ex d (FLAMEPROOF ENCLOSURES)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Concept: We accept that gas WILL enter the enclosure, and we accept that the electrical components inside WILL spark and ignite the gas. An explosion WILL occur inside the box.
+
+The Ex d enclosure is engineered to:
+1. Withstand the immense pressure of the internal explosion without shattering.
+2. Allow the hot, expanding burning gases to escape through specifically engineered "flame paths" (gaps between the flanges, or threaded joints).
+3. Cool the escaping gases as they travel through the flame path, so that by the time they reach the outside atmosphere, they are too cool to ignite the surrounding explosive gas.
+
+Critical Ex d Rules:
+→ Never modify an Ex d enclosure. Drilling a new hole instantly destroys its certification.
+→ Never paint over the flame path flanges. Paint changes the gap dimensions.
+→ Never insert a gasket between Ex d flanges unless it is explicitly supplied and certified by the manufacturer. A gasket stops the flame from escaping, causing the box to overpressurise and explode like a bomb.
+→ All bolts must be present, correct high-tensile grade, and torqued to spec. Missing one bolt compromises the flame path.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: SEGREGATION — Ex e, Ex m, Ex p
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ex e (Increased Safety)
+Concept: Ex e equipment is designed NEVER to produce an arc, spark, or high temperature in normal operation.
+→ It relies on extremely high-quality insulation, guaranteed tight electrical connections (special anti-vibration terminals), and impact-resistant enclosures.
+→ Because it relies on not sparking, gas is allowed to enter the enclosure.
+→ Commonly used for terminal boxes and high-voltage induction motors.
+
+Ex m (Encapsulation)
+Concept: The sparking electrical components (like a solenoid coil or a small relay) are completely submerged and cast in a solid block of resin or epoxy.
+→ The gas can never reach the spark because the spark is entombed in solid plastic.
+
+Ex p (Pressurisation)
+Concept: The enclosure is purged and then continuously pumped with clean, non-flammable instrument air or nitrogen to maintain a positive pressure inside the box.
+→ Because the inside of the box is at a higher pressure than the outside, the hazardous gas cannot physically leak in.
+→ If the pressure drops, an alarm sounds and the power is automatically tripped.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4: ENERGY LIMITATION — Ex i (INTRINSIC SAFETY)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Concept: Intrinsic Safety (Ex i) limits the electrical energy in the circuit to a level so low that any spark or thermal effect produced—either in normal operation or under severe fault conditions—is completely incapable of igniting the explosive atmosphere.
+
+How it works:
+Ex i systems use a Zener Barrier or Galvanic Isolator (located in the safe, non-hazardous area) to restrict the voltage and current going out to the field instrument (located in the hazardous area).
+
+Why Ex i is the Gold Standard:
+→ It is the only protection technique permitted in Zone 0 (using Ex ia).
+→ Because the energy is so low, you can perform live maintenance (calibration, wire swapping) on an Ex i instrument while the explosive gas is present, without needing a hot work permit.
+
+Categories:
+→ Ex ia: Safe with two counting faults. Allowed in Zone 0.
+→ Ex ib: Safe with one counting fault. Allowed in Zone 1.
+→ Ex ic: Safe in normal operation. Allowed in Zone 2.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 5: THE EQUIPMENT PROTECTION LEVEL (EPL) SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Modern EEHA standards use the EPL system to define exactly where equipment can be installed, replacing the older reliance solely on the "Ex" technique code.
+
+Gas EPLs:
+→ Ga (Very High Protection): Can be installed in Zone 0, 1, or 2.
+→ Gb (High Protection): Can be installed in Zone 1 or 2.
+→ Gc (Enhanced Protection): Can only be installed in Zone 2.
+
+Dust EPLs:
+→ Da (Very High): Zone 20, 21, 22.
+→ Db (High): Zone 21, 22.
+→ Dc (Enhanced): Zone 22.
+
+Example Label:
+Ex d IIB T4 Gb
+(Flameproof technique, suitable for Ethylene gas group, maximum surface temp 135°C, high protection level suitable for Zone 1 or 2).`
     },
     {
-        title: "Module 3: Inspection Protocols, Testing & Compliance Verification",
-        durationMinutes: 60,
+        title: "Module 3: Installation & Glanding Requirements (AS/NZS 60079.14)",
+        durationMinutes: 45,
         sequenceOrder: 3,
         contentType: 'TEXT',
         contentUrl: null,
-        content: "INSPECTION PROTOCOLS, TESTING & COMPLIANCE VERIFICATION (AS/NZS 60079.17)\n\n1. The Three Grades of Inspection under AS/NZS 60079.17\nHazardous area electrical installations require structured inspections graded by the level of access and tools required:\n- Visual Inspection: Identifies defects that are apparent to the eye without the use of access equipment (ladders/scaffolds) or tools. Checks include missing bolts, broken glass, unapproved modifications, correct certification labels, and severe corrosion.\n- Close Inspection: Encompasses all aspects of a visual inspection and additionally identifies defects (such as loose bolts or compromised enclosure seals) that require the use of access equipment and simple hand tools (e.g. spanners), but WITHOUT opening the enclosure.\n- Detailed Inspection: The most rigorous inspection grade. Encompasses all visual and close inspection checks and additionally requires opening the explosion-protected enclosure and using specialized test equipment. Checks include internal terminal tightness, insulation resistance, earth continuity, cable gland termination integrity, and measuring flamepath gaps using feeler gauges.\n\n2. Inspection Regimes and Frequency\n- Initial Inspection: Mandatory 100% Detailed Inspection of all newly installed or modified equipment prior to plant commissioning.\n- Periodic Inspection: Routine inspections conducted at intervals not exceeding 3 years (unless under continuous supervision by skilled personnel).\n- Sample Inspection: Used to monitor degradation across batches of identical equipment in similar environmental conditions.\n\n3. Flamepath Inspection & Measurement\n- Ex d flamepath surfaces must be inspected for corrosion, pitting, scoring, mechanical damage, and unauthorized paint coatings.\n- Feeler Gauge Testing: A calibrated feeler gauge is inserted into flanged flamepath joints to verify that the gap width does not exceed the certified maximum gap specified in the equipment documentation and AS/NZS 60079.14 tables.\n- NEVER paint flamepaths. Paint on machined flamepath faces alters gap clearances, burns during an internal explosion, and destroys flame cooling capability.\n\n4. Earthing and Equipotential Bonding\n- In hazardous areas, static electricity and stray earth fault currents represent major ignition hazards.\n- Equipotential bonding ensures all conductive, non-current-carrying metal parts (enclosures, cable trays, structural steel, pipework) are electrically bonded to prevent potential differences and spark discharges.\n- Earth bonding resistance must typically measure less than 0.5 ohms.\n\n5. Hazardous Area Verification Dossier (HAVD)\n- The HAVD is a mandatory legal repository maintained on site under AS/NZS 60079.14 and state mining regulations.\n- Mandatory Contents of the HAVD:\n  * Hazardous Area Classification drawings showing zone boundaries and gas/dust groups.\n  * Complete equipment register listing all Ex equipment tag numbers, locations, and serial numbers.\n  * Manufacturers' Certificates of Conformity (IECEx, ANZEx, or AUS Ex certificates).\n  * Intrinsically Safe loop calculation sheets and entity parameter verification records.\n  * Inspection records, baseline detailed inspection logs, and historical maintenance sheets."
+        content: `INSTALLATION & GLANDING REQUIREMENTS (AS/NZS 60079.14)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: THE IMPORTANCE OF CABLE GLANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In EEHA installations, the cable gland is not just a mechanical clamp to hold the cable; it is a critical, certified component of the explosion protection system. The wrong gland, or a poorly installed gland, instantly destroys the integrity of the entire enclosure.
+
+Under AS/NZS 60079.14, you cannot use standard industrial brass or nylon glands in a hazardous area. You must use certified "Ex" glands that match or exceed the protection technique of the enclosure.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: GLANDING FOR Ex d (FLAMEPROOF) ENCLOSURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The most rigorous glanding requirements apply to Ex d (Flameproof) enclosures because the gland forms part of the flame path. If an explosion occurs inside the Ex d box, the expanding burning gases will try to escape down the inside of the cable, between the copper cores and the outer sheath.
+
+If this happens, the burning gas will travel down the cable and ignite the atmosphere outside, or travel straight into the main switchroom.
+
+To prevent this, Ex d glands must be highly engineered:
+
+1. Barrier Glands (Resin Filled):
+A barrier gland is an Ex d gland where the individual copper cores of the cable are splayed apart inside the gland body, and a two-part epoxy resin or putty is packed around and between every single core.
+→ When the resin sets solid, it completely blocks the inside of the cable. No gas or flame can pass through it.
+→ Barrier glands are mandatory for Ex d enclosures if the enclosure is large (volume > 2 litres) and installed in a Zone 1 IIC environment, or if the cable itself is not compact (i.e., not perfectly round or filled).
+
+2. Standard Ex d Compression Glands:
+Used where barrier glands are not strictly required. They use a long, thick elastomeric sealing ring that compresses tightly against the outer sheath of the cable to form a flame path.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: GLANDING FOR Ex e (INCREASED SAFETY) ENCLOSURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ex e enclosures do not contain explosions, so the gland does not need to be a flame path. However, Ex e relies on keeping the enclosure perfectly clean and dry to prevent tracking and sparking.
+
+Therefore, an Ex e gland must provide a minimum Ingress Protection (IP) rating of IP54 (often IP66 in practice).
+→ You must use the supplied sealing washer (nylon or fibre) between the gland and the enclosure wall to maintain the IP rating. (This is a common failure point during audits).
+→ Ex e enclosures are typically plastic or stainless steel. When installing a brass gland into a plastic Ex e box, you must use a brass earth tag and locknut to ensure the armour of the cable is continuous to earth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4: INTRINSIC SAFETY (Ex i) WIRING RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ex i relies on limiting energy. If a high-voltage non-IS cable accidentally shorts out against a low-voltage IS cable, massive energy is injected into the hazardous area, bypassing the Zener barrier and causing an explosion.
+
+To prevent this, AS/NZS 60079.14 mandates strict segregation rules for Ex i wiring:
+
+1. Colour Coding:
+Ex i cables, terminal blocks, and junction boxes should be coloured Light Blue to identify them instantly as Intrinsic Safety circuits. Non-IS cables must NOT be light blue.
+
+2. Segregation Distance:
+→ Inside a cabinet, the terminals for Ex i circuits must be separated from non-IS terminals by a minimum physical distance of 50mm, or separated by an earthed metal partition or an insulating partition.
+→ In cable trays, IS and non-IS cables must be separated or a physical barrier installed between them.
+
+3. Cable Screens and Earthing:
+The shield or screen of an Ex i cable must be connected to the dedicated IS Earth at ONE END ONLY (usually in the safe area control room). If earthed at both ends, a ground loop current can flow through the shield, generating heat or sparks in the hazardous area.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 5: GENERAL INSTALLATION REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cable Protection:
+Cables in hazardous areas must be protected from mechanical damage. They should be heavy-duty steel wire armoured (SWA), braided, or installed in conduit. Unprotected flexible cords are severely restricted.
+
+Earthing and Equipotential Bonding:
+In a hazardous area, a static discharge spark can ignite the gas. To prevent static build-up, all exposed metal parts (pipework, vessels, structural steel, and electrical enclosures) must be heavily bonded together and tied to the main earth system. There must be no difference in electrical potential between any two pieces of metal in the area.
+
+Aluminium Restrictions:
+The use of aluminium conductors and enclosures is restricted in hazardous areas (particularly coal mining) due to the risk of "thermite" sparks. If rusty steel strikes smeared aluminium, it produces a highly energetic thermite spark that easily ignites gas. Aluminium enclosures used in surface hazardous areas must be painted or anodised to prevent this.`
     },
     {
-        title: "Module 4: Maintenance, Repair, and Overhaul (MRO) Standards",
+        title: "Module 4: Inspection & Maintenance Protocols (AS/NZS 60079.17)",
         durationMinutes: 45,
         sequenceOrder: 4,
         contentType: 'TEXT',
         contentUrl: null,
-        content: "MAINTENANCE, REPAIR, AND OVERHAUL (MRO) STANDARDS (AS/NZS 3800)\n\n1. Standards Framework for Equipment Repair\n- AS/NZS 3800 governs the overhaul, repair, and reclamation of explosion-protected equipment.\n- Repairs that affect explosion protection must be conducted exclusively by accredited, certified Ex Service Facilities employing qualified competent personnel.\n- Unauthorized modifications, drilling extra conduit entries, filing flamepaths, or substituting non-genuine components immediately VOIDS equipment certification and is illegal under mining safety regulations.\n\n2. Ex d Flamepath Maintenance and Repair Rules\n- Flamepaths must be kept clean and lightly coated with an approved non-hardening corrosion-inhibiting grease (such as silicone grease or petroleum jelly with corrosion inhibitors).\n- Damaged Flamepaths: If a flamepath suffers gouges, scratches, or corrosion exceeding allowable tolerances, it can only be remachined or reclaimed in strict accordance with the original equipment manufacturer (OEM) specifications and AS/NZS 3800 limits.\n- NEVER file, grind, or scrape flamepaths in the field with abrasive tools.\n- NEVER apply tape, silicone sealant, or gaskets to flamepaths unless specifically certified as part of the tested design.\n\n3. Replacement Fasteners & Mechanical Integrity\n- Flameproof enclosures rely on precise bolt clamping force to contain internal explosion pressure without yielding.\n- Always replace bolts with the exact diameter, thread pitch, length, and tensile grade specified on the certification drawing (commonly Grade 8.8 or Grade 10.9 steel, or A2/A4 stainless steel).\n- Blind bolt holes must never be drilled through into the flameproof chamber.\n\n4. Safe Electrical Isolation & Live Work Restrictions\n- Standard Rule: Always isolate, lockout, tag out (LOTO), and verify zero energy state before opening any explosion-protected enclosure in a hazardous area.\n- Live Work on Ex d Equipment: Opening or working on energized Ex d equipment in a hazardous area is STRICTLY FORBIDDEN unless the area has been tested and certified as completely Gas-Free under a formal Hot Work Permit, with continuous atmospheric monitoring.\n- Live testing of Intrinsically Safe (Ex i) circuits is permitted in hazardous areas ONLY using certified intrinsically safe test meters (e.g. certified multimeters)."
+        content: `INSPECTION, MAINTENANCE & DOSSIERS (AS/NZS 60079.17)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: THE EEHA DOSSIER (THE VERIFICATION DOSSIER)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You cannot legally energise an electrical installation in a hazardous area until a Verification Dossier has been compiled and signed off. The dossier is the legal "birth certificate and medical record" for the installation.
+
+The Dossier must contain:
+→ Hazardous Area Classification drawings (showing exactly where the Zone 0, 1, and 2 boundaries are).
+→ A complete equipment register listing every piece of Ex equipment.
+→ The manufacturer's certificates of conformity (proving the equipment is genuinely Ex certified, typically via the IECEx scheme).
+→ Calculations for Intrinsic Safety loops (proving the capacitance and inductance of the cable does not exceed the barrier limits).
+→ All inspection reports (initial and periodic).
+
+If the dossier is missing or incomplete, the installation does not comply with the law and must be shut down.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: GRADES OF INSPECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Because EEHA equipment operates in harsh industrial environments (vibration, corrosion, heat, chemicals), it degrades over time. AS/NZS 60079.17 defines three specific grades of inspection to ensure the protection techniques remain intact.
+
+1. VISUAL INSPECTION
+An inspection that identifies, without the use of access equipment (ladders) or tools, those defects that are apparent to the eye.
+→ Looking at the equipment from the ground.
+→ Checking if the enclosure is physically smashed, missing, or heavily corroded.
+→ Checking if the glass on a light fitting is cracked.
+
+2. CLOSE INSPECTION
+An inspection that encompasses those aspects covered by a visual inspection and, in addition, identifies those defects apparent only by the use of access equipment (e.g., elevated work platforms, ladders) and tools. It DOES NOT require the enclosure to be opened or de-energised.
+→ Putting a spanner on a gland to see if it is loose.
+→ Checking the tightness of external earthing bolts.
+→ Examining a plastic Ex e enclosure for hairline UV cracks.
+→ Measuring the gap on an Ex d flame path using feeler gauges to ensure it hasn't widened due to corrosion.
+
+3. DETAILED INSPECTION
+An inspection that encompasses those aspects covered by a close inspection and, in addition, identifies those defects apparent only by opening the enclosure. This requires the equipment to be isolated and de-energised.
+→ Opening an Ex d box to check the internal threads and flange surfaces for scratches or rust.
+→ Opening an Ex e box to check that all terminal screws are tight and there is no water ingress or condensation.
+→ Checking that the resin in a barrier gland has cured properly.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: PERIODIC INSPECTION FREQUENCIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every piece of EEHA equipment must undergo an Initial Detailed Inspection before it is turned on for the first time.
+
+After that, the equipment is placed on a Periodic Inspection schedule.
+→ The standard maximum interval between periodic inspections is 3 years for Close inspections, and 4 years for Detailed inspections, depending on the site's maintenance strategy.
+→ In highly corrosive offshore or chemical environments, these intervals may be shortened to 6 or 12 months.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4: COMMON AUDIT FAILURES & DEADLY MISTAKES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When regulators audit EEHA installations, they consistently find the same lethal mistakes made by unqualified or complacent tradespeople:
+
+1. Painted Ex d Flame Paths:
+Maintenance crews paint a rusty Ex d enclosure without masking the flanges. The paint adds thickness to the flange, altering the meticulously engineered gap. If an internal explosion occurs, the paint burns out, creating a massive gap that allows the flame to escape and detonate the plant.
+
+2. Scratched Flanges:
+An electrician opens an Ex d enclosure. The lid is stuck, so they wedge a flathead screwdriver between the flanges to pry it open, gouging the machined steel. That scratch provides a direct, un-cooled tunnel for flame to escape during an explosion. The enclosure is ruined and must be replaced.
+
+3. Missing Bolts:
+An electrician loses one high-tensile bolt from an Ex d motor terminal box and replaces it with a standard mild-steel bolt from the hardware store, or leaves it out entirely. During an internal explosion, the mild-steel bolt stretches or snaps, the lid blows off, and the explosion escapes.
+
+4. Silicone Sealant on Flame Paths:
+An electrician notices water getting into an Ex d box and runs a bead of silicone sealant around the flange to stop the leak. During an explosion, the silicone acts as a gasket, sealing the expanding gases inside. The pressure builds until the entire enclosure detonates like a fragmentation grenade.
+
+5. Unused Gland Entries:
+A cable is removed from an enclosure, leaving an open threaded hole. The hole is plugged with a plastic dust cap or a piece of rag instead of a certified metallic Ex d blanking plug. Gas enters freely, and flame escapes freely.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 5: COMPETENCY REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Because the stakes are so high, a standard A-Grade electrical licence is NOT sufficient to perform EEHA installation or maintenance.
+
+You must hold current, nationally accredited EEHA competencies (e.g., UEE42620 Certificate IV in Hazardous Areas - Electrical, or equivalent skill sets) to install, maintain, or inspect this equipment. Operating outside these competencies places the entire facility at risk of a catastrophic explosion.`
     }
 ];

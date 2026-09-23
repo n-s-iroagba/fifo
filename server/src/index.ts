@@ -15,6 +15,8 @@ import { seedOnlineTickets } from './seedTicketSeed';
 
 
 
+import { migrateInterviewFeature } from './migrations/interview_feature_migration';
+
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
@@ -27,10 +29,10 @@ const startServer = async () => {
             // Run heavy seeding and migrations in the background so Fly.io health checks don't timeout
             (async () => {
                 try {
-                    sequelize.sync();
+                    await sequelize.sync();
+                    await migrateInterviewFeature();
 
-
-                    await registerCrons()
+                    await registerCrons();
                     logger.info('QStash endpoints are ready for background jobs.');
 
                     logger.info('Database seeded successfully in background.');
@@ -38,6 +40,7 @@ const startServer = async () => {
                     logger.error('Background database initialization error:', err);
                 }
             })();
+
 
             if (process.env.NODE_ENV !== 'production') {
                 logger.info('Database Synchronized successfully.');

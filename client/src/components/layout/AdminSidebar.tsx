@@ -18,6 +18,8 @@ const navItems = [
     { label: 'Receipts', href: '/admin/receipts', icon: 'receipt_long' },
     { label: 'Invoices', href: '/admin/invoices', icon: 'request_quote' },
     { label: 'Jobs', href: CONSTANTS.ROUTES.ADMIN.JOBS, icon: 'business_center' },
+    { label: 'Schedule Catalogue', href: '/admin/schedules', icon: 'calendar_month' },
+    { label: 'Interviews', href: '/admin/interviews', icon: 'video_camera_front' },
     { label: 'Mail', href: CONSTANTS.ROUTES.ADMIN.MAIL, icon: 'mail' },
     { label: 'Nominations', href: '/admin/nominations', icon: 'how_to_reg' },
     { label: 'Nomination List', href: '/admin/nominations/list', icon: 'list_alt' },

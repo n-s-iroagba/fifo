@@ -28,6 +28,7 @@ export interface User {
     isApexMember?: boolean;
     apexStatus?: string | null;
     languages?: { language: string; level: string }[];
+    canPickSchedule?: boolean;
     createdAt: string;
     updatedAt: string;
 }
@@ -155,3 +156,27 @@ export interface Interest {
     updatedAt: string;
     User?: User;
 }
+
+export interface ScheduleCatalogue {
+    id: number;
+    date: string;
+    time: string;
+    isBooked: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+    interview?: Interview;
+}
+
+export interface Interview {
+    id: number;
+    scheduleCatalogueId: number;
+    applicantId: number;
+    overview: string | null;
+    outcome: 'Pending' | 'Passed' | 'Failed' | 'Completed' | 'Rescheduled';
+    meetingLink: string | null;
+    createdAt?: string;
+    updatedAt?: string;
+    selectedSchedule?: ScheduleCatalogue;
+    applicant?: User;
+}
+

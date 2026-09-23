@@ -6,6 +6,7 @@ const schema_patches_migration_1 = require("./schema_patches_migration");
 const accounting_migration_1 = require("./accounting_migration");
 const payment_milestone_migration_1 = require("./payment_milestone_migration");
 const lms_deduplication_migration_1 = require("./lms_deduplication_migration");
+const interview_feature_migration_1 = require("./interview_feature_migration");
 /**
  * Runs all database migrations cleanly in execution order.
  */
@@ -18,6 +19,7 @@ async function runAllMigrations() {
     await (0, accounting_migration_1.migrateAccountingAndSubsidy)();
     await (0, payment_milestone_migration_1.migratePaymentMilestone)();
     await (0, lms_deduplication_migration_1.runLmsDeduplication)();
+    await (0, interview_feature_migration_1.migrateInterviewFeature)();
     console.log('====================================================');
     console.log('[Migrations] All Migrations Completed Successfully!');
     console.log('====================================================');

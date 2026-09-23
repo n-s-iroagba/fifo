@@ -20,6 +20,8 @@ import { certificateController } from '../controllers/CertificateController';
 import { ticketController } from '../controllers/TicketController';
 // Removed requirePsychometricClear import
 import { psychometricController } from '../controllers/PsychometricController';
+import { scheduleCatalogueController } from '../controllers/ScheduleCatalogueController';
+import { interviewController } from '../controllers/InterviewController';
 
 
 const upload = multer({
@@ -300,4 +302,28 @@ router.get('/exams/attempts/:attemptId/result', ...applicantMW, examAttemptContr
 router.get('/certificates/learner/me', ...applicantMW, certificateController.getMyCertificates.bind(certificateController));
 router.post('/certificates/issue', ...adminMW, certificateController.issueCertificate.bind(certificateController));
 
+// ============================================
+// Schedule Catalogue & Interview Routes
+// ============================================
+
+// Schedule Catalogues (Public / Applicant read, Admin CRUD)
+router.get('/schedule-catalogues', scheduleCatalogueController.getAll.bind(scheduleCatalogueController));
+router.get('/schedule-catalogues/:id', scheduleCatalogueController.getById.bind(scheduleCatalogueController));
+router.post('/admin/schedule-catalogues', ...adminMW, scheduleCatalogueController.create.bind(scheduleCatalogueController));
+router.put('/admin/schedule-catalogues/:id', ...adminMW, scheduleCatalogueController.update.bind(scheduleCatalogueController));
+router.delete('/admin/schedule-catalogues/:id', ...adminMW, scheduleCatalogueController.delete.bind(scheduleCatalogueController));
+
+// Admin Interview Management (View, CRUD, and Authorization toggle)
+router.get('/admin/interviews', ...adminMW, interviewController.getAll.bind(interviewController));
+router.get('/admin/interviews/:id', ...adminMW, interviewController.getById.bind(interviewController));
+router.post('/admin/interviews', ...adminMW, interviewController.create.bind(interviewController));
+router.put('/admin/interviews/:id', ...adminMW, interviewController.update.bind(interviewController));
+router.delete('/admin/interviews/:id', ...adminMW, interviewController.delete.bind(interviewController));
+router.put('/admin/users/:userId/can-pick-schedule', ...adminMW, interviewController.setCanPickSchedule.bind(interviewController));
+
+// Applicant Interview Routes
+router.get('/interviews/my-interview', ...applicantMW, interviewController.getApplicantInterview.bind(interviewController));
+router.post('/interviews/book', ...applicantMW, interviewController.bookSchedule.bind(interviewController));
+
 export default router;
+

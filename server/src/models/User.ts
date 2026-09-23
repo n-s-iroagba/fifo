@@ -42,6 +42,7 @@ export class User extends Model {
     declare depositPaid: boolean;
     declare depositPaidAt: Date | null;
     declare fullBalancePaid: boolean;
+    declare canPickSchedule: boolean;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 }
@@ -214,6 +215,11 @@ User.init({
             min: 0,
             max: 100
         }
+    },
+    canPickSchedule: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
     }
 }, {
     sequelize,

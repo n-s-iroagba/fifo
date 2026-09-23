@@ -3,255 +3,123 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.workingAtHeightsQuestions = void 0;
 exports.workingAtHeightsQuestions = [
     {
-        questionText: 'Under the Hierarchy of Fall Protection, what is the most preferred method to manage the risk of a fall?',
+        questionText: 'According to the WHS Regulations, what is the general threshold height where fall protection (such as edge protection or harnesses) must be considered for construction work?',
         questionType: 'mcq',
         options: [
-            'Perform the work on the ground or from a solid construction (eliminate the need to work at height)',
-            'Use a fall arrest harness system',
-            'Use an elevated work platform (EWP)',
-            'Provide administrative controls like safety training'
+            '2 metres.',
+            '3 metres.',
+            '4 metres.',
+            '1 metre.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What is the main difference between a Fall Restraint system and a Fall Arrest system?',
+        questionText: 'In the Working at Heights hierarchy of controls, which of the following is the most preferred method of risk control?',
         questionType: 'mcq',
         options: [
-            'Fall Restraint prevents the worker from reaching an unprotected edge, while Fall Arrest stops a fall that has already occurred',
-            'Fall Restraint uses a safety net, while Fall Arrest uses a harness',
-            'Fall Restraint is only for low heights, while Fall Arrest is for heights above 10 meters',
-            'There is no difference; they are two terms for the same system'
+            'Elimination (e.g., performing the work on the ground instead of at height).',
+            'Using a Fall Arrest harness system.',
+            'Erecting a scaffold.',
+            'Setting up a warning line 2 metres from the edge.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What is the primary danger of Suspension Trauma (Orthostatic Incompetence) if a worker is left hanging in a fall arrest harness for too long?',
+        questionText: 'What is the critical difference between a Fall Restraint system and a Fall Arrest system?',
         questionType: 'mcq',
         options: [
-            'Blood pools in the legs, reducing return blood flow to the heart and brain, which can lead to unconsciousness and death within minutes',
-            'The harness straps will eventually snap under the sustained weight',
-            'The worker will develop permanent nerve damage in their arms',
-            'The worker will freeze to death'
+            'Fall Restraint physically prevents the worker from reaching the edge; Fall Arrest stops the worker after they have already fallen over the edge.',
+            'Fall Restraint is used for equipment; Fall Arrest is used for humans.',
+            'There is no difference; they are just different brand names for the same harness.',
+            'Fall Restraint stops a fall quickly; Fall Arrest stops it slowly.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'Before using a full-body harness, a visual and tactile inspection must be conducted. What should you look for?',
+        questionText: 'What is "Suspension Trauma" (Orthostatic Intolerance)?',
         questionType: 'mcq',
         options: [
-            'Cuts, fraying, chemical damage, UV degradation on webbing, and distortion or rust on D-rings and buckles',
-            'That it matches the color of your site uniform',
-            'That the manufacturer\'s label has been completely removed for comfort',
-            'That the webbing has been lubricated with oil'
+            'A life-threatening condition where blood pools in the legs of a worker hanging motionless in a harness, depriving the brain of oxygen and leading to unconsciousness and death.',
+            'The fear of heights experienced after looking down from a scaffold.',
+            'The physical bruising caused by the harness straps during a fall.',
+            'A spinal injury caused by the sudden stop at the end of a lanyard.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'When fitting a full-body harness, how tight should the leg straps be?',
+        questionText: 'Because of the risk of Suspension Trauma, what is the critical time limit to rescue a worker suspended motionless in a fall arrest harness?',
         questionType: 'mcq',
         options: [
-            'Snug enough that you can slip a flat hand between the strap and your leg, but cannot make a fist (the two-finger test)',
-            'As tight as physically possible to stop circulation',
-            'Loose enough to fit your entire forearm through',
-            'Leg straps do not need to be fastened if the chest strap is tight'
+            'The rescue must be initiated immediately, as irreversible damage or death can occur in under 10 to 15 minutes.',
+            'They can safely hang for up to 2 hours while emergency services are called.',
+            'They must be rescued before the end of the shift.',
+            'There is no time limit if the harness is properly fitted.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What is the minimum breaking strength required for a single-person anchorage point for a fall arrest system under AS/NZS 1891?',
+        questionText: 'When using a Fall Arrest system, what must be built into the lanyard to reduce the impact force on the worker\'s body?',
         questionType: 'mcq',
         options: [
-            '15 kN (approximately 1500 kg)',
-            '5 kN (approximately 500 kg)',
-            '100 kg',
-            'There is no minimum strength requirement'
+            'A shock absorber (energy absorber) pack that tears open to decelerate the fall.',
+            'A bungee cord to allow them to bounce softly.',
+            'A steel chain to prevent the lanyard from breaking.',
+            'A heavy lead weight at the bottom of the lanyard.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What does "100% tie-off" mean when moving around at heights using a twin-tail (double) lanyard?',
+        questionText: 'Before using a safety harness and lanyard, what must the worker do?',
         questionType: 'mcq',
         options: [
-            'You must always have at least one lanyard tail attached to an anchor point at all times while transitioning',
-            'You must tie both lanyard tails to the same anchor point for double strength',
-            'You only need to tie off when you feel 100% unsafe',
-            'You tie the lanyard around your waist 100% of the time'
+            'Perform a thorough visual and tactile pre-use inspection, checking for cuts, fraying, UV degradation, and valid inspection tags.',
+            'Wash it in a washing machine to ensure it is clean.',
+            'Stretch it out forcefully to ensure it is flexible.',
+            'Write their name on the webbing with a permanent marker.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What is the "Pendulum Effect" (Swing Fall) in relation to working at heights?',
+        questionText: 'What is the required strength of an engineered anchor point used for a single person Fall Arrest system?',
         questionType: 'mcq',
         options: [
-            'When a worker falls while anchored off-center, causing them to swing like a pendulum and potentially strike structures',
-            'The rocking motion of an Elevated Work Platform in high winds',
-            'The method used to swing materials up to a roof',
-            'A technique used to test the strength of a lanyard'
+            '15 kN (approximately 1.5 tonnes).',
+            '1 kN (approximately 100 kg).',
+            '5 kN (approximately 500 kg).',
+            '100 kN (approximately 10 tonnes).',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'How can the Pendulum Effect be minimized?',
+        questionText: 'What does the term "Pendulum Effect" refer to in height safety?',
         questionType: 'mcq',
         options: [
-            'By keeping your anchor point as directly overhead as possible, typically within a 20-30 degree angle',
-            'By using the longest lanyard available',
-            'By anchoring at foot level rather than overhead',
-            'By wearing a heavier tool belt to increase downward force'
+            'Swinging violently like a pendulum after falling because the anchor point was not positioned directly overhead, leading to severe impact with structures.',
+            'The swinging of tools hanging from a tool belt.',
+            'The rhythmic bouncing of a scaffold board under load.',
+            'The movement of the shock absorber tearing open.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
     {
-        questionText: 'What is the purpose of an energy (shock) absorber on a fall arrest lanyard?',
+        questionText: 'Which of the following activities requires a Safe Work Method Statement (SWMS)?',
         questionType: 'mcq',
         options: [
-            'To deploy and tear during a fall, significantly reducing the impact force (arrest force) on the worker\'s body and anchor point to below 6 kN',
-            'To act as a bungee cord to bounce the worker back up',
-            'To make the lanyard easier to pack away',
-            'To insulate the worker from electrical shocks'
+            'Any work involving a risk of a person falling more than 2 metres.',
+            'Only work on the roof of a commercial building.',
+            'Painting the ground floor walls.',
+            'Walking up a standard set of stairs in an office.',
         ],
         correctOptionIndex: 0,
-        weight: 5
+        weight: 5,
     },
-    {
-        questionText: 'What is "Fall Clearance" and why must it be calculated before using a fall arrest system?',
-        questionType: 'mcq',
-        options: [
-            'The total distance required from the anchor point to the ground to ensure the worker does not hit the ground or lower level during a fall',
-            'The permission granted by the supervisor to drop tools from height',
-            'The distance between two anchor points',
-            'The physical space required to put on the harness'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'When using a portable straight or extension ladder to access a roof or upper level, how far should it extend past the landing point?',
-        questionType: 'mcq',
-        options: [
-            'At least 1 meter past the landing point to provide a safe handhold',
-            'It should be exactly flush with the landing point',
-            'It should stop below the landing point',
-            'At least 3 meters past the landing point'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What is the correct angle/ratio for setting up a portable straight ladder?',
-        questionType: 'mcq',
-        options: [
-            '1 in 4 ratio (for every 4 meters up, place the base 1 meter out from the wall)',
-            '1 in 1 ratio (45-degree angle)',
-            '1 in 10 ratio (steep angle)',
-            'Flat against the wall'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What does maintaining "3 points of contact" on a ladder mean?',
-        questionType: 'mcq',
-        options: [
-            'Always having two hands and one foot, or one hand and two feet, firmly on the ladder at all times while ascending or descending',
-            'Ensuring the ladder touches the ground, the wall, and the roof',
-            'Having three people hold the bottom of the ladder',
-            'Taking three steps up the ladder before looking down'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What must be in place BEFORE anyone relies on a fall arrest system?',
-        questionType: 'mcq',
-        options: [
-            'A site-specific, documented emergency rescue plan detailing how to retrieve a suspended worker promptly',
-            'A coffee machine in the break room',
-            'A written apology to the PCBU',
-            'A parachute'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What should a worker do with their lanyard if they are using an Elevated Work Platform (EWP/Boom Lift)?',
-        questionType: 'mcq',
-        options: [
-            'Attach a short fall restraint lanyard to the designated engineered anchor point inside the basket',
-            'Tie it around the handrails of the basket',
-            'Leave it unattached so they can move freely in the basket',
-            'Attach it to the structure they are working on, outside the basket'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'How frequently should fall arrest harnesses and lanyards undergo a formal inspection by a competent person in addition to pre-use checks?',
-        questionType: 'mcq',
-        options: [
-            'At least every 6 months, with the inspection recorded and the equipment tagged',
-            'Only once every 5 years',
-            'Only after someone falls',
-            'Never, pre-use checks are sufficient'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What action must be taken if a harness or lanyard has arrested a fall?',
-        questionType: 'mcq',
-        options: [
-            'It must be immediately removed from service, tagged out, and destroyed or sent to the manufacturer for evaluation',
-            'It should be washed, dried, and put back into the equipment store',
-            'It can be used again if there is no visible damage',
-            'It should be given to a lighter worker'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'How can the risk of dropped objects (tools/materials falling on people below) be controlled?',
-        questionType: 'mcq',
-        options: [
-            'Establish exclusion zones/barricades below the work area, use tool lanyards, and secure loose materials',
-            'Yell "Heads up!" before dropping something',
-            'Ask people below to wear two hard hats',
-            'Work only at night when fewer people are around'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What is the purpose of suspension trauma relief straps on a harness?',
-        questionType: 'mcq',
-        options: [
-            'They can be deployed by a suspended worker to stand in, relieving pressure on the leg arteries and delaying the onset of suspension trauma',
-            'They are used to pull the worker back up to the roof',
-            'They are extra storage loops for heavy tools',
-            'They prevent the harness from getting tangled during storage'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    },
-    {
-        questionText: 'What is the maximum free-fall distance permitted under AS/NZS 1891.1 before a shock-absorbing lanyard must activate and arrest a fall?',
-        questionType: 'mcq',
-        options: [
-            '2 metres of free fall, after which the energy absorber deploys — total fall distance including deployment is factored into fall clearance calculations',
-            '10 metres, as the absorber requires momentum to deploy correctly',
-            '0.5 metres — any greater free fall is prohibited on all sites',
-            'There is no regulated maximum; the anchor point height alone determines safety'
-        ],
-        correctOptionIndex: 0,
-        weight: 5
-    }
 ];

@@ -174,6 +174,11 @@ User.init({
             min: 0,
             max: 100
         }
+    },
+    canPickSchedule: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
     }
 }, {
     sequelize: database_1.sequelize,

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Contract = exports.Nomination = exports.PsychometricAttempt = exports.TicketCatalog = exports.Ticket = exports.Certificate = exports.ExamAttempt = exports.Enrollment = exports.ExamQuestion = exports.ExamConfig = exports.CourseModule = exports.Course = exports.CertificationType = exports.LmsCredential = exports.Interest = exports.Notification = exports.Receipt = exports.Invoice = exports.Application = exports.JobStage = exports.JobListing = exports.JobCategory = exports.BankAccount = exports.User = exports.sequelize = void 0;
+exports.Interview = exports.ScheduleCatalogue = exports.Contract = exports.Nomination = exports.PsychometricAttempt = exports.TicketCatalog = exports.Ticket = exports.Certificate = exports.ExamAttempt = exports.Enrollment = exports.ExamQuestion = exports.ExamConfig = exports.CourseModule = exports.Course = exports.CertificationType = exports.LmsCredential = exports.Interest = exports.Notification = exports.Receipt = exports.Invoice = exports.Application = exports.JobStage = exports.JobListing = exports.JobCategory = exports.BankAccount = exports.User = exports.sequelize = void 0;
 const database_1 = require("../config/database");
 Object.defineProperty(exports, "sequelize", { enumerable: true, get: function () { return database_1.sequelize; } });
 const User_1 = require("./User");
@@ -51,6 +51,10 @@ const Nomination_1 = require("./Nomination");
 Object.defineProperty(exports, "Nomination", { enumerable: true, get: function () { return Nomination_1.Nomination; } });
 const Contract_1 = require("./Contract");
 Object.defineProperty(exports, "Contract", { enumerable: true, get: function () { return Contract_1.Contract; } });
+const ScheduleCatalogue_1 = require("./ScheduleCatalogue");
+Object.defineProperty(exports, "ScheduleCatalogue", { enumerable: true, get: function () { return ScheduleCatalogue_1.ScheduleCatalogue; } });
+const Interview_1 = require("./Interview");
+Object.defineProperty(exports, "Interview", { enumerable: true, get: function () { return Interview_1.Interview; } });
 // User <-> Ticket
 User_1.User.hasMany(Ticket_1.Ticket, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
 Ticket_1.Ticket.belongsTo(User_1.User, { foreignKey: 'userId' });
@@ -130,3 +134,9 @@ Certificate_1.Certificate.belongsTo(CertificationType_1.CertificationType, { for
 // PsychometricAttempt
 User_1.User.hasMany(PsychometricAttempt_1.PsychometricAttempt, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
 PsychometricAttempt_1.PsychometricAttempt.belongsTo(User_1.User, { foreignKey: 'userId' });
+// ScheduleCatalogue <-> Interview (1:1)
+ScheduleCatalogue_1.ScheduleCatalogue.hasOne(Interview_1.Interview, { foreignKey: 'scheduleCatalogueId', as: 'interview', onDelete: 'CASCADE', hooks: true });
+Interview_1.Interview.belongsTo(ScheduleCatalogue_1.ScheduleCatalogue, { foreignKey: 'scheduleCatalogueId', as: 'selectedSchedule' });
+// User <-> Interview (1:N)
+User_1.User.hasMany(Interview_1.Interview, { foreignKey: 'applicantId', as: 'interviews', onDelete: 'CASCADE', hooks: true });
+Interview_1.Interview.belongsTo(User_1.User, { foreignKey: 'applicantId', as: 'applicant' });
