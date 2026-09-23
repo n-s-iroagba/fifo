@@ -1,0 +1,23 @@
+import type { Metadata } from "next";
+import "./globals.css";
+import { Navbar } from "@/components/Navbar";
+
+export const metadata: Metadata = {
+  title: "Aveling LMS - FIFO Training & Certification Portal",
+  description: "Official LMS training portal for FIFO worker compliance, theory courseware, exams, and practical training.",
+};
+
+export default function AvelingLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <div className="min-h-screen flex flex-col bg-zinc-50 text-zinc-900 font-sans">
+      <Navbar />
+      <main className="flex-1 w-full">
+        {children}
+      </main>
+    </div>
+  );
+}

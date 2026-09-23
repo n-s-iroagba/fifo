@@ -66,7 +66,8 @@ const getStandardEmailTemplate = (subject: string, content: string, fromType: 'a
     const cleanedContent = cleanHtmlContent(content);
 
     const isAveling = fromType === 'aveling';
-    const logoUrl = isAveling ? `${process.env.AVELING_URL || 'https://aveling.online'}/aveling.jpg` : `${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg`;
+    const avelingBase = (process.env.AVELING_URL || 'https://aveling.bluecollarrecruitment.co').replace(/\/$/, '');
+    const logoUrl = isAveling ? `${avelingBase}/aveling.jpg` : `${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg`;
     const headerBgColor = isAveling ? '#FFC700' : '#0b3486';
     const primaryColor = isAveling ? '#000000' : '#0b3486';
     const altText = isAveling ? 'Aveling LMS Training' : 'BlueCollar Curated Career';
@@ -525,7 +526,7 @@ export const sendAvelingCredentialsEmail = async (
     loginUrl?: string
 ): Promise<void> => {
     const subject = 'Your Official Aveling LMS Credentials';
-    const lmsUrl = loginUrl || process.env.AVELING_URL || 'https://aveling.online/login';
+    const lmsUrl = loginUrl || (process.env.AVELING_URL ? `${process.env.AVELING_URL.replace(/\/$/, '')}/login` : 'https://aveling.bluecollarrecruitment.co/login');
     const content = `
         <p>Dear ${userName},</p>
         <p>Your official <strong>Aveling LMS Training Portal</strong> account has been configured. You can now log in, access your assigned competency tickets, review courseware modules, and sit for your online theory examinations.</p>

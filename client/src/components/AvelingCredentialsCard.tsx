@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 
+import { getAvelingUrl } from '@/lib/avelingUrl';
+
 interface AvelingCredentialsCardProps {
     username?: string | null;
     password?: string | null;
@@ -27,9 +29,7 @@ export function AvelingCredentialsCard({
         setTimeout(() => setCopiedField(null), 2000);
     };
 
-    const targetUrl = avelingUrl || (typeof window !== 'undefined'
-        ? (`${window.location.protocol}//${window.location.hostname}:3002/login`)
-        : 'https://aveling.online/login');
+    const targetUrl = avelingUrl || getAvelingUrl('/login');
 
     return (
         <div className="bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white p-8 rounded-[2.5rem] shadow-2xl shadow-blue-950/20 border border-blue-800/50 space-y-6 relative overflow-hidden">

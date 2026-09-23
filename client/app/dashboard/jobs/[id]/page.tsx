@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { CONSTANTS } from '@/constants';
 import Link from 'next/link';
+import { getAvelingUrl } from '@/lib/avelingUrl';
 
 export default function JobDetailPage() {
     const params = useParams();
@@ -69,8 +70,7 @@ export default function JobDetailPage() {
         if (!isPsychometricComplete) {
             alert('You must pass the Aveling Psychometric Test before proceeding.');
             const token = localStorage.getItem('accessToken');
-            const avelingUrl = 'https://aveling.online';
-            window.location.href = `${avelingUrl}/psychometric?token=${token}`;
+            window.location.href = getAvelingUrl(`/psychometric?token=${token || ''}`);
             return;
         }
 
@@ -266,7 +266,7 @@ export default function JobDetailPage() {
                                     <ReadinessItem
                                         label="Aveling Psychometric Test"
                                         isComplete={!!(userData?.user?.psychometricModule1Passed && userData?.user?.psychometricModule2Passed)}
-                                        link={`https://aveling.online/psychometric?token=${typeof window !== 'undefined' ? localStorage.getItem('accessToken') : ''}`}
+                                        link={getAvelingUrl(`/psychometric?token=${typeof window !== 'undefined' ? localStorage.getItem('accessToken') : ''}`)}
                                         external={true}
                                     />
                                     <ReadinessItem

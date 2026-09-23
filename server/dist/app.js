@@ -16,7 +16,15 @@ app.set('trust proxy', 1);
 // Security and utility middlewares
 app.use((0, helmet_1.default)());
 const envOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [];
-const defaultOrigins = ['http://localhost:3000', 'https://aveling.online', 'https://www.bluecollarrecruitment.co', 'https://bluecollarrecruitment.co', 'https://www.aveling.online', 'https://aveling.online'];
+const defaultOrigins = [
+    'http://localhost:3000',
+    'http://aveling.localhost:3000',
+    'https://aveling.bluecollarrecruitment.co',
+    'https://www.bluecollarrecruitment.co',
+    'https://bluecollarrecruitment.co',
+    'https://aveling.online',
+    'https://www.aveling.online',
+];
 const allowedOrigins = Array.from(new Set([...envOrigins, ...defaultOrigins]))
     .map((o) => o.trim())
     .filter(Boolean);
@@ -24,11 +32,13 @@ app.use((0, cors_1.default)({
     origin: (origin, callback) => {
         // Allow server-to-server requests (no origin) and whitelisted origins
         if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
+            return callback(null, true);
         }
-        else {
-            callback(new Error(`CORS policy: origin ${origin} is not allowed.`));
+        // Also dynamically allow any aveling subdomain (e.g., https://aveling.abc.com, http://aveling.localhost:3000)
+        if (/^https?:\/\/aveling\.[^/]+$/i.test(origin)) {
+            return callback(null, true);
         }
+        callback(new Error(`CORS policy: origin ${origin} is not allowed.`));
     },
     credentials: true,
 }));

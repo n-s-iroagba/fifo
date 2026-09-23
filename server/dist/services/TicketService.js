@@ -12,6 +12,7 @@ const CANDIDATE_VISA_SHARE = 1405.25; // 35% candidate share for Subclass 482 Vi
 const CANDIDATE_LICENSING_SHARE = 185.50; // 100% candidate share for WA CTT, PDA, & License card
 const SCHEDULE_1_NET_CANDIDATE_TOTAL = 2830.95; // A$1,240.75 + A$1,405.25 + A$185.50
 const MAX_CANDIDATE_LIABILITY = 3599.20; // Clause 5.2 upper contractual liability ceiling cap
+const getAvelingBaseUrl = () => (process.env.AVELING_URL || 'https://aveling.bluecollarrecruitment.co').replace(/\/$/, '');
 class TicketService {
     async getUserTickets(userId) {
         const { JobStage } = require('../models');
@@ -124,7 +125,7 @@ class TicketService {
                 </td>
             </tr>
         `).join('');
-        const avelingUrl = `https://aveling.online/checkout`;
+        const avelingUrl = `${getAvelingBaseUrl()}/checkout`;
         const emailHtml = `
         <div style="font-family: Arial, sans-serif; color: #1e3a8a; max-width: 650px; margin: 0 auto; border: 1px solid #cbd5e1; border-radius: 16px; overflow: hidden; background: #ffffff;">
             <div style="background: #1e3a8a; color: #ffffff; padding: 24px; text-align: center;">
@@ -508,7 +509,7 @@ class TicketService {
     }
     async payTicketOnAveling(ticketId, userId) {
         const ticket = await this.getTicketById(ticketId, userId);
-        const avelingCourseUrl = `https://aveling.online/courses/${ticket.courseId || 'ticket-course'}`;
+        const avelingCourseUrl = `${getAvelingBaseUrl()}/courses/${ticket.courseId || 'ticket-course'}`;
         const user = ticket.User;
         await NotificationService_1.notificationService.sendNotification(userId, 'Ticket Payment Successful', `Payment for ${ticket.ticketType} course completed successfully. You can now access your training on Aveling LMS.`);
         if (user?.email) {
@@ -868,7 +869,7 @@ class TicketService {
     async sendTicketEmailNotification(ticket, user, sponsorshipStatus) {
         if (!user?.email)
             return;
-        const avelingPayUrl = `https://aveling.online/checkout?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}`;
+        const avelingPayUrl = `${getAvelingBaseUrl()}/checkout?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}`;
         const subject = `Ticket Sponsorship Update: ${ticket.ticketType}`;
         let body = `<p>Hello ${user.fullName || 'Applicant'},</p>
                     <p>Your sponsorship for <strong>${ticket.ticketType}</strong> has been updated to <strong>${sponsorshipStatus.replace(/_/g, ' ').toUpperCase()}</strong>.</p>`;
@@ -928,7 +929,7 @@ class TicketService {
             await NotificationService_1.notificationService.sendNotification(user.id, 'Course Unlocked!', `Your payment receipt for ${ticket.ticketType} has been verified by our team. Your course modules are now available to access.`);
         }
         if (user?.email && ticket.courseId) {
-            const courseUrl = `https://aveling.online/courses/${ticket.courseId}`;
+            const courseUrl = `${getAvelingBaseUrl()}/courses/${ticket.courseId}`;
             await this.sendCustomEmail(user.email, `Course Access Unlocked: ${ticket.ticketType}`, `<p>Hello ${user.fullName || 'Learner'},</p>
                  <p>Your payment receipt has been verified by our admin team. Your course is now unlocked!</p>
                  <p><a href="${courseUrl}" style="background:#FFC700;color:#000;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold;">Start Your Course Now</a></p>`);
@@ -999,7 +1000,7 @@ class TicketService {
 
                         <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:16px 0;">
                             <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;">Your Aveling LMS Login</h3>
-                            <p style="margin:4px 0;"><strong>Login URL:</strong> <a href="${process.env.AVELING_URL || 'https://aveling.online'}">${process.env.AVELING_URL || 'https://aveling.online'}</a></p>
+                            <p style="margin:4px 0;"><strong>Login URL:</strong> <a href="${getAvelingBaseUrl()}/login">${getAvelingBaseUrl()}/login</a></p>
                             <p style="margin:4px 0;"><strong>Username:</strong> <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${username}</code></p>
                             <p style="margin:4px 0;"><strong>Password:</strong> <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${rawPassword}</code></p>
                         </div>
@@ -1123,7 +1124,7 @@ class TicketService {
             await NotificationService_1.notificationService.sendNotification(user.id, 'Payment Verified – Course Unlocked!', `Your payment for ${ticket.ticketType} has been verified. Log into Aveling LMS to start your course and exam.`);
         }
         if (user?.email && ticket.courseId) {
-            const courseUrl = `${process.env.AVELING_URL || 'https://aveling.online'}/courses/${ticket.courseId}`;
+            const courseUrl = `${getAvelingBaseUrl()}/courses/${ticket.courseId}`;
             await this.sendCustomEmail(user.email, `Payment Verified – Start Your Course Now: ${ticket.ticketType}`, `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
                     <div style="background:#111827;padding:20px 24px;border-radius:8px 8px 0 0;">
                         <h2 style="color:#FFC700;margin:0;">Payment Verified ✓</h2>

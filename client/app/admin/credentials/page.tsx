@@ -21,6 +21,7 @@ import {
     Award
 } from 'lucide-react';
 import api from '@/lib/api';
+import { getAvelingUrl } from '@/lib/avelingUrl';
 
 interface Applicant {
     id: number;
@@ -151,7 +152,7 @@ export default function AdminCredentialsPage() {
         );
     }
 
-    const avelingLoginUrl = 'https://aveling.online/login';
+    const avelingLoginUrl = getAvelingUrl('/login');
 
     return (
         <div className="p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 font-sans">
@@ -178,7 +179,7 @@ export default function AdminCredentialsPage() {
                     <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
                     <div>
                         <p className="text-emerald-900 text-sm font-bold">{successMsg}</p>
-                        <p className="text-emerald-700 text-xs mt-0.5">Candidate can now log into https://aveling.online/login with these credentials.</p>
+                        <p className="text-emerald-700 text-xs mt-0.5">Candidate can now log into {avelingLoginUrl} with these credentials.</p>
                     </div>
                 </div>
             )}

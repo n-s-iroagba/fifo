@@ -6,6 +6,7 @@ import api from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AvelingCredentialsCard } from '@/components/AvelingCredentialsCard';
+import { getAvelingUrl } from '@/lib/avelingUrl';
 
 interface UserData {
     id: number;
@@ -197,11 +198,8 @@ export default function TicketDetailPage() {
     const effectiveAccountName = ticket.accountName || ticket.User?.accountName;
 
     // Aveling LMS Link
-    const avelingBaseUrl = typeof window !== 'undefined'
-        ? (`${window.location.protocol}//${window.location.hostname}:3002`)
-        : 'https://aveling.online';
-    const avelingPayUrl = 'https://aveling.online'
-    // `${avelingBaseUrl}/checkout?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}&wallet=${userWalletBalance}`;
+    const avelingBaseUrl = getAvelingUrl();
+    const avelingPayUrl = getAvelingUrl(`/checkout?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}&wallet=${userWalletBalance}`);
 
     const canSubmitSponsorshipForm =
         ticket.canApplySponsorship &&
