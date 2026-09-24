@@ -6,6 +6,7 @@ import { sendAuthEmail, sendInfoEmail } from '../utils/email';
 import crypto from 'crypto';
 import path from 'path';
 import { applicationService } from './ApplicationService';
+import { Faq } from '../models';
 
 
 export class AuthService {
@@ -100,6 +101,34 @@ export class AuthService {
             verificationToken: null
         });
 
+        // Fetch Process FAQ link if configured
+        let processFaqSection = '';
+        try {
+            const processFaq = await Faq.findOne({ where: { type: 'process' } });
+            if (processFaq?.link && processFaq.link.trim()) {
+                let linkUrl = processFaq.link.trim();
+                if (!/^https?:\/\//i.test(linkUrl)) {
+                    linkUrl = `https://${linkUrl}`;
+                }
+                processFaqSection = `
+            <div style="background-color:#eff6ff;border-left:5px solid #2563eb;padding:18px 22px;border-radius:8px;margin:28px 0;">
+                <p style="margin:0 0 10px 0;font-weight:900;font-size:15px;color:#1e3a8a;text-transform:uppercase;letter-spacing:0.5px;">
+                    🤖 Need Assistance? Chat with our Process AI Assistant
+                </p>
+                <p style="margin:0 0 14px 0;color:#374151;font-size:14px;font-weight:600;line-height:1.6;">
+                    Have questions about our application, vetting, or ticket exams? Click below to chat directly with our AI guidance assistant:
+                </p>
+                <p style="margin:0;">
+                    <a href="${linkUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background-color:#1e3a8a;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:6px;font-size:13px;font-weight:bold;letter-spacing:0.3px;">
+                        Open Process AI Chat &rarr;
+                    </a>
+                </p>
+            </div>`;
+            }
+        } catch (faqErr) {
+            console.error('[AuthService] Could not fetch process FAQ link for welcome email:', faqErr);
+        }
+
         // Send Welcome Email after verification
         const welcomeSubject = 'Welcome to BlueCollar - Account Verified';
         const welcomeContent = `
@@ -114,39 +143,9 @@ export class AuthService {
                     a. Upload your CV in ATS format (using the attached template).<br/>
                     b. Fill out your biodata.<br/>
                     c. Pass the Psychometric assessment.
+                    NOTE: Psychometric test module 2 is based  on the attached hiring process document (HIRING_PROCESS.pdf). You are expected to have read and understood this document before proceeding with your application.
                 </li>
-                <li style="margin-bottom: 10px;">
-                    <strong>Step 2: Nomination</strong><br/>
-                    Upon successfully passing all requirements in Step 1, you shall be nominated to top FIFO companies. You will receive a Notification of Nomination, which you can choose to accept or decline.
-                </li>
-                <li style="margin-bottom: 10px;">
-                    <strong>Step 3: Apply For Ticket Sponsorship and Upload Possessed Tickets</strong><br/>
-                    If you accept the nomination in Step 2, you will be required to apply for ticket sponsorship and upload your possessed tickets.
-                </li>
-                  <li style="margin-bottom: 10px;">
-                    <strong>Step 4: Contract Signing</strong><br/>
-                    If you accept the nomination in Step 2, a binding contract will be drafted and signed by both parties (Blue Collar and the Applicant).
-                </li>
-                <li style="margin-bottom: 10px;">
-                    <strong>Step 5: Ticket Sponsorship Payment</strong><br/>
-                    You shall pay your financial responsibility under the ticket sponsorship program. This can be paid in part (to be completed before taking the 4th ticket) or paid completely upfront at an extra 10% discount.
-                </li>
-                <li style="margin-bottom: 10px;">
-                    <strong>Step 6: Ticket Courses & Examination</strong><br/>
-                    You must access the Aveling LMS portal to complete all required training modules and pass the respective theoretical and practical examinations for your assigned tickets.
-                </li>
-                <li style="margin-bottom: 10px;">
-                    <strong>Step 7: Voice Call Interview</strong><br/>
-                    A brief voice call interview will be conducted to verify your training outcomes, application details, and suitability.
-                </li>
-                <li style="margin-bottom: 10px;">
-                    <strong>Step 8: Ticket Delivery</strong><br/>
-                    Upon successfully completing the voice call and all requirements, your physical tickets/certifications will be delivered to your specified address anywhere in the globe.
-                </li>
-                <li style="margin-bottom: 10px;">
-                    <strong>Step 9: Visa Sponsorship & Processing</strong><br/>
-                    A separate email will be sent detailing the Visa Sponsorship and Processing steps as you prepare for deployment.
-                </li>
+        
             </ol>
             <div style="background-color:#fff8e1;border-left:5px solid #FFC700;padding:18px 22px;border-radius:8px;margin:28px 0;">
                 <p style="margin:0 0 10px 0;font-weight:900;font-size:15px;color:#1a1a1a;text-transform:uppercase;letter-spacing:0.5px;">
@@ -159,6 +158,7 @@ export class AuthService {
                     ⚠️ You are expected to have read and understood this document before proceeding with your application. It will be referenced at each stage of the process.
                 </p>
             </div>
+            ${processFaqSection}
             <div class="cta-block">
                 <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/profile" class="button">Complete Your Profile Now</a>
             </div>
