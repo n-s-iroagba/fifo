@@ -180,3 +180,15 @@ export interface Interview {
     applicant?: User;
 }
 
+export type FaqType = 'process' | 'payment';
+
+export interface Faq {
+    id: number;
+    type: FaqType;
+    link: string;
+    title: string | null;
+    description: string | null;
+    createdAt?: string;
+    updatedAt?: string;
+}
+

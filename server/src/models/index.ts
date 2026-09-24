@@ -27,6 +27,7 @@ import { Nomination } from './Nomination';
 import { Contract } from './Contract';
 import { ScheduleCatalogue } from './ScheduleCatalogue';
 import { Interview } from './Interview';
+import { Faq } from './Faq';
 
 // User <-> Ticket
 User.hasMany(Ticket, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
@@ -180,6 +181,7 @@ export {
     Nomination,
     Contract,
     ScheduleCatalogue,
-    Interview
+    Interview,
+    Faq
 };
 

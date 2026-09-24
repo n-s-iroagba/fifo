@@ -26,6 +26,7 @@ const navItems = [
     { label: 'Contracts', href: '/admin/contracts', icon: 'contract' },
     { label: 'Health', href: CONSTANTS.ROUTES.ADMIN.HEALTH, icon: 'health_and_safety' },
     { label: 'Bank Accounts', href: CONSTANTS.ROUTES.ADMIN.BANK_ACCOUNTS, icon: 'account_balance' },
+    { label: 'AI FAQs', href: '/admin/faqs', icon: 'help_center' },
     { label: 'Security', href: '/admin/security', icon: 'lock' },
 ];
 

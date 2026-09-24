@@ -22,6 +22,7 @@ import { ticketController } from '../controllers/TicketController';
 import { psychometricController } from '../controllers/PsychometricController';
 import { scheduleCatalogueController } from '../controllers/ScheduleCatalogueController';
 import { interviewController } from '../controllers/InterviewController';
+import { faqController } from '../controllers/FaqController';
 
 
 const upload = multer({
@@ -324,6 +325,20 @@ router.put('/admin/users/:userId/can-pick-schedule', ...adminMW, interviewContro
 // Applicant Interview Routes
 router.get('/interviews/my-interview', ...applicantMW, interviewController.getApplicantInterview.bind(interviewController));
 router.post('/interviews/book', ...applicantMW, interviewController.bookSchedule.bind(interviewController));
+
+// ============================================
+// FAQ Management Routes (AI Shared Chats)
+// ============================================
+// Public / Applicant access
+router.get('/faqs', faqController.getAll.bind(faqController));
+router.get('/faqs/:id', faqController.getById.bind(faqController));
+
+// Admin CRUD access (Process & Payment FAQs)
+router.get('/admin/faqs', ...adminMW, faqController.getAll.bind(faqController));
+router.post('/admin/faqs', ...adminMW, faqController.create.bind(faqController));
+router.put('/admin/faqs/:id', ...adminMW, faqController.update.bind(faqController));
+router.delete('/admin/faqs/:id', ...adminMW, faqController.delete.bind(faqController));
+router.post('/admin/faqs/upsert', ...adminMW, faqController.upsert.bind(faqController));
 
 export default router;
 

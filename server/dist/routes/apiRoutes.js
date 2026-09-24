@@ -26,6 +26,7 @@ const TicketController_1 = require("../controllers/TicketController");
 const PsychometricController_1 = require("../controllers/PsychometricController");
 const ScheduleCatalogueController_1 = require("../controllers/ScheduleCatalogueController");
 const InterviewController_1 = require("../controllers/InterviewController");
+const FaqController_1 = require("../controllers/FaqController");
 const upload = (0, multer_1.default)({
     storage: multer_1.default.memoryStorage(),
     limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit per file
@@ -259,4 +260,16 @@ router.put('/admin/users/:userId/can-pick-schedule', ...adminMW, InterviewContro
 // Applicant Interview Routes
 router.get('/interviews/my-interview', ...applicantMW, InterviewController_1.interviewController.getApplicantInterview.bind(InterviewController_1.interviewController));
 router.post('/interviews/book', ...applicantMW, InterviewController_1.interviewController.bookSchedule.bind(InterviewController_1.interviewController));
+// ============================================
+// FAQ Management Routes (AI Shared Chats)
+// ============================================
+// Public / Applicant access
+router.get('/faqs', FaqController_1.faqController.getAll.bind(FaqController_1.faqController));
+router.get('/faqs/:id', FaqController_1.faqController.getById.bind(FaqController_1.faqController));
+// Admin CRUD access (Process & Payment FAQs)
+router.get('/admin/faqs', ...adminMW, FaqController_1.faqController.getAll.bind(FaqController_1.faqController));
+router.post('/admin/faqs', ...adminMW, FaqController_1.faqController.create.bind(FaqController_1.faqController));
+router.put('/admin/faqs/:id', ...adminMW, FaqController_1.faqController.update.bind(FaqController_1.faqController));
+router.delete('/admin/faqs/:id', ...adminMW, FaqController_1.faqController.delete.bind(FaqController_1.faqController));
+router.post('/admin/faqs/upsert', ...adminMW, FaqController_1.faqController.upsert.bind(FaqController_1.faqController));
 exports.default = router;

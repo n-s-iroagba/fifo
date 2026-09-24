@@ -17,6 +17,7 @@ const navItems = [
     { label: 'Contracts', href: '/dashboard/contracts', icon: 'handshake' },
     { label: 'Bio', href: CONSTANTS.ROUTES.PROFILE, icon: 'person' },
     { label: 'Notifications', href: CONSTANTS.ROUTES.NOTIFICATIONS, icon: 'notifications' },
+    { label: 'AI Help & FAQs', href: '/dashboard/faqs', icon: 'smart_toy' },
 ];
 
 

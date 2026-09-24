@@ -26,6 +26,7 @@ export const CONSTANTS = {
         NOTIFICATIONS: '/dashboard/notifications',
         PROFILE: '/dashboard/profile',
         JOBS: '/dashboard/jobs',
+        FAQS: '/dashboard/faqs',
         ADMIN: {
             DASHBOARD: '/admin',
             APPLICATIONS: '/admin/applications',
@@ -39,6 +40,7 @@ export const CONSTANTS = {
             DRAFTS: '/admin/applications/drafts',
             UNPAID: '/admin/payments/unpaid',
             MAIL: '/admin/mail',
+            FAQS: '/admin/faqs',
             REGISTER: '/register/admin',
         }
 

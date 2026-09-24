@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Interview = exports.ScheduleCatalogue = exports.Contract = exports.Nomination = exports.PsychometricAttempt = exports.TicketCatalog = exports.Ticket = exports.Certificate = exports.ExamAttempt = exports.Enrollment = exports.ExamQuestion = exports.ExamConfig = exports.CourseModule = exports.Course = exports.CertificationType = exports.LmsCredential = exports.Interest = exports.Notification = exports.Receipt = exports.Invoice = exports.Application = exports.JobStage = exports.JobListing = exports.JobCategory = exports.BankAccount = exports.User = exports.sequelize = void 0;
+exports.Faq = exports.Interview = exports.ScheduleCatalogue = exports.Contract = exports.Nomination = exports.PsychometricAttempt = exports.TicketCatalog = exports.Ticket = exports.Certificate = exports.ExamAttempt = exports.Enrollment = exports.ExamQuestion = exports.ExamConfig = exports.CourseModule = exports.Course = exports.CertificationType = exports.LmsCredential = exports.Interest = exports.Notification = exports.Receipt = exports.Invoice = exports.Application = exports.JobStage = exports.JobListing = exports.JobCategory = exports.BankAccount = exports.User = exports.sequelize = void 0;
 const database_1 = require("../config/database");
 Object.defineProperty(exports, "sequelize", { enumerable: true, get: function () { return database_1.sequelize; } });
 const User_1 = require("./User");
@@ -55,6 +55,8 @@ const ScheduleCatalogue_1 = require("./ScheduleCatalogue");
 Object.defineProperty(exports, "ScheduleCatalogue", { enumerable: true, get: function () { return ScheduleCatalogue_1.ScheduleCatalogue; } });
 const Interview_1 = require("./Interview");
 Object.defineProperty(exports, "Interview", { enumerable: true, get: function () { return Interview_1.Interview; } });
+const Faq_1 = require("./Faq");
+Object.defineProperty(exports, "Faq", { enumerable: true, get: function () { return Faq_1.Faq; } });
 // User <-> Ticket
 User_1.User.hasMany(Ticket_1.Ticket, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
 Ticket_1.Ticket.belongsTo(User_1.User, { foreignKey: 'userId' });
