@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CheckCircle, AlertTriangle, ChevronRight, Lock, BrainCircuit, Download } from 'lucide-react';
+import { CheckCircle, AlertTriangle, ChevronRight, Lock, BrainCircuit, Mail, X } from 'lucide-react';
 import axios from 'axios';
 import { PageShell } from '@/components/PageShell';
 
@@ -47,6 +47,8 @@ function PsychometricTestContent() {
     const [result, setResult] = useState<{ message: string } | null>(null);
 
     const [token, setToken] = useState<string | null>(null);
+    const [showModule2Reminder, setShowModule2Reminder] = useState(false);
+    const [agreedModule2Read, setAgreedModule2Read] = useState(false);
 
     useEffect(() => {
         const urlToken = searchParams.get('token');
@@ -292,6 +294,13 @@ function PsychometricTestContent() {
                             <div className="bg-[#FFC700] h-2 rounded-full transition-all duration-300" style={{ width: `${progress}%` }}></div>
                         </div>
                         <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-2">Question {currentQuestionIndex + 1} of {questions.length}</p>
+
+                        {activeModule === 2 && (
+                            <div className="mt-3 p-3 bg-amber-50/90 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-center gap-2">
+                                <Mail className="w-4 h-4 text-amber-600 shrink-0" />
+                                <span>Based on the official Hiring Process Document and FAQ from your welcome email.</span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="bg-white border-2 border-zinc-200 rounded-2xl shadow-sm overflow-hidden">
@@ -433,10 +442,17 @@ function PsychometricTestContent() {
                         {!status.module1Passed && <Lock className="text-zinc-400 w-6 h-6 shrink-0" />}
                     </div>
                     <div className="text-zinc-500 font-medium text-sm mb-6 flex-1 space-y-3">
-                        <p>Ensures you fully understand the Blue Collar Recruitment application process, payment structures, and Aveling certification.</p>
-                        <a href="https://bluecollarrecruitment.co/document" target="_blank" className="text-zinc-900 border-b-2 border-[#FFC700] font-black hover:bg-[#FFC700] transition-all inline-flex items-center gap-1.5 py-1">
-                            View Course Module or Data <Download className="w-3.5 h-3.5" />
-                        </a>
+                        <p>Evaluates your comprehension of the 9-step recruitment workflow, sponsorship terms, and placement process.</p>
+                        
+                        <div className="p-3.5 bg-amber-50/90 border border-amber-200 rounded-xl space-y-1.5 text-xs">
+                            <div className="flex items-center gap-1.5 font-black text-amber-950 uppercase tracking-wider text-[10px]">
+                                <Mail className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                <span>Essential Preparation Notice</span>
+                            </div>
+                            <p className="text-zinc-700 leading-relaxed font-medium">
+                                Before attempting this module, ensure you have read the <strong className="text-zinc-900">Hiring Process document</strong> and <strong className="text-zinc-900">Process FAQ</strong> by clicking the link in your <strong className="text-zinc-900">Welcome Email</strong>.
+                            </p>
+                        </div>
                     </div>
 
                     <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-4 mb-6">
@@ -459,13 +475,102 @@ function PsychometricTestContent() {
                                 <CheckCircle className="w-4 h-4 mr-2" /> Pending Review
                             </div>
                         ) : (
-                            <button onClick={() => startModule(2)} className="w-full bg-[#FFC700] hover:bg-yellow-400 text-black font-extrabold uppercase tracking-wider py-4 rounded-xl transition-all shadow-md">
+                            <button onClick={() => setShowModule2Reminder(true)} className="w-full bg-[#FFC700] hover:bg-yellow-400 text-black font-extrabold uppercase tracking-wider py-4 rounded-xl transition-all shadow-md">
                                 Start Module 2
                             </button>
                         )}
                     </div>
                 </div>
             </div>
+
+            {/* Module 2 Pre-Start Reminder Modal */}
+            {showModule2Reminder && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-3xl max-w-lg w-full border border-zinc-200 shadow-2xl p-6 sm:p-8 space-y-6">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0">
+                                    <Mail className="w-6 h-6 text-amber-600" />
+                                </div>
+                                <div>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 block">
+                                        Mandatory Preparation Requirement
+                                    </span>
+                                    <h3 className="text-lg font-black text-zinc-900 leading-snug">
+                                        Read Hiring Process & FAQ First
+                                    </h3>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowModule2Reminder(false);
+                                    setAgreedModule2Read(false);
+                                }}
+                                className="text-zinc-400 hover:text-zinc-600 p-1 rounded-lg hover:bg-zinc-100 transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-3 text-xs text-zinc-600 leading-relaxed bg-zinc-50 border border-zinc-200 rounded-2xl p-4">
+                            <p>
+                                Before beginning <strong className="text-zinc-900">Module 2: Process Literacy</strong>, please ensure you have opened and thoroughly read both:
+                            </p>
+                            <ul className="space-y-2 pl-2">
+                                <li className="flex items-start gap-2">
+                                    <span className="text-amber-500 font-bold">&#9679;</span>
+                                    <span>The <strong className="text-zinc-900">Official Hiring Process Guide (PDF)</strong> attached to your Welcome Email.</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-amber-500 font-bold">&#9679;</span>
+                                    <span>The <strong className="text-zinc-900">Recruitment Process AI FAQ</strong> accessible via the link in your Welcome Email.</span>
+                                </li>
+                            </ul>
+                            <div className="mt-2 pt-2 border-t border-zinc-200 text-[11px] text-zinc-500">
+                                💡 <em>All questions in Module 2 evaluate your knowledge of the 9-step recruitment workflow, sponsorship terms, ticket training requirements, and the candidate refund policy.</em>
+                            </div>
+                        </div>
+
+                        <label className="flex items-start gap-3 p-3.5 rounded-xl border border-amber-200 bg-amber-50/60 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={agreedModule2Read}
+                                onChange={(e) => setAgreedModule2Read(e.target.checked)}
+                                className="mt-0.5 w-4 h-4 rounded text-zinc-900 border-zinc-300 focus:ring-zinc-800"
+                            />
+                            <span className="text-xs font-bold text-zinc-900 leading-snug">
+                                I confirm I have read the Hiring Process document and FAQ by clicking the link in my welcome email, and I am ready to start Module 2.
+                            </span>
+                        </label>
+
+                        <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowModule2Reminder(false);
+                                    setAgreedModule2Read(false);
+                                }}
+                                className="w-full sm:w-auto px-5 py-3 rounded-xl text-xs font-extrabold uppercase tracking-wider text-zinc-600 hover:bg-zinc-100 transition-colors"
+                            >
+                                Check Welcome Email First
+                            </button>
+                            <button
+                                type="button"
+                                disabled={!agreedModule2Read || loading}
+                                onClick={() => {
+                                    setShowModule2Reminder(false);
+                                    setAgreedModule2Read(false);
+                                    startModule(2);
+                                }}
+                                className="w-full sm:w-auto px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider bg-[#FFC700] hover:bg-yellow-400 text-black shadow-md disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                            >
+                                {loading ? 'Launching...' : 'Begin Module 2'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </PageShell>
     );
 }
