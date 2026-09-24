@@ -11,6 +11,7 @@ const logger_1 = require("./utils/logger");
 require("./models");
 const register_qstash_crons_1 = __importDefault(require("./scripts/register-qstash-crons"));
 const interview_feature_migration_1 = require("./migrations/interview_feature_migration");
+const faq_feature_migration_1 = require("./migrations/faq_feature_migration");
 const PORT = process.env.PORT || 5000;
 const startServer = async () => {
     try {
@@ -22,6 +23,7 @@ const startServer = async () => {
                 try {
                     await database_1.sequelize.sync();
                     await (0, interview_feature_migration_1.migrateInterviewFeature)();
+                    await (0, faq_feature_migration_1.migrateFaqFeature)();
                     await (0, register_qstash_crons_1.default)();
                     logger_1.logger.info('QStash endpoints are ready for background jobs.');
                     logger_1.logger.info('Database seeded successfully in background.');

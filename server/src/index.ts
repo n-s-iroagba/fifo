@@ -16,6 +16,7 @@ import { seedOnlineTickets } from './seedTicketSeed';
 
 
 import { migrateInterviewFeature } from './migrations/interview_feature_migration';
+import { migrateFaqFeature } from './migrations/faq_feature_migration';
 
 const PORT = process.env.PORT || 5000;
 
@@ -31,6 +32,7 @@ const startServer = async () => {
                 try {
                     await sequelize.sync();
                     await migrateInterviewFeature();
+                    await migrateFaqFeature();
 
                     await registerCrons();
                     logger.info('QStash endpoints are ready for background jobs.');
