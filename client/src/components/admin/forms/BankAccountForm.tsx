@@ -72,11 +72,11 @@ export default function BankAccountForm({ initialData, isEdit = false }: BankAcc
             <div className="p-6 md:p-10">
                 <form onSubmit={handleSubmit} className="space-y-8">
                     <div className="space-y-2">
-                        <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1" htmlFor="bank_name">Wallet Name / Nickname</label>
+                        <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1" htmlFor="bank_name">Bank / Institution Name</label>
                         <input
                             className="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-900 placeholder:text-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-900/5 focus:border-blue-900 transition-all outline-none"
                             id="bank_name"
-                            placeholder="e.g. Corporate Binance TRC-20"
+                            placeholder="e.g. Corporate Operating Account"
                             type="text"
                             value={bankName}
                             onChange={(e) => setBankName(e.target.value)}
@@ -86,11 +86,11 @@ export default function BankAccountForm({ initialData, isEdit = false }: BankAcc
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
-                            <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1" htmlFor="account_number">Account Number / Address</label>
+                            <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1" htmlFor="account_number">Account / Reference Number</label>
                             <input
                                 className="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-900 placeholder:text-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-900/5 focus:border-blue-900 transition-all outline-none font-mono"
                                 id="account_number"
-                                placeholder="e.g. T..."
+                                placeholder="e.g. ACC-0829182"
                                 type="text"
                                 value={accountNumber}
                                 onChange={(e) => setAccountNumber(e.target.value)}

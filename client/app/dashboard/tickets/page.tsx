@@ -36,9 +36,6 @@ interface Ticket {
 }
 
 interface UserProfile {
-    bankName?: string;
-    accountNumber?: string;
-    accountName?: string;
     avelingUsername?: string;
     avelingPassword?: string;
     subsidyPercentage?: number;
@@ -108,20 +105,14 @@ export default function UserTicketsPage() {
 
     // Sponsorship modal
     const [batchSponsorOpen, setBatchSponsorOpen] = useState(false);
-    const [bankName, setBankName] = useState('TRC-20');
-    const [accountNumber, setAccountNumber] = useState(profile?.accountNumber || '');
-    const [accountName, setAccountName] = useState(profile?.accountName || '');
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [sponsorSubmitting, setSponsorSubmitting] = useState(false);
     const [sponsorError, setSponsorError] = useState<string | null>(null);
     const [sponsorSuccess, setSponsorSuccess] = useState<string | null>(null);
 
-
-
     const openBatchSponsorModal = () => {
         setBatchSponsorOpen(true);
-        setBankName('TRC-20');
-        setAccountNumber(profile?.accountNumber || '');
-        setAccountName(profile?.accountName || '');
+        setAgreedToTerms(false);
         setSponsorError(null);
         setSponsorSuccess(null);
     };
@@ -147,22 +138,20 @@ export default function UserTicketsPage() {
         }
     };
 
-
-
     const handleApplyBatchSponsorship = async (e: React.FormEvent) => {
         e.preventDefault();
         setSponsorError(null);
         setSponsorSuccess(null);
 
-        if (!accountNumber || !accountName) {
-            setSponsorError('Please provide complete wallet details for refund processing.');
+        if (!agreedToTerms) {
+            setSponsorError('You must agree to the Refund Policy and commit to fulfilling your responsibilities before applying.');
             return;
         }
 
         setSponsorSubmitting(true);
         try {
-            await api.post(`/tickets/apply-batch-sponsorship`, { bankName, accountNumber, accountName });
-            setSponsorSuccess('Partial package Sponsorship application submitted! Our team will review and issue your corporate invoice.');
+            await api.post(`/tickets/apply-batch-sponsorship`, { agreedToTerms: true });
+            setSponsorSuccess('Partial package sponsorship application submitted! Our team will review your application and issue your corporate invoice.');
             setTimeout(() => { setBatchSponsorOpen(false); refetch(); }, 2000);
         } catch (err: any) {
             setSponsorError(err.response?.data?.message || 'Failed to apply for batch package sponsorship.');
@@ -423,9 +412,34 @@ export default function UserTicketsPage() {
                                     );
                                 })}
                             </ul>
-                            <div className="mt-4 pt-3 border-t border-slate-200 text-[10px] font-bold text-amber-600 uppercase tracking-widest leading-relaxed">
-                                100% of your candidate contribution (Your Share) will be refunded to your wallet upon successful completion of all ticket courses.
+                        </div>
+
+                        {/* Official Refund Policy Card */}
+                        <div className="mb-6 p-4 bg-amber-50/80 border border-amber-200 rounded-2xl space-y-2.5">
+                            <div className="flex items-center gap-2 text-amber-950 font-black text-xs uppercase tracking-wider">
+                                <span className="material-symbols-outlined text-amber-600 text-lg">verified_user</span>
+                                <span>Official Refund Policy & Terms</span>
                             </div>
+                            <ul className="text-xs text-slate-700 space-y-2 pl-1 leading-relaxed">
+                                <li className="flex items-start gap-2">
+                                    <span className="text-emerald-600 font-black text-sm mt-[-2px]">&#10003;</span>
+                                    <span>
+                                        <strong className="text-blue-950">100% Refund upon Passing:</strong> Upon successfully passing and acquiring your ticket certifications, 100% of your candidate contribution will be refunded.
+                                    </span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-amber-600 font-black text-sm mt-[-2px]">&#9679;</span>
+                                    <span>
+                                        <strong className="text-blue-950">60% Refund after failing Two Attempts:</strong> In the event you are unable to acquire the tickets after two examination attempts, 60% of your candidate contribution will be refunded.
+                                    </span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-blue-600 font-black text-sm mt-[-2px]">&#9679;</span>
+                                    <span>
+                                        <strong className="text-blue-950">Corporate Risk Mitigation:</strong> Your partial contribution is a commitment deposit to ensure candidates complete their sponsored training and prevent corporate wastage.
+                                    </span>
+                                </li>
+                            </ul>
                         </div>
 
                         {sponsorError && (
@@ -436,23 +450,41 @@ export default function UserTicketsPage() {
                         )}
 
                         <form onSubmit={handleApplyBatchSponsorship} className="space-y-4">
-                            <div>
-                                <p className="text-[10px] font-bold text-blue-900 uppercase tracking-widest mb-1">Account for Refund</p>
-                                <p className="text-[11px] text-slate-500">100% of all candidate contributions are refunded upon passing all Ticket courses. Please provide your receiving account details for direct credit.</p>
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-1">Account / Reference Number</label>
-                                <input type="text" placeholder="Enter account or wallet address" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-mono" required />
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-1">Account Nickname / Name</label>
-                                <input type="text" placeholder="e.g. My Binance Wallet" value={accountName} onChange={e => setAccountName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" required />
+                            <div className="p-4 bg-blue-50/70 border border-blue-200 rounded-2xl space-y-3">
+                                <p className="text-[10px] font-black text-blue-900 uppercase tracking-widest">
+                                    Applicant Responsibility Agreement
+                                </p>
+                                <p className="text-xs text-slate-600 leading-relaxed">
+                                    By applying, you commit that if approved for corporate ticket sponsorship, you will diligently complete all assigned Aveling coursework modules, participate in required practical assessments, and fulfill your obligations under the recruitment and placement agreement.
+                                </p>
+                                <label className="flex items-start gap-3 cursor-pointer select-none pt-1">
+                                    <input
+                                        type="checkbox"
+                                        checked={agreedToTerms}
+                                        onChange={e => setAgreedToTerms(e.target.checked)}
+                                        className="mt-0.5 w-4 h-4 rounded text-blue-900 border-slate-300 focus:ring-blue-800"
+                                        required
+                                    />
+                                    <span className="text-xs font-bold text-blue-950 leading-snug">
+                                        I have read and agree to the Refund Policy, and I commit to fulfilling my responsibilities if granted ticket sponsorship.
+                                    </span>
+                                </label>
                             </div>
 
-                            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                                <button type="button" onClick={() => setBatchSponsorOpen(false)} className="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100">Cancel</button>
-                                <button type="submit" disabled={sponsorSubmitting} className="bg-amber-400 hover:bg-amber-300 text-blue-950 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg">
-                                    {sponsorSubmitting ? 'Submitting...' : 'Submit Partial package Application'}
+                            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => setBatchSponsorOpen(false)}
+                                    className="px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={sponsorSubmitting || !agreedToTerms}
+                                    className="bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-blue-950 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-all"
+                                >
+                                    {sponsorSubmitting ? 'Submitting Application...' : 'Agree & Submit Partial Package Application'}
                                 </button>
                             </div>
                         </form>

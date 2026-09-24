@@ -16,12 +16,12 @@ BankAccount.init({
     bankName: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: false,
-        comment: 'Wallet nickname (e.g. Corporate Binance)',
+        comment: 'Bank / Institution Name',
     },
     accountNumber: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: false,
-        comment: 'USDT TRC-20 wallet address',
+        comment: 'Account / Reference number',
     },
     accountName: {
         type: sequelize_1.DataTypes.STRING,
@@ -41,12 +41,12 @@ BankAccount.init({
     routingCode: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: true,
-        defaultValue: 'TRC-20',
-        comment: 'Network label — always TRC-20 for USDT',
+        defaultValue: null,
+        comment: 'Routing / Swift / BSB code',
     },
     currency: {
         type: sequelize_1.DataTypes.STRING,
-        defaultValue: 'USDT',
+        defaultValue: 'AUD',
     },
     isActive: {
         type: sequelize_1.DataTypes.BOOLEAN,

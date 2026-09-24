@@ -61,6 +61,17 @@ export class TicketController {
         }
     }
 
+    public async applyTicketSponsorship(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = (req as any).user.id;
+            const ticketId = parseInt(req.params.id as string, 10);
+            const result = await ticketService.applyTicketSponsorship(ticketId, userId, req.body);
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result });
+        } catch (error: any) {
+            res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ code: 400, message: error.message || 'Failed to apply ticket sponsorship' });
+        }
+    }
+
     public async requestRetake(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const userId = (req as any).user.id;

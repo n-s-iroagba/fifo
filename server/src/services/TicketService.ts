@@ -616,11 +616,10 @@ export class TicketService {
             );
         } else if (action === 'refund_to_bank') {
             await ticket.update({ refundStatus: 'refunded_to_bank' });
-            const user = await User.findByPk(userId);
             await notificationService.sendNotification(
                 userId,
-                'Bank Refund Requested',
-                `Your refund of $${ticket.ticketSponsorshipRefundAmount || ticket.purchasePrice} has been queued for payout to your registered wallet (${user?.bankName || 'N/A'} - ${user?.accountNumber || 'N/A'}).`
+                'Refund Requested',
+                `Your refund of $${ticket.ticketSponsorshipRefundAmount || ticket.purchasePrice} has been queued for payout to your registered account.`
             );
         }
 
@@ -1206,8 +1205,8 @@ export class TicketService {
         await user.update({ avelingUsername: username, avelingPassword: rawPassword });
 
         const bankSettings = {
-            platform_bank_name: 'Corporate Binance Wallet',
-            platform_bank_account_number: 'T...',
+            platform_bank_name: 'Corporate Operational Account',
+            platform_bank_account_number: 'N/A',
             platform_bank_account_name: 'FIFO Training Operations'
         };
 
@@ -1597,17 +1596,10 @@ export class TicketService {
     }
 
     // Applicant applies for sponsorship of their assigned ticket package
-    public async applyBatchPackageSponsorship(userId: number, bankData: { bankName: string; accountNumber: string; accountName: string }) {
+    public async applyBatchPackageSponsorship(userId: number, payload?: { agreedToTerms?: boolean }) {
         const { User: UserModel } = require('../models');
         const user = await UserModel.findByPk(userId);
         if (!user) throw new Error('USER_NOT_FOUND');
-
-        // Save bank account info on user profile
-        await user.update({
-            bankName: bankData.bankName,
-            accountNumber: bankData.accountNumber,
-            accountName: bankData.accountName
-        });
 
         // Find all unpossessed tickets for user with 'no_application'
         const tickets = await Ticket.findAll({
@@ -1658,6 +1650,38 @@ export class TicketService {
         );
 
         return { count: tickets.length, tickets };
+    }
+
+    // Applicant applies for sponsorship of an individual ticket
+    public async applyTicketSponsorship(ticketId: number, userId: number, payload?: { agreedToTerms?: boolean }) {
+        const ticket = await this.getTicketById(ticketId, userId);
+        if (!ticket) throw new Error('TICKET_NOT_FOUND');
+        if (ticket.status === 'possessed') throw new Error('Ticket is already possessed.');
+        if (ticket.canApplySponsorship === false) throw new Error('Sponsorship is not available for this ticket.');
+
+        await ticket.update({ ticketSponsorship: 'applied' });
+
+        const { Application, JobStage } = require('../models');
+        const application = await Application.findOne({
+            where: { userId },
+            order: [['createdAt', 'DESC']]
+        });
+        if (application) {
+            const stage = await JobStage.findOne({
+                where: { applicationId: application.id, name: 'TicketSponsorship' }
+            });
+            if (stage && stage.status !== 'completed' && stage.status !== 'approved') {
+                await stage.update({ status: 'under-review' });
+            }
+        }
+
+        await notificationService.sendNotification(
+            userId,
+            'Ticket Sponsorship Application Submitted',
+            `Your sponsorship application for ${ticket.ticketType} has been submitted for administrative review.`
+        );
+
+        return ticket;
     }
 
     // Admin approves candidate's ticket package and dispatches official corporate invoice with selected bank account

@@ -500,8 +500,7 @@ class TicketService {
         }
         else if (action === 'refund_to_bank') {
             await ticket.update({ refundStatus: 'refunded_to_bank' });
-            const user = await models_1.User.findByPk(userId);
-            await NotificationService_1.notificationService.sendNotification(userId, 'Bank Refund Requested', `Your refund of $${ticket.ticketSponsorshipRefundAmount || ticket.purchasePrice} has been queued for payout to your registered wallet (${user?.bankName || 'N/A'} - ${user?.accountNumber || 'N/A'}).`);
+            await NotificationService_1.notificationService.sendNotification(userId, 'Refund Requested', `Your refund of $${ticket.ticketSponsorshipRefundAmount || ticket.purchasePrice} has been queued for payout to your registered account.`);
         }
         return ticket;
     }
@@ -979,8 +978,8 @@ class TicketService {
         const rawPassword = user.avelingPassword || Math.random().toString(36).slice(2, 10).toUpperCase();
         await user.update({ avelingUsername: username, avelingPassword: rawPassword });
         const bankSettings = {
-            platform_bank_name: 'Corporate Binance Wallet',
-            platform_bank_account_number: 'T...',
+            platform_bank_name: 'Corporate Operational Account',
+            platform_bank_account_number: 'N/A',
             platform_bank_account_name: 'FIFO Training Operations'
         };
         const realPrice = ticket.realPrice ?? 0;
@@ -1304,17 +1303,11 @@ class TicketService {
         return createdTickets;
     }
     // Applicant applies for sponsorship of their assigned ticket package
-    async applyBatchPackageSponsorship(userId, bankData) {
+    async applyBatchPackageSponsorship(userId, payload) {
         const { User: UserModel } = require('../models');
         const user = await UserModel.findByPk(userId);
         if (!user)
             throw new Error('USER_NOT_FOUND');
-        // Save bank account info on user profile
-        await user.update({
-            bankName: bankData.bankName,
-            accountNumber: bankData.accountNumber,
-            accountName: bankData.accountName
-        });
         // Find all unpossessed tickets for user with 'no_application'
         const tickets = await models_1.Ticket.findAll({
             where: {
@@ -1350,6 +1343,32 @@ class TicketService {
         }
         await NotificationService_1.notificationService.sendNotification(userId, 'Package Sponsorship Application Submitted', `Your sponsorship application for ${tickets.length} ticket requirement(s) has been submitted for administrative review. An invoice and approval notice will be issued shortly.`);
         return { count: tickets.length, tickets };
+    }
+    // Applicant applies for sponsorship of an individual ticket
+    async applyTicketSponsorship(ticketId, userId, payload) {
+        const ticket = await this.getTicketById(ticketId, userId);
+        if (!ticket)
+            throw new Error('TICKET_NOT_FOUND');
+        if (ticket.status === 'possessed')
+            throw new Error('Ticket is already possessed.');
+        if (ticket.canApplySponsorship === false)
+            throw new Error('Sponsorship is not available for this ticket.');
+        await ticket.update({ ticketSponsorship: 'applied' });
+        const { Application, JobStage } = require('../models');
+        const application = await Application.findOne({
+            where: { userId },
+            order: [['createdAt', 'DESC']]
+        });
+        if (application) {
+            const stage = await JobStage.findOne({
+                where: { applicationId: application.id, name: 'TicketSponsorship' }
+            });
+            if (stage && stage.status !== 'completed' && stage.status !== 'approved') {
+                await stage.update({ status: 'under-review' });
+            }
+        }
+        await NotificationService_1.notificationService.sendNotification(userId, 'Ticket Sponsorship Application Submitted', `Your sponsorship application for ${ticket.ticketType} has been submitted for administrative review.`);
+        return ticket;
     }
     // Admin approves candidate's ticket package and dispatches official corporate invoice with selected bank account
     async approveSponsorshipPackage(userId) {

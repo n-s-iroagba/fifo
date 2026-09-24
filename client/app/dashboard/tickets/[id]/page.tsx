@@ -12,9 +12,6 @@ interface UserData {
     id: number;
     fullName?: string;
     email?: string;
-    bankName?: string;
-    accountNumber?: string;
-    accountName?: string;
     avelingUsername?: string;
     avelingPassword?: string;
 }
@@ -46,9 +43,6 @@ interface Ticket {
     ticketSponsorship: string;
     canApplySponsorship?: boolean;
     ticketSponsorshipRefundAmount?: number;
-    bankName?: string;
-    accountNumber?: string;
-    accountName?: string;
     refundStatus?: string;
     courseId?: string;
     paymentStatus?: string;
@@ -85,9 +79,7 @@ export default function TicketDetailPage() {
     const currentUser = userRes?.data || userRes;
     const userWalletBalance = currentUser?.walletBalance || 0;
 
-    const [bankName, setBankName] = useState('TRC-20');
-    const [accountNumber, setAccountNumber] = useState('');
-    const [accountName, setAccountName] = useState('');
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [applyError, setApplyError] = useState<string | null>(null);
     const [applySuccess, setApplySuccess] = useState<string | null>(null);
     const [applying, setApplying] = useState(false);
@@ -96,32 +88,20 @@ export default function TicketDetailPage() {
     const [requestingRetake, setRequestingRetake] = useState(false);
     const [retakeError, setRetakeError] = useState<string | null>(null);
 
-    // Prefill bank account details when user or ticket User data loads
-    useEffect(() => {
-        const u = ticket?.User || currentUser;
-        if (u) {
-            setBankName('TRC-20');
-            if (u.accountNumber && !accountNumber) setAccountNumber(u.accountNumber);
-            if (u.accountName && !accountName) setAccountName(u.accountName);
-        }
-    }, [ticket, currentUser]);
-
     const handleApplySponsorship = async (e: React.FormEvent) => {
         e.preventDefault();
         setApplyError(null);
         setApplySuccess(null);
 
-        if (!accountNumber.trim() || !accountName.trim()) {
-            setApplyError('Please carefully provide complete account details for refund processing.');
+        if (!agreedToTerms) {
+            setApplyError('You must agree to the Refund Policy and commit to fulfilling your responsibilities before applying.');
             return;
         }
 
         setApplying(true);
         try {
             await api.post(`/tickets/${ticketId}/apply-sponsorship`, {
-                bankName,
-                accountNumber,
-                accountName
+                agreedToTerms: true
             });
             setApplySuccess('Sponsorship request submitted successfully!');
             refetch();
@@ -191,11 +171,6 @@ export default function TicketDetailPage() {
     const payablePrice = ticket.subsidisedPrice ?? ticket.purchasePrice ?? 0;
     const originalPrice = ticket.realPrice;
     const isSubsidised = originalPrice !== undefined && originalPrice !== null && payablePrice < originalPrice;
-
-    // Bank information source
-    const effectiveBankName = ticket.bankName || ticket.User?.bankName;
-    const effectiveAccountNumber = ticket.accountNumber || ticket.User?.accountNumber;
-    const effectiveAccountName = ticket.accountName || ticket.User?.accountName;
 
     // Aveling LMS Link
     const avelingBaseUrl = getAvelingUrl();
@@ -394,10 +369,38 @@ export default function TicketDetailPage() {
             {canSubmitSponsorshipForm && (
                 <section className="mb-8 bg-white p-8 rounded-3xl border border-blue-100 shadow-sm">
                     <span className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em] block mb-2">Apply For Sponsorship</span>
-                    <h2 className="text-lg font-bold text-blue-900 mb-2">Submit Refund Account Details</h2>
+                    <h2 className="text-lg font-bold text-blue-900 mb-2">Ticket Sponsorship & Refund Policy</h2>
                     <p className="text-xs text-slate-500 mb-6">
-                        Please carefully provide complete account details for refund processing upon passing your training exam.
+                        Review the official refund terms and confirm your commitment to fulfilling all training requirements.
                     </p>
+
+                    {/* Official Refund Policy Card */}
+                    <div className="mb-6 p-4 bg-amber-50/80 border border-amber-200 rounded-2xl space-y-2.5">
+                        <div className="flex items-center gap-2 text-amber-950 font-black text-xs uppercase tracking-wider">
+                            <span className="material-symbols-outlined text-amber-600 text-lg">verified_user</span>
+                            <span>Official Refund Policy & Terms</span>
+                        </div>
+                        <ul className="text-xs text-slate-700 space-y-2 pl-1 leading-relaxed">
+                            <li className="flex items-start gap-2">
+                                <span className="text-emerald-600 font-black text-sm mt-[-2px]">&#10003;</span>
+                                <span>
+                                    <strong className="text-blue-950">100% Refund upon Passing:</strong> Upon successfully passing and acquiring your ticket certifications, 100% of your candidate contribution will be refunded.
+                                </span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-amber-600 font-black text-sm mt-[-2px]">&#9679;</span>
+                                <span>
+                                    <strong className="text-blue-950">60% Refund after Two Attempts:</strong> In the event you are unable to acquire the tickets after two examination attempts, 60% of your candidate contribution will be refunded.
+                                </span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-blue-600 font-black text-sm mt-[-2px]">&#9679;</span>
+                                <span>
+                                    <strong className="text-blue-950">Corporate Risk Mitigation:</strong> Your partial contribution is a commitment deposit to ensure candidates complete their sponsored training and prevent corporate wastage.
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
 
                     {applyError && (
                         <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
@@ -411,35 +414,33 @@ export default function TicketDetailPage() {
                     )}
 
                     <form onSubmit={handleApplySponsorship} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Account / Reference Number</label>
+                        <div className="p-4 bg-blue-50/70 border border-blue-200 rounded-2xl space-y-3">
+                            <p className="text-[10px] font-black text-blue-900 uppercase tracking-widest">
+                                Applicant Responsibility Agreement
+                            </p>
+                            <p className="text-xs text-slate-600 leading-relaxed">
+                                By applying, you commit that if approved for corporate ticket sponsorship, you will diligently complete all assigned Aveling coursework modules, participate in required assessments, and fulfill your obligations under the recruitment and placement agreement.
+                            </p>
+                            <label className="flex items-start gap-3 cursor-pointer select-none pt-1">
                                 <input
-                                    type="text"
-                                    placeholder="Enter account or wallet address"
-                                    value={accountNumber}
-                                    onChange={(e) => setAccountNumber(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-mono"
+                                    type="checkbox"
+                                    checked={agreedToTerms}
+                                    onChange={e => setAgreedToTerms(e.target.checked)}
+                                    className="mt-0.5 w-4 h-4 rounded text-blue-900 border-slate-300 focus:ring-blue-800"
+                                    required
                                 />
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Account Nickname / Name</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. My Binance Wallet"
-                                    value={accountName}
-                                    onChange={(e) => setAccountName(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-medium"
-                                />
-                            </div>
+                                <span className="text-xs font-bold text-blue-950 leading-snug">
+                                    I have read and agree to the Refund Policy, and I commit to fulfilling my responsibilities if granted ticket sponsorship.
+                                </span>
+                            </label>
                         </div>
 
                         <button
                             type="submit"
-                            disabled={applying}
-                            className="bg-blue-900 hover:bg-blue-800 text-white px-8 py-3.5 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-blue-900/10 transition-all"
+                            disabled={applying || !agreedToTerms}
+                            className="bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-blue-950 px-8 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-all"
                         >
-                            {applying ? 'Submitting Application...' : 'Submit Sponsorship Request'}
+                            {applying ? 'Submitting Application...' : 'Agree & Submit Sponsorship Request'}
                         </button>
                     </form>
                 </section>
@@ -460,9 +461,9 @@ export default function TicketDetailPage() {
 
                     <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Stage 2</span>
-                        <p className="text-xs font-bold text-blue-950 mt-1">Wallet Refund Info</p>
+                        <p className="text-xs font-bold text-blue-950 mt-1">Training & Assessment</p>
                         <p className="text-[11px] text-slate-500 mt-1 font-medium">
-                            {effectiveAccountNumber ? effectiveAccountNumber : 'Not Provided'}
+                            {ticket.courseAccessGranted ? 'Course In Progress' : 'Pending Enrollment'}
                         </p>
                     </div>
 

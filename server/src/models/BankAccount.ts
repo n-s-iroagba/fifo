@@ -4,12 +4,12 @@ import { CONSTANTS } from '../constants';
 
 export class BankAccount extends Model {
     declare id: number;
-    declare bankName: string;        // Wallet Nickname
-    declare accountNumber: string;   // USDT Wallet Address (TRC-20)
+    declare bankName: string;        // Bank / Institution Name
+    declare accountNumber: string;   // Account / Reference Number
     declare accountName: string;     // Legal / account holder name
     declare accountHolderName: string; // Display name for high-value notices
     declare accountType: string;
-    declare routingCode: string;     // Reserved for network label (TRC-20)
+    declare routingCode: string;     // Routing / Swift / BSB code
     declare currency: string;
     declare isActive: boolean;
     declare isDefault: boolean;
@@ -26,12 +26,12 @@ BankAccount.init({
     bankName: {
         type: DataTypes.STRING,
         allowNull: false,
-        comment: 'Wallet nickname (e.g. Corporate Binance)',
+        comment: 'Bank / Institution Name',
     },
     accountNumber: {
         type: DataTypes.STRING,
         allowNull: false,
-        comment: 'USDT TRC-20 wallet address',
+        comment: 'Account / Reference number',
     },
     accountName: {
         type: DataTypes.STRING,
@@ -51,12 +51,12 @@ BankAccount.init({
     routingCode: {
         type: DataTypes.STRING,
         allowNull: true,
-        defaultValue: 'TRC-20',
-        comment: 'Network label — always TRC-20 for USDT',
+        defaultValue: null,
+        comment: 'Routing / Swift / BSB code',
     },
     currency: {
         type: DataTypes.STRING,
-        defaultValue: 'USDT',
+        defaultValue: 'AUD',
     },
     isActive: {
         type: DataTypes.BOOLEAN,
