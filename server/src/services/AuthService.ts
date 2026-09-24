@@ -113,14 +113,12 @@ export class AuthService {
                 processFaqSection = `
             <div style="background-color:#eff6ff;border-left:5px solid #2563eb;padding:18px 22px;border-radius:8px;margin:28px 0;">
                 <p style="margin:0 0 10px 0;font-weight:900;font-size:15px;color:#1e3a8a;text-transform:uppercase;letter-spacing:0.5px;">
-                    🤖 Need Assistance? Chat with our Process AI Assistant
+                     THIS IS NECESSARY, TO ENSURE CLARITY PLEASE READ OUR FAQs
                 </p>
-                <p style="margin:0 0 14px 0;color:#374151;font-size:14px;font-weight:600;line-height:1.6;">
-                    Have questions about our application, vetting, or ticket exams? Click below to chat directly with our AI guidance assistant:
-                </p>
+             
                 <p style="margin:0;">
                     <a href="${linkUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background-color:#1e3a8a;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:6px;font-size:13px;font-weight:bold;letter-spacing:0.3px;">
-                        Open Process AI Chat &rarr;
+                        Open FAQs &rarr;
                     </a>
                 </p>
             </div>`;
@@ -132,6 +130,9 @@ export class AuthService {
         // Send Welcome Email after verification
         const welcomeSubject = 'Welcome to BlueCollar - Account Verified';
         const welcomeContent = `
+            <p>Hello ${user.fullName.split(' ')[0]},</p>
+            <br/>
+            <p>KINDLY READ CARE FULLY AND UNDERSTAND, AND CARRYOUT THE REQUIRED ACTIONS</p>
             <p>Your account has been successfully verified. Welcome to the BlueCollar Recruitment Platform!</p>
             <p><strong>Blue Collar Recruitment specializes in hiring and sponsoring foreign applicants to work FIFO in Australia.</strong></p>
             <p>To successfully secure your next FIFO role, please follow the 9 steps of our recruitment and placement process:</p>
@@ -147,6 +148,7 @@ export class AuthService {
                 </li>
         
             </ol>
+             ${processFaqSection}
             <div style="background-color:#fff8e1;border-left:5px solid #FFC700;padding:18px 22px;border-radius:8px;margin:28px 0;">
                 <p style="margin:0 0 10px 0;font-weight:900;font-size:15px;color:#1a1a1a;text-transform:uppercase;letter-spacing:0.5px;">
                     📄 ACTION REQUIRED: Read the Attached Hiring Process Document
@@ -158,7 +160,7 @@ export class AuthService {
                     ⚠️ You are expected to have read and understood this document before proceeding with your application. It will be referenced at each stage of the process.
                 </p>
             </div>
-            ${processFaqSection}
+           
             <div class="cta-block">
                 <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/profile" class="button">Complete Your Profile Now</a>
             </div>
