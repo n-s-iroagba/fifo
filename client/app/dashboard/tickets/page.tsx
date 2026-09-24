@@ -430,7 +430,7 @@ export default function UserTicketsPage() {
                                 <li className="flex items-start gap-2">
                                     <span className="text-amber-600 font-black text-sm mt-[-2px]">&#9679;</span>
                                     <span>
-                                        <strong className="text-blue-950">60% Refund after failing Two Attempts:</strong> In the event you are unable to acquire the tickets after two examination attempts, 60% of your candidate contribution will be refunded.
+                                        <strong className="text-blue-950">60% Refund after failing two consecutive attempts on one ticket examination:</strong> In the event you are unable to acquire the tickets after two examination attempts, 60% of your candidate contribution will be refunded.
                                     </span>
                                 </li>
                                 <li className="flex items-start gap-2">
