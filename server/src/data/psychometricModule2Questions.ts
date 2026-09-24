@@ -41,32 +41,20 @@ export const psychometricModule2Questions = [
         options: [
             'A binding contract is drafted and signed by both Blue Collar and the Applicant.',
             'You sign a contract directly with the airline.',
-            'You sign a crypto wallet agreement.',
+            'You sign an equipment lease agreement.',
             'You are given your final visa.'
         ],
         correctOptionIndex: 0,
         weight: 1
     },
     {
-        questionText: 'How must international ticket sponsorship payments (from outside Australia) be made in Step 5?',
+        questionText: 'What options are available for candidate ticket sponsorship payments in Step 5?',
         questionType: 'mcq',
         options: [
-            'Bank Transfer',
-            'Credit Card',
-            'USDT crypto currency on the TRON network',
-            'PayPal'
-        ],
-        correctOptionIndex: 2,
-        weight: 1
-    },
-    {
-        questionText: 'Are you familiar with crypto payments (USDT on the TRON network) for international transactions, or will you need assistance?',
-        questionType: 'mcq',
-        options: [
-            'I am fully familiar and can process it independently.',
-            'I have some knowledge but might need a brief guide.',
-            'I am not familiar and will need assistance/guidance.',
-            'I do not intend to make international payments (I am in Australia).'
+            'Payment can be made in full upfront (with an extra 10% discount) or in parts completed before the 4th ticket.',
+            'Payment is only accepted via physical cash upon arrival in Perth.',
+            'Payment is deferred until after 2 years of continuous employment.',
+            'There is no candidate financial contribution required at all.'
         ],
         correctOptionIndex: 0,
         weight: 1

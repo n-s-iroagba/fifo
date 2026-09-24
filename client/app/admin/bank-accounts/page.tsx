@@ -27,7 +27,7 @@ export default function BankAccountsPage() {
         <div className="font-sans">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-blue-900 tracking-tight">Crypto Wallets (USDT TRC-20)</h1>
+                    <h1 className="text-2xl font-bold text-blue-900 tracking-tight">Receiving Accounts</h1>
                     <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mt-1">Manage company receiving wallets</p>
                 </div>
                 <Link href="/admin/bank-accounts/new">

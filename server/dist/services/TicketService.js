@@ -168,12 +168,10 @@ class TicketService {
                 </div>
 
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-top: 20px;">
-                    <h3 style="margin: 0 0 10px; font-size: 14px; color: #1e3a8a;">USDT (TRC-20) Payment Instructions</h3>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Wallet Name:</strong> ${selectedBank.bankName}</p>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Network:</strong> TRC-20</p>
-                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>USDT Wallet Address:</strong> ${selectedBank.accountNumber}</p>
+                    <h3 style="margin: 0 0 10px; font-size: 14px; color: #1e3a8a;">Payment Instructions</h3>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account / Institution:</strong> ${selectedBank.bankName}</p>
+                    <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account / Reference Number:</strong> ${selectedBank.accountNumber}</p>
                     <p style="margin: 3px 0; font-size: 11px; color: #334155;"><strong>Account Name:</strong> ${selectedBank.accountName}</p>
-                    <p style="margin: 10px 0 0; font-size: 11px; color: #64748b;"><em>* All payments must be made in USDT on the Tron (TRC-20) network.</em></p>
                     <p style="margin: 3px 0; font-size: 11px; color: #1e3a8a;"><strong>Payment Reference:</strong> ${invoiceNumber} (${candidateNumber})</p>
                 </div>
 
@@ -186,7 +184,7 @@ class TicketService {
         if (user.email) {
             await this.sendCustomEmail(user.email, `Invoice ${invoiceNumber}: ${data.description || 'Sponsorship Payment Request'}`, emailHtml);
         }
-        await NotificationService_1.notificationService.sendNotification(userId, `Invoice ${invoiceNumber} Issued`, `An invoice of A$${data.amountAud.toFixed(2)} (${data.currency} ${data.convertedAmount.toFixed(2)}) has been sent to your email with USDT TRC-20 payment details.`);
+        await NotificationService_1.notificationService.sendNotification(userId, `Invoice ${invoiceNumber} Issued`, `An invoice of A$${data.amountAud.toFixed(2)} (${data.currency} ${data.convertedAmount.toFixed(2)}) has been sent to your email with payment details.`);
         return { invoiceNumber, userId, amountAud: data.amountAud, convertedAmount: data.convertedAmount, currency: data.currency, selectedBank };
     }
     async processAvelingInvoicePayment(userId, invoicePurpose) {
@@ -584,7 +582,7 @@ class TicketService {
                                 <p style="margin:12px 0 4px;font-weight:bold;color:#1f2937;">Eligible Sponsorship Refund Amount Credited to Wallet: <span style="color:#16a34a;">$${refundAmount.toFixed(2)} AUD</span></p>
                             </div>
 
-                            <p style="font-size:13px;color:#6b7280;">You can view and download your digital ticket or request a USDT payout of your refund from your applicant dashboard.</p>
+                            <p style="font-size:13px;color:#6b7280;">You can view and download your digital ticket or request a payout of your refund from your applicant dashboard.</p>
                             
                             <div style="margin-top:24px;text-align:center;">
                                 <a href="${clientTicketUrl}" style="background:#0b3486;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold;font-size:14px;">View Digital Ticket & Wallet</a>
@@ -1014,15 +1012,13 @@ class TicketService {
 
                         ${bankSettings.platform_bank_name ? `
                         <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:16px 0;">
-                            <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#166534;">USDT (TRC-20) Wallet Details</h3>
-                            <p style="margin:4px 0;"><strong>Wallet Name:</strong> ${bankSettings.platform_bank_name}</p>
-                            <p style="margin:4px 0;"><strong>Network:</strong> TRC-20</p>
-                            <p style="margin:4px 0;"><strong>USDT Wallet Address:</strong> ${bankSettings.platform_bank_account_number}</p>
+                            <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#166534;">Payment Details</h3>
+                            <p style="margin:4px 0;"><strong>Account / Institution:</strong> ${bankSettings.platform_bank_name}</p>
+                            <p style="margin:4px 0;"><strong>Account / Reference Number:</strong> ${bankSettings.platform_bank_account_number}</p>
                             <p style="margin:4px 0;"><strong>Account Name:</strong> ${bankSettings.platform_bank_account_name}</p>
-                            <p style="margin: 8px 0 0; font-size: 12px; color: #991b1b;">* Note: All incoming candidate transfers must execute strictly via USDT on the TRC-20 (Tron) network. Other networks or currencies are rejected.</p>
                         </div>` : ''}
 
-                        <p style="font-size:13px;color:#6b7280;">After making your USDT transfer, log into Aveling and upload your transaction receipt. Course materials will unlock once admin verifies your payment.</p>
+                        <p style="font-size:13px;color:#6b7280;">After making your payment transfer, log into Aveling and upload your transaction receipt. Course materials will unlock once admin verifies your payment.</p>
                     </div>
                 </div>`);
         }

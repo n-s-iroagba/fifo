@@ -92,7 +92,6 @@ export async function runAvelingWelcomeCron(forceUserId?: number): Promise<numbe
                         <div style="background-color: #000000; color: #ffffff; padding: 20px; text-align: center; margin: 20px 0;">
                             <p style="margin: 0; font-size: 16px;">Corporate Subsidy Applied: <strong><span style="color: #fccc0a;">${companySub}%</span></strong></p>
                             <h2 style="margin: 10px 0 0 0; font-size: 24px;">TOTAL TO PAY: A$${totalCandidateAud.toFixed(2)}</h2>
-                            <p style="margin: 5px 0 0 0; color: #aaaaaa;">(approx. ${totalCandidateUsd.toFixed(2)} USDT)</p>
                         </div>
                         
                         <p>Before we proceed, we would like to offer you two payment options:</p>
@@ -101,10 +100,8 @@ export async function runAvelingWelcomeCron(forceUserId?: number): Promise<numbe
                             <li><strong>Option 2:</strong> Pay half the amount now, and complete the remaining payment before your 3rd ticket is issued.</li>
                         </ul>
                         
-                        <p>All payments must be made in USDT TRC-20 (TRON network). Please let us know if you are familiar with how to make a payment using USDT.</p>
-                        
                         <div style="background-color: #fccc0a; color: #000000; padding: 15px; font-weight: bold; text-align: center; border-radius: 4px; margin-top: 20px;">
-                            <p style="margin: 0;">ACTION REQUIRED: Please reply to this email indicating your preferred payment option and whether you need assistance with USDT payments. Your official invoice will be sent upon your reply.</p>
+                            <p style="margin: 0;">ACTION REQUIRED: Please reply to this email indicating your preferred payment option. Your official invoice will be sent upon your reply.</p>
                         </div>
                         
                         <p style="margin-top: 20px;">We look forward to helping you achieve your Australian FIFO deployment.</p>

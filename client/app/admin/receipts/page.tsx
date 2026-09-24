@@ -307,7 +307,7 @@ export default function AdminReceiptsPage() {
                                 const isBlueCollar = inv.purpose === 'visa-blue-collar';
                                 return (
                                     <option key={inv.id} value={inv.id}>
-                                        #{inv.id.toString().padStart(6, '0')} &bull; {inv.applicant?.fullName || `User #${inv.applicantId}`} &bull; ${parseFloat(String(inv.amountInUSD || '0')).toFixed(2)} USDT &bull; [{isBlueCollar ? 'BlueCollar' : 'Aveling'}]
+                                        #{inv.id.toString().padStart(6, '0')} &bull; {inv.applicant?.fullName || `User #${inv.applicantId}`} &bull; ${parseFloat(String(inv.amountInUSD || '0')).toFixed(2)} &bull; [{isBlueCollar ? 'BlueCollar' : 'Aveling'}]
                                     </option>
                                 );
                             })}
@@ -350,7 +350,7 @@ export default function AdminReceiptsPage() {
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-xs font-black text-zinc-900">${parseFloat(String(inv.amountInUSD || '0')).toFixed(2)} USDT</p>
+                                            <p className="text-xs font-black text-zinc-900">${parseFloat(String(inv.amountInUSD || '0')).toFixed(2)}</p>
                                             <span className={`inline-block text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border mt-0.5 ${
                                                 isBlueCollar ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-amber-50 text-amber-800 border-amber-200'
                                             }`}>
@@ -466,7 +466,7 @@ export default function AdminReceiptsPage() {
                             {selectedInvoice.walletAddress && (
                                 <div className="pt-2 border-t border-zinc-200 text-xs">
                                     <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 block mb-1">
-                                        Verified TRC-20 Wallet:
+                                        Verified Account / Wallet:
                                     </span>
                                     <p className="font-mono text-[11px] text-zinc-800 break-all font-bold">
                                         {selectedInvoice.walletAddress}
@@ -485,8 +485,7 @@ export default function AdminReceiptsPage() {
                                     </span>
                                 </div>
                                 <span className="text-2xl font-black text-emerald-600">
-                                    ${parseFloat(String(selectedInvoice.amountInUSD || '0')).toFixed(2)}{' '}
-                                    <span className="text-xs font-bold text-zinc-500">USDT</span>
+                                    ${parseFloat(String(selectedInvoice.amountInUSD || '0')).toFixed(2)}
                                 </span>
                             </div>
 
@@ -575,7 +574,7 @@ export default function AdminReceiptsPage() {
                                             <p className="text-xs text-zinc-500 mt-0.5">{ownerMeta.note}</p>
                                         </div>
                                         <span className="font-black text-emerald-600 text-base">
-                                            ${parseFloat(String(selectedInvoice.amountInUSD || '0')).toFixed(2)} USDT
+                                            ${parseFloat(String(selectedInvoice.amountInUSD || '0')).toFixed(2)}
                                         </span>
                                     </div>
                                 </div>
@@ -585,12 +584,11 @@ export default function AdminReceiptsPage() {
                             <div className="bg-zinc-900 text-white p-5 rounded-xl space-y-2">
                                 <div className="flex items-center justify-between">
                                     <p className="text-[10px] font-black uppercase tracking-widest text-yellow-400">
-                                        Settlement & Network Verification
+                                        Settlement & Verification
                                     </p>
-                                    <span className="text-[10px] font-bold text-zinc-400">TRC-20 Tron Network</span>
                                 </div>
                                 <p className="text-xs text-zinc-300">
-                                    Payment settled via USDT Tether on TRC-20 Tron blockchain.
+                                    Payment settled and verified successfully.
                                 </p>
                                 {selectedInvoice.walletAddress && (
                                     <div className="p-3 bg-zinc-800 rounded-lg text-xs font-mono break-all flex items-center justify-between gap-2 border border-zinc-700">
@@ -626,7 +624,7 @@ export default function AdminReceiptsPage() {
                                     </div>
                                 </div>
                                 <span className="text-xl font-black text-emerald-700">
-                                    ${parseFloat(String(selectedInvoice.amountInUSD || '0')).toFixed(2)} USDT
+                                    ${parseFloat(String(selectedInvoice.amountInUSD || '0')).toFixed(2)}
                                 </span>
                             </div>
 
@@ -744,8 +742,7 @@ export default function AdminReceiptsPage() {
                                             </span>
                                         </td>
                                         <td className="p-4 font-black text-right text-emerald-600">
-                                            ${parseFloat(String(inv.amountInUSD || '0')).toFixed(2)}{' '}
-                                            <span className="text-[10px] text-zinc-400 font-bold">USDT</span>
+                                            ${parseFloat(String(inv.amountInUSD || '0')).toFixed(2)}
                                         </td>
                                         <td className="p-4 text-center">
                                             <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full">
@@ -818,13 +815,13 @@ export default function AdminReceiptsPage() {
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Particulars</p>
                                 <div className="flex justify-between items-center text-sm py-1">
                                     <span className="font-bold text-zinc-700">{viewHistoricalReceipt.purpose.replace(/-/g, ' ')}</span>
-                                    <span className="font-black text-emerald-600">${parseFloat(String(viewHistoricalReceipt.amountInUSD || '0')).toFixed(2)} USDT</span>
+                                    <span className="font-black text-emerald-600">${parseFloat(String(viewHistoricalReceipt.amountInUSD || '0')).toFixed(2)}</span>
                                 </div>
                             </div>
 
                             {viewHistoricalReceipt.walletAddress && (
                                 <div className="p-3 bg-zinc-900 text-white rounded-xl text-xs font-mono break-all">
-                                    <span className="text-[10px] text-zinc-400 font-sans block mb-1">Payment TRC-20 Wallet:</span>
+                                    <span className="text-[10px] text-zinc-400 font-sans block mb-1">Payment Account / Wallet:</span>
                                     <span className="text-yellow-400 font-bold">{viewHistoricalReceipt.walletAddress}</span>
                                 </div>
                             )}

@@ -445,13 +445,10 @@ export default function DocumentPage() {
                         </h2>
                         <div className="space-y-4 text-sm text-blue-600 leading-loose">
                             <p>
-                                All ticket course payments for international applicants are made in{' '}
-                                <strong className="text-blue-800">USDT (USD Tether) on the TRC-20 Network (Tron)</strong>.
+                                All ticket course payments for international applicants are processed through verified corporate payment channels to ensure fast allocation and course enrollment.
                             </p>
                             <p>
-                                We prefer this method due to transfer speed — USDT transactions on TRC-20 complete in under
-                                30 minutes, compared to international wire transfers which can take multiple business days.
-                                This helps us meet client deployment deadlines at the shortest possible time.
+                                Candidate contributions are verified promptly upon receipt of transfer documentation, ensuring that all safety inductions and ticket courses proceed without administrative delay.
                             </p>
                             <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 mt-4">
                                 <p className="font-semibold text-blue-800 mb-1 text-[11px] uppercase tracking-widest">Payment Options</p>

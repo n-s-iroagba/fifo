@@ -74,7 +74,7 @@ Conditional upon the Candidate remaining in absolute standing and fulfilling eve
 
 ### **5\. CANDIDATE FINANCIAL OBLIGATIONS & DEPOSIT PROTOCOLS**
 
-5.1 Initial Commitment Deposit: Prior to the booking, scheduling, or corporate funding of any individual online module or Certification block with the Training Partner, the Candidate shall transfer a security deposit of 250 USDT. This deposit serves as an essential instrument of mutual commercial assurance, confirming the Candidate’s earnest and binding commitment to complete the workflow and protecting the corporate capital of the Company from losses arising due to sudden, un-notified candidate withdrawal.
+5.1 Initial Commitment Deposit: Prior to the booking, scheduling, or corporate funding of any individual online module or Certification block with the Training Partner, the Candidate shall transfer a security deposit of A$370.00. This deposit serves as an essential instrument of mutual commercial assurance, confirming the Candidate’s earnest and binding commitment to complete the workflow and protecting the corporate capital of the Company from losses arising due to sudden, un-notified candidate withdrawal.
 
 5.2 Expense Caps & Balance Accountability: The Candidate retains absolute personal liability for the remaining three point six percent (3.62%) balance of itemized Ticket and Induction training costs, the specified 3.6% component of the statutory Visa Application Charge, 100% of individual regional Western Australian regulatory driving licensing outlays, and 100% of statutory fees levied by Trades Recognition Australia (TRA). The Candidate’s absolute cumulative financial exposure under this entire Instrument is strictly capped at three hundred and seventy (A$370). This baseline gross total is subject to downward adjustment upon the activation of success-based wallet credits as defined within Clause 7\.
 
@@ -208,14 +208,14 @@ The table below dictates the exact real-world commercial pricing structures for 
 Official Payment Protocols & Financial Channels:  
 \- Commitment Security: The primary initial commitment deposit of A$500.00 must be transferred to the Company's verified institutional bank account prior to course portal unlocking.  
 \- Channel Architecture: All incoming candidate transfers must execute strictly via standard International Wire Transfer (SWIFT Wire) using the verified routing coordinates issued exclusively within our corporate invoice paperwork. Independent third-party payment platforms or cash handovers are rejected.  
-\- Settlement Schedule: The foundational 250 USDT deposit is required immediately post-signing to secure the primary instructional allocations. Partial Payment above 50% of the above stated amount can be made with mandatory completion after 3 tickets.
+\- Settlement Schedule: The foundational A$370.00 deposit is required immediately post-signing to secure the primary instructional allocations. Partial Payment above 50% of the above stated amount can be made with mandatory completion after 3 tickets.
 
 SCHEDULE 2 — STRUCTURAL MILESTONES & EXECUTION DEADLINES
 
 | Milestone Stage | Target Deadline | Compliance Path |
 | :---- | :---- | :---- |
 | Binding Execution | Within 48 hours | Return Page 14 to lock placement. |
-| Core Commitment Deposit | Prior to Portal Booking | Transfer 250 USDT or partial payment. |
+| Core Commitment Deposit | Prior to Portal Booking | Transfer A$370.00 or partial payment. |
 | Passport Submission | Within 3 Weeks | High-res digital color scan. |
 | Aveling Online Exams | Within 2 Weeks | Done remotely. Max 2 attempts. |
 | Arrival & Practical Exams | First 7 Days (Arrival) | Practical verification in Perth. Max 2 attempts. |

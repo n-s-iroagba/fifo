@@ -115,7 +115,7 @@ export function PaymentUpload({ paymentId, amount, onSuccess }: PaymentUploadPro
                             <p className="text-[10px] text-amber-700 font-bold uppercase tracking-widest leading-relaxed">
                                 {details?.stage?.feeType === 'APEX_FEE' 
                                     ? "This infrastructure fee activates your Apex Network nodes. Access is guaranteed within 3 weeks of verification."
-                                    : "You are to make payment to the corporate USDT TRC-20 wallet for this process."}
+                                    : "You are to make payment to the corporate designated account for this process."}
                             </p>
                         </div>
                     )}
@@ -148,7 +148,7 @@ export function PaymentUpload({ paymentId, amount, onSuccess }: PaymentUploadPro
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-blue-50">
                                     <div className="bg-blue-50 p-4 rounded-xl relative group">
-                                        <p className="text-[8px] font-bold text-blue-400 uppercase tracking-widest mb-1">USDT Wallet Address</p>
+                                        <p className="text-[8px] font-bold text-blue-400 uppercase tracking-widest mb-1">Payment Account / Address</p>
                                         <p className="text-xs font-mono font-bold text-blue-900 break-all">{acc.accountNumber}</p>
                                         <button
                                             onClick={() => handleCopy(acc.accountNumber, `bank-num-${acc.id}`)}

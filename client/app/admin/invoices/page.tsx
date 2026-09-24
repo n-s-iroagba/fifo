@@ -272,7 +272,7 @@ export default function AdminInvoicesPage() {
                 </div>
                 <div className="flex items-center gap-2 text-xs font-bold text-zinc-500 bg-zinc-100 px-3 py-1.5 rounded-lg border border-zinc-200 w-fit">
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    TRC-20 USDT Gateway Active
+                    Payment Gateway Active
                 </div>
             </div>
 
@@ -430,7 +430,7 @@ export default function AdminInvoicesPage() {
                     {/* Step 3: Pick Receiving Wallet */}
                     <div className="border-t-2 border-zinc-100 pt-6">
                         <label className="block text-xs font-black uppercase tracking-widest text-zinc-700 mb-2">
-                            4. Pick Receiving Wallet (TRC-20 USDT)
+                            4. Pick Receiving Account / Wallet
                         </label>
                         <select
                             value={selectedWalletId}
@@ -722,9 +722,9 @@ export default function AdminInvoicesPage() {
                                 <div className="text-right">
                                     <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">Date Drafted</p>
                                     <p className="font-bold text-zinc-900 text-sm">{new Date().toLocaleDateString()}</p>
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mt-3 mb-1">Protocol</p>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mt-3 mb-1">Status</p>
                                     <span className="inline-block text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-100 text-zinc-700">
-                                        TRC-20 USDT
+                                        Active
                                     </span>
                                 </div>
                             </div>
@@ -767,15 +767,14 @@ export default function AdminInvoicesPage() {
                                     <p className="text-[10px] font-black uppercase tracking-widest text-yellow-400">
                                         Payment Instructions (Candidate Email Copy)
                                     </p>
-                                    <span className="text-[10px] font-bold text-zinc-400">TRON Network</span>
                                 </div>
                                 <p className="text-xs text-zinc-300">
-                                    Please send the Final Amount Due as <strong>USDT on the TRC-20 Tron network</strong>.
+                                    Please send the Final Amount Due using the payment details below.
                                 </p>
                                 {selectedWallet ? (
                                     <div className="p-3 bg-zinc-800 rounded-lg text-xs font-mono break-all flex items-center justify-between gap-2 border border-zinc-700">
                                         <div>
-                                            <span className="text-[10px] text-zinc-400 font-sans block">USDT TRC-20 Address:</span>
+                                            <span className="text-[10px] text-zinc-400 font-sans block">Payment Account / Address:</span>
                                             <span className="text-yellow-400 font-bold">{selectedWallet.accountNumber}</span>
                                         </div>
                                         <button
@@ -791,7 +790,7 @@ export default function AdminInvoicesPage() {
                                     <p className="text-xs text-rose-400">Warning: No wallet selected.</p>
                                 )}
                                 <p className="text-[10px] text-zinc-400">
-                                    Ensure candidate uses the TRC-20 network to avoid loss of funds.
+                                    Ensure payment is transferred to the verified account above.
                                 </p>
                             </div>
 
@@ -881,13 +880,13 @@ export default function AdminInvoicesPage() {
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 border-b border-zinc-100 pb-1">Line Items</p>
                                 <div className="flex justify-between items-center py-2 text-sm">
                                     <span className="font-bold text-zinc-700">{previewPastInvoice.purpose.replace(/-/g, ' ')}</span>
-                                    <span className="font-black text-zinc-900">${parseFloat(String(previewPastInvoice.amountInUSD || '0')).toFixed(2)} USDT</span>
+                                    <span className="font-black text-zinc-900">${parseFloat(String(previewPastInvoice.amountInUSD || '0')).toFixed(2)}</span>
                                 </div>
                             </div>
 
                             {previewPastInvoice.walletAddress && (
                                 <div className="p-3 bg-zinc-900 text-white rounded-xl text-xs font-mono break-all">
-                                    <span className="text-[10px] text-zinc-400 font-sans block mb-1">TRC-20 Receiving Wallet:</span>
+                                    <span className="text-[10px] text-zinc-400 font-sans block mb-1">Receiving Account / Wallet:</span>
                                     <span className="text-yellow-400 font-bold">{previewPastInvoice.walletAddress}</span>
                                 </div>
                             )}
@@ -895,7 +894,7 @@ export default function AdminInvoicesPage() {
                             <div className="bg-zinc-50 border-2 border-zinc-200 p-4 rounded-xl flex justify-between items-center">
                                 <span className="text-xs font-black uppercase tracking-widest text-zinc-900">Total Recorded</span>
                                 <span className="text-xl font-black text-[#FFC700]">
-                                    ${parseFloat(String(previewPastInvoice.amountInUSD || '0')).toFixed(2)} USDT
+                                    ${parseFloat(String(previewPastInvoice.amountInUSD || '0')).toFixed(2)}
                                 </span>
                             </div>
 

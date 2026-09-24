@@ -437,19 +437,15 @@ export default function UserTicketsPage() {
 
                         <form onSubmit={handleApplyBatchSponsorship} className="space-y-4">
                             <div>
-                                <p className="text-[10px] font-bold text-blue-900 uppercase tracking-widest mb-1">USDT (TRC-20) Wallet for Refund</p>
-                                <p className="text-[11px] text-slate-500">100% of all candidate contributions are refunded upon passing all Ticket courses. Please provide your TRC-20 USDT wallet address for direct credit.</p>
+                                <p className="text-[10px] font-bold text-blue-900 uppercase tracking-widest mb-1">Account for Refund</p>
+                                <p className="text-[11px] text-slate-500">100% of all candidate contributions are refunded upon passing all Ticket courses. Please provide your receiving account details for direct credit.</p>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-1">Network</label>
-                                <input type="text" value="TRC-20" readOnly className="w-full bg-slate-100 border border-slate-200 rounded-xl p-3 text-xs text-slate-500 cursor-not-allowed font-mono" />
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-1">Account / Reference Number</label>
+                                <input type="text" placeholder="Enter account or wallet address" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-mono" required />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-1">USDT Wallet Address</label>
-                                <input type="text" placeholder="e.g. T..." value={accountNumber} onChange={e => setAccountNumber(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-mono" required />
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-1">Wallet Nickname</label>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-1">Account Nickname / Name</label>
                                 <input type="text" placeholder="e.g. My Binance Wallet" value={accountName} onChange={e => setAccountName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900" required />
                             </div>
 

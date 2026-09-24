@@ -113,8 +113,7 @@ class AuthService {
                 </li>
                 <li style="margin-bottom: 10px;">
                     <strong>Step 5: Ticket Sponsorship Payment</strong><br/>
-                    You shall pay your financial responsibility under the ticket sponsorship program. This can be paid in part (to be completed before taking the 4th ticket) or paid completely upfront at an extra 10% discount.<br/>
-                    <em>Note: International payments from outside Australia are made using USDT crypto currency on the TRON network.</em>
+                    You shall pay your financial responsibility under the ticket sponsorship program. This can be paid in part (to be completed before taking the 4th ticket) or paid completely upfront at an extra 10% discount.
                 </li>
                 <li style="margin-bottom: 10px;">
                     <strong>Step 6: Ticket Courses & Examination</strong><br/>

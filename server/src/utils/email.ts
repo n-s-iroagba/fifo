@@ -275,18 +275,17 @@ export const sendInvoiceEmail = async (
     const content = `
         <p>Dear ${candidateName},</p>
         <p>Please find the details of your invoice for <strong>${note}</strong></p>
-        <p><strong>Financial Breakdown (USDT):</strong></p>
+        <p><strong>Financial Breakdown:</strong></p>
         <ul>
             ${totalCost > 0 ? `<li>Total Cost: $${totalCost.toFixed(2)}</li>` : ''}
             ${subsidyPercentage > 0 && totalCost > 0 ? `<li>Approved Subsidy: ${subsidyPercentage}%</li>` : ''}
             ${partAmount > 0 ? `<li>Part/Adjusted Amount: $${partAmount.toFixed(2)}</li>` : ''}
-            <li><strong>Final Amount Due: $${finalAmountDue.toFixed(2)} USDT</strong></li>
+            <li><strong>Final Amount Due: $${finalAmountDue.toFixed(2)}</strong></li>
         </ul>
         <div style="background-color: #f8fafc; padding: 15px; border-left: 4px solid #FFC700; margin: 20px 0;">
             <p style="margin: 0;"><strong>Payment Instructions:</strong><br>
-            Please send the Final Amount Due as <strong>USDT on the TRC-20 Tron network</strong>.</p>
-            ${walletAddress ? `<p style="margin-top: 10px; word-break: break-all;"><strong>Wallet Address:</strong><br>${walletAddress}</p>` : ''}
-            <p style="margin-top: 10px;">Ensure you use the TRC-20 network to avoid loss of funds.</p>
+            Please send the Final Amount Due using the approved payment details.</p>
+            ${walletAddress ? `<p style="margin-top: 10px; word-break: break-all;"><strong>Payment Details:</strong><br>${walletAddress}</p>` : ''}
         </div>
         <p>Please arrange for payment at your earliest convenience.</p>
     `;
@@ -317,9 +316,9 @@ export const sendReceiptEmail = async (
         <p><strong>Official Receipt Particulars:</strong></p>
         <ul>
             <li>Linked Invoice ID: #${invoiceId}</li>
-            <li>Amount Paid: $${amountPaid.toFixed(2)} USDT</li>
+            <li>Amount Paid: $${amountPaid.toFixed(2)}</li>
             <li>Issuing Entity: ${receiptType === 'aveling' ? 'Aveling LMS Training' : 'BlueCollar Infrastructure'}</li>
-            ${walletAddress ? `<li>Payment Network: TRC-20 Tron Network (${walletAddress})</li>` : ''}
+            ${walletAddress ? `<li>Payment Details: ${walletAddress}</li>` : ''}
             <li>Verification Status: Confirmed & Paid</li>
         </ul>
         <p>Thank you for your prompt payment.</p>

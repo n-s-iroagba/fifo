@@ -112,7 +112,7 @@ export default function TicketDetailPage() {
         setApplySuccess(null);
 
         if (!accountNumber.trim() || !accountName.trim()) {
-            setApplyError('Please carefully provide complete TRC-20 wallet details for refund processing.');
+            setApplyError('Please carefully provide complete account details for refund processing.');
             return;
         }
 
@@ -394,9 +394,9 @@ export default function TicketDetailPage() {
             {canSubmitSponsorshipForm && (
                 <section className="mb-8 bg-white p-8 rounded-3xl border border-blue-100 shadow-sm">
                     <span className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em] block mb-2">Apply For Sponsorship</span>
-                    <h2 className="text-lg font-bold text-blue-900 mb-2">Submit USDT (TRC-20) Wallet Details</h2>
+                    <h2 className="text-lg font-bold text-blue-900 mb-2">Submit Refund Account Details</h2>
                     <p className="text-xs text-slate-500 mb-6">
-                        Please carefully provide complete USDT wallet details on the TRC-20 network for refund processing upon passing your training exam.
+                        Please carefully provide complete account details for refund processing upon passing your training exam.
                     </p>
 
                     {applyError && (
@@ -411,28 +411,19 @@ export default function TicketDetailPage() {
                     )}
 
                     <form onSubmit={handleApplySponsorship} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Network</label>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Account / Reference Number</label>
                                 <input
                                     type="text"
-                                    value="TRC-20"
-                                    readOnly
-                                    className="w-full bg-slate-100 border border-slate-200 rounded-xl p-3 text-xs text-slate-500 font-mono cursor-not-allowed"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">USDT Wallet Address</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. T..."
+                                    placeholder="Enter account or wallet address"
                                     value={accountNumber}
                                     onChange={(e) => setAccountNumber(e.target.value)}
                                     className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-blue-900 font-mono"
                                 />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Wallet Nickname</label>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-blue-900 mb-2">Account Nickname / Name</label>
                                 <input
                                     type="text"
                                     placeholder="e.g. My Binance Wallet"
@@ -471,7 +462,7 @@ export default function TicketDetailPage() {
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Stage 2</span>
                         <p className="text-xs font-bold text-blue-950 mt-1">Wallet Refund Info</p>
                         <p className="text-[11px] text-slate-500 mt-1 font-medium">
-                            {effectiveAccountNumber ? `TRC-20: ${effectiveAccountNumber}` : 'Not Provided'}
+                            {effectiveAccountNumber ? effectiveAccountNumber : 'Not Provided'}
                         </p>
                     </div>
 
