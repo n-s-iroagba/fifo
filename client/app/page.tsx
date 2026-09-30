@@ -85,11 +85,24 @@ export default function HomePage() {
   };
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const host = window.location.hostname.toLowerCase();
+      if (host.startsWith('aveling.') || host === 'aveling.online' || host === 'www.aveling.online') {
+        const path = window.location.pathname;
+        if (!path.startsWith('/aveling')) {
+          window.location.replace(`/aveling${path === '/' ? '' : path}${window.location.search}`);
+        }
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % TESTIMONIALS.length);
     }, 5000);
     return () => clearInterval(timer);
   }, []);
+
 
   return (
     <div className="bg-white text-blue-900 min-h-screen flex flex-col font-sans antialiased overflow-x-hidden">
