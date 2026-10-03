@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApiQuery, useApiMutation } from '@/lib/hooks';
 import { useSearchParams } from 'next/navigation';
+
 
 // ─── Nomination Document Generator ──────────────────────────────────────────
 
@@ -49,7 +50,12 @@ async function generateNominationPDF(applicant: any, options: any[], totalApplic
     addSpace(4);
 
     addLine('Please review the available options below, select exactly one (1) interconnected option (Trade Specialisation and hosting Client Enterprise), and return this signed notice within forty-eight (48) hours.', 10, false, [0, 0, 0]);
+    addSpace(3);
+    addLine('NOTE: All nomination vacancies were negotiatied at the same pay and benefits and working conditions with each potential employer')
+    addLine('Selection should be made based on your planned and  preferred career growth trajectory.')
+
     addSpace(5);
+
 
     // Options table
     const tableBody = options.map((opt, idx) => [
@@ -71,11 +77,10 @@ async function generateNominationPDF(applicant: any, options: any[], totalApplic
     });
 
     y = (doc as any).lastAutoTable.finalY + 8;
+    addSpace(2);
 
-    // Declaration
     addLine('CANDIDATE SELECTION AFFIRMATION & DECLARATION', 11, true);
     addSpace(2);
-    addLine('All nomination vacancies were negotiatied at the same pay and benefits with each potential employer')
     const declaration = `I, ${applicant.fullName}, hereby formally select the option indicated above as my chosen vocational path. I acknowledge that this choice links my upcoming Subclass 482 visa nomination directly to the corresponding host employer and trade stream. I request Blue Collar Recruitment Pty Ltd to lock in this selection and complete my mobilization scheduling accordingly.`;
     addLine(declaration, 9.5, false, [0, 0, 0]);
     addSpace(3);
@@ -180,8 +185,10 @@ export default function NominationsPage() {
     const initialApplicantId = searchParams.get('applicantId') || '';
     const [selectedApplicant, setSelectedApplicant] = useState(initialApplicantId);
     const [options, setOptions] = useState([
-        { tradeStream: '', hostEmployer: '', vacancies: '', competitors: '' }
+        { tradeStream: '', hostEmployer: '', vacancies: '', competitors: 0 }
     ]);
+    const [faqLink, setFaqLink] = useState('');
+    const [whatsappLink, setWhatsappLink] = useState('');
     const [success, setSuccess] = useState(false);
     const [isSubmittingLocal, setIsSubmittingLocal] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -201,8 +208,20 @@ export default function NominationsPage() {
     );
     const appId = appsRes?.rows?.[0]?.id;
 
+    const { data: faqRes } = useApiQuery<any>(
+        ['admin', 'faqs'],
+        '/admin/faqs'
+    );
+    const defaultProcessFaqLink = faqRes?.slots?.process?.link || faqRes?.data?.find((f: any) => f.type === 'process')?.link || '';
+
+    useEffect(() => {
+        if (defaultProcessFaqLink && !faqLink) {
+            setFaqLink(defaultProcessFaqLink);
+        }
+    }, [defaultProcessFaqLink]);
+
     const { mutateAsync: createNominations, isPending: creatingNoms } = useApiMutation<any, any>('post', `/admin/applications/${appId}/nominations`);
-    const { mutateAsync: sendMail } = useApiMutation<any, any>('post', '/admin/mail');
+
 
     const getToday = () => {
         const d = new Date();
@@ -262,7 +281,7 @@ export default function NominationsPage() {
         try {
             const pdfUri = await generateNominationPDF(applicant, options, (options.reduce((sum, current) => sum + Number(current.competitors), 0)), getToday());
             const base64 = pdfUri.split(',')[1];
-
+            const applicantCount = (options.reduce((sum, current) => sum + Number(current.competitors), 0));
             // Create nominations on server (triggers stage update + email via controller)
             await createNominations({
                 nominations: options,
@@ -270,7 +289,8 @@ export default function NominationsPage() {
                 candidateName: applicant.fullName,
                 candidateEmail: applicant.email,
                 documentUrl: pdfUri,
-                totalApplicants,
+                faqLink: faqLink.trim() || undefined,
+                whatsappLink: whatsappLink.trim() || undefined,
             });
 
             setSuccess(true);
@@ -332,12 +352,67 @@ export default function NominationsPage() {
                             )}
                         </div>
 
+                        {/* FAQ and WhatsApp Communication Section */}
+                        <div className="p-4 bg-blue-50/60 border border-blue-100 rounded-xl space-y-3">
+                            <div>
+                                <h3 className="text-xs font-bold text-blue-900 uppercase tracking-widest flex items-center gap-1.5">
+                                    <span className="material-symbols-outlined text-sm text-blue-600">help_center</span>
+                                    FAQ &amp; WhatsApp Communication
+                                </h3>
+                                <p className="text-[10px] text-blue-500 mt-0.5">
+                                    The candidate will be prompted boldly in the nomination email to review this FAQ and ask questions via WhatsApp.
+                                </p>
+                            </div>
+
+                            <div className="space-y-3">
+                                <div className="space-y-1">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-[9px] font-bold text-blue-900 uppercase tracking-widest px-1">
+                                            Process FAQ Link (Included in Email)
+                                        </label>
+                                        {defaultProcessFaqLink && faqLink !== defaultProcessFaqLink && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setFaqLink(defaultProcessFaqLink)}
+                                                className="text-[9px] text-blue-600 hover:text-blue-800 font-bold uppercase tracking-wider underline"
+                                            >
+                                                Use Default Process FAQ
+                                            </button>
+                                        )}
+                                    </div>
+                                    <input
+                                        type="url"
+                                        value={faqLink}
+                                        onChange={(e) => setFaqLink(e.target.value)}
+                                        placeholder="https://... (e.g. process FAQ link)"
+                                        className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-xs font-medium outline-none focus:ring-2 focus:ring-blue-900/5 transition-all text-blue-900"
+                                    />
+                                </div>
+
+                                <div className="space-y-1">
+                                    <label className="text-[9px] font-bold text-blue-900 uppercase tracking-widest px-1">
+                                        WhatsApp Support Channel / Link (Optional)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={whatsappLink}
+                                        onChange={(e) => setWhatsappLink(e.target.value)}
+                                        placeholder="https://wa.me/... or WhatsApp channel/group link"
+                                        className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-xs font-medium outline-none focus:ring-2 focus:ring-blue-900/5 transition-all text-blue-900"
+                                    />
+                                    <p className="text-[9px] text-blue-400 px-1">
+                                        Direct link for candidates to message questions before finalizing their selection.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-sm font-bold text-blue-900 uppercase tracking-widest">Nomination Options</h3>
                                 <button
                                     type="button"
-                                    onClick={() => setOptions([...options, { tradeStream: '', hostEmployer: '', vacancies: '', competitors: '' }])}
+                                    onClick={() => setOptions([...options, { tradeStream: '', hostEmployer: '', vacancies: '', competitors: 0 }])}
                                     className="text-[10px] font-bold bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg uppercase tracking-widest hover:bg-blue-200"
                                 >
                                     + Add Option
@@ -399,12 +474,12 @@ export default function NominationsPage() {
                                         <div className="space-y-1.5">
                                             <label className="text-[9px] font-bold text-blue-400 uppercase tracking-widest px-1">Competitor Count (auto: total pool)</label>
                                             <input
-                                                type="text"
+                                                type="number"
                                                 value={opt.competitors}
                                                 onChange={(e) => {
-                                                    const n = [...options]; n[idx].competitors = e.target.value; setOptions(n);
+                                                    const n = [...options]; n[idx].competitors = Number(e.target.value); setOptions(n);
                                                 }}
-                                                placeholder={`${totalApplicants} Applicants`}
+
                                                 className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm font-medium outline-none focus:ring-2 focus:ring-blue-900/5 transition-all text-blue-900"
                                             />
                                         </div>

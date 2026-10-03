@@ -5,6 +5,7 @@ const ApplicationService_1 = require("../services/ApplicationService");
 const constants_1 = require("../constants");
 const email_1 = require("../utils/email");
 const User_1 = require("../models/User");
+const Faq_1 = require("../models/Faq");
 class ApplicationController {
     // Maps to STK-APP-APPLY-001, TRUST-009
     async startApplication(req, res) {
@@ -260,7 +261,7 @@ class ApplicationController {
     async createNominations(req, res) {
         try {
             const id = parseInt(req.params.id, 10);
-            const { nominations, userId, candidateName, candidateEmail, documentUrl, totalApplicants } = req.body;
+            const { nominations, userId, candidateName, candidateEmail, documentUrl, totalApplicants, faqLink, whatsappLink } = req.body;
             const created = await ApplicationService_1.applicationService.createNominations(id, nominations);
             // Update stage to Nomination on-going
             if (userId) {
@@ -274,12 +275,76 @@ class ApplicationController {
             // Send NominationPresentationMail with document attachment
             if (candidateEmail && documentUrl) {
                 try {
+                    // Resolve FAQ link from request or fallback to DB process FAQ
+                    let resolvedFaqLink = (faqLink || '').trim();
+                    if (!resolvedFaqLink) {
+                        try {
+                            const processFaq = await Faq_1.Faq.findOne({ where: { type: 'process' } });
+                            if (processFaq?.link && processFaq.link.trim()) {
+                                resolvedFaqLink = processFaq.link.trim();
+                            }
+                        }
+                        catch (faqErr) {
+                            console.error('[ApplicationController.createNominations] Faq lookup error:', faqErr);
+                        }
+                    }
+                    if (resolvedFaqLink && !resolvedFaqLink.startsWith('http://') && !resolvedFaqLink.startsWith('https://')) {
+                        resolvedFaqLink = `https://${resolvedFaqLink}`;
+                    }
+                    // Resolve WhatsApp Link or channel
+                    let resolvedWhatsapp = (whatsappLink || process.env.WHATSAPP_SUPPORT_URL || process.env.WHATSAPP_CHANNEL_URL || '').trim();
+                    if (resolvedWhatsapp && !resolvedWhatsapp.startsWith('http://') && !resolvedWhatsapp.startsWith('https://')) {
+                        resolvedWhatsapp = `https://${resolvedWhatsapp}`;
+                    }
                     const subject = 'Your Official Nomination – Action Required Within 48 Hours';
                     const content = `
                         <p>Dear ${candidateName || 'Candidate'},</p>
                         <p>Blue Collar Recruitment Pty Limited is pleased to present your Official Notice of Nomination &amp; Trade Selection.</p>
                         <p>Please find your nomination document attached. Kindly review the available options, select exactly <strong>one (1) option</strong>, sign the document, and return it within <strong>forty-eight (48) hours</strong>.</p>
                         <p>You may also download, sign, and upload the signed document through your dashboard nominations page.</p>
+
+                        ${resolvedFaqLink ? `
+                        <div style="background-color:#eff6ff;border:2px solid #1e40af;border-left:6px solid #1e40af;padding:18px 22px;border-radius:8px;margin:24px 0;">
+                            <p style="margin:0 0 8px 0;font-size:15px;font-weight:900;color:#1e3a8a;text-transform:uppercase;letter-spacing:0.5px;">
+                                📄 CRITICAL ACTION REQUIRED: REVIEW THE PROCESS FAQs
+                            </p>
+                            <p style="margin:0 0 12px 0;color:#1e293b;font-size:14px;font-weight:600;line-height:1.6;">
+                                Before selecting your trade specialisation and returning your signed form, you are <strong>strongly advised and required to read our comprehensive Process FAQs</strong>. It answers all common questions regarding host employer placement, salary frameworks, mobilization timelines, and visa nomination rules.
+                            </p>
+                            <div style="margin:12px 0;">
+                                <a href="${resolvedFaqLink}" target="_blank" style="background-color:#1e40af;color:#ffffff;padding:11px 22px;border-radius:6px;font-weight:bold;text-decoration:none;display:inline-block;font-size:13px;letter-spacing:0.5px;text-transform:uppercase;">
+                                    Read Process FAQs &rarr;
+                                </a>
+                            </div>
+                            <p style="margin:6px 0 0 0;font-size:12px;color:#64748b;">
+                                Direct Link: <a href="${resolvedFaqLink}" target="_blank" style="color:#1e40af;word-break:break-all;">${resolvedFaqLink}</a>
+                            </p>
+                        </div>
+                        ` : ''}
+
+                        <div style="background-color:#f0fdf4;border:2px solid #16a34a;border-left:6px solid #16a34a;padding:18px 22px;border-radius:8px;margin:24px 0;">
+                            <p style="margin:0 0 8px 0;font-size:15px;font-weight:900;color:#14532d;text-transform:uppercase;letter-spacing:0.5px;">
+                                💬 HAVE QUESTIONS? ASK VIA OUR WHATSAPP CHANNEL
+                            </p>
+                            <p style="margin:0 0 12px 0;color:#1e293b;font-size:14px;font-weight:600;line-height:1.6;">
+                                Have questions regarding your nomination options, employer terms, or trade responsibilities? <strong>Please refer to the FAQ link above first. If you still have questions, contact our recruitment coordinators immediately via our WhatsApp channel</strong> before submitting your selection.
+                            </p>
+                            ${resolvedWhatsapp ? `
+                            <div style="margin:12px 0;">
+                                <a href="${resolvedWhatsapp}" target="_blank" style="background-color:#16a34a;color:#ffffff;padding:11px 22px;border-radius:6px;font-weight:bold;text-decoration:none;display:inline-block;font-size:13px;letter-spacing:0.5px;text-transform:uppercase;">
+                                    Chat on WhatsApp Channel &rarr;
+                                </a>
+                            </div>
+                            <p style="margin:6px 0 0 0;font-size:12px;color:#64748b;">
+                                WhatsApp Link: <a href="${resolvedWhatsapp}" target="_blank" style="color:#16a34a;word-break:break-all;">${resolvedWhatsapp}</a>
+                            </p>
+                            ` : `
+                            <p style="margin:0;font-size:13px;font-weight:700;color:#15803d;">
+                                📲 Please message our official recruitment WhatsApp channel with your candidate name and questions.
+                            </p>
+                            `}
+                        </div>
+
                         <p>Yours sincerely,<br>Troy Latuff<br>Chief Executive Officer<br>Blue Collar Recruitment Pty Ltd</p>
                     `;
                     const attachments = [{ filename: 'Nomination_Form.pdf', path: documentUrl }];
