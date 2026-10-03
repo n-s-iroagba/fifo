@@ -75,6 +75,7 @@ async function generateNominationPDF(applicant: any, options: any[], totalApplic
     // Declaration
     addLine('CANDIDATE SELECTION AFFIRMATION & DECLARATION', 11, true);
     addSpace(2);
+    addLine('All nomination vacancies were negotiatied at the same pay and benefits with each potential employer')
     const declaration = `I, ${applicant.fullName}, hereby formally select the option indicated above as my chosen vocational path. I acknowledge that this choice links my upcoming Subclass 482 visa nomination directly to the corresponding host employer and trade stream. I request Blue Collar Recruitment Pty Ltd to lock in this selection and complete my mobilization scheduling accordingly.`;
     addLine(declaration, 9.5, false, [0, 0, 0]);
     addSpace(3);

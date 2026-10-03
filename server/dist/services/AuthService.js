@@ -115,11 +115,54 @@ class AuthService {
         const welcomeSubject = 'Welcome to BlueCollar - Account Verified';
         const welcomeContent = `
             <p>Hello ${user.fullName.split(' ')[0]},</p>
+             <p>Your account has been successfully verified. Welcome to the BlueCollar Recruitment Platform!</p>
             <br/>
             <p>KINDLY READ CARE FULLY AND UNDERSTAND, AND CARRYOUT THE REQUIRED ACTIONS</p>
-            <p>Your account has been successfully verified. Welcome to the BlueCollar Recruitment Platform!</p>
+            <p> THE FOLLOWING ARE REQUIRED OF YOU IN THIS MAIL</p>
+               <ol style="margin-bottom: 20px;">
+                <li style="margin-bottom: 10px;">
+                  READ THE ATTACHED HIRING PROCESS DOCUMENT 
+                </li>
+                ${processFaqSection && ` <li style="margin-bottom: 10px;">
+                  CLICK THE LINK AND READ THE FAQ SECTION 
+                </li'`}
+                   <li style="margin-bottom: 10px;">
+                  REPLY THIS MAIL WITH THE QUESTION HIDDEN IN THE ATTACHED HIRING PROCESS DOCUMENT AND ANY QUESTIONS YOU MAY HAVE ABOUT THE PROCESS , SO WE CAN VALIDATE YOU READ IT.
+                </li>
+                <li style="margin-bottom: 10px;">
+                  Proceed to start your application.
+                </li>
+            </ol>
+            <br/>
+            
+            <strong>Ensure you are available for the following before you proceed: </strong>
+            <ul>
+            <li>Correspondence with Blue Collar Recruitment; you are expected to act on your part at each stage of the hiring process in 48 hours or less</li>
+            <li>Phone call interviews with Blue Collar Recruitment hiring team agents during hiring process. </li>
+            <li>Tickets (Certification) Training</li>
+            <li>Skype/Zoom familiarisation call with employer after job placement </li>
+            <li>Medical Test</li>
+            <li>Visa application processes. </li>
+               
+            </ul>
+
+         <div style="background-color:#fff8e1;border-left:5px solid #FFC700;padding:18px 22px;border-radius:8px;margin:28px 0;">
+                <p style="margin:0 0 10px 0;font-weight:900;font-size:15px;color:#1a1a1a;text-transform:uppercase;letter-spacing:0.5px;">
+                    📄 ACTION REQUIRED: YOUR ARE TO READ THE ATTACHED HIRING PROCESS DOCUMENT AND REPLY TO THIS MAIL WITH THE ANSWERS TO THE QUESTIONS HIDDEN IN THE DOCUMENT TO PROVE YOU ACTUALLY READ IT.
+                </p>
+                <p style="margin:0 0 10px 0;color:#374151;font-size:14px;font-weight:600;line-height:1.6;">
+                    We have attached our <strong>Hiring Process Guide</strong> to this email. It contains critical information about every stage of your recruitment journey — timelines, required documents, and what to expect at each milestone.
+                </p>
+                <p style="margin:0;color:#374151;font-size:14px;font-weight:700;">
+                    ⚠️ You are expected to have read and understood this document before proceeding with your application. It will be referenced at each stage of the process.
+                </p>
+            </div>
+
+                  ${processFaqSection}
+
+           
             <p><strong>Blue Collar Recruitment specializes in hiring and sponsoring foreign applicants to work FIFO in Australia.</strong></p>
-            <p>To successfully secure your next FIFO role, please follow the 9 steps of our recruitment and placement process:</p>
+            <p>To successfully secure your next FIFO role, please proceed with the following steps of our recruitment and placement process:</p>
             
             <ol style="margin-bottom: 20px;">
                 <li style="margin-bottom: 10px;">
@@ -132,18 +175,8 @@ class AuthService {
                 </li>
         
             </ol>
-             ${processFaqSection}
-            <div style="background-color:#fff8e1;border-left:5px solid #FFC700;padding:18px 22px;border-radius:8px;margin:28px 0;">
-                <p style="margin:0 0 10px 0;font-weight:900;font-size:15px;color:#1a1a1a;text-transform:uppercase;letter-spacing:0.5px;">
-                    📄 ACTION REQUIRED: Read the Attached Hiring Process Document
-                </p>
-                <p style="margin:0 0 10px 0;color:#374151;font-size:14px;font-weight:600;line-height:1.6;">
-                    We have attached our <strong>Hiring Process Guide</strong> to this email. It contains critical information about every stage of your recruitment journey — timelines, required documents, and what to expect at each milestone.
-                </p>
-                <p style="margin:0;color:#374151;font-size:14px;font-weight:700;">
-                    ⚠️ You are expected to have read and understood this document before proceeding with your application. It will be referenced at each stage of the process.
-                </p>
-            </div>
+       
+   
            
             <div class="cta-block">
                 <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/profile" class="button">Complete Your Profile Now</a>
