@@ -34,7 +34,8 @@ export class User extends Model {
     declare accountName: string | null;
     declare avelingUsername: string | null;
     declare avelingPassword: string | null;
-
+    declare rtoUsername: string | null;
+    declare rtoPassword: string | null;
 
     declare psychometricModule1Passed: boolean;
     declare psychometricModule2Passed: boolean;
@@ -43,6 +44,7 @@ export class User extends Model {
     declare depositPaidAt: Date | null;
     declare fullBalancePaid: boolean;
     declare canPickSchedule: boolean;
+    declare testimonialConsent: boolean;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 }
@@ -177,6 +179,14 @@ User.init({
         type: DataTypes.STRING,
         allowNull: true,
     },
+    rtoUsername: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    rtoPassword: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
 
     // Payment milestone gate (A$500 deposit → tickets 1-3; full balance → ticket 4+)
     depositPaid: {
@@ -217,6 +227,11 @@ User.init({
         }
     },
     canPickSchedule: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    testimonialConsent: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
         allowNull: false,

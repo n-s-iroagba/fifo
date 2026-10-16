@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 import { User, PsychometricAttempt } from '../models';
 import { applicationService } from '../services/ApplicationService';
-import { sendAvelingEmail } from '../utils/email';
+import { sendRtoEmail } from '../utils/email';
 import { recordCronRun } from './cronRegistry';
 
 const CRON_NAME = 'PsychometricAutoApproval';
@@ -18,7 +18,7 @@ export async function runPsychometricApprovalCron(forceUserId?: number): Promise
             module: 'module_2',
             passed: false
         };
-        
+
         if (forceUserId) {
             whereClause.userId = forceUserId;
         } else {
@@ -56,10 +56,14 @@ export async function runPsychometricApprovalCron(forceUserId?: number): Promise
 
                     await applicationService.updateLatestApplicationStageStatus(user.id, 'Psychometric Test Module 2 passed');
 
-                    await sendAvelingEmail(
+                    await sendRtoEmail(
                         user.email,
-                        'Psychometric Module 2 Completed Successfully',
+                        'Congratulations!  Psychometric Module 2 Completed Successfully',
                         `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 2. You have now completed the psychometric evaluation phase.</p>
+                        <p>PLEASE NOTE: Passing the two modules was a strong prerequisite to being trained and presented for employement to our client companies.
+                        This gives us the confidence to proceed with your hire process as you have proven that you posses the intelligence and aptitude of a suitable applicant.
+                        </p>
+                        <p>Once again, congratulations!!</p>
                         <p>If you have uploaded your CV and updated your details, kindly go back to your dashboard and visit the job listing and click the blue button that reads "Submit Application" to submit your application</p>
                         <p>Yours sincerely,<br>Blue Collar Recruitment Pty Ltd</p>
                         `

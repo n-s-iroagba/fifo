@@ -5,7 +5,7 @@ import { PsychometricAttempt } from '../models/PsychometricAttempt';
 import { psychometricModule1Questions } from '../data/psychometricModule1Questions';
 import { psychometricModule2Questions } from '../data/psychometricModule2Questions';
 import { Op } from 'sequelize';
-import { sendAvelingEmail } from '../utils/email';
+import { sendRtoEmail } from '../utils/email';
 import { applicationService } from '../services/ApplicationService';
 
 export class PsychometricController {
@@ -181,7 +181,7 @@ export class PsychometricController {
                 user.psychometricModule1Passed = true;
                 await user.save();
                 try {
-                    await sendAvelingEmail(user.email, 'Psychometric Module 1 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 1.</p><p>Please log in to your dashboard to proceed to the next module.</p>`);
+                    await sendRtoEmail(user.email, 'Psychometric Module 1 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 1.</p><p>Please log in to your dashboard to proceed to the next module.</p>`);
                     await applicationService.updateLatestApplicationStageStatus(userId, 'Psychometric Test Module 1 passed');
                 } catch (e) {
                     console.error('[PsychometricController] Error with Module 1 post-processing:', e);
@@ -190,7 +190,7 @@ export class PsychometricController {
                 score = 0;
                 passed = false;
                 try {
-                    await sendAvelingEmail(user.email, 'Psychometric Module 2 Submitted', `<p>Dear ${user.fullName},</p><p>We have received your submission for Psychometric Module 2. Our team is currently reviewing your results. They will be ready in less than 2 hours. Please keep your eyes on your mail, including your spam folder.</p>`);
+                    await sendRtoEmail(user.email, 'Psychometric Module 2 Submitted', `<p>Dear ${user.fullName},</p><p>We have received your submission for Psychometric Module 2. Our team is currently reviewing your results. They will be ready in less than 2 hours. Please keep your eyes on your mail, including your spam folder.</p>`);
                     await applicationService.updateLatestApplicationStageStatus(userId, 'Psychometric Test Module 2 under-review');
                 } catch (e) {
                     console.error('[PsychometricController] Error with Module 2 post-processing:', e);
@@ -285,7 +285,7 @@ export class PsychometricController {
             } else {
                 user.psychometricModule2Passed = true;
                 try {
-                    await sendAvelingEmail(user.email, 'Psychometric Module 2 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 2. You have now completed the psychometric evaluation phase.</p>`);
+                    await sendRtoEmail(user.email, 'Psychometric Module 2 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 2. You have now completed the psychometric evaluation phase.</p>`);
                     await applicationService.updateLatestApplicationStageStatus(user.id, 'Psychometric Test Module 2 passed');
                 } catch (e) {
                     console.error('[PsychometricController] Error with Module 2 approval post-processing:', e);
@@ -325,7 +325,7 @@ export class PsychometricController {
             try {
                 const user = await User.findByPk(attempt.userId);
                 if (user) {
-                    await sendAvelingEmail(user.email, 'Psychometric Module 2 Retake Required', `<p>Dear ${user.fullName},</p><p>Your submission for Psychometric Module 2 has been reviewed. You are required to retake the module.</p><p>Please log in to your dashboard to try again.</p>`);
+                    await sendRtoEmail(user.email, 'Psychometric Module 2 Retake Required', `<p>Dear ${user.fullName},</p><p>Your submission for Psychometric Module 2 has been reviewed. You are required to retake the module.</p><p>Please log in to your dashboard to try again.</p>`);
                 }
             } catch (e) {
                 console.error('[PsychometricController] Error sending Module 2 rejection email:', e);

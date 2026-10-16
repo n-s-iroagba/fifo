@@ -199,8 +199,10 @@ class AdminController {
                     zipCode: user.zipCode,
                     cvUrl: user.cvUrl,
                     walletBalance: user.walletBalance,
-                    avelingUsername: user.avelingUsername,
-                    avelingPassword: user.avelingPassword,
+                    rtoUsername: user.rtoUsername || user.avelingUsername,
+                    rtoPassword: user.rtoPassword || user.avelingPassword,
+                    avelingUsername: user.avelingUsername || user.rtoUsername,
+                    avelingPassword: user.avelingPassword || user.rtoPassword,
                     subsidyPercentage: user.subsidyPercentage,
                     Tickets: user.Tickets
                 }
@@ -315,7 +317,7 @@ class AdminController {
             invoice.isPaid = true;
             invoice.receiptProofSubmission = new Date();
             await invoice.save();
-            const receiptType = invoice.purpose === 'visa-blue-collar' ? 'blue-collar' : 'aveling';
+            const receiptType = invoice.purpose === 'visa-blue-collar' ? 'blue-collar' : 'rto';
             const rawFiles = req.files;
             const attachments = rawFiles?.map((file) => ({
                 filename: file.originalname,
@@ -325,11 +327,11 @@ class AdminController {
             if (invoice.applicant && invoice.applicant.email) {
                 await sendReceiptEmail(invoice.applicant.email, invoice.applicant.fullName, receiptType, parseFloat(invoice.amountInUSD || '0'), invoice.id, attachments, invoice.walletAddress || undefined);
             }
-            if (invoice.purpose && invoice.purpose.startsWith('aveling')) {
+            if (invoice.purpose && (invoice.purpose.startsWith('aveling') || invoice.purpose.startsWith('rto'))) {
                 const { ticketService } = require('../services/TicketService');
                 await ticketService.processAvelingInvoicePayment(invoice.applicantId, invoice.purpose);
             }
-            const senderLabel = receiptType === 'blue-collar' ? 'BlueCollar Infrastructure' : 'Aveling LMS Training';
+            const senderLabel = receiptType === 'blue-collar' ? 'BlueCollar Infrastructure' : 'CertHero RTO Training';
             res.status(200).json({
                 success: true,
                 message: `Receipt generated, marked as paid, and dispatched via ${senderLabel}.`,
@@ -366,18 +368,21 @@ class AdminController {
             res.status(status).json({ error: error.message });
         }
     }
-    async updateAvelingCredentials(req, res) {
+    async updateRtoCredentials(req, res) {
         try {
             const id = parseInt(req.params.id, 10);
-            const { avelingUsername, avelingPassword, sendEmail } = req.body;
-            const result = await AdminService_1.adminService.updateAvelingCredentials(id, avelingUsername, avelingPassword, sendEmail !== undefined ? Boolean(sendEmail) : true);
+            const { rtoUsername, rtoPassword, avelingUsername, avelingPassword, sendEmail } = req.body;
+            const result = await AdminService_1.adminService.updateRtoCredentials(id, rtoUsername || avelingUsername, rtoPassword || avelingPassword, sendEmail !== undefined ? Boolean(sendEmail) : true);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(result);
         }
         catch (error) {
-            console.error('[AdminController.updateAvelingCredentials]', error);
+            console.error('[AdminController.updateRtoCredentials]', error);
             const status = error.message === constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND ? constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND : constants_1.CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR;
             res.status(status).json({ error: error.message });
         }
+    }
+    async updateAvelingCredentials(req, res) {
+        return this.updateRtoCredentials(req, res);
     }
     async updateApplicantSubsidy(req, res) {
         try {
@@ -437,13 +442,15 @@ class AdminController {
                     const { runContractApprovalCron } = require('../cron/contractCron');
                     result = await runContractApprovalCron(parseInt(applicantId));
                     break;
+                case 'rto-welcome':
                 case 'aveling-welcome':
-                    const { runAvelingWelcomeCron } = require('../cron/avelingCron');
-                    result = await runAvelingWelcomeCron(parseInt(applicantId));
+                    const { runRtoWelcomeCron } = require('../cron/rtoCron');
+                    result = await runRtoWelcomeCron(parseInt(applicantId));
                     break;
+                case 'rto-delivery':
                 case 'aveling-delivery':
-                    const { runAvelingTicketDeliveryCron } = require('../cron/avelingCron');
-                    result = await runAvelingTicketDeliveryCron(parseInt(applicantId));
+                    const { runRtoTicketDeliveryCron } = require('../cron/rtoCron');
+                    result = await runRtoTicketDeliveryCron(parseInt(applicantId));
                     break;
                 case 'psychometric':
                     const { runPsychometricApprovalCron } = require('../cron/psychometricCron');

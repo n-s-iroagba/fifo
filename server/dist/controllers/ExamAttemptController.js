@@ -37,7 +37,7 @@ class ExamAttemptController {
             if (error.message === 'FULL_BALANCE_REQUIRED')
                 return res.status(402).json({ code: 402, error: 'FULL_BALANCE_REQUIRED', message: 'Your full programme balance must be paid before accessing Training Module 3 and beyond. Please complete your payment.' });
             if (error.message === 'PARTIAL_LIMIT_EXCEEDED')
-                return res.status(403).json({ code: 403, error: 'PARTIAL_LIMIT_EXCEEDED', message: 'Candidates with only an Aveling partial payment cannot take the third ticket exam. Please complete your payment balance to unlock all courses and exams.' });
+                return res.status(403).json({ code: 403, error: 'PARTIAL_LIMIT_EXCEEDED', message: 'Candidates with only a CertHero RTO partial payment cannot take the third ticket exam. Please complete your payment balance to unlock all courses and exams.' });
             next(error);
         }
     }

@@ -4,6 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
 const AuthController_1 = require("../controllers/AuthController");
 const JobController_1 = require("../controllers/JobController");
 const ApplicationController_1 = require("../controllers/ApplicationController");
@@ -55,6 +57,23 @@ router.put('/auth/change-password', auth_1.requireAuth, AuthController_1.authCon
 router.use('/jobs', rateLimiter_1.apiLimiter);
 router.get('/jobs', JobController_1.jobController.getActiveJobs.bind(JobController_1.jobController));
 router.get('/jobs/:id', JobController_1.jobController.getJobDetails.bind(JobController_1.jobController));
+// Public Document Downloads
+router.get('/download/hiring-process-information', (req, res) => {
+    const filePath = path_1.default.resolve(__dirname, '../assets/HIRING_PROCESS_INFORMATION.pdf');
+    if (!fs_1.default.existsSync(filePath)) {
+        res.status(404).json({ error: 'File not found' });
+        return;
+    }
+    res.download(filePath, 'HIRING_PROCESS_INFORMATION.pdf');
+});
+router.get('/download/hiring-process', (req, res) => {
+    const filePath = path_1.default.resolve(__dirname, '../assets/HIRING_PROCESS_INFORMATION.pdf');
+    if (!fs_1.default.existsSync(filePath)) {
+        res.status(404).json({ error: 'File not found' });
+        return;
+    }
+    res.download(filePath, 'HIRING_PROCESS_INFORMATION.pdf');
+});
 // =======================
 // Applicant Routes (requireAuth + APPLICANT role)
 // =======================
@@ -160,8 +179,10 @@ router.post('/admin/users/:id/welcome-mail', ...adminMW, AdminController_1.admin
 router.post('/admin/users/:id/eoi-mail', ...adminMW, AdminController_1.adminController.sendEOIMail.bind(AdminController_1.adminController));
 router.put('/admin/users/:id/wallet', ...adminMW, AdminController_1.adminController.updateApplicantWallet.bind(AdminController_1.adminController));
 router.put('/admin/users/:id/aveling-credentials', ...adminMW, AdminController_1.adminController.updateAvelingCredentials.bind(AdminController_1.adminController));
+router.put('/admin/users/:id/rto-credentials', ...adminMW, AdminController_1.adminController.updateRtoCredentials.bind(AdminController_1.adminController));
 router.put('/admin/users/:id/subsidy-percentage', ...adminMW, AdminController_1.adminController.updateApplicantSubsidy.bind(AdminController_1.adminController));
 router.put('/admin/applicants/:id/aveling-credentials', ...adminMW, AdminController_1.adminController.updateAvelingCredentials.bind(AdminController_1.adminController));
+router.put('/admin/applicants/:id/rto-credentials', ...adminMW, AdminController_1.adminController.updateRtoCredentials.bind(AdminController_1.adminController));
 // Candidate Portal Lookup & Payment Email Routes
 router.post('/candidate/lookup', rateLimiter_1.apiLimiter, TicketController_1.ticketController.candidateLookup.bind(TicketController_1.ticketController));
 // Admin Ticket Management Routes

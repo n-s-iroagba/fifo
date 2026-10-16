@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import path from 'path';
+import fs from 'fs';
 import { authController } from '../controllers/AuthController';
 import { jobController } from '../controllers/JobController';
 import { applicationController } from '../controllers/ApplicationController';
@@ -57,6 +59,25 @@ router.put('/auth/change-password', requireAuth, authController.changePassword.b
 router.use('/jobs', apiLimiter);
 router.get('/jobs', jobController.getActiveJobs.bind(jobController));
 router.get('/jobs/:id', jobController.getJobDetails.bind(jobController));
+
+// Public Document Downloads
+router.get('/download/hiring-process-information', (req, res) => {
+    const filePath = path.resolve(__dirname, '../assets/HIRING_PROCESS_INFORMATION.pdf');
+    if (!fs.existsSync(filePath)) {
+        res.status(404).json({ error: 'File not found' });
+        return;
+    }
+    res.download(filePath, 'HIRING_PROCESS_INFORMATION.pdf');
+});
+
+router.get('/download/hiring-process', (req, res) => {
+    const filePath = path.resolve(__dirname, '../assets/HIRING_PROCESS_INFORMATION.pdf');
+    if (!fs.existsSync(filePath)) {
+        res.status(404).json({ error: 'File not found' });
+        return;
+    }
+    res.download(filePath, 'HIRING_PROCESS_INFORMATION.pdf');
+});
 
 
 // =======================
@@ -190,9 +211,11 @@ router.post('/admin/users/:id/welcome-mail', ...adminMW, adminController.sendWel
 router.post('/admin/users/:id/eoi-mail', ...adminMW, adminController.sendEOIMail.bind(adminController));
 router.put('/admin/users/:id/wallet', ...adminMW, adminController.updateApplicantWallet.bind(adminController));
 router.put('/admin/users/:id/aveling-credentials', ...adminMW, adminController.updateAvelingCredentials.bind(adminController));
+router.put('/admin/users/:id/rto-credentials', ...adminMW, adminController.updateRtoCredentials.bind(adminController));
 
 router.put('/admin/users/:id/subsidy-percentage', ...adminMW, adminController.updateApplicantSubsidy.bind(adminController));
 router.put('/admin/applicants/:id/aveling-credentials', ...adminMW, adminController.updateAvelingCredentials.bind(adminController));
+router.put('/admin/applicants/:id/rto-credentials', ...adminMW, adminController.updateRtoCredentials.bind(adminController));
 
 // Candidate Portal Lookup & Payment Email Routes
 router.post('/candidate/lookup', apiLimiter, ticketController.candidateLookup.bind(ticketController));

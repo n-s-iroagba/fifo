@@ -15,6 +15,7 @@ export class Contract extends Model {
     declare documentUrl15: string | null;
     declare adminDocumentUrl: string | null;
     declare avelingWelcomeSent: boolean;
+    declare rtoWelcomeSent: boolean;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 
@@ -66,6 +67,11 @@ Contract.init({
         allowNull: true,
     },
     avelingWelcomeSent: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    rtoWelcomeSent: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
         allowNull: false,

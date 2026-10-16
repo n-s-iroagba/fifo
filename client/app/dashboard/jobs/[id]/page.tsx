@@ -68,7 +68,7 @@ export default function JobDetailPage() {
         }
 
         if (!isPsychometricComplete) {
-            alert('You must pass the Aveling Psychometric Test before proceeding.');
+            alert('You must complete and pass both modules of the CertHero RTO Psychometric Assessment before proceeding.');
             const token = localStorage.getItem('accessToken');
             window.location.href = getAvelingUrl(`/psychometric?token=${token || ''}`);
             return;

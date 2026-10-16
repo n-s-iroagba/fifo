@@ -17,7 +17,7 @@ Invoice.init({
         allowNull: false
     },
     purpose: {
-        type: sequelize_1.DataTypes.ENUM('aveling-partial', 'aveling-complete-after-partial', 'aveling-complete', 'second-attempt', 'shipping', 'visa-blue-collar'),
+        type: sequelize_1.DataTypes.ENUM('rto-complete', 'rto-partial', 'rto-complete-after-partial', 'aveling-partial', 'aveling-complete-after-partial', 'aveling-complete', 'second-attempt', 'shipping', 'visa-blue-collar'),
         allowNull: false
     },
     walletAddress: {

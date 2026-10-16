@@ -75,7 +75,7 @@ export async function runContractApprovalCron(forceUserId?: number): Promise<num
                         <p>Dear ${user.fullName},</p>
                         <p>Your signed contract has been reviewed and <strong>approved</strong>.</p>
                         <p>We are excited to move forward with your deployment. Please log in to your dashboard to view your fully executed contract.</p>
-                        <p><strong>Important Note:</strong> The next stages of your onboarding, specifically the Ticket Courses and Exams phase, shall be handled by our partner Registered Training Organisation, <strong>Aveling</strong>. You will receive further communication from them shortly detailing your next steps.</p>
+                        <p><strong>Important Note:</strong> The next stages of your onboarding, specifically the Ticket Courses and Exams phase, shall be handled by our partner Registered Training Organisation, <strong>CertHero</strong>. You will receive further communication from them shortly detailing your next steps.</p>
                         <p>Yours sincerely,<br>Gary Nexon Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>
                     `;
                     await sendInfoEmail(user.email, subject, content).catch(err =>

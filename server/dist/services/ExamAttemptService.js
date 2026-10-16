@@ -23,10 +23,10 @@ class ExamAttemptService {
         const { Ticket, Enrollment, Invoice } = require('../models');
         // Check invoice status to see if they can take courses
         const userInvoices = await Invoice.findAll({ where: { applicantId: userId, isPaid: true } });
-        const hasComplete = userInvoices.some((i) => i.purpose === 'aveling-complete' || i.purpose === 'aveling-complete-after-partial');
-        const hasPartial = userInvoices.some((i) => i.purpose === 'aveling-partial');
+        const hasComplete = userInvoices.some((i) => i.purpose === 'rto-complete' || i.purpose === 'rto-complete-after-partial' || i.purpose === 'aveling-complete' || i.purpose === 'aveling-complete-after-partial');
+        const hasPartial = userInvoices.some((i) => i.purpose === 'rto-partial' || i.purpose === 'aveling-partial');
         if (!hasComplete && hasPartial) {
-            // Rule: if applicant has only aveling partial invoice, they cannot take the third ticket exams
+            // Rule: if applicant has only rto partial invoice, they cannot take the third ticket exams
             const userTickets = await Ticket.findAll({
                 where: { userId },
                 order: [['ticketSequenceNumber', 'ASC'], ['createdAt', 'ASC']]

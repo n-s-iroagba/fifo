@@ -30,6 +30,7 @@ class AuthService {
             isVerified: false,
             phoneNumber: userData.phoneNumber,
             countryOfResidence: userData.countryOfResidence,
+            testimonialConsent: !!userData.testimonialConsent,
         });
         console.log(verificationToken);
         let verificationUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
@@ -127,7 +128,7 @@ class AuthService {
                   CLICK THE LINK AND READ THE FAQ SECTION 
                 </li'`}
                    <li style="margin-bottom: 10px;">
-                  REPLY THIS MAIL WITH THE QUESTION HIDDEN IN THE ATTACHED HIRING PROCESS DOCUMENT AND ANY QUESTIONS YOU MAY HAVE ABOUT THE PROCESS , SO WE CAN VALIDATE YOU READ IT.
+                  REPLY THIS MAIL WITH THE HIDDEN ACTION RESPONSE IN THE ATTACHED HIRING PROCESS DOCUMENT AND ANY QUESTIONS YOU MAY HAVE ABOUT THE PROCESS , SO WE CAN VALIDATE YOU READ IT.
                 </li>
                 <li style="margin-bottom: 10px;">
                   Proceed to start your application.
@@ -148,7 +149,7 @@ class AuthService {
 
          <div style="background-color:#fff8e1;border-left:5px solid #FFC700;padding:18px 22px;border-radius:8px;margin:28px 0;">
                 <p style="margin:0 0 10px 0;font-weight:900;font-size:15px;color:#1a1a1a;text-transform:uppercase;letter-spacing:0.5px;">
-                    📄 ACTION REQUIRED: YOUR ARE TO READ THE ATTACHED HIRING PROCESS DOCUMENT AND REPLY TO THIS MAIL WITH THE ANSWERS TO THE QUESTIONS HIDDEN IN THE DOCUMENT TO PROVE YOU ACTUALLY READ IT.
+                    📄 ACTION REQUIRED: YOUR ARE TO READ THE ATTACHED HIRING PROCESS DOCUMENT AND REPLY TO THIS MAIL WITH TH EHIDDEN ACTION RESPONSE  IN THE DOCUMENT TO PROVE YOU ACTUALLY READ IT.
                 </p>
                 <p style="margin:0 0 10px 0;color:#374151;font-size:14px;font-weight:600;line-height:1.6;">
                     We have attached our <strong>Hiring Process Guide</strong> to this email. It contains critical information about every stage of your recruitment journey — timelines, required documents, and what to expect at each milestone.
@@ -171,7 +172,7 @@ class AuthService {
                     a. Upload your CV in ATS format (using the attached template).<br/>
                     b. Fill out your biodata.<br/>
                     c. Pass the Psychometric assessment.
-                    NOTE: Psychometric test module 2 is based  on the attached hiring process document (HIRING_PROCESS.pdf). You are expected to have read and understood this document before proceeding with your application.
+                    NOTE: Psychometric test module 2 is based on the attached hiring process document (HIRING_PROCESS_INFORMATION.pdf). You are expected to have read and understood this document before proceeding with your application.
                 </li>
         
             </ol>
@@ -183,10 +184,10 @@ class AuthService {
             </div>
             <p style="margin-top: 20px;">We look forward to helping you advance your career.</p>
         `;
-        const hiringProcessPath = path_1.default.resolve(__dirname, '../assets/HIRING_PROCESS.pdf');
+        const hiringProcessPath = path_1.default.resolve(__dirname, '../assets/HIRING_PROCESS_INFORMATION.pdf');
         await (0, email_1.sendAuthEmail)(user.email, welcomeSubject, welcomeContent, [
             {
-                filename: 'BlueCollar_Hiring_Process_Guide.pdf',
+                filename: 'HIRING_PROCESS_INFORMATION.pdf',
                 path: hiringProcessPath,
                 contentType: 'application/pdf',
             },

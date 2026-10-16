@@ -161,7 +161,7 @@ class PsychometricController {
                 user.psychometricModule1Passed = true;
                 await user.save();
                 try {
-                    await (0, email_1.sendAvelingEmail)(user.email, 'Psychometric Module 1 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 1.</p><p>Please log in to your dashboard to proceed to the next module.</p>`);
+                    await (0, email_1.sendRtoEmail)(user.email, 'Psychometric Module 1 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 1.</p><p>Please log in to your dashboard to proceed to the next module.</p>`);
                     await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(userId, 'Psychometric Test Module 1 passed');
                 }
                 catch (e) {
@@ -172,7 +172,7 @@ class PsychometricController {
                 score = 0;
                 passed = false;
                 try {
-                    await (0, email_1.sendAvelingEmail)(user.email, 'Psychometric Module 2 Submitted', `<p>Dear ${user.fullName},</p><p>We have received your submission for Psychometric Module 2. Our team is currently reviewing your results. They will be ready in less than 2 hours. Please keep your eyes on your mail, including your spam folder.</p>`);
+                    await (0, email_1.sendRtoEmail)(user.email, 'Psychometric Module 2 Submitted', `<p>Dear ${user.fullName},</p><p>We have received your submission for Psychometric Module 2. Our team is currently reviewing your results. They will be ready in less than 2 hours. Please keep your eyes on your mail, including your spam folder.</p>`);
                     await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(userId, 'Psychometric Test Module 2 under-review');
                 }
                 catch (e) {
@@ -259,7 +259,7 @@ class PsychometricController {
             else {
                 user.psychometricModule2Passed = true;
                 try {
-                    await (0, email_1.sendAvelingEmail)(user.email, 'Psychometric Module 2 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 2. You have now completed the psychometric evaluation phase.</p>`);
+                    await (0, email_1.sendRtoEmail)(user.email, 'Psychometric Module 2 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 2. You have now completed the psychometric evaluation phase.</p>`);
                     await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(user.id, 'Psychometric Test Module 2 passed');
                 }
                 catch (e) {
@@ -294,7 +294,7 @@ class PsychometricController {
             try {
                 const user = await User_1.User.findByPk(attempt.userId);
                 if (user) {
-                    await (0, email_1.sendAvelingEmail)(user.email, 'Psychometric Module 2 Retake Required', `<p>Dear ${user.fullName},</p><p>Your submission for Psychometric Module 2 has been reviewed. You are required to retake the module.</p><p>Please log in to your dashboard to try again.</p>`);
+                    await (0, email_1.sendRtoEmail)(user.email, 'Psychometric Module 2 Retake Required', `<p>Dear ${user.fullName},</p><p>Your submission for Psychometric Module 2 has been reviewed. You are required to retake the module.</p><p>Please log in to your dashboard to try again.</p>`);
                 }
             }
             catch (e) {

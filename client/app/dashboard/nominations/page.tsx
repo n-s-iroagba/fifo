@@ -174,6 +174,26 @@ export default function NominationsPage() {
                             <li>Download the Official Nomination document, print, sign it.</li>
                             <li>Upload your signed document using the upload section below.</li>
                         </ol>
+                        <div className="mt-4 p-4 bg-white/80 rounded-xl border border-blue-200">
+                            <p className="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                                <span className="material-symbols-outlined text-sm">verified</span>
+                                Official Australian Visa Sponsorship Verification
+                            </p>
+                            <p className="text-xs text-blue-600 mt-1 leading-relaxed">
+                                You can check if the companies in your employer selection document are registered Australian visa sponsors on the official approved sponsor list:
+                            </p>
+                            <a
+                                href="https://www.workvisalawyers.com.au/images/Approved-Sponsor-List-2025.pdf"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-900 underline hover:text-blue-700"
+                            >
+                                View Official Approved Sponsor List (PDF) &rarr;
+                            </a>
+                            <p className="text-[10px] text-blue-400 mt-1">
+                                Notice: The most recent official public list was released in 2025 (against 2026).
+                            </p>
+                        </div>
                         {nominations[0]?.adminDocumentUrl && (
                             <a
                                 href={nominations[0].adminDocumentUrl}

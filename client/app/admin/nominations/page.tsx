@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useApiQuery, useApiMutation } from '@/lib/hooks';
 import { useSearchParams } from 'next/navigation';
-
 
 // ─── Nomination Document Generator ──────────────────────────────────────────
 
@@ -187,8 +186,6 @@ export default function NominationsPage() {
     const [options, setOptions] = useState([
         { tradeStream: '', hostEmployer: '', vacancies: '', competitors: 0 }
     ]);
-    const [faqLink, setFaqLink] = useState('');
-    const [whatsappLink, setWhatsappLink] = useState('');
     const [success, setSuccess] = useState(false);
     const [isSubmittingLocal, setIsSubmittingLocal] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -207,18 +204,6 @@ export default function NominationsPage() {
         { enabled: !!selectedApplicant }
     );
     const appId = appsRes?.rows?.[0]?.id;
-
-    const { data: faqRes } = useApiQuery<any>(
-        ['admin', 'faqs'],
-        '/admin/faqs'
-    );
-    const defaultProcessFaqLink = faqRes?.slots?.process?.link || faqRes?.data?.find((f: any) => f.type === 'process')?.link || '';
-
-    useEffect(() => {
-        if (defaultProcessFaqLink && !faqLink) {
-            setFaqLink(defaultProcessFaqLink);
-        }
-    }, [defaultProcessFaqLink]);
 
     const { mutateAsync: createNominations, isPending: creatingNoms } = useApiMutation<any, any>('post', `/admin/applications/${appId}/nominations`);
 
@@ -289,8 +274,7 @@ export default function NominationsPage() {
                 candidateName: applicant.fullName,
                 candidateEmail: applicant.email,
                 documentUrl: pdfUri,
-                faqLink: faqLink.trim() || undefined,
-                whatsappLink: whatsappLink.trim() || undefined,
+
             });
 
             setSuccess(true);
@@ -350,61 +334,6 @@ export default function NominationsPage() {
                             {selectedApplicant && !appId && (
                                 <p className="text-[10px] text-amber-600 font-bold uppercase tracking-widest px-1">⚠ This candidate has no active application.</p>
                             )}
-                        </div>
-
-                        {/* FAQ and WhatsApp Communication Section */}
-                        <div className="p-4 bg-blue-50/60 border border-blue-100 rounded-xl space-y-3">
-                            <div>
-                                <h3 className="text-xs font-bold text-blue-900 uppercase tracking-widest flex items-center gap-1.5">
-                                    <span className="material-symbols-outlined text-sm text-blue-600">help_center</span>
-                                    FAQ &amp; WhatsApp Communication
-                                </h3>
-                                <p className="text-[10px] text-blue-500 mt-0.5">
-                                    The candidate will be prompted boldly in the nomination email to review this FAQ and ask questions via WhatsApp.
-                                </p>
-                            </div>
-
-                            <div className="space-y-3">
-                                <div className="space-y-1">
-                                    <div className="flex items-center justify-between">
-                                        <label className="text-[9px] font-bold text-blue-900 uppercase tracking-widest px-1">
-                                            Process FAQ Link (Included in Email)
-                                        </label>
-                                        {defaultProcessFaqLink && faqLink !== defaultProcessFaqLink && (
-                                            <button
-                                                type="button"
-                                                onClick={() => setFaqLink(defaultProcessFaqLink)}
-                                                className="text-[9px] text-blue-600 hover:text-blue-800 font-bold uppercase tracking-wider underline"
-                                            >
-                                                Use Default Process FAQ
-                                            </button>
-                                        )}
-                                    </div>
-                                    <input
-                                        type="url"
-                                        value={faqLink}
-                                        onChange={(e) => setFaqLink(e.target.value)}
-                                        placeholder="https://... (e.g. process FAQ link)"
-                                        className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-xs font-medium outline-none focus:ring-2 focus:ring-blue-900/5 transition-all text-blue-900"
-                                    />
-                                </div>
-
-                                <div className="space-y-1">
-                                    <label className="text-[9px] font-bold text-blue-900 uppercase tracking-widest px-1">
-                                        WhatsApp Support Channel / Link (Optional)
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={whatsappLink}
-                                        onChange={(e) => setWhatsappLink(e.target.value)}
-                                        placeholder="https://wa.me/... or WhatsApp channel/group link"
-                                        className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-xs font-medium outline-none focus:ring-2 focus:ring-blue-900/5 transition-all text-blue-900"
-                                    />
-                                    <p className="text-[9px] text-blue-400 px-1">
-                                        Direct link for candidates to message questions before finalizing their selection.
-                                    </p>
-                                </div>
-                            </div>
                         </div>
 
                         <div className="space-y-4">

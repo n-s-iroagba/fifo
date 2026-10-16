@@ -114,16 +114,19 @@ class TicketController {
             next(error);
         }
     }
-    async payTicketOnAveling(req, res, next) {
+    async payTicketOnRto(req, res, next) {
         try {
             const userId = req.user.id;
             const ticketId = parseInt(req.params.id, 10);
-            const result = await TicketService_1.ticketService.payTicketOnAveling(ticketId, userId);
+            const result = await TicketService_1.ticketService.payTicketOnRto(ticketId, userId);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json(result);
         }
         catch (error) {
             next(error);
         }
+    }
+    async payTicketOnAveling(req, res, next) {
+        return this.payTicketOnRto(req, res, next);
     }
     async recordExamOutcome(req, res, next) {
         try {
@@ -161,12 +164,20 @@ class TicketController {
             }
             const { User, Ticket, Course, CourseModule } = require('../models');
             const cleanNum = String(candidateNumber).trim().toUpperCase();
-            // Search user by candidateNumber or ID or email or avelingUsername
+            // Search user by candidateNumber or ID or email or rtoUsername / avelingUsername
             let user = await User.findOne({
                 where: { candidateNumber: cleanNum }
             });
             if (!user) {
-                user = await User.findOne({ where: { avelingUsername: cleanNum } });
+                const { Op } = require('sequelize');
+                user = await User.findOne({
+                    where: {
+                        [Op.or]: [
+                            { rtoUsername: cleanNum },
+                            { avelingUsername: cleanNum }
+                        ]
+                    }
+                });
             }
             if (!user && (cleanNum.startsWith('CND-') || !isNaN(Number(cleanNum)))) {
                 const numericId = parseInt(cleanNum.replace('CND-', ''), 10);
@@ -364,10 +375,10 @@ class TicketController {
             next(error);
         }
     }
-    async adminGenerateAvelingCredentials(req, res, next) {
+    async adminGenerateRtoCredentials(req, res, next) {
         try {
             const ticketId = parseInt(req.params.id, 10);
-            const result = await TicketService_1.ticketService.generateAvelingCredentials(ticketId);
+            const result = await TicketService_1.ticketService.generateRtoCredentials(ticketId);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result });
         }
         catch (error) {
@@ -381,6 +392,9 @@ class TicketController {
             }
             next(error);
         }
+    }
+    async adminGenerateAvelingCredentials(req, res, next) {
+        return this.adminGenerateRtoCredentials(req, res, next);
     }
     async getExamAttempts(req, res, next) {
         try {

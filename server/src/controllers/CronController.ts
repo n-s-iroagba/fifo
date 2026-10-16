@@ -3,7 +3,7 @@ import { runApplicationApprovalCron } from '../cron/applicationCron';
 import { runNominationFollowupCron } from '../cron/nominationCron';
 import { runContractApprovalCron } from '../cron/contractCron';
 import { runSponsorshipApprovalCron } from '../cron/sponsorshipCron';
-import { runAvelingWelcomeCron, runAvelingTicketDeliveryCron } from '../cron/avelingCron';
+import { runRtoWelcomeCron, runRtoTicketDeliveryCron, runAvelingWelcomeCron, runAvelingTicketDeliveryCron } from '../cron/rtoCron';
 import { runPsychometricApprovalCron } from '../cron/psychometricCron';
 import { sendInfoEmail } from '../utils/email';
 import { areCronsPaused } from '../cron/cronRegistry';
@@ -67,18 +67,21 @@ export const cronController = {
             res.status(500).json({ success: false, error: error.message });
         }
     },
-    async aveling(req: Request, res: Response) {
+    async rto(req: Request, res: Response) {
         if (areCronsPaused()) return res.status(200).json({ success: true, processed: 0, paused: true });
         try {
-            const count1 = await runAvelingWelcomeCron();
-            const count2 = await runAvelingTicketDeliveryCron();
+            const count1 = await runRtoWelcomeCron();
+            const count2 = await runRtoTicketDeliveryCron();
             const count = count1 + count2;
-            await notifyAdmin('Aveling Welcome & Ticket Delivery', count);
+            await notifyAdmin('RTO (CertHero) Welcome & Ticket Delivery', count);
             res.status(200).json({ success: true, processed: count });
         } catch (error: any) {
-            console.error('Error in aveling cron webhook:', error);
+            console.error('Error in rto cron webhook:', error);
             res.status(500).json({ success: false, error: error.message });
         }
+    },
+    async aveling(req: Request, res: Response) {
+        return (cronController.rto || (this as any).rto)(req, res);
     },
     async psychometric(req: Request, res: Response) {
         if (areCronsPaused()) return res.status(200).json({ success: true, processed: 0, paused: true });

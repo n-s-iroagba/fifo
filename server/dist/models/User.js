@@ -137,6 +137,14 @@ User.init({
         type: sequelize_1.DataTypes.STRING,
         allowNull: true,
     },
+    rtoUsername: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
+    rtoPassword: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
     // Payment milestone gate (A$500 deposit → tickets 1-3; full balance → ticket 4+)
     depositPaid: {
         type: sequelize_1.DataTypes.BOOLEAN,
@@ -176,6 +184,11 @@ User.init({
         }
     },
     canPickSchedule: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    testimonialConsent: {
         type: sequelize_1.DataTypes.BOOLEAN,
         defaultValue: false,
         allowNull: false,

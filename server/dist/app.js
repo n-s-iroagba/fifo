@@ -71,6 +71,7 @@ app.post('/api/cron/application', express_1.default.raw({ type: 'application/jso
 app.post('/api/cron/nomination', express_1.default.raw({ type: 'application/json' }), qstashMiddleware, CronController_1.cronController.nomination);
 app.post('/api/cron/contract', express_1.default.raw({ type: 'application/json' }), qstashMiddleware, CronController_1.cronController.contract);
 app.post('/api/cron/sponsorship', express_1.default.raw({ type: 'application/json' }), qstashMiddleware, CronController_1.cronController.sponsorship);
+app.post('/api/cron/rto', express_1.default.raw({ type: 'application/json' }), qstashMiddleware, CronController_1.cronController.rto);
 app.post('/api/cron/aveling', express_1.default.raw({ type: 'application/json' }), qstashMiddleware, CronController_1.cronController.aveling);
 app.post('/api/cron/psychometric', express_1.default.raw({ type: 'application/json' }), qstashMiddleware, CronController_1.cronController.psychometric);
 app.use(express_1.default.json({ limit: '50mb' }));

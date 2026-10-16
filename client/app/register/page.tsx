@@ -12,10 +12,13 @@ import Link from 'next/link';
 const registerSchema = z.object({
     fullName: z.string().min(1, 'Full name is required'),
     email: z.string().email('Invalid email address'),
-    phoneNumber: z.string().min(1, 'Phone number is required'),
+    phoneNumber: z.string().min(1, 'WhatsApp number is required'),
     countryOfResidence: z.string().min(1, 'Country of residence is required'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
-    confirmPassword: z.string().min(1, 'Please confirm your password')
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+    testimonialConsent: z.boolean().refine((val) => val === true, {
+        message: 'You must consent to making a testimonial video if hired',
+    }),
 }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
@@ -138,12 +141,12 @@ function RegisterContent() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1" htmlFor="phoneNumber">Phone Number</label>
+                                    <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest px-1" htmlFor="phoneNumber">WhatsApp Number</label>
                                     <input
                                         {...register('phoneNumber')}
                                         className={`w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-900/5 transition-all outline-none text-sm font-medium ${errors.phoneNumber ? 'border-red-300' : 'focus:border-blue-900'}`}
                                         id="phoneNumber"
-                                        placeholder="+1234567890"
+                                        placeholder="+1234567890 (WhatsApp)"
                                         type="text"
                                     />
                                     {errors.phoneNumber && <p className="text-red-600 text-[10px] font-bold uppercase tracking-tighter px-1">{errors.phoneNumber.message}</p>}
@@ -195,6 +198,24 @@ function RegisterContent() {
                                     />
                                 </div>
                                 {errors.confirmPassword && <p className="text-red-600 text-[10px] font-bold uppercase tracking-tighter px-1">{errors.confirmPassword.message}</p>}
+                            </div>
+
+                            <div className="pt-1">
+                                <label className="flex items-start gap-3 p-3.5 bg-blue-50/60 border border-blue-200 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors select-none">
+                                    <input
+                                        type="checkbox"
+                                        {...register('testimonialConsent')}
+                                        className="mt-0.5 h-4 w-4 rounded border-blue-300 text-blue-900 focus:ring-blue-900"
+                                    />
+                                    <span className="text-xs text-blue-900 leading-snug font-medium">
+                                        I consent to making a testimonial video if hired through Blue Collar Recruitment.
+                                    </span>
+                                </label>
+                                {errors.testimonialConsent && (
+                                    <p className="text-red-600 text-[10px] font-bold uppercase tracking-tighter px-1 mt-1">
+                                        {errors.testimonialConsent.message}
+                                    </p>
+                                )}
                             </div>
 
                             <button

@@ -27,6 +27,9 @@ Invoice.init({
     },
     purpose: {
         type: DataTypes.ENUM(
+            'rto-complete',
+            'rto-partial',
+            'rto-complete-after-partial',
             'aveling-partial',
             'aveling-complete-after-partial',
             'aveling-complete',

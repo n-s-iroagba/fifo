@@ -5,7 +5,7 @@ const applicationCron_1 = require("../cron/applicationCron");
 const nominationCron_1 = require("../cron/nominationCron");
 const contractCron_1 = require("../cron/contractCron");
 const sponsorshipCron_1 = require("../cron/sponsorshipCron");
-const avelingCron_1 = require("../cron/avelingCron");
+const rtoCron_1 = require("../cron/rtoCron");
 const psychometricCron_1 = require("../cron/psychometricCron");
 const email_1 = require("../utils/email");
 const cronRegistry_1 = require("../cron/cronRegistry");
@@ -72,20 +72,23 @@ exports.cronController = {
             res.status(500).json({ success: false, error: error.message });
         }
     },
-    async aveling(req, res) {
+    async rto(req, res) {
         if ((0, cronRegistry_1.areCronsPaused)())
             return res.status(200).json({ success: true, processed: 0, paused: true });
         try {
-            const count1 = await (0, avelingCron_1.runAvelingWelcomeCron)();
-            const count2 = await (0, avelingCron_1.runAvelingTicketDeliveryCron)();
+            const count1 = await (0, rtoCron_1.runRtoWelcomeCron)();
+            const count2 = await (0, rtoCron_1.runRtoTicketDeliveryCron)();
             const count = count1 + count2;
-            await notifyAdmin('Aveling Welcome & Ticket Delivery', count);
+            await notifyAdmin('RTO (CertHero) Welcome & Ticket Delivery', count);
             res.status(200).json({ success: true, processed: count });
         }
         catch (error) {
-            console.error('Error in aveling cron webhook:', error);
+            console.error('Error in rto cron webhook:', error);
             res.status(500).json({ success: false, error: error.message });
         }
+    },
+    async aveling(req, res) {
+        return (exports.cronController.rto || this.rto)(req, res);
     },
     async psychometric(req, res) {
         if ((0, cronRegistry_1.areCronsPaused)())

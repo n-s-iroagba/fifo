@@ -195,29 +195,35 @@ class AdminService {
         });
         return { success: true, walletBalance: user.walletBalance };
     }
-    async updateAvelingCredentials(id, avelingUsername, avelingPassword, sendEmail = true) {
+    async updateRtoCredentials(id, rtoUsername, rtoPassword, sendEmail = true) {
         const user = await UserRepository_1.userRepository.findById(id);
         if (!user || user.role !== constants_1.CONSTANTS.ROLES.APPLICANT) {
             throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
         }
         const updateData = {};
-        if (avelingUsername !== undefined)
-            updateData.avelingUsername = avelingUsername ? avelingUsername.trim() : null;
-        if (avelingPassword !== undefined)
-            updateData.avelingPassword = avelingPassword ? avelingPassword.trim() : null;
+        const usernameVal = rtoUsername ? rtoUsername.trim() : null;
+        const passwordVal = rtoPassword ? rtoPassword.trim() : null;
+        if (rtoUsername !== undefined) {
+            updateData.rtoUsername = usernameVal;
+            updateData.avelingUsername = usernameVal;
+        }
+        if (rtoPassword !== undefined) {
+            updateData.rtoPassword = passwordVal;
+            updateData.avelingPassword = passwordVal;
+        }
         await user.update(updateData);
         // Also sync LmsCredential if provided
-        if (updateData.avelingUsername || updateData.avelingPassword) {
+        const finalUsername = updateData.rtoUsername || user.rtoUsername || user.avelingUsername || `CERTHERO-${user.id}`;
+        if (updateData.rtoUsername || updateData.rtoPassword) {
             const existingCred = await LmsCredential_1.LmsCredential.findOne({ where: { userId: String(id) } });
-            const passwordHash = updateData.avelingPassword ? await bcrypt_1.default.hash(updateData.avelingPassword, 10) : (existingCred?.passwordHash || '');
-            const finalUsername = updateData.avelingUsername || existingCred?.lmsUsername || `AVELING-${user.id}`;
+            const passwordHash = updateData.rtoPassword ? await bcrypt_1.default.hash(updateData.rtoPassword, 10) : (existingCred?.passwordHash || '');
             if (existingCred) {
                 await existingCred.update({
                     lmsUsername: finalUsername,
-                    ...(updateData.avelingPassword ? { passwordHash } : {})
+                    ...(updateData.rtoPassword ? { passwordHash } : {})
                 });
             }
-            else if (updateData.avelingUsername && passwordHash) {
+            else if (passwordHash) {
                 await LmsCredential_1.LmsCredential.create({
                     userId: String(id),
                     lmsUsername: finalUsername,
@@ -227,22 +233,29 @@ class AdminService {
             }
         }
         let emailDispatched = false;
-        if (sendEmail && user.email && user.avelingUsername) {
-            const { sendAvelingCredentialsEmail } = require('../utils/email');
+        const credUser = updateData.rtoUsername || user.rtoUsername || user.avelingUsername;
+        const credPass = updateData.rtoPassword || user.rtoPassword || user.avelingPassword;
+        if (sendEmail && user.email && credUser) {
+            const { sendRtoCredentialsEmail } = require('../utils/email');
             try {
-                await sendAvelingCredentialsEmail(user.email, user.fullName, user.avelingUsername, user.avelingPassword || undefined);
+                await sendRtoCredentialsEmail(user.email, user.fullName, credUser, credPass || undefined);
                 emailDispatched = true;
             }
             catch (err) {
-                console.error('[AdminService.updateAvelingCredentials] Failed to dispatch Aveling email:', err);
+                console.error('[AdminService.updateRtoCredentials] Failed to dispatch RTO email:', err);
             }
         }
         return {
             success: true,
-            avelingUsername: user.avelingUsername,
-            avelingPassword: user.avelingPassword,
+            rtoUsername: credUser,
+            rtoPassword: credPass,
+            avelingUsername: credUser,
+            avelingPassword: credPass,
             emailDispatched
         };
+    }
+    async updateAvelingCredentials(id, avelingUsername, avelingPassword, sendEmail = true) {
+        return this.updateRtoCredentials(id, avelingUsername, avelingPassword, sendEmail);
     }
 }
 exports.AdminService = AdminService;

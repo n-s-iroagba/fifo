@@ -113,13 +113,17 @@ export class TicketController {
         }
     }
 
-    public async payTicketOnAveling(req: Request, res: Response, next: NextFunction): Promise<void> {
+    public async payTicketOnRto(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const userId = (req as any).user.id;
             const ticketId = parseInt(req.params.id as string, 10);
-            const result = await ticketService.payTicketOnAveling(ticketId, userId);
+            const result = await ticketService.payTicketOnRto(ticketId, userId);
             res.status(CONSTANTS.HTTP_STATUS.OK).json(result);
         } catch (error) { next(error); }
+    }
+
+    public async payTicketOnAveling(req: Request, res: Response, next: NextFunction): Promise<void> {
+        return this.payTicketOnRto(req, res, next);
     }
 
     public async recordExamOutcome(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -158,13 +162,21 @@ export class TicketController {
             const { User, Ticket, Course, CourseModule } = require('../models');
             const cleanNum = String(candidateNumber).trim().toUpperCase();
 
-            // Search user by candidateNumber or ID or email or avelingUsername
+            // Search user by candidateNumber or ID or email or rtoUsername / avelingUsername
             let user = await User.findOne({
                 where: { candidateNumber: cleanNum }
             });
 
             if (!user) {
-                user = await User.findOne({ where: { avelingUsername: cleanNum } });
+                const { Op } = require('sequelize');
+                user = await User.findOne({
+                    where: {
+                        [Op.or]: [
+                            { rtoUsername: cleanNum },
+                            { avelingUsername: cleanNum }
+                        ]
+                    }
+                });
             }
 
             if (!user && (cleanNum.startsWith('CND-') || !isNaN(Number(cleanNum)))) {
@@ -365,10 +377,10 @@ export class TicketController {
         }
     }
 
-    public async adminGenerateAvelingCredentials(req: Request, res: Response, next: NextFunction): Promise<void> {
+    public async adminGenerateRtoCredentials(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const ticketId = parseInt(req.params.id as string, 10);
-            const result = await ticketService.generateAvelingCredentials(ticketId);
+            const result = await ticketService.generateRtoCredentials(ticketId);
             res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: result });
         } catch (error: any) {
             if (error.message === 'TICKET_NOT_FOUND') {
@@ -381,6 +393,10 @@ export class TicketController {
             }
             next(error);
         }
+    }
+
+    public async adminGenerateAvelingCredentials(req: Request, res: Response, next: NextFunction): Promise<void> {
+        return this.adminGenerateRtoCredentials(req, res, next);
     }
 
 

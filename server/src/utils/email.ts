@@ -58,20 +58,31 @@ const cleanHtmlContent = (content: string): string => {
     return cleaned;
 };
 
-const getStandardEmailTemplate = (subject: string, content: string, fromType: 'auth' | 'info' | 'aveling' = 'info') => {
+const getStandardEmailTemplate = (subject: string, content: string, fromType: 'auth' | 'info' | 'rto' | 'aveling' = 'info') => {
     const trimmed = content.trim();
     if (/^\s*<!DOCTYPE\s+html/i.test(trimmed) || /<html/i.test(trimmed) || /<body/i.test(trimmed)) {
         return content;
     }
     const cleanedContent = cleanHtmlContent(content);
 
-    const isAveling = fromType === 'aveling';
-    const avelingBase = (process.env.AVELING_URL || 'https://aveling.bluecollarrecruitment.co').replace(/\/$/, '');
-    const logoUrl = isAveling ? `${avelingBase}/aveling.jpg` : `${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg`;
-    const headerBgColor = isAveling ? '#FFC700' : '#0b3486';
-    const primaryColor = isAveling ? '#000000' : '#0b3486';
-    const altText = isAveling ? 'Aveling LMS Training' : 'BlueCollar Curated Career';
-    const logoStyle = isAveling ? 'display: block; width: auto; height: 56px; margin: 20px auto; outline: none; border: none; text-decoration: none;' : 'display: block; width: 100%; height: auto; max-width: 600px; margin: 0 auto; outline: none; border: none; text-decoration: none;';
+    const isRto = fromType === 'rto' || fromType === 'aveling';
+    const rtoBase = (process.env.RTO_URL || process.env.AVELING_URL || 'https://certhero.bluecollarrecruitment.co').replace(/\/$/, '');
+    const headerBgColor = isRto ? '#0f172a' : '#0b3486';
+    const accentColor = isRto ? '#ED9139' : '#004ac6';
+    const primaryColor = isRto ? '#0f172a' : '#0b3486';
+
+    const headerContent = isRto ? `
+        <div style="padding: 28px 24px 22px; background: linear-gradient(135deg, #090d16 0%, #0f172a 100%); border-bottom: 3px solid #ED9139; text-align: center;">
+            <div style="display: inline-block; font-family: 'Inter', Arial, sans-serif;">
+                <span style="color: #ffffff; font-size: 26px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase;">CERT HERO</span>
+                <span style="display: block; color: #ED9139; font-size: 11px; font-weight: 800; letter-spacing: 0.22em; margin-top: 4px; text-transform: uppercase;">ACCREDITED RTO TRAINING PARTNER</span>
+            </div>
+        </div>
+    ` : `
+        <div style="background-color: ${headerBgColor}; margin: 0; padding: 0; text-align: center;">
+            <img src="${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg" alt="BlueCollar Infrastructure" style="display: block; width: 100%; height: auto; max-width: 600px; margin: 0 auto; outline: none; border: none; text-decoration: none;" />
+        </div>
+    `;
 
     return `
     <!DOCTYPE html>
@@ -79,23 +90,19 @@ const getStandardEmailTemplate = (subject: string, content: string, fromType: 'a
     <head>
         <style>
             body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7fb; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
-            .container { max-width: 600px; margin: 60px auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(12, 59, 139, 0.15); border: 1px solid #eef2f6; }
-            .header { background-color: ${headerBgColor}; margin: 0; padding: 0; line-height: 0; font-size: 0; text-align: center; } /* elegant fallback */
-            .header img { ${logoStyle} }
-            .content { padding: 50px; color: #334155; line-height: 1.7; font-size: 15px; }
-            .footer { padding: 35px 50px; text-align: center; color: #94a3b8; font-size: 12px; border-top: 1px solid #f8fafc; background-color: #fcfdfe; line-height: 1.6; }
-            h1 { color: ${primaryColor}; font-size: 22px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 0; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; display: inline-block; padding-bottom: 12px; }
-            p { margin-bottom: 24px; color: #475569; font-weight: 500; }
-            .cta-block { margin-top: 45px; text-align: center; margin-bottom: 15px; }
-            .button { display: inline-block; padding: 18px 40px; background-color: ${primaryColor}; color: ${isAveling ? '#FFC700' : '#ffffff'} !important; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.35); transition: background-color 0.2s ease; }
-            .button:hover { background-color: ${isAveling ? '#333333' : '#08296a'}; }
+            .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.12); border: 1px solid #e2e8f0; }
+            .content { padding: 42px 40px; color: #334155; line-height: 1.7; font-size: 15px; }
+            .footer { padding: 30px 40px; text-align: center; color: #64748b; font-size: 12px; border-top: 1px solid #f1f5f9; background-color: #f8fafc; line-height: 1.6; }
+            h1 { color: ${primaryColor}; font-size: 22px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.2px; margin-top: 0; margin-bottom: 24px; border-bottom: 2px solid ${accentColor}; display: inline-block; padding-bottom: 10px; }
+            p { margin-bottom: 20px; color: #475569; font-weight: 500; }
+            .cta-block { margin-top: 35px; text-align: center; margin-bottom: 15px; }
+            .button { display: inline-block; padding: 16px 36px; background-color: ${accentColor}; color: #ffffff !important; text-decoration: none; border-radius: 10px; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; box-shadow: 0 8px 16px -4px rgba(237, 145, 57, 0.35); transition: background-color 0.2s ease; }
+            .button:hover { background-color: #dd7f26; }
         </style>
     </head>
     <body>
         <div class="container">
-            <div class="header">
-                <img src="${logoUrl}" alt="${altText}" />
-            </div>
+            ${headerContent}
             <div class="content">
                 <h1>${subject}</h1>
                 <div style="font-size: 15px; font-weight: 500;">
@@ -103,8 +110,8 @@ const getStandardEmailTemplate = (subject: string, content: string, fromType: 'a
                 </div>
             </div>
             <div class="footer">
-                &copy; 2026 ${isAveling ? 'Aveling LMS Training' : 'BlueCollar Infrastructure'}. All rights reserved.<br>
-                <span style="font-weight: 800; color: ${primaryColor}; margin-top: 12px; display: block; letter-spacing: 1px;">SECURE RECRUITMENT PIPELINE PROTOCOL</span>
+                &copy; 2026 ${isRto ? 'CertHero Training & Assessment Systems (Accredited RTO Partner)' : 'BlueCollar Infrastructure'}. All rights reserved.<br>
+                <span style="font-weight: 800; color: ${primaryColor}; margin-top: 10px; display: block; letter-spacing: 1px;">${isRto ? 'NATIONALLY RECOGNISED TRAINING COMPLIANCE' : 'SECURE RECRUITMENT PIPELINE PROTOCOL'}</span>
             </div>
         </div>
     </body>
@@ -172,39 +179,35 @@ export const sendInfoEmail = async (to: string, subject: string, content: string
         throw new Error('Info email dispatch failed');
     }
 };
-
-export const sendAvelingEmail = async (to: string, subject: string, content: string, attachments: any[] = []): Promise<void> => {
+export const sendRtoEmail = async (to: string, subject: string, content: string, attachments: any[] = []): Promise<void> => {
     try {
-        // await avelingTransporter.sendMail({
-        //     from: process.env.AV_SMTP_INFO_FROM || '"BlueCollarRecruitment Aveling" <info@jobnexe.com>'
-        // ,
         await infoTransporter.sendMail({
             from: process.env.SMTP_INFO_FROM,
             to,
             subject,
-            html: getStandardEmailTemplate(subject, content, 'aveling'),
+            html: getStandardEmailTemplate(subject, content, 'rto'),
             attachments,
         });
-        console.log(`[EmailUtil] Aveling email dispatched to: ${to}`);
-        notifyAdminOfEmail(to, subject, 'aveling');
+        console.log(`[EmailUtil] RTO (CertHero) email dispatched to: ${to}`);
+        notifyAdminOfEmail(to, subject, 'rto');
     } catch (error) {
-        console.error(`[EmailUtil] Aveling email failed:`, error);
-        throw new Error('Aveling email dispatch failed');
+        console.error(`[EmailUtil] RTO email failed:`, error);
+        throw new Error('RTO email dispatch failed');
     }
 };
 
-export const sendEmailFrom = async (fromType: 'auth' | 'info' | 'aveling', to: string, subject: string, content: string, attachments: any[] = []): Promise<void> => {
+export const sendAvelingEmail = sendRtoEmail;
+
+export const sendEmailFrom = async (fromType: 'auth' | 'info' | 'rto' | 'aveling', to: string, subject: string, content: string, attachments: any[] = []): Promise<void> => {
     let transporter = infoTransporter;
     let from = process.env.SMTP_INFO_FROM || '"BlueCollar Infrastructure" <info@BlueCollar.com>';
 
     if (fromType === 'auth') {
         transporter = authTransporter;
         from = process.env.SMTP_AUTH_FROM || '"BlueCollar Authentication" <donotreply@BlueCollar.com>';
-    } else if (fromType === 'aveling') {
+    } else if (fromType === 'rto' || fromType === 'aveling') {
         transporter = infoTransporter;
-        // transporter = avelingTransporter;
         from = process.env.SMTP_INFO_FROM || '"BlueCollar Infrastructure" <info@BlueCollar.com>';
-        // from = process.env.AV_SMTP_INFO_FROM || '"BlueCollarRecruitment Aveling" <info@jobnexe.com>';
     }
 
     try {
@@ -356,20 +359,20 @@ export const sendWelcomeApplicationFoundEmail = async (to: string, userName: str
                 📄 IMPORTANT: Please Read the Attached Document
             </p>
             <p style="margin:0;color:#374151;font-size:14px;font-weight:600;line-height:1.6;">
-                We have attached our <strong>Hiring Process Guide</strong> to this email. This document contains critical information about every stage of your recruitment journey with Blue Collar Recruitment, including timelines, required documents, and what to expect at each milestone.
+                We have attached our official <strong>Hiring Process Information Guide (HIRING_PROCESS_INFORMATION.pdf)</strong> to this email. This document contains critical information regarding our partnership with CertHero RTO, our 9-step recruitment workflow, zero-cost migration benefits, and candidate refund policies.
             </p>
             <p style="margin:12px 0 0 0;color:#374151;font-size:14px;font-weight:700;">
-                ⚠️ You are expected to have read and understood this document before proceeding with your application. It will be referenced at each stage of the process.
+                ⚠️ You are required to read and understand this document before proceeding with your application. Psychometric Test Module 2 strictly evaluates your comprehension of Sections 1 and 2.
             </p>
         </div>
         <p>If you have any questions about the hiring process document, please reach out to your assigned coordinator.</p>
     `;
 
-    const hiringProcessPath = path.resolve(__dirname, '../assets/HIRING_PROCESS.pdf');
+    const hiringProcessPath = path.resolve(__dirname, '../assets/HIRING_PROCESS_INFORMATION.pdf');
 
     await sendInfoEmail(to, subject, content, [
         {
-            filename: 'BlueCollar_Hiring_Process_Guide.pdf',
+            filename: 'HIRING_PROCESS_INFORMATION.pdf',
             path: hiringProcessPath,
             contentType: 'application/pdf',
         },
@@ -517,31 +520,33 @@ export const sendContractApprovedEmail = async (to: string, userName: string): P
     await sendInfoEmail(to, subject, content);
 };
 
-export const sendAvelingCredentialsEmail = async (
+export const sendRtoCredentialsEmail = async (
     to: string,
     userName: string,
     username?: string,
     password?: string,
     loginUrl?: string
 ): Promise<void> => {
-    const subject = 'Your Official Aveling LMS Credentials';
-    const lmsUrl = loginUrl || (process.env.AVELING_URL ? `${process.env.AVELING_URL.replace(/\/$/, '')}/login` : 'https://aveling.bluecollarrecruitment.co/login');
+    const subject = 'Your Official CertHero RTO LMS Credentials';
+    const lmsUrl = loginUrl || (process.env.RTO_URL ? `${process.env.RTO_URL.replace(/\/$/, '')}/login` : (process.env.AVELING_URL ? `${process.env.AVELING_URL.replace(/\/$/, '')}/login` : 'https://certhero.bluecollarrecruitment.co/login'));
     const content = `
         <p>Dear ${userName},</p>
-        <p>Your official <strong>Aveling LMS Training Portal</strong> account has been configured. You can now log in, access your assigned competency tickets, review courseware modules, and sit for your online theory examinations.</p>
-        <div style="background-color: #f8fafc; border: 2px solid #FFC700; border-radius: 12px; padding: 20px; margin: 24px 0;">
-            <p style="margin: 0 0 12px 0; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #000000;">Aveling Portal Login Credentials</p>
-            <p style="margin: 6px 0; font-size: 14px;"><strong>LMS Portal URL:</strong> <a href="${lmsUrl}" style="color: #0b3486; font-weight: 700;">${lmsUrl}</a></p>
+        <p>Your official <strong>CertHero LMS Training Portal</strong> account has been configured. You can now log in, access your assigned competency tickets, review courseware modules, and sit for your online theory examinations.</p>
+        <div style="background-color: #f8fafc; border: 2px solid #ED9139; border-radius: 12px; padding: 22px; margin: 24px 0;">
+            <p style="margin: 0 0 12px 0; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #0f172a;">CertHero Portal Login Credentials</p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>LMS Portal URL:</strong> <a href="${lmsUrl}" style="color: #116DFF; font-weight: 700;">${lmsUrl}</a></p>
             <p style="margin: 6px 0; font-size: 14px;"><strong>Candidate Username / ID:</strong> <span style="font-family: monospace; font-weight: bold; background: #e2e8f0; padding: 2px 8px; border-radius: 4px;">${username || 'See Dashboard'}</span></p>
             <p style="margin: 6px 0; font-size: 14px;"><strong>Password:</strong> <span style="font-family: monospace; font-weight: bold; background: #e2e8f0; padding: 2px 8px; border-radius: 4px;">${password || 'See Dashboard'}</span></p>
         </div>
         <div class="cta-block">
-            <a href="${lmsUrl}" class="button">Log In to Aveling LMS</a>
+            <a href="${lmsUrl}" class="button">Log In to CertHero LMS</a>
         </div>
         <p style="margin-top: 24px; font-size: 13px; color: #64748b;"><strong>Exam Protocol:</strong> Each ticket theory assessment is timed at strictly <strong>15 minutes</strong>. Ensure you have an uninterrupted internet connection before launching an assessment.</p>
     `;
-    await sendAvelingEmail(to, subject, content);
+    await sendRtoEmail(to, subject, content);
 };
+
+export const sendAvelingCredentialsEmail = sendRtoCredentialsEmail;
 
 export const sendTicketCourseSubmittedEmail = async (to: string, userName: string): Promise<void> => {
     const subject = 'Ticket Course Exam Submitted';

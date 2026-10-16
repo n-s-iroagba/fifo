@@ -34,11 +34,13 @@ class LmsAuthService {
         // Generate username and temporary password
         const names = (user.fullName || 'User').trim().split(' ');
         const first = names[0] || 'App';
-        const last = names[names.length - 1] || 'User';
-        const lmsUsername = `Aveling-${first.substring(0, 3)}${last.substring(0, 3)}${Math.floor(1000 + Math.random() * 9000)}`.toUpperCase();
+        const last = names.length > 1 ? names[names.length - 1] : 'User';
+        const lmsUsername = `CERTHERO-${first.substring(0, 3)}${last.substring(0, 3)}${Math.floor(1000 + Math.random() * 9000)}`.toUpperCase();
         const temporaryPassword = `temp-${(0, uuid_1.v4)().split('-')[0]}!`;
         const passwordHash = await bcrypt_1.default.hash(temporaryPassword, 10);
         await user.update({
+            rtoUsername: lmsUsername,
+            rtoPassword: temporaryPassword,
             avelingUsername: lmsUsername,
             avelingPassword: temporaryPassword
         });

@@ -12,7 +12,8 @@ const CANDIDATE_VISA_SHARE = 1405.25; // 35% candidate share for Subclass 482 Vi
 const CANDIDATE_LICENSING_SHARE = 185.50; // 100% candidate share for WA CTT, PDA, & License card
 const SCHEDULE_1_NET_CANDIDATE_TOTAL = 2830.95; // A$1,240.75 + A$1,405.25 + A$185.50
 const MAX_CANDIDATE_LIABILITY = 3599.20; // Clause 5.2 upper contractual liability ceiling cap
-const getAvelingBaseUrl = () => (process.env.AVELING_URL || 'https://aveling.bluecollarrecruitment.co').replace(/\/$/, '');
+const getRtoBaseUrl = () => (process.env.RTO_URL || process.env.AVELING_URL || 'https://certhero.bluecollarrecruitment.co').replace(/\/$/, '');
+const getAvelingBaseUrl = getRtoBaseUrl;
 class TicketService {
     async getUserTickets(userId) {
         const { JobStage } = require('../models');
@@ -193,12 +194,12 @@ class TicketService {
         if (!user)
             return;
         let ticketsToUnlock = [];
-        if (invoicePurpose === 'aveling-partial') {
+        if (invoicePurpose === 'rto-partial' || invoicePurpose === 'aveling-partial') {
             await user.update({ depositPaid: true, depositPaidAt: user.depositPaidAt || new Date() });
             const tickets = await Ticket.findAll({ where: { userId }, order: [['ticketSequenceNumber', 'ASC'], ['createdAt', 'ASC']] });
             ticketsToUnlock = tickets.slice(0, 2);
         }
-        else if (invoicePurpose === 'aveling-complete' || invoicePurpose === 'aveling-complete-after-partial') {
+        else if (invoicePurpose === 'rto-complete' || invoicePurpose === 'rto-complete-after-partial' || invoicePurpose === 'aveling-complete' || invoicePurpose === 'aveling-complete-after-partial') {
             await user.update({ depositPaid: true, fullBalancePaid: true, depositPaidAt: user.depositPaidAt || new Date() });
             ticketsToUnlock = await Ticket.findAll({ where: { userId } });
         }
@@ -252,9 +253,9 @@ class TicketService {
         }
         await NotificationService_1.notificationService.sendNotification(userId, '✅ Initial Deposit Confirmed — Courses 1–3 Unlocked', `Your A$${DEPOSIT_AMOUNT} initial commitment deposit has been verified. You can now access and pay for your first ${DEPOSIT_UNLOCKS_UP_TO} training modules. To unlock modules 4 and beyond, please remit the remaining programme balance.`);
         if (user.email) {
-            await this.sendCustomEmail(user.email, 'Deposit Confirmed — Aveling LMS Courses 1–3 Unlocked', `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-                    <div style="background:#111827;padding:20px 24px;border-radius:8px 8px 0 0;">
-                        <h2 style="color:#FFC700;margin:0;font-size:18px;">Deposit Received ✓</h2>
+            await this.sendCustomEmail(user.email, 'Deposit Confirmed — CertHero LMS Courses 1–3 Unlocked', `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+                    <div style="background:#0f172a;padding:20px 24px;border-radius:8px 8px 0 0;border-bottom:3px solid #ED9139;">
+                        <h2 style="color:#ffffff;margin:0;font-size:18px;">Deposit Received ✓</h2>
                     </div>
                     <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;">
                         <p>Hello <strong>${user.fullName}</strong>,</p>
@@ -263,7 +264,7 @@ class TicketService {
                             <p style="margin:0;font-size:14px;font-weight:bold;color:#166534;">✅ Training Modules 1–${DEPOSIT_UNLOCKS_UP_TO} are now unlocked</p>
                             ${receiptReference ? `<p style="margin:4px 0;font-size:12px;color:#4b5563;">Receipt Reference: ${receiptReference}</p>` : ''}
                         </div>
-                        <p style="font-size:13px;color:#6b7280;">To unlock Training Module 4 and beyond, the full remaining programme balance must be remitted before your 4th scheduled course (Schedule 1). Log into your Aveling LMS portal to view your payment schedule.</p>
+                        <p style="font-size:13px;color:#6b7280;">To unlock Training Module 4 and beyond, the full remaining programme balance must be remitted before your 4th scheduled course (Schedule 1). Log into your CertHero LMS portal to view your payment schedule.</p>
                     </div>
                 </div>`);
         }
@@ -293,9 +294,9 @@ class TicketService {
         }
         await NotificationService_1.notificationService.sendNotification(userId, '✅ Full Programme Balance Confirmed — All Modules Unlocked', `Your full programme balance payment has been verified. All training modules across your entire sponsorship programme are now accessible. Your candidate wallet will receive the full 100% re-credit upon passing each module.`);
         if (user.email) {
-            await this.sendCustomEmail(user.email, 'Full Balance Confirmed — All Aveling LMS Modules Unlocked', `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-                    <div style="background:#111827;padding:20px 24px;border-radius:8px 8px 0 0;">
-                        <h2 style="color:#FFC700;margin:0;font-size:18px;">Full Programme Payment Received ✓</h2>
+            await this.sendCustomEmail(user.email, 'Full Balance Confirmed — All CertHero LMS Modules Unlocked', `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+                    <div style="background:#0f172a;padding:20px 24px;border-radius:8px 8px 0 0;border-bottom:3px solid #ED9139;">
+                        <h2 style="color:#ffffff;margin:0;font-size:18px;">Full Programme Payment Received ✓</h2>
                     </div>
                     <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;">
                         <p>Hello <strong>${user.fullName}</strong>,</p>
@@ -424,7 +425,7 @@ class TicketService {
             paymentStatus: 'unpaid',
             courseAccessGranted: false
         });
-        await NotificationService_1.notificationService.sendNotification(userId, 'Retake Approved', `Your retake for ${ticket.ticketType} has been approved. Please complete the payment on Aveling LMS to unlock your second attempt.`);
+        await NotificationService_1.notificationService.sendNotification(userId, 'Retake Approved', `Your retake for ${ticket.ticketType} has been approved. Please complete the payment on CertHero LMS to unlock your second attempt.`);
         return ticket;
     }
     async adminGetAllTickets(filters) {
@@ -504,22 +505,26 @@ class TicketService {
         }
         return ticket;
     }
-    async payTicketOnAveling(ticketId, userId) {
+    async payTicketOnRto(ticketId, userId) {
         const ticket = await this.getTicketById(ticketId, userId);
-        const avelingCourseUrl = `${getAvelingBaseUrl()}/courses/${ticket.courseId || 'ticket-course'}`;
+        const rtoCourseUrl = `${getRtoBaseUrl()}/courses/${ticket.courseId || 'ticket-course'}`;
         const user = ticket.User;
-        await NotificationService_1.notificationService.sendNotification(userId, 'Ticket Payment Successful', `Payment for ${ticket.ticketType} course completed successfully. You can now access your training on Aveling LMS.`);
+        await NotificationService_1.notificationService.sendNotification(userId, 'Ticket Payment Successful', `Payment for ${ticket.ticketType} course completed successfully. You can now access your training on CertHero LMS.`);
         if (user?.email) {
-            await this.sendCustomEmail(user.email, `Aveling LMS: Access your ${ticket.ticketType} Course`, `<p>Hello ${user.fullName || 'Learner'},</p>
+            await this.sendCustomEmail(user.email, `CertHero LMS: Access your ${ticket.ticketType} Course`, `<p>Hello ${user.fullName || 'Learner'},</p>
                  <p>Your payment for <strong>${ticket.ticketType}</strong> was successful!</p>
-                 <p>Click the link below to access your course on Aveling LMS:</p>
-                 <p><a href="${avelingCourseUrl}" style="background:#1e3a8a;color:#ffffff;padding:10px 20px;text-decoration:none;border-radius:6px;display:inline-block;">Go to Course on Aveling LMS</a></p>`);
+                 <p>Click the link below to access your course on CertHero LMS:</p>
+                 <p><a href="${rtoCourseUrl}" style="background:#ED9139;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;">Go to Course on CertHero LMS</a></p>`);
         }
         return {
             success: true,
-            avelingCourseUrl,
+            courseUrl: rtoCourseUrl,
+            avelingCourseUrl: rtoCourseUrl,
             ticket
         };
+    }
+    async payTicketOnAveling(ticketId, userId) {
+        return this.payTicketOnRto(ticketId, userId);
     }
     async recordExamOutcome(ticketId, passed, attemptNumber = 1, score) {
         const ticket = await models_1.Ticket.findByPk(ticketId, { include: [{ model: models_1.User }] });
@@ -866,13 +871,13 @@ class TicketService {
     async sendTicketEmailNotification(ticket, user, sponsorshipStatus) {
         if (!user?.email)
             return;
-        const avelingPayUrl = `${getAvelingBaseUrl()}/checkout?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}`;
+        const payUrl = `${getRtoBaseUrl()}/payments?ticketId=${ticket.id}&courseId=${ticket.courseId || ''}`;
         const subject = `Ticket Sponsorship Update: ${ticket.ticketType}`;
         let body = `<p>Hello ${user.fullName || 'Applicant'},</p>
                     <p>Your sponsorship for <strong>${ticket.ticketType}</strong> has been updated to <strong>${sponsorshipStatus.replace(/_/g, ' ').toUpperCase()}</strong>.</p>`;
         if (sponsorshipStatus === 'first_attempt_approved' || sponsorshipStatus === 'second_attempt_approved') {
-            body += `<p>Please proceed to pay and start your course on Aveling LMS within the next 2 days.</p>
-                     <p><a href="${avelingPayUrl}" style="background:#1e3a8a;color:#ffffff;padding:10px 20px;text-decoration:none;border-radius:6px;display:inline-block;">Proceed to Aveling LMS Payment</a></p>`;
+            body += `<p>Please proceed to pay and start your course on CertHero LMS within the next 2 days.</p>
+                     <p><a href="${payUrl}" style="background:#ED9139;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;">Proceed to CertHero LMS Payment</a></p>`;
         }
         await this.sendCustomEmail(user.email, subject, body);
     }
@@ -961,8 +966,8 @@ class TicketService {
         });
         return attempts;
     }
-    // Generate Aveling login credentials for an approved-sponsorship candidate
-    async generateAvelingCredentials(ticketId) {
+    // Generate RTO (CertHero) login credentials for an approved-sponsorship candidate
+    async generateRtoCredentials(ticketId) {
         const ticket = await models_1.Ticket.findByPk(ticketId, { include: [{ model: models_1.User }] });
         if (!ticket)
             throw new Error('TICKET_NOT_FOUND');
@@ -974,9 +979,14 @@ class TicketService {
             throw new Error('TICKET_NOT_APPROVED');
         }
         // Generate simple credentials if not already set
-        const username = user.avelingUsername || `${user.candidateNumber || `AV${user.id}`}`.toLowerCase();
-        const rawPassword = user.avelingPassword || Math.random().toString(36).slice(2, 10).toUpperCase();
-        await user.update({ avelingUsername: username, avelingPassword: rawPassword });
+        const username = user.rtoUsername || user.avelingUsername || `${user.candidateNumber || `CH${user.id}`}`.toLowerCase();
+        const rawPassword = user.rtoPassword || user.avelingPassword || Math.random().toString(36).slice(2, 10).toUpperCase();
+        await user.update({
+            rtoUsername: username,
+            rtoPassword: rawPassword,
+            avelingUsername: username,
+            avelingPassword: rawPassword
+        });
         const bankSettings = {
             platform_bank_name: 'Corporate Operational Account',
             platform_bank_account_number: 'N/A',
@@ -987,25 +997,25 @@ class TicketService {
         const courseFee = realPrice ? Number((realPrice * (1 - subsidyPct / 100)).toFixed(2)) : (ticket.purchasePrice ?? 0);
         // Send credentials + payment instructions email
         if (user.email) {
-            await this.sendCustomEmail(user.email, `Your Aveling LMS Login & Payment Instructions – ${ticket.ticketType}`, `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-                    <div style="background:#111827;padding:20px 24px;border-radius:8px 8px 0 0;">
-                        <h2 style="color:#FFC700;margin:0;font-size:20px;">Aveling LMS — Ticket Sponsorship</h2>
+            await this.sendCustomEmail(user.email, `Your CertHero LMS Login & Payment Instructions – ${ticket.ticketType}`, `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+                    <div style="background:#0f172a;padding:20px 24px;border-radius:8px 8px 0 0;border-bottom:3px solid #ED9139;">
+                        <h2 style="color:#ED9139;margin:0;font-size:20px;">CertHero LMS — Ticket Sponsorship</h2>
                     </div>
                     <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;">
                         <p>Hello <strong>${user.fullName}</strong>,</p>
                         <p>Your sponsorship application for <strong>${ticket.ticketType}</strong> has been <span style="color:#16a34a;font-weight:bold;">APPROVED</span>.</p>
 
-                        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:16px 0;">
-                            <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;">Your Aveling LMS Login</h3>
-                            <p style="margin:4px 0;"><strong>Login URL:</strong> <a href="${getAvelingBaseUrl()}/login">${getAvelingBaseUrl()}/login</a></p>
-                            <p style="margin:4px 0;"><strong>Username:</strong> <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${username}</code></p>
-                            <p style="margin:4px 0;"><strong>Password:</strong> <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${rawPassword}</code></p>
+                        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0;">
+                            <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#475569;">Your CertHero LMS Login</h3>
+                            <p style="margin:4px 0;"><strong>Login URL:</strong> <a href="${getRtoBaseUrl()}/login" style="color:#ED9139;">${getRtoBaseUrl()}/login</a></p>
+                            <p style="margin:4px 0;"><strong>Username:</strong> <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#0f172a;">${username}</code></p>
+                            <p style="margin:4px 0;"><strong>Password:</strong> <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#0f172a;">${rawPassword}</code></p>
                         </div>
 
-                        <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:16px;margin:16px 0;">
+                        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0;">
                             <h3 style="margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#92400e;">Course Fee & Payment</h3>
                             ${realPrice && realPrice > courseFee ? `<p style="margin:4px 0;color:#6b7280;"><del>Full price: $${realPrice.toFixed(2)}</del></p>` : ''}
-                            <p style="margin:4px 0;font-size:18px;font-weight:bold;color:#1f2937;">Your Price: $${courseFee.toFixed(2)} AUD ${realPrice && realPrice > courseFee ? '<span style="color:#16a34a;font-size:12px;">(Subsidised)</span>' : ''}</p>
+                            <p style="margin:4px 0;font-size:18px;font-weight:bold;color:#0f172a;">Your Price: $${courseFee.toFixed(2)} AUD ${realPrice && realPrice > courseFee ? '<span style="color:#16a34a;font-size:12px;">(Subsidised)</span>' : ''}</p>
                             <p style="margin:8px 0 4px;color:#6b7280;font-size:13px;">This amount is <strong>fully refundable</strong> upon passing your exam.</p>
                         </div>
 
@@ -1017,11 +1027,14 @@ class TicketService {
                             <p style="margin:4px 0;"><strong>Account Name:</strong> ${bankSettings.platform_bank_account_name}</p>
                         </div>` : ''}
 
-                        <p style="font-size:13px;color:#6b7280;">After making your payment transfer, log into Aveling and upload your transaction receipt. Course materials will unlock once admin verifies your payment.</p>
+                        <p style="font-size:13px;color:#64748b;">After making your payment transfer, log into CertHero and upload your transaction receipt. Course materials will unlock once admin verifies your payment.</p>
                     </div>
                 </div>`);
         }
         return { username, password: rawPassword, credentialsGenerated: true };
+    }
+    async generateAvelingCredentials(ticketId) {
+        return this.generateRtoCredentials(ticketId);
     }
     // Candidate submits payment receipt (or pays via wallet)
     async submitReceipt(ticketId, userId, data) {
@@ -1384,7 +1397,7 @@ class TicketService {
                 ticketSponsorship: 'first_attempt_approved'
             });
         }
-        await NotificationService_1.notificationService.sendNotification(userId, 'Sponsorship Package Approved', `Your ticket sponsorship application has been approved by Blue Collar Recruitment! You will receive your training invoice from Aveling shortly.`);
+        await NotificationService_1.notificationService.sendNotification(userId, 'Sponsorship Package Approved', `Your ticket sponsorship application has been approved by Blue Collar Recruitment! You will receive your training invoice from CertHero RTO shortly.`);
         return { ticketsApproved: appliedTickets.length };
     }
 }
