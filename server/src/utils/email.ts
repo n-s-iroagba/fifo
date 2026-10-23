@@ -66,7 +66,7 @@ const getStandardEmailTemplate = (subject: string, content: string, fromType: 'a
     const cleanedContent = cleanHtmlContent(content);
 
     const isRto = fromType === 'rto' || fromType === 'aveling';
-    const rtoBase = (process.env.RTO_URL || process.env.AVELING_URL || 'https://certhero.bluecollarrecruitment.co').replace(/\/$/, '');
+    const rtoBase = (process.env.RTO_URL || process.env.AVELING_URL || 'https://certhero.online').replace(/\/$/, '');
     const headerBgColor = isRto ? '#0f172a' : '#0b3486';
     const accentColor = isRto ? '#ED9139' : '#004ac6';
     const primaryColor = isRto ? '#0f172a' : '#0b3486';
@@ -528,7 +528,7 @@ export const sendRtoCredentialsEmail = async (
     loginUrl?: string
 ): Promise<void> => {
     const subject = 'Your Official CertHero RTO LMS Credentials';
-    const lmsUrl = loginUrl || (process.env.RTO_URL ? `${process.env.RTO_URL.replace(/\/$/, '')}/login` : (process.env.AVELING_URL ? `${process.env.AVELING_URL.replace(/\/$/, '')}/login` : 'https://certhero.bluecollarrecruitment.co/login'));
+    const lmsUrl = loginUrl || (process.env.RTO_URL ? `${process.env.RTO_URL.replace(/\/$/, '')}/login` : (process.env.AVELING_URL ? `${process.env.AVELING_URL.replace(/\/$/, '')}/login` : 'https://certhero.online/login'));
     const content = `
         <p>Dear ${userName},</p>
         <p>Your official <strong>CertHero LMS Training Portal</strong> account has been configured. You can now log in, access your assigned competency tickets, review courseware modules, and sit for your online theory examinations.</p>

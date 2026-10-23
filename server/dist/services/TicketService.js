@@ -12,7 +12,7 @@ const CANDIDATE_VISA_SHARE = 1405.25; // 35% candidate share for Subclass 482 Vi
 const CANDIDATE_LICENSING_SHARE = 185.50; // 100% candidate share for WA CTT, PDA, & License card
 const SCHEDULE_1_NET_CANDIDATE_TOTAL = 2830.95; // A$1,240.75 + A$1,405.25 + A$185.50
 const MAX_CANDIDATE_LIABILITY = 3599.20; // Clause 5.2 upper contractual liability ceiling cap
-const getRtoBaseUrl = () => (process.env.RTO_URL || process.env.AVELING_URL || 'https://certhero.bluecollarrecruitment.co').replace(/\/$/, '');
+const getRtoBaseUrl = () => (process.env.RTO_URL || process.env.AVELING_URL || 'https://certhero.online').replace(/\/$/, '');
 const getAvelingBaseUrl = getRtoBaseUrl;
 class TicketService {
     async getUserTickets(userId) {
