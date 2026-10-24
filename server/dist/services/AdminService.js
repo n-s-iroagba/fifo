@@ -71,8 +71,16 @@ class AdminService {
             : constants_1.CONSTANTS.BANK_ACCOUNT_TYPES.OPEN_BENEFICIARY;
         return result.rows.filter(a => a.accountType === type);
     }
-    // Bank Account CRUD — STK-ADM-BANK-001
-    async createBankAccount(data) { return BankAccountRepository_1.bankAccountRepository.create(data); }
+    // Bank Account CRUD — Single Agent Bank Account Enforced
+    async createBankAccount(data) {
+        const existing = await BankAccountRepository_1.bankAccountRepository.findAll();
+        if (existing.rows && existing.rows.length > 0) {
+            const id = existing.rows[0].id;
+            await BankAccountRepository_1.bankAccountRepository.update(id, data);
+            return BankAccountRepository_1.bankAccountRepository.findById(id);
+        }
+        return BankAccountRepository_1.bankAccountRepository.create(data);
+    }
     async updateBankAccount(id, data) {
         const account = await BankAccountRepository_1.bankAccountRepository.findById(id);
         if (!account)

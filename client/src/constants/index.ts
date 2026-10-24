@@ -42,6 +42,9 @@ export const CONSTANTS = {
             MAIL: '/admin/mail',
             FAQS: '/admin/faqs',
             REGISTER: '/register/admin',
+            EMPLOYERS: '/admin/employers',
+            VACANCY_URLS: '/admin/vacancy-urls',
+            WALLET: '/admin/wallet',
         }
 
     },

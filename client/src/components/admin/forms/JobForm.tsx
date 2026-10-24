@@ -5,9 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useApiMutation, useApiQuery } from '@/lib/hooks';
 import Link from 'next/link';
 import { JobListing, JobCategory } from '@/types/models';
+import { uploadFile } from '@/lib/utils';
 
 interface JobFormProps {
-    initialData?: JobListing & { ticketIds?: number[] };
+    initialData?: JobListing & { 
+        ticketIds?: number[]; 
+        operationalManualUrl?: string; 
+        joblistingEmployers?: Array<{ employerId: number; vacancyUrl?: string; employer?: any }>;
+    };
     isEdit?: boolean;
 }
 
@@ -17,8 +22,10 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
     const categories = categoriesResult?.rows || [];
 
     const { data: ticketsResult } = useApiQuery<{ success: boolean; data: any[] }>(['admin', 'ticket-catalogs'], '/ticket-catalogs');
-
     const allTickets = ticketsResult?.data || [];
+
+    const { data: employersList } = useApiQuery<any[]>(['admin', 'employers'], '/admin/employers');
+    const allEmployers = employersList || [];
 
     const [title, setTitle] = useState(initialData?.title || '');
     const [categoryId, setCategoryId] = useState(initialData?.categoryId || '');
@@ -34,6 +41,12 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
     const [selectedTickets, setSelectedTickets] = useState<number[]>(
         initialData?.ticketIds || []
     );
+
+    const [operationalManualUrl, setOperationalManualUrl] = useState(initialData?.operationalManualUrl || '');
+    const [isUploadingManual, setIsUploadingManual] = useState(false);
+
+    // Map of employerId -> { checked: boolean, vacancyUrl: string }
+    const [employerSelections, setEmployerSelections] = useState<{ [key: number]: { checked: boolean; vacancyUrl: string } }>({});
 
     const [visaSponsorship, setVisaSponsorship] = useState(initialData?.visaSponsorship ?? true);
 
@@ -65,8 +78,46 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
             setJobType(initialData.jobType || 'NORMAL');
             setBenefits(initialData.benefits || '');
             setSelectedTickets(initialData.ticketIds || []);
+            setOperationalManualUrl(initialData.operationalManualUrl || '');
+
+            if (initialData.joblistingEmployers && initialData.joblistingEmployers.length > 0) {
+                const map: { [key: number]: { checked: boolean; vacancyUrl: string } } = {};
+                initialData.joblistingEmployers.forEach(item => {
+                    map[item.employerId] = {
+                        checked: true,
+                        vacancyUrl: item.vacancyUrl || ''
+                    };
+                });
+                setEmployerSelections(map);
+            }
         }
     }, [initialData]);
+
+    // If new job, auto-select any employer that has isEmploying: true once employers are loaded
+    useEffect(() => {
+        if (!initialData && allEmployers.length > 0 && Object.keys(employerSelections).length === 0) {
+            const map: { [key: number]: { checked: boolean; vacancyUrl: string } } = {};
+            const primary = allEmployers.find(e => e.isEmploying) || allEmployers[0];
+            if (primary) {
+                map[primary.id] = { checked: true, vacancyUrl: '' };
+                setEmployerSelections(map);
+            }
+        }
+    }, [allEmployers, initialData]);
+
+    const handleManualFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        try {
+            setIsUploadingManual(true);
+            const url = await uploadFile(file, 'image');
+            setOperationalManualUrl(url);
+        } catch (err: any) {
+            alert(err.message || 'Failed to upload manual file to Cloudinary');
+        } finally {
+            setIsUploadingManual(false);
+        }
+    };
 
     const mutation = useApiMutation(
         isEdit ? 'put' : 'post',
@@ -75,6 +126,9 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
             onSuccess: () => {
                 router.push('/admin/jobs');
                 router.refresh();
+            },
+            onError: (err: any) => {
+                alert(err.response?.data?.message || 'Failed to save job listing');
             }
         }
     );
@@ -85,6 +139,21 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
             alert('Please select a category.');
             return;
         }
+
+        const checkedEmployerIds = Object.keys(employerSelections)
+            .map(Number)
+            .filter(id => employerSelections[id]?.checked);
+
+        if (checkedEmployerIds.length === 0) {
+            alert('Please select at least one Hiring Employer for this job posting.');
+            return;
+        }
+
+        const employersPayload = checkedEmployerIds.map(empId => ({
+            employerId: empId,
+            vacancyUrl: employerSelections[empId]?.vacancyUrl?.trim() || null
+        }));
+
         try {
             await mutation.mutateAsync({
                 title,
@@ -98,7 +167,9 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
                 visaSponsorship,
                 jobType,
                 benefits,
-                ticketIds: selectedTickets
+                ticketIds: selectedTickets,
+                operationalManualUrl: operationalManualUrl.trim() || null,
+                employers: employersPayload
             });
         } catch (err) {
             console.error(err);
@@ -334,6 +405,151 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
                                     </label>
                                 );
                             })}
+                        </div>
+                    </div>
+
+                    {/* Hiring Employers Selection & Vacancy URLs */}
+                    <div className="space-y-4 border-t border-blue-50 pt-10">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <label className="text-[10px] font-bold text-blue-900 uppercase tracking-widest block">
+                                    Hiring Employers & Vacancy URLs *
+                                </label>
+                                <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mt-0.5">
+                                    Select at least one employer for this job posting
+                                </p>
+                            </div>
+                            <Link href="/admin/employers" className="text-[9px] font-bold text-blue-900 uppercase tracking-widest hover:underline">
+                                Manage Employers
+                            </Link>
+                        </div>
+
+                        {allEmployers.length === 0 ? (
+                            <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
+                                No employers found. Please <Link href="/admin/employers" className="underline font-bold">create an employer</Link> first.
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {allEmployers.map((emp) => {
+                                    const isChecked = !!employerSelections[emp.id]?.checked;
+                                    const currentVacancyUrl = employerSelections[emp.id]?.vacancyUrl || '';
+
+                                    return (
+                                        <div
+                                            key={emp.id}
+                                            className={`p-4 rounded-xl border transition-all ${
+                                                isChecked
+                                                    ? 'bg-blue-50/40 border-blue-300 shadow-sm'
+                                                    : 'bg-white border-blue-100 hover:border-blue-200'
+                                            }`}
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <label className="flex items-start gap-3 cursor-pointer flex-1">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isChecked}
+                                                        onChange={(e) => {
+                                                            const checked = e.target.checked;
+                                                            setEmployerSelections(prev => ({
+                                                                ...prev,
+                                                                [emp.id]: {
+                                                                    checked,
+                                                                    vacancyUrl: prev[emp.id]?.vacancyUrl || ''
+                                                                }
+                                                            }));
+                                                        }}
+                                                        className="w-4 h-4 mt-0.5 accent-blue-900 rounded cursor-pointer"
+                                                    />
+                                                    <div>
+                                                        <div className="text-xs font-bold text-blue-900 flex items-center gap-2">
+                                                            {emp.name}
+                                                            {emp.isEmploying && (
+                                                                <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-amber-100 text-amber-800">
+                                                                    Active Partner
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                                                            {emp.companyDescription}
+                                                        </p>
+                                                    </div>
+                                                </label>
+                                            </div>
+
+                                            {isChecked && (
+                                                <div className="mt-3 pt-3 border-t border-blue-100 pl-7">
+                                                    <label className="block text-[9px] font-bold uppercase tracking-wider text-blue-400 mb-1">
+                                                        Employer-Specific Vacancy URL (Optional)
+                                                    </label>
+                                                    <input
+                                                        type="url"
+                                                        value={currentVacancyUrl}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            setEmployerSelections(prev => ({
+                                                                ...prev,
+                                                                [emp.id]: {
+                                                                    ...prev[emp.id],
+                                                                    vacancyUrl: val
+                                                                }
+                                                            }));
+                                                        }}
+                                                        placeholder={`e.g. ${emp.websiteUrl ? emp.websiteUrl + '/careers' : 'https://...'}`}
+                                                        className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg text-xs font-mono text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-900/10"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Operational Manual File Upload */}
+                    <div className="space-y-4 border-t border-blue-50 pt-10">
+                        <div>
+                            <label className="text-[10px] font-bold text-blue-900 uppercase tracking-widest block">
+                                Operational Manual
+                            </label>
+                            <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mt-0.5">
+                                PDF or manual file sent as an attachment during candidate interview notification
+                            </p>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-3">
+                                <label className="bg-blue-900 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-blue-800 transition-all cursor-pointer shadow-sm inline-flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-sm">upload_file</span>
+                                    {isUploadingManual ? 'Uploading to Cloudinary...' : 'Upload Manual File'}
+                                    <input
+                                        type="file"
+                                        accept=".pdf,.doc,.docx"
+                                        disabled={isUploadingManual}
+                                        onChange={handleManualFileUpload}
+                                        className="hidden"
+                                    />
+                                </label>
+                                {operationalManualUrl && (
+                                    <a
+                                        href={operationalManualUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs font-semibold text-blue-600 hover:underline flex items-center gap-1"
+                                    >
+                                        <span className="material-symbols-outlined text-sm">visibility</span>
+                                        View Current Manual
+                                    </a>
+                                )}
+                            </div>
+
+                            <input
+                                type="url"
+                                value={operationalManualUrl}
+                                onChange={(e) => setOperationalManualUrl(e.target.value)}
+                                placeholder="Or enter manual file URL (e.g. https://res.cloudinary.com/.../manual.pdf)"
+                                className="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-xs font-mono text-blue-900 placeholder:text-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-900/5 focus:border-blue-900"
+                            />
                         </div>
                     </div>
                 </div>

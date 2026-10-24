@@ -735,6 +735,40 @@ export default function ApplicationDetailPage() {
         }
     };
 
+    const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
+    const [acceptSubject, setAcceptSubject] = useState('');
+    const [acceptMessage, setAcceptMessage] = useState('');
+    const [advanceStage, setAdvanceStage] = useState(true);
+    const [isSubmittingAccept, setIsSubmittingAccept] = useState(false);
+
+    const openAcceptModal = () => {
+        setAcceptSubject('Formal Acceptance & Progression: Your Application with Blue Collar Recruitment');
+        setAcceptMessage(
+            `Dear ${application?.User?.fullName || 'Candidate'},\n\nWe are pleased to inform you that your application for the ${application?.JobListing?.title || 'advertised position'} has been officially accepted by our recruitment team following initial review and screening.\n\nYou have now progressed to the Employer Selection stage. Please log in to your dashboard to review participating mining employer opportunities and proceed with your onboarding requirements.\n\nBest regards,\nBlue Collar Recruitment Operations Team`
+        );
+        setAdvanceStage(true);
+        setIsAcceptModalOpen(true);
+    };
+
+    const handleConfirmAccept = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmittingAccept(true);
+        try {
+            const { data } = await api.post(`/admin/applications/${id}/accept`, {
+                subject: acceptSubject,
+                message: acceptMessage,
+                advanceStage
+            });
+            alert(data.message || 'Application accepted and notification sent.');
+            setIsAcceptModalOpen(false);
+            refetch();
+        } catch (err: any) {
+            alert(err.response?.data?.message || err.response?.data?.error || 'Failed to accept application.');
+        } finally {
+            setIsSubmittingAccept(false);
+        }
+    };
+
     if (isLoading) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-blue-400">Loading Application Status...</div>;
     if (error) return <div className="p-12 text-center text-red-500 text-[10px] font-bold uppercase tracking-widest">Error Loading Application Data</div>;
 
@@ -776,12 +810,21 @@ export default function ApplicationDetailPage() {
                         }`}>
                         {application.status}
                     </span>
+                    <button
+                        type="button"
+                        onClick={openAcceptModal}
+                        className="bg-emerald-600 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg shadow-emerald-600/20 active:scale-95"
+                        title="Manually accept application and dispatch corporate acceptance notification"
+                    >
+                        <span className="material-symbols-outlined text-sm font-bold">verified</span>
+                        Accept Application
+                    </button>
                     <Link
                         href={`/admin/nominations?applicantId=${user?.id || ''}`}
                         className="bg-purple-50 text-purple-700 border border-purple-100 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-purple-100 transition-all flex items-center gap-2 active:scale-95"
                     >
-                        <span className="material-symbols-outlined text-sm font-bold">assignment_ind</span>
-                        Nomination
+                        <span className="material-symbols-outlined text-sm font-bold">how_to_reg</span>
+                        Employer Selection
                     </Link>
                     <Link
                         href={`/admin/contracts?applicantId=${user?.id || ''}`}
@@ -1156,6 +1199,98 @@ export default function ApplicationDetailPage() {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Manual Application Acceptance Modal */}
+            {isAcceptModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-blue-950/60 backdrop-blur-sm animate-in fade-in duration-150">
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full border border-emerald-200 shadow-2xl">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
+                            <div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 block">
+                                    Manual Progression
+                                </span>
+                                <h3 className="text-lg font-black text-blue-900">
+                                    Accept Application & Dispatch Notification
+                                </h3>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsAcceptModalOpen(false)}
+                                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleConfirmAccept} className="space-y-4">
+                            <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-900">
+                                <span className="font-bold">Applicant:</span> {user?.fullName} ({user?.email})
+                                <p className="text-[11px] text-emerald-700 mt-1">
+                                    Accepting this application will officially advance the candidate's stage to Employer Selection and dispatch the drafted notification email below.
+                                </p>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">
+                                    Email Subject <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={acceptSubject}
+                                    onChange={(e) => setAcceptSubject(e.target.value)}
+                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900 font-medium"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">
+                                    Email Message (Clean corporate tone) <span className="text-red-500">*</span>
+                                </label>
+                                <textarea
+                                    rows={8}
+                                    required
+                                    value={acceptMessage}
+                                    onChange={(e) => setAcceptMessage(e.target.value)}
+                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900 leading-relaxed font-sans"
+                                />
+                            </div>
+
+                            <div className="pt-2">
+                                <label className="flex items-center gap-3 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={advanceStage}
+                                        onChange={(e) => setAdvanceStage(e.target.checked)}
+                                        className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
+                                    />
+                                    <span className="text-xs font-medium text-slate-700">
+                                        Advance candidate's current stage to Employer Selection
+                                    </span>
+                                </label>
+                            </div>
+
+                            <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAcceptModalOpen(false)}
+                                    className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-bold"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmittingAccept}
+                                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-wider disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-emerald-600/20"
+                                >
+                                    <span className="material-symbols-outlined text-sm">verified</span>
+                                    {isSubmittingAccept ? 'Processing...' : 'Confirm & Dispatch Acceptance'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

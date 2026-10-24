@@ -25,6 +25,14 @@ Course.init({
         type: sequelize_1.DataTypes.TEXT,
         allowNull: false
     },
+    contentUrl: {
+        type: sequelize_1.DataTypes.TEXT,
+        allowNull: true
+    },
+    syllabus: {
+        type: sequelize_1.DataTypes.TEXT,
+        allowNull: true
+    },
     format: {
         type: sequelize_1.DataTypes.ENUM('Theory', 'Practical', 'Mixed', 'Online'),
         allowNull: false

@@ -6,6 +6,8 @@ export class Invoice extends Model {
     public applicantId!: number;
     public purpose!: string;
     public amountInUSD!: number;
+    public amountInAUD!: number;
+    public paymentStatus!: 'unpaid' | 'half_paid' | 'paid';
     public walletAddress!: string | null;
     public date!: Date;
     public receiptProofSubmission!: Date | null;
@@ -23,29 +25,32 @@ Invoice.init({
     },
     applicantId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        unique: true
     },
     purpose: {
-        type: DataTypes.ENUM(
-            'rto-complete',
-            'rto-partial',
-            'rto-complete-after-partial',
-            'aveling-partial',
-            'aveling-complete-after-partial',
-            'aveling-complete',
-            'second-attempt',
-            'shipping',
-            'visa-blue-collar'
-        ),
-        allowNull: false
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: 'CertHero Ticket Sponsorship'
+    },
+    paymentStatus: {
+        type: DataTypes.ENUM('unpaid', 'half_paid', 'paid'),
+        allowNull: false,
+        defaultValue: 'unpaid'
     },
     walletAddress: {
         type: DataTypes.STRING,
         allowNull: true
     },
+    amountInAUD: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        defaultValue: 0
+    },
     amountInUSD: {
         type: DataTypes.FLOAT,
-        allowNull: false
+        allowNull: false,
+        defaultValue: 0
     },
     date: {
         type: DataTypes.DATE,

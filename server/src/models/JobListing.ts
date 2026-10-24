@@ -18,6 +18,7 @@ export class JobListing extends Model {
 
     declare stages: any[];
     declare benefits: string | null;
+    declare operationalManualUrl: string | null;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 
@@ -28,6 +29,10 @@ JobListing.init({
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
+    },
+    operationalManualUrl: {
+        type: DataTypes.TEXT,
+        allowNull: true,
     },
     benefits: {
         type: DataTypes.TEXT,

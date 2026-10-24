@@ -15,9 +15,13 @@ const createTransporter = (user: string | undefined, pass: string | undefined) =
 
 const authTransporter = createTransporter(process.env.SMTP_AUTH_USER, process.env.SMTP_AUTH_PASS);
 const infoTransporter = createTransporter(process.env.SMTP_INFO_USER, process.env.SMTP_INFO_PASS);
-const avelingTransporter = createTransporter(
-    'examinations@aveling.online',
-    '97Chocho@'
+const rtoTransporter = createTransporter(
+    process.env.RTO_SMTP_USER || process.env.AV_SMTP_INFO_USER || process.env.SMTP_INFO_USER,
+    process.env.RTO_SMTP_PASS || process.env.AV_SMTP_INFO_PASS || process.env.SMTP_INFO_PASS
+);
+const employerTransporter = createTransporter(
+    process.env.EMPLOYER_SMTP_USER || process.env.SMTP_INFO_USER,
+    process.env.EMPLOYER_SMTP_PASS || process.env.SMTP_INFO_PASS
 );
 
 // Self-Diagnostic: Verify connection on startup
@@ -37,15 +41,23 @@ infoTransporter.verify((error, success) => {
     }
 });
 
-avelingTransporter.verify((error, success) => {
+rtoTransporter.verify((error, success) => {
     if (error) {
-        console.error('[EmailUtil] Aveling Transporter Connection Error:', error);
+        console.error('[EmailUtil] RTO Transporter Connection Error:', error);
     } else {
-        console.log('[EmailUtil] Aveling Transporter ready to dispatch.');
+        console.log('[EmailUtil] RTO Transporter ready to dispatch.');
     }
 });
 
-console.log(`[EmailUtil] SMTP Decoupled Transporters Initialized.`);
+employerTransporter.verify((error, success) => {
+    if (error) {
+        console.error('[EmailUtil] Employer Transporter Connection Error:', error);
+    } else {
+        console.log('[EmailUtil] Employer Transporter ready to dispatch.');
+    }
+});
+
+console.log(`[EmailUtil] SMTP Decoupled Transporters (Auth, Info, RTO, Employer) Initialized.`);
 
 const cleanHtmlContent = (content: string): string => {
     let cleaned = content.trim();
@@ -58,7 +70,7 @@ const cleanHtmlContent = (content: string): string => {
     return cleaned;
 };
 
-const getStandardEmailTemplate = (subject: string, content: string, fromType: 'auth' | 'info' | 'rto' | 'aveling' = 'info') => {
+const getStandardEmailTemplate = (subject: string, content: string, fromType: 'auth' | 'info' | 'rto' | 'employer' | 'aveling' = 'info') => {
     const trimmed = content.trim();
     if (/^\s*<!DOCTYPE\s+html/i.test(trimmed) || /<html/i.test(trimmed) || /<body/i.test(trimmed)) {
         return content;
@@ -66,23 +78,49 @@ const getStandardEmailTemplate = (subject: string, content: string, fromType: 'a
     const cleanedContent = cleanHtmlContent(content);
 
     const isRto = fromType === 'rto' || fromType === 'aveling';
-    const rtoBase = (process.env.RTO_URL || process.env.AVELING_URL || 'https://certhero.online').replace(/\/$/, '');
-    const headerBgColor = isRto ? '#0f172a' : '#0b3486';
-    const accentColor = isRto ? '#ED9139' : '#004ac6';
-    const primaryColor = isRto ? '#0f172a' : '#0b3486';
+    const isEmployer = fromType === 'employer';
 
-    const headerContent = isRto ? `
-        <div style="padding: 28px 24px 22px; background: linear-gradient(135deg, #090d16 0%, #0f172a 100%); border-bottom: 3px solid #ED9139; text-align: center;">
-            <div style="display: inline-block; font-family: 'Inter', Arial, sans-serif;">
-                <span style="color: #ffffff; font-size: 26px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase;">CERT HERO</span>
-                <span style="display: block; color: #ED9139; font-size: 11px; font-weight: 800; letter-spacing: 0.22em; margin-top: 4px; text-transform: uppercase;">ACCREDITED RTO TRAINING PARTNER</span>
-            </div>
-        </div>
-    ` : `
+    let headerBgColor = '#0b3486';
+    let accentColor = '#004ac6';
+    let primaryColor = '#0b3486';
+    let footerBrand = 'BlueCollar Infrastructure';
+    let footerTag = 'SECURE RECRUITMENT PIPELINE PROTOCOL';
+
+    let headerContent = `
         <div style="background-color: ${headerBgColor}; margin: 0; padding: 0; text-align: center;">
             <img src="${process.env.CLIENT_URL || 'http://localhost:3000'}/email-logo.jpg" alt="BlueCollar Infrastructure" style="display: block; width: 100%; height: auto; max-width: 600px; margin: 0 auto; outline: none; border: none; text-decoration: none;" />
         </div>
     `;
+
+    if (isRto) {
+        headerBgColor = '#0f172a';
+        accentColor = '#ED9139';
+        primaryColor = '#0f172a';
+        footerBrand = 'CertHero Training & Assessment Systems (Accredited RTO Partner)';
+        footerTag = 'NATIONALLY RECOGNISED TRAINING COMPLIANCE';
+        headerContent = `
+            <div style="padding: 28px 24px 22px; background: linear-gradient(135deg, #090d16 0%, #0f172a 100%); border-bottom: 3px solid #ED9139; text-align: center;">
+                <div style="display: inline-block; font-family: 'Inter', Arial, sans-serif;">
+                    <span style="color: #ffffff; font-size: 26px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase;">CERT HERO</span>
+                    <span style="display: block; color: #ED9139; font-size: 11px; font-weight: 800; letter-spacing: 0.22em; margin-top: 4px; text-transform: uppercase;">ACCREDITED RTO TRAINING PARTNER</span>
+                </div>
+            </div>
+        `;
+    } else if (isEmployer) {
+        headerBgColor = '#18181b';
+        accentColor = '#f59e0b';
+        primaryColor = '#18181b';
+        footerBrand = 'MACA Limited / Direct Australian Hiring Employer';
+        footerTag = 'DIRECT RECRUITMENT & VISA SPONSORSHIP PORTFOLIO';
+        headerContent = `
+            <div style="padding: 28px 24px 22px; background: linear-gradient(135deg, #09090b 0%, #18181b 100%); border-bottom: 3px solid #f59e0b; text-align: center;">
+                <div style="display: inline-block; font-family: 'Inter', Arial, sans-serif;">
+                    <span style="color: #ffffff; font-size: 24px; font-weight: 900; letter-spacing: 0.16em; text-transform: uppercase;">MACA LIMITED</span>
+                    <span style="display: block; color: #f59e0b; font-size: 11px; font-weight: 800; letter-spacing: 0.2em; margin-top: 4px; text-transform: uppercase;">MINING & INFRASTRUCTURE SERVICES - HOST EMPLOYER</span>
+                </div>
+            </div>
+        `;
+    }
 
     return `
     <!DOCTYPE html>
@@ -97,7 +135,7 @@ const getStandardEmailTemplate = (subject: string, content: string, fromType: 'a
             p { margin-bottom: 20px; color: #475569; font-weight: 500; }
             .cta-block { margin-top: 35px; text-align: center; margin-bottom: 15px; }
             .button { display: inline-block; padding: 16px 36px; background-color: ${accentColor}; color: #ffffff !important; text-decoration: none; border-radius: 10px; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; box-shadow: 0 8px 16px -4px rgba(237, 145, 57, 0.35); transition: background-color 0.2s ease; }
-            .button:hover { background-color: #dd7f26; }
+            .button:hover { opacity: 0.9; }
         </style>
     </head>
     <body>
@@ -110,8 +148,8 @@ const getStandardEmailTemplate = (subject: string, content: string, fromType: 'a
                 </div>
             </div>
             <div class="footer">
-                &copy; 2026 ${isRto ? 'CertHero Training & Assessment Systems (Accredited RTO Partner)' : 'BlueCollar Infrastructure'}. All rights reserved.<br>
-                <span style="font-weight: 800; color: ${primaryColor}; margin-top: 10px; display: block; letter-spacing: 1px;">${isRto ? 'NATIONALLY RECOGNISED TRAINING COMPLIANCE' : 'SECURE RECRUITMENT PIPELINE PROTOCOL'}</span>
+                &copy; 2026 ${footerBrand}. All rights reserved.<br>
+                <span style="font-weight: 800; color: ${primaryColor}; margin-top: 10px; display: block; letter-spacing: 1px;">${footerTag}</span>
             </div>
         </div>
     </body>
@@ -134,7 +172,7 @@ const notifyAdminOfEmail = (recipient: string, originalSubject: string, fromType
         </div>
     `;
     infoTransporter.sendMail({
-        from: process.env.SMTP_INFO_FROM || '"BlueCollar Infrastructure" <info@BlueCollar.com>',
+        from: process.env.SMTP_INFO_FROM || '"BlueCollar Recruitment" <info@jobnexe.com>',
         to: adminEmail,
         subject: `[Log] Automated Email Sent to ${recipient}`,
         html: content
@@ -144,7 +182,7 @@ const notifyAdminOfEmail = (recipient: string, originalSubject: string, fromType
 export const sendAuthEmail = async (to: string, subject: string, content: string, attachments: any[] = []): Promise<void> => {
     try {
         await authTransporter.sendMail({
-            from: process.env.SMTP_AUTH_FROM || '"BlueCollar Authentication" <donotreply@BlueCollar.com>',
+            from: process.env.SMTP_AUTH_FROM || '"BlueCollar Authentication" <donotreply@jobnexe.com>',
             to,
             subject,
             html: getStandardEmailTemplate(subject, content, 'auth'),
@@ -166,7 +204,7 @@ export const sendAuthEmail = async (to: string, subject: string, content: string
 export const sendInfoEmail = async (to: string, subject: string, content: string, attachments: any[] = []): Promise<void> => {
     try {
         await infoTransporter.sendMail({
-            from: process.env.SMTP_INFO_FROM || '"BlueCollar Infrastructure" <info@BlueCollar.com>',
+            from: process.env.SMTP_INFO_FROM || '"BlueCollar Recruitment" <info@jobnexe.com>',
             to,
             subject,
             html: getStandardEmailTemplate(subject, content, 'info'),
@@ -179,10 +217,11 @@ export const sendInfoEmail = async (to: string, subject: string, content: string
         throw new Error('Info email dispatch failed');
     }
 };
+
 export const sendRtoEmail = async (to: string, subject: string, content: string, attachments: any[] = []): Promise<void> => {
     try {
-        await infoTransporter.sendMail({
-            from: process.env.SMTP_INFO_FROM,
+        await rtoTransporter.sendMail({
+            from: process.env.RTO_SMTP_FROM || process.env.AV_SMTP_INFO_FROM || '"CertHero RTO" <training@jobnexe.com>',
             to,
             subject,
             html: getStandardEmailTemplate(subject, content, 'rto'),
@@ -196,18 +235,44 @@ export const sendRtoEmail = async (to: string, subject: string, content: string,
     }
 };
 
+export const sendEmployerEmail = async (to: string, subject: string, content: string, attachments: any[] = []): Promise<void> => {
+    try {
+        await employerTransporter.sendMail({
+            from: process.env.EMPLOYER_SMTP_FROM || '"MACA Mining Recruitment" <recruitment@jobnexe.com>',
+            to,
+            subject,
+            html: getStandardEmailTemplate(subject, content, 'employer'),
+            attachments,
+        });
+        console.log(`[EmailUtil] Employer email dispatched to: ${to}`);
+        notifyAdminOfEmail(to, subject, 'employer');
+    } catch (error) {
+        console.error(`[EmailUtil] Employer email failed:`, error);
+        throw new Error('Employer email dispatch failed');
+    }
+};
+
 export const sendAvelingEmail = sendRtoEmail;
 
-export const sendEmailFrom = async (fromType: 'auth' | 'info' | 'rto' | 'aveling', to: string, subject: string, content: string, attachments: any[] = []): Promise<void> => {
+export const sendEmailFrom = async (
+    fromType: 'auth' | 'info' | 'rto' | 'employer' | 'aveling',
+    to: string,
+    subject: string,
+    content: string,
+    attachments: any[] = []
+): Promise<void> => {
     let transporter = infoTransporter;
-    let from = process.env.SMTP_INFO_FROM || '"BlueCollar Infrastructure" <info@BlueCollar.com>';
+    let from = process.env.SMTP_INFO_FROM || '"BlueCollar Recruitment" <info@jobnexe.com>';
 
     if (fromType === 'auth') {
         transporter = authTransporter;
-        from = process.env.SMTP_AUTH_FROM || '"BlueCollar Authentication" <donotreply@BlueCollar.com>';
+        from = process.env.SMTP_AUTH_FROM || '"BlueCollar Authentication" <donotreply@jobnexe.com>';
     } else if (fromType === 'rto' || fromType === 'aveling') {
-        transporter = infoTransporter;
-        from = process.env.SMTP_INFO_FROM || '"BlueCollar Infrastructure" <info@BlueCollar.com>';
+        transporter = rtoTransporter;
+        from = process.env.RTO_SMTP_FROM || process.env.AV_SMTP_INFO_FROM || '"CertHero RTO" <training@jobnexe.com>';
+    } else if (fromType === 'employer') {
+        transporter = employerTransporter;
+        from = process.env.EMPLOYER_SMTP_FROM || '"MACA Mining Recruitment" <recruitment@jobnexe.com>';
     }
 
     try {

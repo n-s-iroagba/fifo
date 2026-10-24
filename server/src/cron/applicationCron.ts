@@ -10,22 +10,17 @@ const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 
 export async function runApplicationApprovalCron(forceUserId?: number): Promise<number> {
     try {
-        console.log('[ApplicationCron] Running application auto-acceptance check...');
+        if (!forceUserId) {
+            console.log('[ApplicationCron] Auto-acceptance disabled: Application acceptance must be manually performed via admin dashboard with drafted email (CHANGES.md Prompt 8).');
+            recordCronRun(CRON_NAME, 'ok');
+            return 0;
+        }
+        console.log('[ApplicationCron] Running manual-forced application acceptance check for userId:', forceUserId);
 
-        const cutoff = new Date(Date.now() - THREE_HOURS_MS);
-
-        // Find JobStage rows where:
-        //   1. The stage is named 'Application'
-        //   2. The stage has been 'under-review' for more than 3 hours
-        //   3. The owning Application still points to this stage as currentStageId
-        //      (i.e. the application hasn't already been manually advanced)
         const stageWhere: any = {
             name: 'Application',
-            status: 'under-review'
+            status: 'pending'
         };
-        if (!forceUserId) {
-            stageWhere.updatedAt = { [Op.lte]: cutoff };
-        }
 
         const pendingStages = await JobStage.findAll({
             where: stageWhere,

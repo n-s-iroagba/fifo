@@ -10,20 +10,16 @@ const CRON_NAME = 'ApplicationAutoAcceptance';
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 async function runApplicationApprovalCron(forceUserId) {
     try {
-        console.log('[ApplicationCron] Running application auto-acceptance check...');
-        const cutoff = new Date(Date.now() - THREE_HOURS_MS);
-        // Find JobStage rows where:
-        //   1. The stage is named 'Application'
-        //   2. The stage has been 'under-review' for more than 3 hours
-        //   3. The owning Application still points to this stage as currentStageId
-        //      (i.e. the application hasn't already been manually advanced)
+        if (!forceUserId) {
+            console.log('[ApplicationCron] Auto-acceptance disabled: Application acceptance must be manually performed via admin dashboard with drafted email (CHANGES.md Prompt 8).');
+            (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'ok');
+            return 0;
+        }
+        console.log('[ApplicationCron] Running manual-forced application acceptance check for userId:', forceUserId);
         const stageWhere = {
             name: 'Application',
-            status: 'under-review'
+            status: 'pending'
         };
-        if (!forceUserId) {
-            stageWhere.updatedAt = { [sequelize_1.Op.lte]: cutoff };
-        }
         const pendingStages = await models_1.JobStage.findAll({
             where: stageWhere,
             include: [

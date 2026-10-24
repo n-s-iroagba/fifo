@@ -5,6 +5,7 @@ export class Ticket extends Model {
     declare id: number;
     declare userId: number;
     declare applicationId: number | null;
+    declare ticketCatalogId: number | null;
     declare status: 'not_possessed' | 'possessed';
     declare ticketNumber: string | null;
     declare ticketType: string;
@@ -52,6 +53,10 @@ Ticket.init({
         allowNull: false,
     },
     applicationId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
+    ticketCatalogId: {
         type: DataTypes.INTEGER,
         allowNull: true,
     },

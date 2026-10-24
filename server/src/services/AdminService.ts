@@ -71,8 +71,16 @@ export class AdminService {
         return result.rows.filter(a => a.accountType === type);
     }
 
-    // Bank Account CRUD — STK-ADM-BANK-001
-    public async createBankAccount(data: any) { return bankAccountRepository.create(data); }
+    // Bank Account CRUD — Single Agent Bank Account Enforced
+    public async createBankAccount(data: any) {
+        const existing = await bankAccountRepository.findAll();
+        if (existing.rows && existing.rows.length > 0) {
+            const id = existing.rows[0].id;
+            await bankAccountRepository.update(id, data);
+            return bankAccountRepository.findById(id);
+        }
+        return bankAccountRepository.create(data);
+    }
     public async updateBankAccount(id: number, data: any) {
         const account = await bankAccountRepository.findById(id);
         if (!account) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);

@@ -12,6 +12,10 @@ JobListing.init({
         autoIncrement: true,
         primaryKey: true,
     },
+    operationalManualUrl: {
+        type: sequelize_1.DataTypes.TEXT,
+        allowNull: true,
+    },
     benefits: {
         type: sequelize_1.DataTypes.TEXT,
         allowNull: true,

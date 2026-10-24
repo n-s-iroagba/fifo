@@ -82,6 +82,62 @@ async function runSchemaPatches() {
         console.log("[Migration] Patched job_listings table with benefits.");
     }
     catch (e) { }
+    try {
+        await models_1.sequelize.query("ALTER TABLE job_listings ADD COLUMN operationalManualUrl VARCHAR(255) DEFAULT NULL;");
+        console.log("[Migration] Patched job_listings table with operationalManualUrl.");
+    }
+    catch (e) { }
+    // Patch courses table with contentUrl and syllabus
+    try {
+        await models_1.sequelize.query("ALTER TABLE courses ADD COLUMN content_url VARCHAR(255) DEFAULT NULL;");
+        console.log("[Migration] Patched courses table with content_url.");
+    }
+    catch (e) { }
+    try {
+        await models_1.sequelize.query("ALTER TABLE courses ADD COLUMN contentUrl VARCHAR(255) DEFAULT NULL;");
+        console.log("[Migration] Patched courses table with contentUrl.");
+    }
+    catch (e) { }
+    try {
+        await models_1.sequelize.query("ALTER TABLE courses ADD COLUMN syllabus JSON DEFAULT NULL;");
+        console.log("[Migration] Patched courses table with syllabus.");
+    }
+    catch (e) { }
+    // Patch tickets table with ticketCatalogId
+    try {
+        await models_1.sequelize.query("ALTER TABLE tickets ADD COLUMN ticket_catalog_id INT DEFAULT NULL;");
+        console.log("[Migration] Patched tickets table with ticket_catalog_id.");
+    }
+    catch (e) { }
+    try {
+        await models_1.sequelize.query("ALTER TABLE tickets ADD COLUMN ticketCatalogId INT DEFAULT NULL;");
+        console.log("[Migration] Patched tickets table with ticketCatalogId.");
+    }
+    catch (e) { }
+    // Patch invoices with amountInAUD and paymentStatus
+    try {
+        await models_1.sequelize.query("ALTER TABLE invoices ADD COLUMN amountInAUD DECIMAL(10,2) DEFAULT NULL;");
+        console.log("[Migration] Patched invoices table with amountInAUD.");
+    }
+    catch (e) { }
+    try {
+        await models_1.sequelize.query("ALTER TABLE invoices ADD COLUMN paymentStatus ENUM('unpaid', 'half_paid', 'paid') DEFAULT 'unpaid';");
+        console.log("[Migration] Patched invoices table with paymentStatus.");
+    }
+    catch (e) { }
+    // Ensure employers, joblisting_employers, wallets tables exist
+    try {
+        if (models_1.sequelize.models.Employer)
+            await models_1.sequelize.models.Employer.sync();
+        if (models_1.sequelize.models.JoblistingEmployer)
+            await models_1.sequelize.models.JoblistingEmployer.sync();
+        if (models_1.sequelize.models.Wallet)
+            await models_1.sequelize.models.Wallet.sync();
+        console.log("[Migration] Synced Employer, JoblistingEmployer, and Wallet tables.");
+    }
+    catch (e) {
+        console.error("[Migration] Failed syncing new models:", e.message);
+    }
     // 7. Patch job_stages table with missing columns if it was created by an older schema
     const jobStageColumns = [
         "ADD COLUMN name VARCHAR(255) DEFAULT 'Application'",
@@ -156,7 +212,10 @@ async function runSchemaPatches() {
         "ADD COLUMN fullBalancePaid BOOLEAN DEFAULT false",
         "ADD COLUMN psychometricModule1Passed BOOLEAN DEFAULT false",
         "ADD COLUMN psychometricModule2Passed BOOLEAN DEFAULT false",
-        "ADD COLUMN psychometricCompletedAt DATETIME DEFAULT NULL"
+        "ADD COLUMN psychometricCompletedAt DATETIME DEFAULT NULL",
+        "ADD COLUMN interviewDate VARCHAR(255) DEFAULT NULL",
+        "ADD COLUMN interviewTime VARCHAR(255) DEFAULT NULL",
+        "ADD COLUMN interviewLink VARCHAR(255) DEFAULT NULL"
     ];
     for (const colDef of userColumns) {
         try {

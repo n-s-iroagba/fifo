@@ -5,9 +5,15 @@ import {
     CourseModule,
     ExamConfig,
     ExamQuestion,
-    TicketCatalog
+    TicketCatalog,
+    Employer,
+    JoblistingEmployer,
+    JobListing,
+    Wallet
 } from './models';
 import { lmsSeedData } from './data/lmsData';
+import { fifoJobs } from './data/fifoJobs';
+import { ensure35Questions } from './data/questions/expandTo35Questions';
 import { runAllMigrations } from './migrations';
 
 /**
@@ -52,15 +58,181 @@ export async function seedJobCategories(): Promise<void> {
 }
 
 /**
- * Model Seed 2: LMS Infrastructure & Ticket Catalogs
- * Seeds CertificationType -> Course -> CourseModule -> ExamConfig & Questions -> TicketCatalog
- * (Tickets are seeded directly alongside their courses and questions per LMS entry)
+ * Model Seed 2: Employers (MACA Limited as active partner, Mineral Resources)
+ */
+export async function seedEmployers(): Promise<{ maca: Employer; minRes: Employer }> {
+    console.log('[Seeding] Seeding Hiring Employers...');
+
+    const [maca] = await Employer.findOrCreate({
+        where: { name: 'MACA Limited' },
+        defaults: {
+            websiteUrl: 'https://www.maca.net.au',
+            companyDescription: 'MACA Limited is an international mining, civil construction, and infrastructure contracting company based in Welshpool, Western Australia, operating major open-pit and underground iron ore and gold projects across the Pilbara and Goldfields.',
+            location: 'Welshpool, Western Australia',
+            isEmploying: true,
+            logoUrl: 'https://res.cloudinary.com/dh2cpesxu/image/upload/v1729700000/logos/maca_logo.png'
+        }
+    });
+    await maca.update({
+        websiteUrl: 'https://www.maca.net.au',
+        companyDescription: 'MACA Limited is an international mining, civil construction, and infrastructure contracting company based in Welshpool, Western Australia, operating major open-pit and underground iron ore and gold projects across the Pilbara and Goldfields.',
+        location: 'Welshpool, Western Australia',
+        isEmploying: true
+    });
+
+    const [minRes] = await Employer.findOrCreate({
+        where: { name: 'Mineral Resources Limited' },
+        defaults: {
+            websiteUrl: 'https://www.mineralresources.com.au',
+            companyDescription: 'Mineral Resources (MinRes) is a leading diversified mining services and commodities company in Western Australia, with world-class iron ore, lithium, and energy operations across the Pilbara and Yilgarn regions.',
+            location: 'Osborne Park, Western Australia',
+            isEmploying: false,
+            logoUrl: 'https://res.cloudinary.com/dh2cpesxu/image/upload/v1729700000/logos/minres_logo.png'
+        }
+    });
+    await minRes.update({
+        websiteUrl: 'https://www.mineralresources.com.au',
+        companyDescription: 'Mineral Resources (MinRes) is a leading diversified mining services and commodities company in Western Australia, with world-class iron ore, lithium, and energy operations across the Pilbara and Yilgarn regions.',
+        location: 'Osborne Park, Western Australia',
+        isEmploying: false
+    });
+
+    console.log('[Seeding] Employers seeded successfully.');
+    return { maca, minRes };
+}
+
+/**
+ * Model Seed 3: Single USDT TRC-20 Crypto Wallet
+ */
+export async function seedWallet(): Promise<void> {
+    console.log('[Seeding] Seeding Crypto Wallet...');
+    const existing = await Wallet.findOne();
+    if (!existing) {
+        await Wallet.create({
+            address: 'TLyHZ2iU8XwK8z392mH9xV39Bmqv8QeZ21',
+            network: 'TRC20',
+            currency: 'USDT',
+            isActive: true
+        });
+    }
+    console.log('[Seeding] Crypto Wallet seeded successfully.');
+}
+
+/**
+ * Model Seed 4: Job Listings with Operational Manual & Linked Employers
+ */
+export async function seedJobListings(maca: Employer, minRes: Employer): Promise<void> {
+    console.log('[Seeding] Seeding FIFO Job Listings...');
+
+    const defaultManualUrl = 'https://res.cloudinary.com/dh2cpesxu/image/upload/v1729700000/operational_manuals/maca_mining_standard_operating_procedure.pdf';
+
+    for (const rawJob of fifoJobs) {
+        // Find category
+        const cat = await JobCategory.findOne({ where: { name: rawJob.category } });
+        const categoryId = cat ? cat.id : 1;
+
+        const benefitsNumbered = rawJob.benefits.join('\n');
+        const requirementsText = rawJob.requirements.join('\n');
+
+        const [job] = await JobListing.findOrCreate({
+            where: { title: rawJob.title },
+            defaults: {
+                title: rawJob.title,
+                categoryId,
+                employmentType: 'Full-time',
+                location: 'Perth, Western Australia (FIFO)',
+                description: `High-priority Western Australian resources sector opportunity for ${rawJob.title}. Complete operational induction, equipment maintenance, and field responsibilities across major Western Australian mining project leases.`,
+                requirements: requirementsText,
+                salary: rawJob.salary,
+                benefits: benefitsNumbered,
+                isActive: true,
+                visaSponsorship: true,
+                jobType: 'NORMAL',
+                operationalManualUrl: defaultManualUrl
+            }
+        });
+
+        await job.update({
+            operationalManualUrl: defaultManualUrl,
+            benefits: benefitsNumbered,
+            requirements: requirementsText,
+            salary: rawJob.salary,
+            isActive: true,
+            visaSponsorship: true
+        });
+
+        // Link with MACA Limited
+        const [linkMaca] = await JoblistingEmployer.findOrCreate({
+            where: { employerId: maca.id, joblistingId: job.id },
+            defaults: {
+                employerId: maca.id,
+                joblistingId: job.id,
+                vacancyUrl: 'https://www.maca.net.au/careers'
+            }
+        });
+        await linkMaca.update({ vacancyUrl: 'https://www.maca.net.au/careers' });
+
+        // Link with Mineral Resources
+        const [linkMinRes] = await JoblistingEmployer.findOrCreate({
+            where: { employerId: minRes.id, joblistingId: job.id },
+            defaults: {
+                employerId: minRes.id,
+                joblistingId: job.id,
+                vacancyUrl: 'https://www.mineralresources.com.au/careers'
+            }
+        });
+        await linkMinRes.update({ vacancyUrl: 'https://www.mineralresources.com.au/careers' });
+    }
+
+    console.log('[Seeding] Job Listings seeded and linked to employers.');
+}
+
+/**
+ * Model Seed 5: LMS Infrastructure, Courses (with syllabus & contentUrl), 35 Exam Questions, & Ticket Catalogs
  */
 export async function seedLmsAndTickets(): Promise<void> {
-    console.log('[Seeding] Seeding LMS Data (Certifications, Courses, Modules, Questions & Ticket Catalogs)...');
+    console.log('[Seeding] Seeding LMS Data (Certifications, Courses, Modules, 35 Questions & Ticket Catalogs)...');
+
+    const defaultCourseManualUrl = 'https://res.cloudinary.com/dh2cpesxu/image/upload/v1729700000/training_materials/certhero_accredited_course_manual.pdf';
+
+    const syllabusTemplate = [
+        {
+            title: "Module 1: Workplace Health, Safety & Legislative Frameworks",
+            topics: [
+                "Duty of care in Western Australian resources sector",
+                "Mines Safety and Inspection Act compliance",
+                "Job Safety Analysis (JSA) and Take 5 dynamic hazard protocols"
+            ]
+        },
+        {
+            title: "Module 2: Operational Hazard Identification & Control",
+            topics: [
+                "Hierarchy of controls application",
+                "Hazard reporting and Lockout/Tagout isolation procedures",
+                "Environmental risk mitigation and spillage containment"
+            ]
+        },
+        {
+            title: "Module 3: Technical Skills, Inspection & Equipment Verification",
+            topics: [
+                "Pre-operational walkaround inspection routines",
+                "Equipment safe working load limits and operational boundaries",
+                "Defect identification, logging, and out-of-service tagging"
+            ]
+        },
+        {
+            title: "Module 4: Practical Demonstration & Regulatory Assessment",
+            topics: [
+                "Supervised field execution and positive radio communications",
+                "Emergency response, muster procedures, and incident escalation",
+                "Formal written compliance and knowledge evaluation"
+            ]
+        }
+    ];
 
     for (const data of lmsSeedData) {
         console.log(`[Seeding] Processing certification: ${data.certificationName}`);
+        
         // 1. CertificationType Model
         const certCode = data.certificationName.toUpperCase().replace(/\s+/g, '-');
         const [certType] = await CertificationType.findOrCreate({
@@ -69,7 +241,7 @@ export async function seedLmsAndTickets(): Promise<void> {
         });
         await certType.update({ code: certCode });
 
-        // 2. Course Model
+        // 2. Course Model (with contentUrl and syllabus JSON template)
         const courseCode = data.course.title.split(' ')[0];
         const [course] = await Course.findOrCreate({
             where: { title: data.course.title },
@@ -80,7 +252,9 @@ export async function seedLmsAndTickets(): Promise<void> {
                 format: data.course.format as any,
                 price: data.course.price,
                 capacity: data.course.capacity,
-                isPublished: true
+                isPublished: true,
+                contentUrl: defaultCourseManualUrl,
+                syllabus: syllabusTemplate
             }
         });
         await course.update({
@@ -90,14 +264,14 @@ export async function seedLmsAndTickets(): Promise<void> {
             format: data.course.format as any,
             price: data.course.price,
             capacity: data.course.capacity,
-            isPublished: true
+            isPublished: true,
+            contentUrl: defaultCourseManualUrl,
+            syllabus: syllabusTemplate
         });
 
         // 3. CourseModule Model
         if (data.course.modules) {
-            console.log(`[Seeding]   -> Processing ${data.course.modules.length} modules for course: ${data.course.title}`);
             for (const m of data.course.modules) {
-                console.log(`[Seeding]     -> Module: ${m.title}`);
                 const [mod] = await CourseModule.findOrCreate({
                     where: { courseId: course.id, title: m.title },
                     defaults: {
@@ -122,19 +296,19 @@ export async function seedLmsAndTickets(): Promise<void> {
         const [examConfig] = await ExamConfig.findOrCreate({
             where: { courseId: course.id },
             defaults: {
-                passThreshold: data.course.examConfig.passThreshold,
+                passThreshold: data.course.examConfig?.passThreshold || 80,
                 timeLimitMinutes: 60
             }
         });
         await examConfig.update({
-            passThreshold: data.course.examConfig.passThreshold
+            passThreshold: data.course.examConfig?.passThreshold || 80
         });
 
-        // 5. ExamQuestion Model
-        console.log(`[Seeding]   -> Processing ${data.course.questions.length} questions for course: ${data.course.title}`);
-        for (let i = 0; i < data.course.questions.length; i++) {
-            const q = data.course.questions[i];
-            if (i % 10 === 0) console.log(`[Seeding]     -> Question ${i + 1}/${data.course.questions.length}`);
+        // 5. ExamQuestion Model (Ensuring 35 questions per course)
+        const all35Questions = ensure35Questions(data.course.questions || [], data.course.title, courseCode);
+        console.log(`[Seeding]   -> Seeding ${all35Questions.length} examination questions for ${data.certificationName}`);
+
+        for (const q of all35Questions) {
             const [examQ] = await ExamQuestion.findOrCreate({
                 where: { courseId: course.id, questionText: q.questionText },
                 defaults: {
@@ -151,7 +325,7 @@ export async function seedLmsAndTickets(): Promise<void> {
             });
         }
 
-        // 6. TicketCatalog Model (Seeded directly alongside Course & Questions)
+        // 6. TicketCatalog Model
         const [catalogEntry] = await TicketCatalog.findOrCreate({
             where: { name: data.certificationName },
             defaults: {
@@ -165,7 +339,7 @@ export async function seedLmsAndTickets(): Promise<void> {
         });
     }
 
-    console.log('[Seeding] LMS Data & Ticket Catalogs seeded successfully.');
+    console.log('[Seeding] LMS Data & Ticket Catalogs seeded successfully with 35 questions per ticket.');
 }
 
 /**
@@ -181,6 +355,9 @@ export async function seedDatabase() {
 
     // 2. Seed data model by model
     await seedJobCategories();
+    const { maca, minRes } = await seedEmployers();
+    await seedWallet();
+    await seedJobListings(maca, minRes);
     await seedLmsAndTickets();
 
     console.log('====================================================');

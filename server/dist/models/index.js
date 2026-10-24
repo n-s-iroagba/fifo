@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Faq = exports.Interview = exports.ScheduleCatalogue = exports.Contract = exports.Nomination = exports.PsychometricAttempt = exports.TicketCatalog = exports.Ticket = exports.Certificate = exports.ExamAttempt = exports.Enrollment = exports.ExamQuestion = exports.ExamConfig = exports.CourseModule = exports.Course = exports.CertificationType = exports.LmsCredential = exports.Interest = exports.Notification = exports.Receipt = exports.Invoice = exports.Application = exports.JobStage = exports.JobListing = exports.JobCategory = exports.BankAccount = exports.User = exports.sequelize = void 0;
+exports.Faq = exports.Interview = exports.ScheduleCatalogue = exports.Contract = exports.Experience = exports.ApplicantQualification = exports.Wallet = exports.JoblistingEmployer = exports.Employer = exports.EmployerSelection = exports.Nomination = exports.PsychometricAttempt = exports.TicketCatalog = exports.Ticket = exports.Certificate = exports.ExamAttempt = exports.Enrollment = exports.ExamQuestion = exports.ExamConfig = exports.CourseModule = exports.Course = exports.CertificationType = exports.LmsCredential = exports.Interest = exports.Notification = exports.Receipt = exports.Invoice = exports.Application = exports.JobStage = exports.JobListing = exports.JobCategory = exports.BankAccount = exports.User = exports.sequelize = void 0;
 const database_1 = require("../config/database");
 Object.defineProperty(exports, "sequelize", { enumerable: true, get: function () { return database_1.sequelize; } });
 const User_1 = require("./User");
@@ -47,8 +47,9 @@ const TicketCatalog_1 = require("./TicketCatalog");
 Object.defineProperty(exports, "TicketCatalog", { enumerable: true, get: function () { return TicketCatalog_1.TicketCatalog; } });
 const PsychometricAttempt_1 = require("./PsychometricAttempt");
 Object.defineProperty(exports, "PsychometricAttempt", { enumerable: true, get: function () { return PsychometricAttempt_1.PsychometricAttempt; } });
-const Nomination_1 = require("./Nomination");
-Object.defineProperty(exports, "Nomination", { enumerable: true, get: function () { return Nomination_1.Nomination; } });
+const EmployerSelection_1 = require("./EmployerSelection");
+Object.defineProperty(exports, "Nomination", { enumerable: true, get: function () { return EmployerSelection_1.Nomination; } });
+Object.defineProperty(exports, "EmployerSelection", { enumerable: true, get: function () { return EmployerSelection_1.EmployerSelection; } });
 const Contract_1 = require("./Contract");
 Object.defineProperty(exports, "Contract", { enumerable: true, get: function () { return Contract_1.Contract; } });
 const ScheduleCatalogue_1 = require("./ScheduleCatalogue");
@@ -57,9 +58,27 @@ const Interview_1 = require("./Interview");
 Object.defineProperty(exports, "Interview", { enumerable: true, get: function () { return Interview_1.Interview; } });
 const Faq_1 = require("./Faq");
 Object.defineProperty(exports, "Faq", { enumerable: true, get: function () { return Faq_1.Faq; } });
-// User <-> Ticket
+const Employer_1 = require("./Employer");
+Object.defineProperty(exports, "Employer", { enumerable: true, get: function () { return Employer_1.Employer; } });
+const JoblistingEmployer_1 = require("./JoblistingEmployer");
+Object.defineProperty(exports, "JoblistingEmployer", { enumerable: true, get: function () { return JoblistingEmployer_1.JoblistingEmployer; } });
+const Wallet_1 = require("./Wallet");
+Object.defineProperty(exports, "Wallet", { enumerable: true, get: function () { return Wallet_1.Wallet; } });
+const ApplicantQualification_1 = require("./ApplicantQualification");
+Object.defineProperty(exports, "ApplicantQualification", { enumerable: true, get: function () { return ApplicantQualification_1.ApplicantQualification; } });
+const Experience_1 = require("./Experience");
+Object.defineProperty(exports, "Experience", { enumerable: true, get: function () { return Experience_1.Experience; } });
+// User <-> ApplicantQualification & Experience
+User_1.User.hasMany(ApplicantQualification_1.ApplicantQualification, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
+ApplicantQualification_1.ApplicantQualification.belongsTo(User_1.User, { foreignKey: 'userId' });
+User_1.User.hasMany(Experience_1.Experience, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
+Experience_1.Experience.belongsTo(User_1.User, { foreignKey: 'userId' });
+// User <-> Ticket (Applicants has many tickets; tickets has only one applicant)
 User_1.User.hasMany(Ticket_1.Ticket, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
 Ticket_1.Ticket.belongsTo(User_1.User, { foreignKey: 'userId' });
+// TicketCatalog <-> Ticket (TicketCatalogue has many tickets; tickets have only one ticket catalogue)
+TicketCatalog_1.TicketCatalog.hasMany(Ticket_1.Ticket, { foreignKey: 'ticketCatalogId', as: 'Tickets', onDelete: 'SET NULL' });
+Ticket_1.Ticket.belongsTo(TicketCatalog_1.TicketCatalog, { foreignKey: 'ticketCatalogId', as: 'TicketCatalog' });
 // Application <-> Ticket
 Application_1.Application.hasMany(Ticket_1.Ticket, { foreignKey: 'applicationId', as: 'Tickets', onDelete: 'SET NULL' });
 Ticket_1.Ticket.belongsTo(Application_1.Application, { foreignKey: 'applicationId' });
@@ -69,33 +88,41 @@ Interest_1.Interest.belongsTo(User_1.User, { foreignKey: 'userId' });
 // Job Category <-> Job Listing
 JobCategory_1.JobCategory.hasMany(JobListing_1.JobListing, { foreignKey: 'categoryId' });
 JobListing_1.JobListing.belongsTo(JobCategory_1.JobCategory, { foreignKey: 'categoryId' });
+// JobListing <-> Employer (M:M through JoblistingEmployer)
+JobListing_1.JobListing.belongsToMany(Employer_1.Employer, { through: JoblistingEmployer_1.JoblistingEmployer, foreignKey: 'joblistingId', otherKey: 'employerId', as: 'Employers' });
+Employer_1.Employer.belongsToMany(JobListing_1.JobListing, { through: JoblistingEmployer_1.JoblistingEmployer, foreignKey: 'employerId', otherKey: 'joblistingId', as: 'JobListings' });
+JoblistingEmployer_1.JoblistingEmployer.belongsTo(JobListing_1.JobListing, { foreignKey: 'joblistingId', as: 'JobListing' });
+JoblistingEmployer_1.JoblistingEmployer.belongsTo(Employer_1.Employer, { foreignKey: 'employerId', as: 'Employer' });
+JobListing_1.JobListing.hasMany(JoblistingEmployer_1.JoblistingEmployer, { foreignKey: 'joblistingId', as: 'JoblistingEmployers', onDelete: 'CASCADE', hooks: true });
+Employer_1.Employer.hasMany(JoblistingEmployer_1.JoblistingEmployer, { foreignKey: 'employerId', as: 'JoblistingEmployers', onDelete: 'CASCADE', hooks: true });
 // Application <-> Job Stage
 Application_1.Application.hasMany(JobStage_1.JobStage, { foreignKey: 'applicationId', as: 'JobStages', onDelete: 'CASCADE', hooks: true });
 JobStage_1.JobStage.belongsTo(Application_1.Application, { foreignKey: 'applicationId' });
-// Application <-> Nomination
-Application_1.Application.hasMany(Nomination_1.Nomination, { foreignKey: 'applicationId', as: 'Nominations', onDelete: 'CASCADE', hooks: true });
-Nomination_1.Nomination.belongsTo(Application_1.Application, { foreignKey: 'applicationId' });
+// Application <-> EmployerSelection (Nomination)
+Application_1.Application.hasMany(EmployerSelection_1.EmployerSelection, { foreignKey: 'applicationId', as: 'EmployerSelections', onDelete: 'CASCADE', hooks: true });
+EmployerSelection_1.EmployerSelection.belongsTo(Application_1.Application, { foreignKey: 'applicationId' });
+Application_1.Application.hasMany(EmployerSelection_1.Nomination, { foreignKey: 'applicationId', as: 'Nominations', onDelete: 'CASCADE', hooks: true });
+EmployerSelection_1.Nomination.belongsTo(Application_1.Application, { foreignKey: 'applicationId' });
 // Application <-> Contract
 Application_1.Application.hasMany(Contract_1.Contract, { foreignKey: 'applicationId', as: 'Contracts', onDelete: 'CASCADE', hooks: true });
 Contract_1.Contract.belongsTo(Application_1.Application, { foreignKey: 'applicationId' });
 // User <-> Contract
 User_1.User.hasMany(Contract_1.Contract, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
 Contract_1.Contract.belongsTo(User_1.User, { foreignKey: 'userId' });
-// User <-> Application
-User_1.User.hasMany(Application_1.Application, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
-Application_1.Application.belongsTo(User_1.User, { foreignKey: 'userId' });
-// JobListing <-> Application
+// User <-> Application (Applicant has only one application; application has only one applicant)
+User_1.User.hasOne(Application_1.Application, { foreignKey: 'userId', as: 'Application', onDelete: 'CASCADE', hooks: true });
+Application_1.Application.belongsTo(User_1.User, { foreignKey: 'userId', as: 'User' });
+// JobListing <-> Application (Application has only one JobListing; JobListing has many applications)
 JobListing_1.JobListing.hasMany(Application_1.Application, { foreignKey: 'jobId' });
 Application_1.Application.belongsTo(JobListing_1.JobListing, { foreignKey: 'jobId' });
-// JobListing <-> TicketCatalog (M:M)
+// JobListing <-> TicketCatalog (M:M: JobListing has many TicketCatalogue; TicketCatalogue has many JobListing)
 JobListing_1.JobListing.belongsToMany(TicketCatalog_1.TicketCatalog, { through: 'job_ticket_requirements', foreignKey: 'jobId', otherKey: 'ticketCatalogId', as: 'RequiredTickets' });
 TicketCatalog_1.TicketCatalog.belongsToMany(JobListing_1.JobListing, { through: 'job_ticket_requirements', foreignKey: 'ticketCatalogId', otherKey: 'jobId', as: 'Jobs' });
-// JobListing <-> JobStage (Template Stages)
 // Invoice <-> Receipt
 Invoice_1.Invoice.hasOne(Receipt_1.Receipt, { foreignKey: 'invoiceId', onDelete: 'CASCADE', hooks: true });
 Receipt_1.Receipt.belongsTo(Invoice_1.Invoice, { foreignKey: 'invoiceId' });
-// User <-> Invoice
-User_1.User.hasMany(Invoice_1.Invoice, { foreignKey: 'applicantId', as: 'invoices', onDelete: 'CASCADE', hooks: true });
+// User <-> Invoice (Applicant only has one invoice 1:1)
+User_1.User.hasOne(Invoice_1.Invoice, { foreignKey: 'applicantId', as: 'invoice', onDelete: 'CASCADE', hooks: true });
 Invoice_1.Invoice.belongsTo(User_1.User, { foreignKey: 'applicantId', as: 'applicant' });
 // User <-> Notification
 User_1.User.hasMany(Notification_1.Notification, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });

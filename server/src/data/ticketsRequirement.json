@@ -1,0 +1,200 @@
+[
+  {
+    "jobTitle": "Open Cut Production Operator (Coal/Metals)",
+    "category": "Mining Operations",
+    "requiredTickets": [
+      {
+        "name": "RIIMPO338E Conduct rigid haul truck operations",
+        "code": "RIIMPO338E",
+        "description": "Essential operational competency for operating heavy rigid frame haul trucks in surface open cut mining.",
+        "normalPrice": 1250.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      },
+      {
+        "name": "CPCWHS1001 Prepare to work safely in the construction industry (White Card)",
+        "code": "CPCWHS1001",
+        "description": "Mandatory statutory safety induction card for access to Australian construction and resource infrastructure sites.",
+        "normalPrice": 120.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      },
+      {
+        "name": "Australian Standard Driver's Licence (Class C or HR)",
+        "code": "AU-DL",
+        "description": "Current valid motor vehicle driver licence required for all FIFO transport and on-lease operation.",
+        "normalPrice": 180.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      }
+    ]
+  },
+  {
+    "jobTitle": "Underground Jumbo Operator",
+    "category": "Mining Operations",
+    "requiredTickets": [
+      {
+        "name": "RIIWHS204E Work safely at heights",
+        "code": "RIIWHS204E",
+        "description": "Mandatory safety qualification for high-elevation drilling, basket work, and development faces.",
+        "normalPrice": 280.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      },
+      {
+        "name": "RIIWHS202E Enter and work in confined spaces",
+        "code": "RIIWHS202E",
+        "description": "Statutory underground and restricted-space atmospheric testing and safety qualification.",
+        "normalPrice": 320.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      },
+      {
+        "name": "Australian Standard Driver's Licence (Class C or HR)",
+        "code": "AU-DL",
+        "description": "Current valid motor vehicle driver licence for light vehicle transit in decline and surface access.",
+        "normalPrice": 180.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      }
+    ]
+  },
+  {
+    "jobTitle": "Mobile Plant Maintenance HD Diesel Fitter",
+    "category": "Mechanical Trades",
+    "requiredTickets": [
+      {
+        "name": "TLILIC0003 Licence to operate a forklift truck",
+        "code": "TLILIC0003",
+        "description": "High Risk Work Licence (LF class) for workshop parts handling and component positioning.",
+        "normalPrice": 450.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      },
+      {
+        "name": "RIIWHS204E Work safely at heights",
+        "code": "RIIWHS204E",
+        "description": "Working on elevated haul truck chassis, shovel decks, and elevated maintenance stands.",
+        "normalPrice": 280.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      },
+      {
+        "name": "HLTAID011 Provide First Aid",
+        "code": "HLTAID011",
+        "description": "Nationally accredited workplace first aid and CPR certification for high-risk mechanical trade workshops.",
+        "normalPrice": 160.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      }
+    ]
+  },
+  {
+    "jobTitle": "High Voltage Mine Electrician",
+    "category": "Electrical / Instrumentation",
+    "requiredTickets": [
+      {
+        "name": "UEERL0004 EEHA Certification",
+        "code": "UEERL0004",
+        "description": "Electrical Equipment in Hazardous Areas (EEHA) testing, inspection, and maintenance under AS/NZS 60079.",
+        "normalPrice": 1850.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      },
+      {
+        "name": "CPCWHS1001 Prepare to work safely in the construction industry (White Card)",
+        "code": "CPCWHS1001",
+        "description": "Mandatory safety card for WA construction and resource project sites.",
+        "normalPrice": 120.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      },
+      {
+        "name": "HLTAID011 Provide First Aid",
+        "code": "HLTAID011",
+        "description": "Workplace first aid certification with CPR and electrical shock response.",
+        "normalPrice": 160.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      }
+    ]
+  },
+  {
+    "jobTitle": "Mineral Processing Plant Technician",
+    "category": "Processing / Fixed Plant / Plant Operations",
+    "requiredTickets": [
+      {
+        "name": "MSMWHS217 Gas Test Atmospheres",
+        "code": "MSMWHS217",
+        "description": "Calibrated multi-gas detector operation and hazardous vapor testing in processing mills.",
+        "normalPrice": 240.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      },
+      {
+        "name": "RIIWHS202E Enter and work in confined spaces",
+        "code": "RIIWHS202E",
+        "description": "Entry permit and safety watch for ball mills, float cells, and sumps.",
+        "normalPrice": 320.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      },
+      {
+        "name": "TLILIC0003 Licence to operate a forklift truck",
+        "code": "TLILIC0003",
+        "description": "Reagents and grinding media handling forklift licence.",
+        "normalPrice": 450.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      }
+    ]
+  },
+  {
+    "jobTitle": "FIFO Mining Village Chef / Head Caterer",
+    "category": "Catering / Hospitality / Housekeeping",
+    "requiredTickets": [
+      {
+        "name": "SIT30821 Certificate III in Commercial Cookery",
+        "code": "SIT30821",
+        "description": "Trade credential for bulk catering, menu production, and FIFO village kitchen management.",
+        "normalPrice": 3800.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      },
+      {
+        "name": "SITXFSA005 Use hygienic practices for food safety",
+        "code": "SITXFSA005",
+        "description": "HACCP compliance and food safety supervision for remote accommodation villages.",
+        "normalPrice": 140.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      },
+      {
+        "name": "SITHFAB021 Provide responsible service of alcohol (RSA)",
+        "code": "SITHFAB021",
+        "description": "Mandatory Western Australian RSA accreditation for mining camp tavern operations.",
+        "normalPrice": 90.00,
+        "courseSeeded": true,
+        "examQuestionsSeeded": true,
+        "catalogueSeeded": true
+      }
+    ]
+  }
+]

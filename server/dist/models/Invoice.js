@@ -14,19 +14,32 @@ Invoice.init({
     },
     applicantId: {
         type: sequelize_1.DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        unique: true
     },
     purpose: {
-        type: sequelize_1.DataTypes.ENUM('rto-complete', 'rto-partial', 'rto-complete-after-partial', 'aveling-partial', 'aveling-complete-after-partial', 'aveling-complete', 'second-attempt', 'shipping', 'visa-blue-collar'),
-        allowNull: false
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+        defaultValue: 'CertHero Ticket Sponsorship'
+    },
+    paymentStatus: {
+        type: sequelize_1.DataTypes.ENUM('unpaid', 'half_paid', 'paid'),
+        allowNull: false,
+        defaultValue: 'unpaid'
     },
     walletAddress: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: true
     },
+    amountInAUD: {
+        type: sequelize_1.DataTypes.FLOAT,
+        allowNull: true,
+        defaultValue: 0
+    },
     amountInUSD: {
         type: sequelize_1.DataTypes.FLOAT,
-        allowNull: false
+        allowNull: false,
+        defaultValue: 0
     },
     date: {
         type: sequelize_1.DataTypes.DATE,

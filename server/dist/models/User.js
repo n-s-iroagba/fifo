@@ -192,6 +192,18 @@ User.init({
         type: sequelize_1.DataTypes.BOOLEAN,
         defaultValue: false,
         allowNull: false,
+    },
+    interviewDate: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
+    interviewTime: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
+    interviewLink: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
     }
 }, {
     sequelize: database_1.sequelize,

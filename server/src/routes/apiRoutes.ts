@@ -25,6 +25,8 @@ import { psychometricController } from '../controllers/PsychometricController';
 import { scheduleCatalogueController } from '../controllers/ScheduleCatalogueController';
 import { interviewController } from '../controllers/InterviewController';
 import { faqController } from '../controllers/FaqController';
+import { employerController } from '../controllers/EmployerController';
+import { walletController } from '../controllers/WalletController';
 
 
 const upload = multer({
@@ -146,6 +148,7 @@ router.post('/admin/mail', ...adminMW, upload.array('attachments'), adminControl
 
 // New: manage ad-hoc stages for specific applications
 router.post('/admin/applications/:id/stages', ...adminMW, applicationController.addStage.bind(applicationController));
+router.post('/admin/applications/:id/accept', ...adminMW, applicationController.acceptApplicationWithDraft.bind(applicationController));
 router.get('/admin/applications/:id/stages/:stageId', ...adminMW, applicationController.getStageDetails.bind(applicationController));
 router.put('/admin/applications/:id/stages/:stageId', ...adminMW, applicationController.updateStage.bind(applicationController));
 router.delete('/admin/applications/:id/stages/:stageId', ...adminMW, applicationController.deleteStage.bind(applicationController));
@@ -158,6 +161,28 @@ router.put('/admin/applications/:id/visa-sponsorship', ...adminMW, applicationCo
 router.get('/admin/nominations', ...adminMW, applicationController.getAllNominations.bind(applicationController));
 router.post('/admin/applications/:id/nominations', ...adminMW, applicationController.createNominations.bind(applicationController));
 router.get('/admin/applications/:id/nominations', ...adminMW, applicationController.getNominations.bind(applicationController));
+
+// Employer Selection aliases
+router.get('/admin/employer-selections', ...adminMW, applicationController.getAllNominations.bind(applicationController));
+router.post('/admin/applications/:id/employer-selections', ...adminMW, applicationController.createNominations.bind(applicationController));
+router.get('/admin/applications/:id/employer-selections', ...adminMW, applicationController.getNominations.bind(applicationController));
+
+// Employer Management & Vacancy URLs Routes
+router.get('/admin/employers', ...adminMW, employerController.getAll.bind(employerController));
+router.get('/admin/employers/:id', ...adminMW, employerController.getById.bind(employerController));
+router.post('/admin/employers', ...adminMW, employerController.create.bind(employerController));
+router.put('/admin/employers/:id', ...adminMW, employerController.update.bind(employerController));
+router.delete('/admin/employers/:id', ...adminMW, employerController.delete.bind(employerController));
+router.get('/employers', employerController.getAll.bind(employerController));
+router.get('/employers/currently-employing', employerController.getCurrentlyEmploying.bind(employerController));
+router.get('/admin/joblisting-employers', ...adminMW, employerController.getAllJoblistingEmployers.bind(employerController));
+router.put('/admin/joblisting-employers/:id', ...adminMW, employerController.updateVacancyUrl.bind(employerController));
+
+// Crypto Wallet CRUD (Single USDT TRC20 wallet)
+router.get('/admin/wallet', ...adminMW, walletController.getWallet.bind(walletController));
+router.post('/admin/wallet', ...adminMW, walletController.setWallet.bind(walletController));
+router.delete('/admin/wallet', ...adminMW, walletController.deleteWallet.bind(walletController));
+router.get('/wallet', walletController.getWallet.bind(walletController));
 
 // Applicant Nomination Upload
 router.post('/applications/documents', ...applicantMW, applicationController.uploadNominationDocument.bind(applicationController));

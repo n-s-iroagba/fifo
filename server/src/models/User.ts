@@ -45,6 +45,9 @@ export class User extends Model {
     declare fullBalancePaid: boolean;
     declare canPickSchedule: boolean;
     declare testimonialConsent: boolean;
+    declare interviewDate: string | null;
+    declare interviewTime: string | null;
+    declare interviewLink: string | null;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 }
@@ -235,6 +238,18 @@ User.init({
         type: DataTypes.BOOLEAN,
         defaultValue: false,
         allowNull: false,
+    },
+    interviewDate: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    interviewTime: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    interviewLink: {
+        type: DataTypes.STRING,
+        allowNull: true,
     }
 }, {
     sequelize,

@@ -17,6 +17,7 @@ import { seedOnlineTickets } from './seedTicketSeed';
 
 import { migrateInterviewFeature } from './migrations/interview_feature_migration';
 import { migrateFaqFeature } from './migrations/faq_feature_migration';
+import { migrateSchemaUpdates } from './migrations/schema_update_migration';
 
 const PORT = process.env.PORT || 5000;
 
@@ -27,10 +28,11 @@ const startServer = async () => {
         app.listen(PORT, async () => {
             logger.info(`Server activated and mapping routes on port ${PORT}`);
 
-            // Run heavy seeding and migrations in the background so Fly.io health checks don't timeout
+            // Run heavy seeding and migrations in the background so Fly.io / Render health checks don't timeout
             (async () => {
                 try {
                     await sequelize.sync();
+                    await migrateSchemaUpdates();
                     await migrateInterviewFeature();
                     await migrateFaqFeature();
 

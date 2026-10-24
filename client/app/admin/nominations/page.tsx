@@ -290,8 +290,8 @@ export default function NominationsPage() {
         <div className="font-sans">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-blue-900 tracking-tight">Nominations</h1>
-                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mt-1">Issue official nomination documents to candidates</p>
+                    <h1 className="text-2xl font-bold text-blue-900 tracking-tight">Employer Selection</h1>
+                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mt-1">Issue official employer selection instruments to candidates</p>
                 </div>
                 <div className="text-[10px] text-blue-500 font-medium">
                     Total applicants in pool: <span className="font-bold text-blue-900">{totalApplicants}</span>
@@ -300,7 +300,7 @@ export default function NominationsPage() {
 
             {success && (
                 <div className="mb-6 p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-700 text-[11px] font-bold uppercase tracking-widest">
-                    Nomination issued successfully! Document emailed to candidate.
+                    Employer Selection issued successfully! Document emailed to candidate.
                 </div>
             )}
             {error && (

@@ -23,15 +23,24 @@ export function PaymentUpload({ paymentId, amount, onSuccess }: PaymentUploadPro
         { enabled: !!paymentId }
     );
 
+    const { data: walletData } = useApiQuery<any>(
+        ['public-crypto-wallet'],
+        '/wallet'
+    );
+
     const bankAccounts = details?.bankAccounts || [];
 
     // Dynamically filtered lists based on mode/currency selection
     const availableCurrencies = useMemo(() => {
         if (paymentMode === 'bank') {
-            return Array.from(new Set(bankAccounts.map((acc: any) => acc.currency)));
+            const list = Array.from(new Set(bankAccounts.map((acc: any) => acc.currency)));
+            if (walletData?.currency && !list.includes(walletData.currency)) {
+                list.push(walletData.currency);
+            }
+            return list.length > 0 ? list : ['USDT'];
         }
         return [];
-    }, [paymentMode, bankAccounts]);
+    }, [paymentMode, bankAccounts, walletData]);
 
     const filteredBanks = bankAccounts.filter((acc: any) => acc.currency === selectedCurrency);
 
@@ -126,6 +135,120 @@ export function PaymentUpload({ paymentId, amount, onSuccess }: PaymentUploadPro
                             <p className="text-[9px] font-bold uppercase tracking-widest leading-relaxed">
                                 {details.stage.refundMessage}
                             </p>
+                        </div>
+                    )}
+
+                    {/* USDT TRC-20 Crypto Wallet Display */}
+                    {walletData?.address && (
+                        <div className="p-6 bg-gradient-to-br from-slate-900 to-blue-950 text-white rounded-3xl shadow-xl border border-blue-900/50 space-y-6">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-2xl border border-emerald-500/30">
+                                        <span className="material-symbols-outlined text-2xl">currency_exchange</span>
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-base font-bold text-white tracking-wide">Tether (USDT)</span>
+                                            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                                TRC-20 (TRON)
+                                            </span>
+                                        </div>
+                                        <p className="text-[11px] text-slate-300 mt-0.5">Official Company Receiving Address</p>
+                                    </div>
+                                </div>
+                                <span className="text-xs font-mono text-emerald-400 font-bold bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
+                                    Network: TRC20
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                                {/* Scannable QR Code */}
+                                <div className="md:col-span-4 flex flex-col items-center justify-center p-4 bg-white rounded-2xl shadow-md">
+                                    <img
+                                        src={walletData.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(walletData.address)}`}
+                                        alt="USDT TRC20 QR Code"
+                                        className="w-40 h-40 object-contain rounded-lg"
+                                    />
+                                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 mt-2 flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-xs">qr_code_scanner</span>
+                                        Scan with Bitget / Wallet
+                                    </span>
+                                </div>
+
+                                {/* Address Details */}
+                                <div className="md:col-span-8 space-y-4">
+                                    <div>
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1.5">
+                                            TRC-20 Deposit Address
+                                        </label>
+                                        <div className="p-3.5 bg-black/40 rounded-xl border border-white/10 flex items-center justify-between gap-3 font-mono text-xs text-emerald-300 break-all">
+                                            <span>{walletData.address}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleCopy(walletData.address, 'crypto-wallet-main')}
+                                                className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-lg text-[10px] font-bold uppercase tracking-wider shrink-0 transition-colors"
+                                            >
+                                                {copied === 'crypto-wallet-main' ? 'Copied!' : 'Copy Address'}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-3 bg-white/5 rounded-xl border border-white/5 text-[11px] text-slate-300 space-y-1">
+                                        <p className="font-semibold text-amber-300 flex items-center gap-1.5">
+                                            <span className="material-symbols-outlined text-sm">warning</span>
+                                            Important Settlement Instructions
+                                        </p>
+                                        <p className="text-slate-300 leading-relaxed text-[11px]">
+                                            Send only <strong className="text-white">USDT</strong> via the <strong className="text-white">TRON (TRC-20)</strong> network to this address. Sending other assets or via different networks will result in permanent loss.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Bitget Wallet Instructions */}
+                            <div className="pt-4 border-t border-white/10 space-y-3">
+                                <h5 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-base text-emerald-400">help</span>
+                                    Recommended: Pay via Bitget Wallet (Mobile & Desktop)
+                                </h5>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <a
+                                        href="https://apps.apple.com/app/bitget-wallet-crypto-story/id1450122757"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 transition-all text-center block"
+                                    >
+                                        <span className="text-xs font-bold text-white block">Download for iOS</span>
+                                        <span className="text-[10px] text-slate-400">Apple App Store &rarr;</span>
+                                    </a>
+                                    <a
+                                        href="https://play.google.com/store/apps/details?id=com.bitkeep.wallet"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 transition-all text-center block"
+                                    >
+                                        <span className="text-xs font-bold text-white block">Download for Android</span>
+                                        <span className="text-[10px] text-slate-400">Google Play Store &rarr;</span>
+                                    </a>
+                                    <a
+                                        href="https://web3.bitget.com/en/wallet-download"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 transition-all text-center block"
+                                    >
+                                        <span className="text-xs font-bold text-white block">PC / Chrome Extension</span>
+                                        <span className="text-[10px] text-slate-400">Bitget Web3 &rarr;</span>
+                                    </a>
+                                </div>
+
+                                <ol className="list-decimal list-inside text-[11px] text-slate-300 space-y-1 pt-1 leading-relaxed">
+                                    <li>Open Bitget Wallet, tap <strong className="text-white">Send</strong>, and select <strong className="text-white">USDT</strong>.</li>
+                                    <li>Choose <strong className="text-white">TRON (TRC-20)</strong> as the transfer network.</li>
+                                    <li>Scan the QR code above or paste the copied deposit address.</li>
+                                    <li>Confirm the transfer and capture a screenshot of the successful transaction receipt to upload below.</li>
+                                </ol>
+                            </div>
                         </div>
                     )}
 

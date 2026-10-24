@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { applicationService } from '../services/ApplicationService';
 import { CONSTANTS } from '../constants';
-import { sendInfoEmail } from '../utils/email';
-import { User } from '../models/User';
+import { sendInfoEmail, sendEmailFrom } from '../utils/email';
+import { User, Application, JobListing, JoblistingEmployer, Employer } from '../models';
 
 export class ApplicationController {
     // Maps to STK-APP-APPLY-001, TRUST-009
@@ -271,15 +271,56 @@ export class ApplicationController {
                 }
             }
 
-            // Send NominationPresentationMail with document attachment
+            // Send NominationPresentationMail with document attachment and employer details
             if (candidateEmail && documentUrl) {
                 try {
-                    const subject = 'Your Official Nomination & Employer Selection – Action Required Within 48 Hours';
+                    // Fetch application details to get job listing and linked employers
+                    const app = await Application.findByPk(id, {
+                        include: [
+                            {
+                                model: JobListing,
+                                include: [
+                                    {
+                                        model: JoblistingEmployer,
+                                        as: 'joblistingEmployers',
+                                        include: [{ model: Employer, as: 'employer' }]
+                                    }
+                                ]
+                            }
+                        ]
+                    });
+
+                    let employersSectionHtml = '';
+                    const linkedEmployers = (app as any)?.JobListing?.joblistingEmployers || [];
+                    if (linkedEmployers.length > 0) {
+                        employersSectionHtml = linkedEmployers.map((item: any) => {
+                            const emp = item.employer;
+                            if (!emp) return '';
+                            return `
+                                <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; margin: 12px 0;">
+                                    <h4 style="margin: 0 0 6px 0; color: #0b3486; font-size: 14px; font-weight: 700;">Participating Hiring Partner: ${emp.name}</h4>
+                                    <p style="margin: 0 0 8px 0; color: #334155; font-size: 12px; line-height: 1.5;">${emp.companyDescription || ''}</p>
+                                    <p style="margin: 0 0 4px 0; font-size: 12px; color: #475569;">
+                                        <strong>Website:</strong> <a href="${emp.websiteUrl}" target="_blank" style="color: #0b3486; text-decoration: underline;">${emp.websiteUrl}</a>
+                                    </p>
+                                    ${item.vacancyUrl ? `
+                                    <p style="margin: 4px 0 0 0; font-size: 12px; color: #475569;">
+                                        <strong>Official Vacancy Posting:</strong> <a href="${item.vacancyUrl}" target="_blank" style="color: #0b3486; text-decoration: underline;">${item.vacancyUrl}</a>
+                                    </p>` : ''}
+                                </div>
+                            `;
+                        }).join('');
+                    }
+
+                    const subject = 'Your Official Employer Selection & Trade Nomination – Action Required Within 48 Hours';
                     const content = `
                         <p>Dear ${candidateName || 'Candidate'},</p>
-                        <p>Blue Collar Recruitment Pty Limited is pleased to present your Official Notice of Nomination &amp; Employer Selection.</p>
-                        <p>Please find your nomination document attached. Kindly review the available options, select exactly <strong>one (1) option</strong>, sign the document, and return it within <strong>forty-eight (48) hours</strong>.</p>
-                        <p>You may also download, sign, and upload the signed document through your dashboard nominations page.</p>
+                        <p>Blue Collar Recruitment Pty Limited is pleased to present your Official Notice of Employer Selection.</p>
+                        <p>Please find your employer selection document attached. Kindly review the available partner opportunities below, select exactly <strong>one (1) option</strong>, sign the document, and return it within <strong>forty-eight (48) hours</strong>.</p>
+                        <p>You may also review, sign, and submit your selection online through your candidate dashboard.</p>
+                        
+                        ${employersSectionHtml}
+
                         <div style="background-color: #f1f5f9; border-left: 4px solid #0b3486; padding: 14px 16px; margin: 18px 0; border-radius: 4px;">
                             <p style="margin: 0; font-weight: 600; color: #1e293b; font-size: 14px;">Official Australian Visa Sponsorship Verification</p>
                             <p style="margin: 6px 0 0 0; color: #475569; font-size: 13px; line-height: 1.5;">
@@ -295,7 +336,7 @@ export class ApplicationController {
                         </div>
                         <p>Yours sincerely,<br>Troy Latuff<br>Chief Executive Officer<br>Blue Collar Recruitment Pty Ltd</p>
                     `;
-                    const attachments = [{ filename: 'Nomination_Form.pdf', path: documentUrl }];
+                    const attachments = [{ filename: 'Employer_Selection_Form.pdf', path: documentUrl }];
                     await sendInfoEmail(candidateEmail, subject, content, attachments);
                 } catch (mailErr) {
                     console.error('[ApplicationController.createNominations] email failed:', mailErr);
@@ -505,7 +546,7 @@ export class ApplicationController {
                 if (user) {
                     const candidateSubject = `Contract Received and Under Review`;
                     const candidateContent = `
-                        <p>Dear ${user.firstName},</p>
+                        <p>Dear ${user.fullName || 'Candidate'},</p>
                         <p>We have successfully received your signed contract document (${documentType || 'Document'}).</p>
                         <p>Your contract is currently <strong>Under Review</strong>. This process typically takes up to 3 hours.</p>
                         <p>We will notify you once the contract has been fully approved.</p>
@@ -521,6 +562,88 @@ export class ApplicationController {
         } catch (error: any) {
             console.error('[ApplicationController.uploadContractDocument]', error);
             res.status(500).json({ error: 'Failed to upload document' });
+        }
+    }
+
+    /**
+     * CHANGES.md Prompt 8: Manual Application Acceptance by Admin with mandatory drafted mail.
+     */
+    public async acceptApplicationWithDraft(req: Request, res: Response): Promise<void> {
+        try {
+            const applicationId = parseInt(req.params.id as string, 10);
+            const { subject, message, fromType = 'info' } = req.body;
+
+            if (!subject || !message || !message.trim()) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({
+                    error: 'Subject and drafted message content are mandatory for application acceptance.'
+                });
+                return;
+            }
+
+            const { Application, JobStage, JobListing, User, Notification } = require('../models');
+
+            const application = await Application.findByPk(applicationId, {
+                include: [
+                    { model: JobListing, as: 'JobListing' },
+                    { model: User, as: 'User' }
+                ]
+            });
+
+            if (!application) {
+                res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: 'Application not found' });
+                return;
+            }
+
+            const applicant = application.User;
+            const jobTitle = application.JobListing?.title || 'Applied FIFO Position';
+
+            // 1. Mark 'Application' stage as accepted
+            const appStage = await JobStage.findOne({
+                where: {
+                    applicationId: application.id,
+                    name: 'Application'
+                }
+            });
+
+            if (appStage) {
+                await appStage.update({ status: 'accepted' });
+            }
+
+            // 2. Advance to Employer Selection stage (ongoing)
+            const nextStage = await applicationService.addStageToApplication(application.id, {
+                name: 'Employer Selection',
+                status: 'ongoing',
+                setAsCurrent: true,
+                notifyInApp: true,
+                notifyEmail: false
+            });
+
+            // 3. Create in-app notification
+            await Notification.create({
+                userId: application.userId,
+                title: 'Application Accepted',
+                body: `Your application for "${jobTitle}" has been reviewed and accepted. Please check your dashboard for Employer Selection details.`,
+                isRead: false
+            });
+
+            // 4. Send drafted notification email from specified channel (info/blue collar)
+            await sendEmailFrom(
+                fromType as any,
+                applicant.email,
+                subject,
+                message
+            );
+
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({
+                success: true,
+                message: 'Application accepted and notification email successfully dispatched to applicant.',
+                stage: nextStage
+            });
+        } catch (error: any) {
+            console.error('[ApplicationController.acceptApplicationWithDraft]', error);
+            res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+                error: error.message || 'Failed to accept application'
+            });
         }
     }
 }

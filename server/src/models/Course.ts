@@ -11,6 +11,8 @@ export class Course extends Model {
   public price!: number;
   public capacity!: number;
   public isPublished!: boolean;
+  public contentUrl!: string | null;
+  public syllabus!: string | null;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -33,6 +35,14 @@ Course.init({
   description: {
     type: DataTypes.TEXT,
     allowNull: false
+  },
+  contentUrl: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  syllabus: {
+    type: DataTypes.TEXT,
+    allowNull: true
   },
   format: {
     type: DataTypes.ENUM('Theory', 'Practical', 'Mixed', 'Online'),

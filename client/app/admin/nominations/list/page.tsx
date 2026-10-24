@@ -37,14 +37,14 @@ export default function AdminNominationsListPage() {
         <div className="font-sans antialiased text-blue-900">
             <div className="mb-12 flex justify-between items-end">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight uppercase leading-tight">All Nominations</h1>
-                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.3em] mt-2">View issued and selected nominations</p>
+                    <h1 className="text-3xl font-bold tracking-tight uppercase leading-tight">Employer Selections</h1>
+                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.3em] mt-2">View issued and selected employer nominations</p>
                 </div>
                 <Link
                     href="/admin/nominations"
                     className="bg-blue-900 text-white px-8 py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-blue-800 transition-all shadow-lg shadow-blue-900/10"
                 >
-                    Issue New Nomination
+                    Issue New Employer Selection
                 </Link>
             </div>
 

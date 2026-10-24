@@ -23,15 +23,30 @@ import { Certificate } from './Certificate';
 import { Ticket } from './Ticket';
 import { TicketCatalog } from './TicketCatalog';
 import { PsychometricAttempt } from './PsychometricAttempt';
-import { Nomination } from './Nomination';
+import { Nomination, EmployerSelection } from './EmployerSelection';
 import { Contract } from './Contract';
 import { ScheduleCatalogue } from './ScheduleCatalogue';
 import { Interview } from './Interview';
 import { Faq } from './Faq';
+import { Employer } from './Employer';
+import { JoblistingEmployer } from './JoblistingEmployer';
+import { Wallet } from './Wallet';
+import { ApplicantQualification } from './ApplicantQualification';
+import { Experience } from './Experience';
 
-// User <-> Ticket
+// User <-> ApplicantQualification & Experience
+User.hasMany(ApplicantQualification, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
+ApplicantQualification.belongsTo(User, { foreignKey: 'userId' });
+User.hasMany(Experience, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
+Experience.belongsTo(User, { foreignKey: 'userId' });
+
+// User <-> Ticket (Applicants has many tickets; tickets has only one applicant)
 User.hasMany(Ticket, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
 Ticket.belongsTo(User, { foreignKey: 'userId' });
+
+// TicketCatalog <-> Ticket (TicketCatalogue has many tickets; tickets have only one ticket catalogue)
+TicketCatalog.hasMany(Ticket, { foreignKey: 'ticketCatalogId', as: 'Tickets', onDelete: 'SET NULL' });
+Ticket.belongsTo(TicketCatalog, { foreignKey: 'ticketCatalogId', as: 'TicketCatalog' });
 
 // Application <-> Ticket
 Application.hasMany(Ticket, { foreignKey: 'applicationId', as: 'Tickets', onDelete: 'SET NULL' });
@@ -41,19 +56,25 @@ Ticket.belongsTo(Application, { foreignKey: 'applicationId' });
 User.hasMany(Interest, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
 Interest.belongsTo(User, { foreignKey: 'userId' });
 
-
-
-
-
 // Job Category <-> Job Listing
 JobCategory.hasMany(JobListing, { foreignKey: 'categoryId' });
 JobListing.belongsTo(JobCategory, { foreignKey: 'categoryId' });
+
+// JobListing <-> Employer (M:M through JoblistingEmployer)
+JobListing.belongsToMany(Employer, { through: JoblistingEmployer, foreignKey: 'joblistingId', otherKey: 'employerId', as: 'Employers' });
+Employer.belongsToMany(JobListing, { through: JoblistingEmployer, foreignKey: 'employerId', otherKey: 'joblistingId', as: 'JobListings' });
+JoblistingEmployer.belongsTo(JobListing, { foreignKey: 'joblistingId', as: 'JobListing' });
+JoblistingEmployer.belongsTo(Employer, { foreignKey: 'employerId', as: 'Employer' });
+JobListing.hasMany(JoblistingEmployer, { foreignKey: 'joblistingId', as: 'JoblistingEmployers', onDelete: 'CASCADE', hooks: true });
+Employer.hasMany(JoblistingEmployer, { foreignKey: 'employerId', as: 'JoblistingEmployers', onDelete: 'CASCADE', hooks: true });
 
 // Application <-> Job Stage
 Application.hasMany(JobStage, { foreignKey: 'applicationId', as: 'JobStages', onDelete: 'CASCADE', hooks: true });
 JobStage.belongsTo(Application, { foreignKey: 'applicationId' });
 
-// Application <-> Nomination
+// Application <-> EmployerSelection (Nomination)
+Application.hasMany(EmployerSelection, { foreignKey: 'applicationId', as: 'EmployerSelections', onDelete: 'CASCADE', hooks: true });
+EmployerSelection.belongsTo(Application, { foreignKey: 'applicationId' });
 Application.hasMany(Nomination, { foreignKey: 'applicationId', as: 'Nominations', onDelete: 'CASCADE', hooks: true });
 Nomination.belongsTo(Application, { foreignKey: 'applicationId' });
 
@@ -64,26 +85,24 @@ Contract.belongsTo(Application, { foreignKey: 'applicationId' });
 User.hasMany(Contract, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
 Contract.belongsTo(User, { foreignKey: 'userId' });
 
-// User <-> Application
-User.hasMany(Application, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
-Application.belongsTo(User, { foreignKey: 'userId' });
+// User <-> Application (Applicant has only one application; application has only one applicant)
+User.hasOne(Application, { foreignKey: 'userId', as: 'Application', onDelete: 'CASCADE', hooks: true });
+Application.belongsTo(User, { foreignKey: 'userId', as: 'User' });
 
-// JobListing <-> Application
+// JobListing <-> Application (Application has only one JobListing; JobListing has many applications)
 JobListing.hasMany(Application, { foreignKey: 'jobId' });
 Application.belongsTo(JobListing, { foreignKey: 'jobId' });
 
-// JobListing <-> TicketCatalog (M:M)
+// JobListing <-> TicketCatalog (M:M: JobListing has many TicketCatalogue; TicketCatalogue has many JobListing)
 JobListing.belongsToMany(TicketCatalog, { through: 'job_ticket_requirements', foreignKey: 'jobId', otherKey: 'ticketCatalogId', as: 'RequiredTickets' });
 TicketCatalog.belongsToMany(JobListing, { through: 'job_ticket_requirements', foreignKey: 'ticketCatalogId', otherKey: 'jobId', as: 'Jobs' });
-
-// JobListing <-> JobStage (Template Stages)
 
 // Invoice <-> Receipt
 Invoice.hasOne(Receipt, { foreignKey: 'invoiceId', onDelete: 'CASCADE', hooks: true });
 Receipt.belongsTo(Invoice, { foreignKey: 'invoiceId' });
 
-// User <-> Invoice
-User.hasMany(Invoice, { foreignKey: 'applicantId', as: 'invoices', onDelete: 'CASCADE', hooks: true });
+// User <-> Invoice (Applicant only has one invoice 1:1)
+User.hasOne(Invoice, { foreignKey: 'applicantId', as: 'invoice', onDelete: 'CASCADE', hooks: true });
 Invoice.belongsTo(User, { foreignKey: 'applicantId', as: 'applicant' });
 // User <-> Notification
 User.hasMany(Notification, { foreignKey: 'userId', onDelete: 'CASCADE', hooks: true });
@@ -179,6 +198,12 @@ export {
     TicketCatalog,
     PsychometricAttempt,
     Nomination,
+    EmployerSelection,
+    Employer,
+    JoblistingEmployer,
+    Wallet,
+    ApplicantQualification,
+    Experience,
     Contract,
     ScheduleCatalogue,
     Interview,

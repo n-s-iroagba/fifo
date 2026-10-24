@@ -20,6 +20,10 @@ Ticket.init({
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: true,
     },
+    ticketCatalogId: {
+        type: sequelize_1.DataTypes.INTEGER,
+        allowNull: true,
+    },
     status: {
         type: sequelize_1.DataTypes.ENUM('not_possessed', 'possessed'),
         defaultValue: 'not_possessed',

@@ -77,6 +77,67 @@ export default function AdminInterviewsPage() {
     const [createOutcome, setCreateOutcome] = useState<'Pending' | 'Passed' | 'Failed' | 'Completed' | 'Rescheduled'>('Pending');
     const [isCreating, setIsCreating] = useState(false);
 
+    // Employer Notification Modal states
+    const [isNotifyModalOpen, setIsNotifyModalOpen] = useState(false);
+    const [notifyApplicant, setNotifyApplicant] = useState<InterviewApplicant | null>(null);
+    const [notifyDate, setNotifyDate] = useState('');
+    const [notifyTime, setNotifyTime] = useState('');
+    const [notifyZoomLink, setNotifyZoomLink] = useState('');
+    const [notifyManualUrl, setNotifyManualUrl] = useState('');
+    const [isSendingNotify, setIsSendingNotify] = useState(false);
+    const [dispatchingId, setDispatchingId] = useState<number | null>(null);
+
+    const handleOpenNotify = (applicant?: InterviewApplicant, defaultDate?: string, defaultTime?: string, defaultMeetingLink?: string) => {
+        if (!applicant) return;
+        setNotifyApplicant(applicant);
+        setNotifyDate(defaultDate || '');
+        setNotifyTime(defaultTime || '10:00 AM AWST');
+        setNotifyZoomLink(defaultMeetingLink || '');
+        setNotifyManualUrl('');
+        setIsNotifyModalOpen(true);
+    };
+
+    const handleSendScheduleNotify = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!notifyApplicant) return;
+
+        if (!notifyZoomLink.trim()) {
+            alert('A mandatory Zoom meeting link is required.');
+            return;
+        }
+
+        setIsSendingNotify(true);
+        try {
+            const { data } = await api.post('/admin/interviews/schedule-notify', {
+                applicantId: notifyApplicant.id,
+                interviewDate: notifyDate,
+                interviewTime: notifyTime,
+                interviewLink: notifyZoomLink.trim(),
+                manualUrl: notifyManualUrl.trim() || undefined
+            });
+            alert(data.message || 'Interview notification dispatched from employer email. Second contact onboarding guide scheduled 1 hour later.');
+            setIsNotifyModalOpen(false);
+            refetch();
+        } catch (err: any) {
+            alert(err.response?.data?.message || err.response?.data?.error || 'Failed to dispatch interview notification.');
+        } finally {
+            setIsSendingNotify(false);
+        }
+    };
+
+    const handleDispatchOnboardingGuide = async (applicantId: number) => {
+        if (!confirm('Dispatch the second-contact employer onboarding guide PDF now?')) return;
+        setDispatchingId(applicantId);
+        try {
+            const { data } = await api.post('/admin/interviews/dispatch-onboarding-guide', { applicantId });
+            alert(data.message || 'Onboarding guide PDF successfully dispatched via employer email.');
+        } catch (err: any) {
+            alert(err.response?.data?.message || err.response?.data?.error || 'Failed to dispatch onboarding guide.');
+        } finally {
+            setDispatchingId(null);
+        }
+    };
+
     // Open Edit Modal
     const handleOpenEdit = (interview: InterviewItem) => {
         setSelectedInterview(interview);
@@ -444,21 +505,41 @@ export default function AdminInterviewsPage() {
                                             </td>
 
                                             {/* Actions */}
-                                            <td className="p-4 pr-6 text-right space-x-2">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleOpenEdit(item)}
-                                                    className="px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-900 text-[10px] font-bold uppercase tracking-wider transition-colors"
-                                                >
-                                                    Evaluate / Edit
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleDeleteInterview(item.id)}
-                                                    className="px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-[10px] font-bold uppercase tracking-wider transition-colors"
-                                                >
-                                                    Delete
-                                                </button>
+                                            <td className="p-4 pr-6 text-right">
+                                                <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleOpenNotify(item.applicant, item.selectedSchedule?.date, item.selectedSchedule?.time, item.meetingLink || undefined)}
+                                                        className="px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1 shadow-sm"
+                                                        title="Send formal interview invitation from Employer email with Operational Manual file attached"
+                                                    >
+                                                        <span className="material-symbols-outlined text-[13px]">mail</span>
+                                                        Employer Notify
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDispatchOnboardingGuide(item.applicantId)}
+                                                        disabled={dispatchingId === item.applicantId}
+                                                        className="px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[10px] font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
+                                                        title="Send MACA Onboarding Guide PDF now"
+                                                    >
+                                                        {dispatchingId === item.applicantId ? 'Sending...' : 'Dispatch Guide'}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleOpenEdit(item)}
+                                                        className="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-900 text-[10px] font-bold uppercase tracking-wider transition-colors"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteInterview(item.id)}
+                                                        className="px-2.5 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-[10px] font-bold uppercase tracking-wider transition-colors"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     );
@@ -699,6 +780,117 @@ export default function AdminInterviewsPage() {
                                     className="px-5 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white text-xs font-black uppercase tracking-wider disabled:opacity-50"
                                 >
                                     {isCreating ? 'Booking...' : 'Confirm Interview'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Employer Notification Modal */}
+            {isNotifyModalOpen && notifyApplicant && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-blue-950/60 backdrop-blur-sm animate-in fade-in duration-150">
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-amber-200 shadow-2xl">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
+                            <div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 block">
+                                    Employer Corporate Dispatch
+                                </span>
+                                <h3 className="text-lg font-black text-blue-900">
+                                    Schedule & Notify Candidate via Employer
+                                </h3>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsNotifyModalOpen(false)}
+                                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSendScheduleNotify} className="space-y-4">
+                            <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900">
+                                <span className="font-bold">Candidate:</span> {notifyApplicant.fullName} ({notifyApplicant.email})
+                                <p className="text-[11px] text-amber-700 mt-1">
+                                    Dispatched from the active hiring partner employer email address. The job operational manual will be attached directly as a document file.
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                                        Interview Date <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="e.g. 5 November 2026"
+                                        value={notifyDate}
+                                        onChange={(e) => setNotifyDate(e.target.value)}
+                                        className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                                        Interview Time <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="e.g. 10:00 AM AWST"
+                                        value={notifyTime}
+                                        onChange={(e) => setNotifyTime(e.target.value)}
+                                        className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">
+                                    Mandatory Zoom Meeting Link <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="url"
+                                    required
+                                    placeholder="https://zoom.us/j/1234567890?pwd=..."
+                                    value={notifyZoomLink}
+                                    onChange={(e) => setNotifyZoomLink(e.target.value)}
+                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 font-mono focus:outline-none focus:border-blue-900"
+                                />
+                                <p className="text-[10px] text-slate-400 mt-1">
+                                    Must be a valid video conference URL (Zoom meeting link).
+                                </p>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">
+                                    Operational Manual URL (Optional override)
+                                </label>
+                                <input
+                                    type="url"
+                                    placeholder="Leave blank to use the job listing's operational manual"
+                                    value={notifyManualUrl}
+                                    onChange={(e) => setNotifyManualUrl(e.target.value)}
+                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 font-mono focus:outline-none focus:border-blue-900"
+                                />
+                            </div>
+
+                            <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsNotifyModalOpen(false)}
+                                    className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-bold"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSendingNotify}
+                                    className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black uppercase tracking-wider disabled:opacity-50 flex items-center gap-1.5 shadow-md"
+                                >
+                                    <span className="material-symbols-outlined text-sm">send</span>
+                                    {isSendingNotify ? 'Dispatching...' : 'Dispatch Interview Email'}
                                 </button>
                             </div>
                         </form>
