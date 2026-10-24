@@ -83,8 +83,8 @@ const getStandardEmailTemplate = (subject: string, content: string, fromType: 'a
     let headerBgColor = '#0b3486';
     let accentColor = '#004ac6';
     let primaryColor = '#0b3486';
-    let footerBrand = 'BlueCollar Infrastructure';
-    let footerTag = 'SECURE RECRUITMENT PIPELINE PROTOCOL';
+    let footerBrand = 'Blue Collar Recruitment';
+    let footerTag = 'AUSTRALIAN FIFO & TRADE CAREER OPPORTUNITIES';
 
     let headerContent = `
         <div style="background-color: ${headerBgColor}; margin: 0; padding: 0; text-align: center;">
@@ -409,15 +409,22 @@ export const sendReceiptEmail = async (
     }
 };
 
-// 5. Verify Email (Auth)
 export const sendVerificationEmail = async (to: string, userName: string, verifyLink: string): Promise<void> => {
-    const subject = 'Verify your BlueCollar Account';
+    const subject = 'Verify Your Email Address - Blue Collar Recruitment';
     const content = `
-        <p>Dear ${userName},</p>
-        <p>Please verify your email address by clicking the link below:</p>
+        <p>Hi ${userName || 'there'},</p>
+        <p>Thank you for signing up with <strong>Blue Collar Recruitment</strong>. Please confirm your email address by clicking the button below:</p>
         <div class="cta-block">
-            <a href="${verifyLink}" class="button">Verify Email</a>
+            <a href="${verifyLink}" class="button">Verify Email Address</a>
         </div>
+        <p style="margin-top: 25px; font-size: 13px; color: #64748b;">
+            If the button doesn't work, copy and paste this link into your browser:<br>
+            <a href="${verifyLink}" style="color: #004ac6; word-break: break-all;">${verifyLink}</a>
+        </p>
+        <p style="font-size: 13px; color: #64748b;">
+            If you did not create an account, you can safely ignore this email.
+        </p>
+        <p>Best regards,<br><strong>The Blue Collar Recruitment Team</strong></p>
     `;
     await sendAuthEmail(to, subject, content);
 };

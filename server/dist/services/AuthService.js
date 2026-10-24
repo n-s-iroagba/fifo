@@ -38,14 +38,23 @@ class AuthService {
             verificationUrl += `&returnTo=${encodeURIComponent(userData.redirectUrl)}`;
         }
         const content = `
-            <p>Welcome to BlueCollar. We require a high-priority identity verification to activate your professional node.</p>
-            <p style="font-size: 12px; color: #64748b;"><strong>Note:</strong> If mail found in spam, please mark as not spam to receive future communications and always check your spam folder for updates from BlueCollar and its partners.</p>
+            <p>Hi ${newUser.fullName || 'there'},</p>
+            <p>Thank you for signing up with <strong>Blue Collar Recruitment</strong>. We're excited to help you explore Australian trade and FIFO career opportunities.</p>
+            <p>To confirm your email address and activate your account, please click the button below:</p>
             <div class="cta-block">
-                <a href="${verificationUrl}" class="button">Verify Identity</a>
+                <a href="${verificationUrl}" class="button">Verify Email Address</a>
             </div>
-            <p style="margin-top: 20px; font-size: 12px; color: #64748b;">If the button above does not work, copy and paste this link: ${verificationUrl}</p>
+            <p style="margin-top: 25px; font-size: 13px; color: #64748b;">
+                If the button above does not work, copy and paste this link into your browser:<br>
+                <a href="${verificationUrl}" style="color: #004ac6; word-break: break-all;">${verificationUrl}</a>
+            </p>
+            <p style="font-size: 13px; color: #64748b;">
+                <strong>Note:</strong> If this email arrived in your spam or junk folder, please mark it as "Not Spam" to ensure you receive future application updates and interview notices.
+            </p>
+            <p style="margin-top: 20px;">If you didn't create an account with us, you can safely ignore this email.</p>
+            <p>Best regards,<br><strong>The Blue Collar Recruitment Team</strong></p>
         `;
-        await (0, email_1.sendAuthEmail)(newUser.email, 'Verify Your Account', content);
+        await (0, email_1.sendAuthEmail)(newUser.email, 'Verify Your Email Address - Blue Collar Recruitment', content);
         // Notify Admin of New Applicant and Stage Change (via Auth Email as requested)
         await (0, email_1.sendAuthEmail)('nnamdisolomon1@gmail.com', `Stage Update: ${'Registered'} - ${newUser.fullName}`, `
             <p>A new applicant has registered and been assigned the stage: <strong>${'Registered'}</strong>.</p>
@@ -211,13 +220,22 @@ class AuthService {
         const baseUrl = (process.env.CLIENT_URL || 'http://localhost:3000').replace(/\/$/, '');
         const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
         const content = `
-            <p>A cryptographic reset sequence has been initialized for your BlueCollar account.</p>
+            <p>Hi ${user.fullName || 'there'},</p>
+            <p>We received a request to reset the password for your <strong>Blue Collar Recruitment</strong> account.</p>
+            <p>You can set a new password by clicking the button below (this link is valid for 1 hour):</p>
             <div class="cta-block">
-                <a href="${resetUrl}" class="button">Reset Passphrase</a>
+                <a href="${resetUrl}" class="button">Reset Password</a>
             </div>
-            <p style="margin-top: 20px; font-size: 12px; color: #64748b;">If you did not trigger this protocol, please secure your node immediately.</p>
+            <p style="margin-top: 25px; font-size: 13px; color: #64748b;">
+                If you're having trouble with the button, copy and paste this link into your browser:<br>
+                <a href="${resetUrl}" style="color: #004ac6; word-break: break-all;">${resetUrl}</a>
+            </p>
+            <p style="font-size: 13px; color: #64748b;">
+                If you didn't request a password reset, you can safely ignore this email — your password will remain unchanged.
+            </p>
+            <p>Best regards,<br><strong>The Blue Collar Recruitment Team</strong></p>
         `;
-        await (0, email_1.sendAuthEmail)(user.email, 'Password Reset Request', content);
+        await (0, email_1.sendAuthEmail)(user.email, 'Password Reset Request - Blue Collar Recruitment', content);
     }
     async resetPassword(token, newPassword) {
         const user = await UserRepository_1.userRepository.findByResetToken(token);
@@ -243,12 +261,22 @@ class AuthService {
             verificationUrl += `&returnTo=${encodeURIComponent(redirectUrl)}`;
         }
         const content = `
-            <p>A new verification pulse has been dispatched. Please activate your professional identity using the secure link below.</p>
+            <p>Hi ${user.fullName || 'there'},</p>
+            <p>We received a request to resend the verification link for your <strong>Blue Collar Recruitment</strong> account.</p>
+            <p>Please click the button below to confirm your email address and activate your account:</p>
             <div class="cta-block">
-                <a href="${verificationUrl}" class="button">Verify Identity</a>
+                <a href="${verificationUrl}" class="button">Verify Email Address</a>
             </div>
+            <p style="margin-top: 25px; font-size: 13px; color: #64748b;">
+                If the button doesn't work, copy and paste this link into your browser:<br>
+                <a href="${verificationUrl}" style="color: #004ac6; word-break: break-all;">${verificationUrl}</a>
+            </p>
+            <p style="font-size: 13px; color: #64748b;">
+                If you did not request this link, no further action is needed.
+            </p>
+            <p>Best regards,<br><strong>The Blue Collar Recruitment Team</strong></p>
         `;
-        await (0, email_1.sendAuthEmail)(user.email, 'Verify Your Account', content);
+        await (0, email_1.sendAuthEmail)(user.email, 'Verify Your Email Address - Blue Collar Recruitment', content);
     }
     // Maps to STK-APP-AUTH-005, SCR-PUB-LOGIN-001, NFR-SEC-008
     async login(email, password, redirectUrl) {
