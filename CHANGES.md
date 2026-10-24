@@ -1,748 +1,598 @@
 # IMPLEMENTATION RULES
 
- When implementing all the ‘IMPLEMENTATION PROMPTS’ below for each execution make sure the following rules are adhered to.
+When implementing all the 'IMPLEMENTATION PROMPTS' below, adhere to the following rules on every execution.
 
-1. Do not  use useless, ai-like words for user facing text. Use a simple corporate communication style with zero filler or buzz words.  
-2. Every implementation of the prompts must build and keep the following:  
-1. Trust  
-2. Clarity with zero jargon  
-3. Aesthetics :   
-* use simple but not nice aesthetics, do not use colors or icons where there’s no need.  
-* Any documents or email sent from RTO
+1. Do not use useless, AI-like words in user-facing text. Use a simple corporate communication style with zero filler or buzz words.
+2. Every implementation must build and maintain:
+   1. Trust
+   2. Clarity with zero jargon
+   3. Aesthetics:
+      - Use simple but clean aesthetics; do not use colours or icons where there is no need.
+      - Any document or email sent from RTO must borrow its theme from [certhero.com.au](https://certhero.com.au).
+      - Keep colouring simple; do not scatter colours across the UI.
 
-  must borrow theme from [certherof.com](https://certhero.com.au)
-
-* Keep coloring simple, do not throw colors all over the place
+---
 
 # IMPLEMENTATION PROMPTS
 
-EDITS
-
-1. ALL EMAILS LISTED AS HEADINGS MUST BE IMPLEMENTED   
-2. MARKETING AID: On the registration form consent to making a testimonial video if hired.  
-3. Add the following to the applicant model attributes  
-1. interview date.  
-2. Interview time  
-3. Interview link.  
-4. Ensure that the following are saved for email as env variables,   
-1. Info(blue collar)  
-2. RTOInfo  
-3. Employer  
-4. Email from admin and server can be sent from any of the three servers above.  
-5. Ensure that the changes below are completely and properly implemented.  
-1. Create a JoblistingEmployer junction model.  
-* Attributes  
-1. Employer Id  
-2. Joblisting I'd  
-3. vacancy url (can exist as null)  
-2. Implement these relationships  :   
-1. Joblisting has many potential employers, potential employers have many JobListing; using the JoblistingEmployer table created in (5.1) above.  
-2. Application has only one joblisting; joblisting has have many applications   
-3. Applicant has only one application; application has only one applicant.  
-4. TicketCatalogue has many tickets; tickets have only one ticket catalogue.  
-5. JobListing has many TicketCatalogue; TicketCatalogue has many JobListing.  
-6. Application has only one JobListing: JobListing has many applications  
-7. Applicants has many tickets; tickets has only one applicant.  
-* When an applicant is applying, all of the JobListing ticket catalogue of the application being created is copied as the applicant’s tickets.  
-* Admin can CRUD (from existing ticket catalogues on the. db)applicant's ticket 
-
-
-3. Create a page to fetch and update vacancy urls of each item in the JoblistingEmployer Table.  
-4. Add operational manual link to the to Job listing model  
-5. Add a file field for the operational manual to the Job listing create and update form on the client; on upload, save to cloudinary.  
-1. On create or update operational manual should saved in cloudinary  
-2. Admin should see the operational manual when they need to.  
-6. Operational manual is sent as file; not link when sending interview notification email.  
-7. On Creating or updating a joblisting, at least one employer must be selected.  
-1. On the job listing form, admin must leave at least one employer checked (can be more than one)  
-2. Admin must enter a vacancyUrl for all checked employers during creation or newly checked employers during update.  
-3. Admin must enter vacancyUrl for all checked employers during creation.  
-4. Admin edit vacancyUrl for all checked employers during update.  
-5. VacancyUrl is used to create or update rows on the JoblistingEmployer table created in 4.1 above.  
-8. Edit ticket courses model:  
-1. to have course content url,  
-2. remove text content attribute,   
-9. For the employer model, add   
-1. website URL.  
-2. company description  
-10. Admin must include zoom link before sending interview notification email; the email must be sent from the employer mail  
-11. Employer Selection Invite Email: For each application, for employers associated with the application’s joblisting  
-1. The vacancy url exists,i.e JoblistingEmployer.vacancyUrl \!==null( null is default state), it shall be included in the Employer Selection Invite Email sent to the applicant, to build legitimacy and trust.  
-2. employer.company description   
-3. employer.websiteUrl  
-12. Each Ticket Course should have a syllabus attribute.  
-13. And website link on the following  
-1. Employer model   
-2. On Employer Selection form email all the employer website links should be displayed for verification.  
-6. Seed database
-
-1. Fetch operational manual for each job listing from the web as a file i.e any documents that details the knowledge and operational procedures of each job on a mining site.  
-2. Edit job listing seed file, FIFO.csv data to match JobListing model.  
-1. The benefit column should be written in a numbered manner so that client side formatting can display it as a bullet list.  
-3. Seed Employer as Maca Limited and Mineral Resources to match employer model.  
-4. Fetch all tickets for each job listing in Perth Western Australia and create a JSON or txt file( based agent preference) for each job and all tickets required called ticketsRequirement.json/txt.  
-* The search should only include tickets and drivers license, no police clearance  
-* The object notation of each ticket in the file should match the TicketCatalogue Model.  
-* There should be columns of each requirement to show if its course, exam questions and the catalogue have been seeded  
-5. For each ticket search and download training manual from the web.  
-* Ensure that all manuals have a table of content i.e syllabus.  
-* ai extracts the syllabus, extracts the text in the manual and recreates them using cerhero branding ( https\://[certhero.com.au](http://certhero.com.au) )  
-* Be sure to link the ticket to rebranded manual
-
-  Course Model:
-
-  Attributes for mutilation (seeding data must adhere to):
-
-> > > > > > 1. Remove content text  
-> > > > > > 2. Create content URL  
-> > > > > > 3. Create  syllabus attribute should be compatible with the template format prepared in e below.
-
-   
-
-6. Prepare course syllabus  
-* Create a template text or Json format for the syllabus to ensure uniform formatting on the front-end  
-* Save each syllabus created in the template format in a file, linked to their tickets
-
-
-7. Prepare examination questions  
-* For each ticket training material, draft out 35 examination questions and save them in JSON files, each linked to the ticket.  
-8. Seed job  
-* With operational manual saved in cloudinary  
-9. Seed Ticket Catalogue   
-* Save TicketCatalogue  
-* For each TicketCatalogue :   
-1. Seed
-
-   Course Model:
-
-> > > > > > 4. Save rebrandedtraining material to cloudinary and provide public url  
-> > > > > > 5. use content URL  
-> > > > > > 6. Use syllabus  with the template format prepared in e.  
-2. Seed the exam questions based
-
-   course material and syllabus.
-
-3. Update the TicketRequirements.json file 
-
-7. PSYCHOMETRIC MODULE 2  
-1. When navigating to rto, A modal should pop up, the aim of the modal is to route as if in australia or not, if in australia routes to [https\://certhero.com.au](https://certhero.com.au), if not routes to rto url add this text to the message also : course access on this is only for sponsored overseas candidates use main portal  
-2. Before the applicant can start the module, a pop shall be displayed to confirm if the applicant has read the \`HIRING\_PROCESS\_INFORMATION.pdf\`file attached to the welcome mail.  
-3. If the answer to the question asked by the modal above is no applicants are made to download the file immediately.  
-4. Rewrite the psychometric module 2 questions to be based of the \`HIRING\_PROCESS\_INFORMATION.pdf\` document with concentration  
-* SECTION 1  
-* SECTION 2 (refund policy questions should not be included).  
-8. Application accepted should be manual with mandatory email sent alongside by admin.  
-1. Change application acceptance from crown to manual via admin dashboard.  
-2. For an admin to accept an application, the admin must also draft the mail to be sent to the applicant for notification.  
-9.  Move invoice and receipt generation to the server.  
-10. Remove partial pay  
-11. Rename everything in client and server with the word aveling to Rto  
-12. Unify RTO credentials creation and management.  
-13. Visa sponsorship Employer official list   
-1. Rename “NOMINATION OFFICIAL SPONSOR LIST” to Official Sponsor Employers list.  
-2. Nomination should be renamed to Employer Selection on the client and server app. This includes  
-1. Forms  
-2. Model  
-3. Email  
-4. UI  
-3. The applicant should be able to view the official visa sponsorship Australian companies  
-* Add this link when sending mail just after admin creates initiates employer selection for applicant:  https\://www\.workvisalawyers.com.au/images/Approved-Sponsor-List-2025.pdf 
-
-  to the create initial email and and prompt them to click it and check if the companies in the employer form are on the official visa sponsor list (notify the applicants that the most recent was released in 2025 against 2026\)
-
-
-  	
-
-FEATURES  
-F001
-
-* ATS CV parsing  
-  ACTIONS  
-* CVA01  
-* Applicant uploads CV  
-* STEPS  
-* CVS01  
-> > > > > > *  System checks if CV uploaded is ATS format  
-* CVS02  
-> > > > > > * System checks for grammar.  
-> > > > > > * IMPLEMENTATION NOTE : non English names and company names under experience should not be checked.  
-* CVS03  
-> > > > > > * if CVS01 or CVS02 fails, user is prompted to either down at template if CVS01 fails and check grammar if CVS02 fails  
-*  CVS04  
-> > > > > > * The system saves parsed data to the database in applicant qualification and experience tables  
-* CVS05  
-> > > > > > * On success applicants are notified.  
-> > > > > > * On error applicants are notified.  
-> > > > > > * Employer Selection
-
-F002
-
-* Qualifications upload  
-  ACTIONS  
-* QAA01  
-* Qualifications certs upload.  
-* STEPS  
-* QAAS01  
-> > > > > > *  If CVS05 is successful and the applicant has applicant qualifications, the system fetches the applicant qualifications.  
-* QAAS02  
-> > > > > > * After QAAS01,  
-> > > > > > * system shows an interface with a file field for each qualifications upload and qualification name as the labels  
-* QAAS03  
-> > > > > > * Applicant 
-
-  uploads one or more certificates for qualification.
-
-> > > > > > * IMPLEMENTATION NOTE : applicant is only mandated to upload one if qualifications are 2 or more but if 1 or none, then applicants are free to upload none.  
-*  QAAS04  
-> > > > > > * Qualifications are saved to applicant qualification model.  
-> > > > > > * UI reacts based on success or failure.
-
-F003
-
-* Bio update  
-  ACTIONS  
-* BUA01  
-* Bio update.  
-* STEPS  
-* BUAS01  
-> > > > > > *  Applicant fills their bio details  
-* BUA02  
-> > > > > > * The system checks that all fields are filled and meet a minimum character count criteria.  
-* BUA03  
-> > > > > > * On success applicants are notified.  
-> > > > > > * On error applicants are notified
+Grouped by feature below. Where an instruction appears in multiple places in the original document, it is merged here. All identified conflicts (C1, C2, C3) have been resolved.
+
+---
+
+## FEATURE GROUP 1 — Data Models & Relationships
+
+### 1.1 Applicant Model
+- Add the following attributes:
+  - `interviewDate`
+  - `interviewTime`
+  - `interviewLink`
+
+### 1.2 JobListing Model
+- Add `operationalManualUrl` (Cloudinary URL).
+- On create or update, the operational manual file must be uploaded to Cloudinary and the URL saved.
+- At least one employer must be selected per job listing.
+- Admin must supply a `vacancyUrl` for every checked employer on create.
+- Admin may edit `vacancyUrl` for checked employers on update.
+
+### 1.3 JoblistingEmployer Junction Model
+- Create a `JoblistingEmployer` junction table with:
+  - `employerId`
+  - `jobListingId`
+  - `vacancyUrl` (nullable, default null)
+- Relationships:
+  - `JobListing` many-to-many `Employer` (via `JoblistingEmployer`)
+  - `Application` belongs to one `JobListing`; `JobListing` has many `Application`
+  - `Applicant` has one `Application`; `Application` has one `Applicant`
+
+### 1.4 Employer Model
+- Create `Employer` model with:
+  - `name`
+  - `websiteUrl`
+  - `companyDescription`
+  - `email`
+  - `isCurrentlyEmploying` (boolean; only one employer may have this flag set at a time — see Feature Group 6)
+- Seed with Maca Limited and Mineral Resources.
 
-F004
+### 1.5 TicketCatalogue Model
+- `TicketCatalogue` has many `Ticket`; each `Ticket` belongs to one `TicketCatalogue`.
+- `JobListing` many-to-many `TicketCatalogue`.
+- On application create/start, all `TicketCatalogue` entries for the application's `JobListing` are copied as the applicant's `Ticket` records.
+- Admin can CRUD an applicant's tickets from existing `TicketCatalogue` entries.
+- `Applicant` has many `Ticket`; each `Ticket` belongs to one `Applicant`.
+
+### 1.6 Course (TicketCourse) Model
+- Remove `contentText` attribute.
+- Add `contentUrl` (Cloudinary URL).
+- Add `syllabus` attribute (structured text/JSON; format defined by the syllabus template — see Feature Group 17).
+
+### 1.7 Invoice Model
+- An applicant has exactly one `Invoice` (1:1).
+- Remove `invoiceType` attribute.
+- Invoice status: `unpaid` | `half_paid` | `paid`.
+- A `Receipt` is generated and emailed when an invoice is marked `paid`.
+
+> **[RESOLVED C1 — Partial Payment: Option B]**
+> Partial pay is retained. Edit item 10 ("Remove partial pay") is discarded.
+> Invoice statuses remain: `unpaid` | `half_paid` | `paid`. All half-payment flows in F009 and F010 are in effect.
+
+### 1.8 Agent Bank Account Model
+- The existing `BankAccount` model serves as the agent bank account.
+- Only one agent bank account may exist at a time.
+- CRUD via admin UI.
+- Used for agent wire transfers on invoices below 700 AUD.
+
+### 1.9 Crypto Wallet Model
+- Create a `Wallet` model with:
+  - `address` (USDT, Tron network)
+- Only one wallet entry in the database at a time.
+- CRUD via admin UI.
+
+### 1.10 ApplicantQualification Model
+- Create `ApplicantQualification` model (standard qualification fields derived from CV parse).
+
+### 1.11 Experience Model
+- Create `Experience` model based on ATS CV standards.
+
+---
 
-* Employer Selection  
-  ACTIONS  
-*   
-* ESA01  
-* Employer selection  
-* STEPS  
-* ESAS01  
-* Stage Update : Employer Selection \- Ongoing.  
-* Call for employer selection.
+## FEATURE GROUP 2 — ATS & CV Processing (F001)
 
-   24 hours after application has been accepted, system cron sends employer selection invite mail.
+**Feature ID:** F001 — ATS CV Parsing
 
-* Implementation notes  
-> > > > > > 1. The system fetches the employers from the backend.  
-> > > > > > 2. The vacancy position should the the applicants joblisting title  
-> > > > > > 3. System fixes a random number of applicants from integers 2 to 7 as the number of slots/vacancies for each company in a tabular form.  
-> > > > > > 4. For the total vacancies system adds 2 to the number and displays it as the total applicant pool.
+### Actions
+
+**CVA01 — Applicant uploads CV**
+- **CVS01:** System checks if the uploaded CV is in ATS format.
+- **CVS02:** System checks for grammar.
+  - Implementation note: Non-English names and company/employer names in the experience section must not be checked.
+- **CVS03:** If CVS01 or CVS02 fails, user is prompted accordingly:
+  - CVS01 fail — prompt to download the CV template.
+  - CVS02 fail — prompt to correct grammar.
+- **CVS04:** System saves parsed data to `ApplicantQualification` and `Experience` tables.
+- **CVS05:** Applicant is notified on success or error.
+- CV must conform to ATS format.
+- On passing Psychometric Module 1 (based on `HIRING_PROCESS_INFORMATION.pdf`), the applicant is congratulated for being eligible for at least partial ticket training sponsorship.
+
+---
+
+## FEATURE GROUP 3 — Qualification Uploads (F002)
 
-   
+**Feature ID:** F002 — Qualifications Upload
 
-* ESS02
+### Actions
 
-  Applicant receives mail from ESAS01, applicants just before ESAS03 upload, checks the box for their choice of employer.
+**QAA01 — Qualification certificate upload**
+- **QAAS01:** If CVS05 succeeds and the applicant has qualifications, the system fetches them.
+- **QAAS02:** UI renders a file field per qualification with the qualification name as the label.
+- **QAAS03:** Applicant uploads one or more certificates.
+  - Implementation note: Only one upload is mandatory if the applicant has two or more qualifications. If one or none, upload is optional.
+- **QAAS04:** Qualifications are saved to `ApplicantQualification`. UI reacts to success or failure.
 
+---
 
-* ESAS03
+## FEATURE GROUP 4 — Bio Update (F003)
 
-  Applicant receives mail from ESAS01, downloads document signs and uploads it using their dashboard 
+**Feature ID:** F003 — Bio Update
 
+### Actions
 
-* ESAS04
+**BUA01 — Bio update**
+- **BUAS01:** Applicant fills in bio details.
+- **BUA02:** System validates all fields are filled and meet a minimum character count.
+- **BUA03:** Applicant is notified on success or error.
 
-  If the applicant selected employer is not the employer marked as “is currently employing” in EMS02, System sends a change of employer's selection mail to applicants
+---
 
-* ESA02  
-* Employer selection change  
-* STEPS  
-* ESAS05
+## FEATURE GROUP 5 — Employer Selection (F004)
 
-  Call for employer selection change.
+**Feature ID:** F004 — Employer Selection
 
-  If the applicant selected employer is not the employer marked as “is currently employing” in EMS02, System sends a change of employer's selection mail to applicants
+### Overview
+Rename all instances of "Nomination" to **"Employer Selection"** across client, server, forms, models, emails, and UI.
 
+### Actions
 
-* ESA03  
-* Employer selection Acceptance  
-* STEPS  
-* Stage Update \- Employer Selection \- Completed  
-* ESAS06  
-* Employer selection acceptance.
+**ESA01 — Employer Selection (Initial)**
+- **ESAS01:** Stage updated to: *Employer Selection — Ongoing*.
+  - 24 hours after application acceptance, the system cron sends the Employer Selection Invite email (M06).
+  - Implementation notes for the invite email:
+    1. Fetch employers from the backend.
+    2. Vacancy position is the applicant's job listing title.
+    3. Assign a random integer between 2 and 7 as the number of slots per company, displayed in a table.
+    4. Total vacancies displayed = (sum of slots) + 2, shown as the total applicant pool.
+  - If `JoblistingEmployer.vacancyUrl` is not null, include the vacancy URL in the email.
+  - Include `employer.companyDescription` and `employer.websiteUrl` in the email.
+  - Include the official Australian visa sponsor list link:
+    `https://www.workvisalawyers.com.au/images/Approved-Sponsor-List-2025.pdf`
+    Notify the applicant that the most recent list was released in 2025 (not 2026).
+- **ESAS02:** Applicant receives the invite email, reviews employer options, and checks the box for their chosen employer.
+- **ESAS03:** Applicant downloads the Employer Selection Form, signs it, and uploads it via their dashboard.
+- **ESAS04:** If the applicant's selected employer does not match the employer flagged `isCurrentlyEmploying`, a change-of-employer-selection email is sent.
 
-  5 hours after submission a crib job runs
+**ESA02 — Employer Selection Change**
+- **ESAS05:** If selection still does not match `isCurrentlyEmploying`, the system sends a change-of-employer-selection email.
 
-  If selection now matches the employer marked as “is currently employing” in EMS02, employer.
-
-  And acceptance of employer choice mail is sent from info(blue collar). 
-
-
-F005
-
-* Employer notification of application acceptance   
-  ACTIONS  
-* INA01
-
-  Conditional Invitation for interview
-
-* STEPS  
-* INAS01
-
-  Admin selects applicant from dropdown
-
-> > > > > > 1. Admin fills in interview details e.g date time and timezone  
-> > > > > > 2. Admin adds zoom link  
-> > > > > > 3. Request is sent to the server  
-> > > > > > 4. applicant.interviewDate, applicant.interviewLink, applicant.interviewtime is updated on the server on to the dB.  
-> > > > > > 5. Email from employer mail  is dispatched to applicant with the following:   
-> > > > > > 1. Interview link  
-> > > > > > 2. Interview date  
-> > > > > > 3. Interview time  
-> > > > > > 4. joblisting operational material (on the joblisting model)
-
-   
-
-   
-
-* INA02  
-* 1 hour after INAS01 is executed, the employerSecondContact email should be sent from Employer mail.
-
-  This email aims. to educate the applicant on the interview to onboarding steps, which have outlined properly in the attached file \-  maca-employee-onboarding-guide.pdf
-
-* maca-employee-onboarding-guide.pdf is created at the server.  
-> > > > > > 1. Append Applicant name:  
-> > > > > > 2. Append Applicant interview date
-
-   
-
-F006
-
-* Employer Management  
-  ACTIONS  
-* CRUD only one employer can be marked as “is employing”
-
-F007
-
-* Ticket Sponsorship   
-  ACTIONS  
-* TSA01
-
-   Invite for sponsorship.
-
-* STEPS  
-* TSAS01 : 
-
-  3 hours after notification of interview by blue collar in F002 above, a crown job sends the applicant and email of invitation to upload tickets and/or apply for sponsorship for training to fill certification gaps.
-
-
-* TSAS02:
-
-  On receiving the mail applicants visit their dashboard and upload any tickets they possess.
-
-
-* TSAS03 : 
-
-  if no tickets, or gaps exist i.e incomplete possession, applicants are encouraged by the UI to apply for sponsorship.
-
-* TSAS04 :
-
-  6 hours after the sponsorship application, a sponsorship application is approved on the server to update DB and an email is sent to the applicant.
-
-F008
-
-* NAME : CertHero Enrollment   
-  ACTIONS  
-* CEA01 : Notification of Applicant on Enrollment with CertHero  
-* STEPS  
-* CEAS01 : 
-
-  6 hours after ESA04 step has been executed, 
-
-> > > > > > 1. Certhero
-
-   credentials are created via cron job on the server,
-
-> > > > > > 2. The letter of enrollment draft is prefilled with Applicant details, and ticket courses of enrollment as it should be in a real training institute.  
-> > > > > > 3. Applicant cert hero credentials and applicants enrollment letter are sent in an email and the applicant is asked to login to their certhero portal and get acquainted with the syllabus.
-
-   The email shall also state upon completion of enrollment applicants will be given access to the ai tutor to fastrack their learning.
-
-> > > > > > 4. And the minimum duration for the enrollment as failures to commence and complete courses and their examinations before the deadline date will lead to forfeiture of the opportunity.  
-> > > > > > 5. Enrollment email containing all above is sent from Rto Email.  
-* CEAS02 : 
-
-  Upon login from CEAS01 by applicant on Rto site
-
-> > > > > > 1. The selected Employer sends a mail (from employer email) asking the applicant to submit an international means of receiving refunds if any before the end 3 weeks.And refund policy on any financial responsibility borne by the applicant in the course of being trained.  
-> > > > > > 2. The mail asks them to keep an eye for the blue collar contract for ticket sponsorship mail, if not received.  
-* CEAS03 : On first login to the portal ai bot must pop up and mandate that  the applicant either asks a question or picks for any questions from.the premade options using their exact role of ticket course combination for their role.
-
-
-* CEAS03:
-
-  On receiving the mail applicants login their certhero portal.The login request hits the server, and the following are carried out
-
-> > > > > > 1. Applicant ticket sponsorship contract is drafted using the template with applicant bio details and ticket gaps.  
-> > > > > > 2. The stage is updated  
-> > > > > > 3. Email is sent to the applicant from blue collar with the contract.  
-> > > > > > 1. The mail asks them to keep an eye on their mail as their employer shall ask for their bank account for refund purposes.  
-> > > > > > 2. Applicants are asked to fill and sign the contract and upload it on their dashboard to obtain the sponsorship ID.  
-> > > > > > 3. Upon upload of the contract applicants are told the contract ID will be sent in 3 hours  
-> > > > > > 4. 2 hours after upload a crib job runs to send sponsorship ID
-
-   d.On dashboard applicant can see course syllabus but no not the content till they 
-
-   pay,
-
-    Attempting to take the course triggers a question: "Are you a sponsored candidate?
-
-   e. If yes, the system requests the sponsorship ID.
-
-   f. user enters sponsorship ID and it's checked on the backend.
-
-   g. After sponsorship ID entry user is navigated to the invoice request page or when they click they attempt to take the course again.
-
-*  CEAS04 :  
-> > > > > > 1. proceeding from CEAS03 c.Applicant goes to their CertHero dashboard and enters their contract id, which navigates them to the invoice request page showing  the applicant.percentageSubsidy and the amount in AUD, 
-
-   The reason for payment message is displayed with wording and tone that reflect that based on the contract with the selected employer and their partner labour hire company the residual refundable cost borne by the applicant is to ensure the applicant completes the courses, takes the examination without dropping out.
-
-> > > > > > 2. The 100% refund policy on upon ticket acquistion by employer  
-* CEAS04 : Applicant is prompted to request an invoice and applicant is a show the refund policy with the request invoice button below the refund policy  
-> > > > > > 3. Applicant hits the request invoice button.
-
-F009
-
-* NAME : PAYMENTS  
-  ACTIONS  
-* PA01  
-* NAME: Invoicing  
-* STEPS  
-* PSAS01 : Once Applicant executes CEAS05(c )
-
-  The following happen
-
-> > > > > > 1. An invoice object is created for the applicant.  
-> > > > > > 2. Using the invoice template and total ticket costs a certHero (using the design theme at [https\://certhero.com.au](https://certhero.com.au)) invoice is prepared.  
-> > > > > > 3. The invoice email is sent with payment instructions from Rto Email.
-
-   For the following means of payment, each has its rules, refund means, processing time as it affects when applicants can start the courses and a top level boldly written refund policy.
-
-> > > > > > 1. Wire transfer for Above AUD  
-> > > > > > 2. Agent wire transfer  for less the 700AUD (if an agent bank account; created in PA04, exists in the database)  
-> > > > > > 3. Card   
-> > > > > > 4. Crypto via bitget. Play store and apple links to download bitget wallet and the crypto faq link to address their concerns.  
-* PSAS02:   
-> > > > > > 1. To proceed with card payments a pay with card button is displayed in the email that navigates to the card payment page.  
-> > > > > > 2. To pay, a button is also displayed that navigates to crypto payments.  
-* PA02  
-* NAME: Card payment  
-* STEPS
-
-  mail 
-
-* PCAS02 : 
-
-  On getting the card payment page as standard but dummy card details collection page is displayed after user inputs details, the following happen
-
-> > > > > > 1. On clicking the pay button the user is alerted that card payments are not
-
-    allowed in their country for this merchant 
-
-> > > > > > 2. In the same line as a. above, an email is sent to the applicant from CertHero finance team to use another pay method.
-
-   And that if speed matters they should use the bitgwt crypto method as it is quick and easier than expected and have should have no fears as CertHero has publicly viewable wallet addresses and with bitget platform and disputes are sure to handled amicably and then refer them to Ian for more enquiry.
-
-* PA03  
-* NAME: Precondition: On navigation to the crypto payment route  
-* STEPS  
-* PA03S01 : 
-
-  User sees a clickable and scannable qr code made from the admin wallet string saved in the database
-
-  Only one wallet can be in the database per time
-
-* PA03S02:
-
-  user sees scanning instructions for the following scenarios with their phones if on pc or click instructions if on mobile
-
-* PA03S03 : 
-
-  on click or on scan, if the bitget wallet is installed on the device it opens the bitget wallet and balance f not installed it opens play store or Apple store based of on os
-
-* PA03S04 :
-
-  Applicant views Payment instructions 
-
-* PA04
-
-  CRUD AGENT BANK ACCOUNT
-
-1. Bank account for swift international wire transfer  
-2. Create Model  
-3. Only one entry should exist on the database.  
-4. Create the admin client CRUD UI.  
-5. Implement CRUD on the server.  
-* PA05  
-* Receipts  
-* STEPS  
-* PA04S01:
-
-  On admin navigation to the pending payments page, the system fetches all applicants with an unpaid invoice and those with a half paid invoice.
-
-* PA04S02 :
-
-  Admin selects the applicant, enters the amount  paid and sends the request to the server.  
-
-* PA04S03:
-
-  System fetches the invoice makes it as paid
-
-* PA04S04 : 
-
-  The system creates a receipt document.
-
-* PA03S05 :
-
-  system sends the receipt document via email.
-
-
-F010
-
-* NAME : COURSE ACCESS  
-  ACTIONS  
-* CA01  
-* Syllabus, Course and Examination Questions   
-* STEPS  
-* CAS01 :
-
-   Developer provides pdf manual for each ticket, CAS02 : 
-
-  .
-
-* CA02  
-* Course consumption  
-* STEPS  
-* CAS02 : 
-
-  If applicant has paid their invoice, the can view the course as a non downloadable branded manual document on their screen, the ai bot should display and the user can interact with it based on the document in display or other manuals for other tickets.
-
-* PA03S02:
-
-  user sees scanning instructions for the following scenarios with their phones if on pc or click instructions if on mobile
-
-   
-
-* CA03  
-* Examination   
-* STEPS  
-* CA03S01 :
-
-  If invoice has been fully paid, 
-
-  applicants can take the exam anytime they wish, exams are graded immediately. 
-
-  If the invoice has been half paid, applicants can only take 3 examinations, an attempt to take the fourth should ask them if they are paying with bank transfer or crypto. Note each of the payment pages above should contain links to route to the other.
-
-* CA03S02:
-
-  If applicant passes, the exam a system sends a congratulatory message and then creates ticket from branded template and sends tickets via email after 3 hours
-
-* CA04S03 : 
-
-  If a candidate actually fails on a second attempt the applicant should be automatically passed at the 60% pass mark and step CA04S02 executed. If a candidate fails the first attempt of a ticket course they should be encouraged to try again and shown the questions they got wrong and an email should be sent.
-
-* CA04S04 :
-
-  system sends the receipt document via email.
-
-* CA04  
-* Handoff  
-* STEPS  
-* CA04S01 :
-
-  After the applicant completes the last ticket exam, passes and  receives their ticket, 6 hours after that, blue collar sends a notice of Handoff telling them their employer shall be in contact with them and they shall be off boarded from the platform in a few hours after employer contact.
-
-F011 \- Crypto Wallet CRUD
-
-* Create UI  
-* Server Implementation   
-* Only one USDT Crypto wallet is stored per time on the DB
-
-DOCUMENTS
-
-1. HIRING\_PROCESS\_INFORMATION  
-2. EMPLOYER SELECTION FORM (DERIVED BY RENAMING NAMING NOMINATION FORM)  
-3. CERT HERO ENROLLMENT LETTER  
-4. SPONSORSHIP CONTRACT  
-5. INVOICE  
-6. RECEIPT  
-7. TICKETS
-
-1. RENAME NOMINATION FORM TO EMPLOYER SELECTION FORM  
-2. MOVE FORM CREATION TO SERVER
-
-   Create an enrollment letter using styling theme on certhero.com.au as demo to be sent in 
-
-1. Fetch applicants tickets with not-possessed attribute.  
-2. Outline the tickets, with mode of instruction table (online Vs practical)  
-3. Online procedure  
-4. Practical procedure  
-5. Communication channel  
-6. Deadline section  
-1. Examination completion with a pass for all assigned ticket courses deadline  : 16 days from date of enrollment the date the mail was dispatched 
-
-1. THIS IS SIMILAR TO THE EMPLOYER SELECTION FORM, HOWEVER ONLY THE EMPLOYER, WITH ISEMPLOYING FLAG TRUE IS SENT
-
-1. Edit contract  
-1. Move contract creation to the server.  
-2. State body that it is not an employment contract; this is to ensure you get a job if you meet the requirements, what the means of or the applicant.  
-3. Amount in AUD  
-4. Refunder and refund policy.  
-5. remove accomodation and other visa related stuff  
-6. List what the employer is to cover in the employment contract.  
-1. Skills assessment   
-2. Medical   
-3. Visa costs and sponsorship   
-4. Flight  
-5. Accommodation off-site (3 months) and on-site (through duration of employment contract)
-
-1. Move invoice generation to the server.
-
-1. Sequence is as follows  
-1. Onboarding \- sign-up verify email (already fully implemented)  
-2. Application \- commenced with welcome email.  
-3. Employer selection  
-4. Interview scheduling.  
-5. Ticket Sponsorship: invited\| applied\| application approved \| contract.  
-6. Tickets’ acquisition.  
-7. Handoff  
-2. Each approval email should state the effect in terms of hiring procedures and the next step  
-3. Each commencement email e.g welcome email, should clearly state aim of the stage, the reason behind the aim as regarding being hired(under “how does this help me get hired) the procedure, consequences of lateness or non compliance (as the case maybe),  
-   And communication channel and expected time of response for each applicant.  
-   Start from psychometric test module 1 after passing.  
-     
-     
-1. Welcome email  
-2. Psychometric module 1 mail  
-3. Psychometric module 2 mail  
-4. Application submitted mail.  
-5. Application accepted mail.  
-6. Employer selection mail  
-* ID :M06  
-* FUNCTION NAME :send  
-* EMOTIONAL GOAL  
-* ATTACHMENTS: Employer Selection form  
-* CONTENT  
-1.   
-7. Employer selection filled mail.  
-8. Employer selection Accepted mail.  
-1. The employer shall be in contact with you via mai.
-
-   \*\*\*Employer should as them to download zoom for interview, in fact interview link is sent. to the applicant.
-
-9. Notification of interview date and time mail.  
-10. Call for ticket sponsorship mail.  
-11. Ticket sponsorship accepted mail.  
-12. Ticket courses enrollment mail.  
-13. Contract delivery mail.  
-14. Contract agreement acknowledgement mail (contracted dispatch)  
-15. Invoice mail  
-16. Receipt mail  
-17. Ticket pass mail  
-18. Ticket fail mail  
-19. Ticket delivery mail.  
-20. Ticket drop off mail.  
-21. Handoff mail.
-
-1. CV should be in ats format.
-
-On passing psychometric module 1 based of hiring\_process\_information.pdf, applicant should be congratulated for being eligible to be sponsored at least in part for their ticket training.
-
-1. Make the application approved mail specific to the following   
-1. Experience  
-2. Job role applied for.  
-3. Qualifications  
-4. And also inform them about the employer selection stage to which a mail to the effect shall be sent in 24 hours.
-
-1. Agreed to be enrolled notice.  
-   Add following clauses to the mail  
-1. State clearly being medically fit and passing the ticket examinations are the only guarantee to getting hired by our client companies.  
-2. WHY ARE TICKETS REQUIRED
-
-   NOTE: MOST OVERSEAS APPLICANT DO NOT HAVE ALL TICKETS REQUIRED TO WORK IN AUSTRALIA EVEN IF EXPERIENCED
-
-2. 
-
-Email Should contain: Officially enrolled, enrollment details will be sent by partner RTO.
-
-1. Credentials  
-2. View syllabus  
-3. View the course outline and ai tutor shall be provided to guide you through difficultty in mail and ui
-
-1. Email should contain:
-
-   
-
-1. Minimum amount for each route.  
-2. Discount policy   
-3. Half payment note for only card and crypto routes.  
-4. Refund policy  
-5. faq (link all encompassing all means (addressing possibilities, traceability, refund, speed and legitimacy of means).  
-6. \- Payment Link or details and instructions,
-
-   \- means of refund
-
-   \- and minimum amount alongside the following.
-
-1. Card  
-> > > > > > 1.   
-> > > > > > 2. Pros \- Instant, easy  
-> > > > > > 3. Cons \- payment processor not available in all countries   
-> > > > > > 4. Means of refund \-   
-> > > > > > 5.   
-2. Direct wire  
-> > > > > > 1. Cons \- only for payments above 1000 AUD, high cost delay  
-> > > > > > 2. Means of refund
-
-   
-
-3. Cryptocurrency gateway  
-> > > > > > 1. Pros \- Instant, company uses a tracable means via bitget.  
-> > > > > > 2. Cons \-    
-> > > > > > 3. Means of refund  
-4. Closest Agent  
-> > > > > > 1. Pros \- Any amount    
-> > > > > > 2. Cons \- high cost, delay   
-> > > > > > 3. Means of refund
-
-The crypto option mail:   
-The aim of this email is to calm the nerves applicants that fear crypto payments due to complexity   
-AI IMPLEMENTATION NOTE: Clearly explain to the them in the mail why it is safe and why my method using bitget is safe and easy.  
-Email has the the following  
-Operational manual attached to the job listing; server downloads it from cloudinary and attached the file to the email as the interview preparatory material.  
-Zoom link to the interview meeting  
-Interview date and time.  
-  
-
-Notification on post employment visa processing produce and onboarding process (sent beforehand, applicants should be sure of medical and other fitness, sent as a preventive measure for applicant, so they don't proceed to get tickets while being unfit for the role)  Employment contract with clear terms (salary, hours, etc.).  
-  · Interview date already set.  
-  · Promised steps from interview to onboarding: TRN, nomination, visa, TRA skills assessment, arrival, start date. These are promises, not actual events.  
-Reply with selected interview date and a zoom link will be sent
-
-1. Add operations manual attribute to the joblisting model, during mutilation or creation, the operations manual is saved in cloudinary.
-
-1. Current bank account model should server as agent bank account  
-2. There should be only one agent bank account on the system
-
-1. Create wallet model with the following attributes  
-1. Address  
-* Only one wallet in db  
-* Wallet is a USDT tron network
-
-Create Employers model
-
-1. Create ApplicantQualification Model.
-
-1. Create Experience model, based off ats CV standards.
-
-1. Applicant only have one invoice 1:1  
-2. Remove invoice type attribute  
-3. A receipt is generated if the invoice is marked as paid, and sent via mail  
-4. Invoice can be unpaid or half paid or paid
-
+**ESA03 — Employer Selection Acceptance**
+- Stage updated to: *Employer Selection — Completed*.
+- **ESAS06:** Five hours after ESAS03 submission, a cron job runs.
+  - If selection now matches `isCurrentlyEmploying`, an acceptance email is sent from info (blue collar).
+
+---
+
+## FEATURE GROUP 6 — Employer Management (F006)
+
+**Feature ID:** F006 — Employer Management
+
+### Actions
+- Full CRUD for employers via admin dashboard.
+- Only one employer may be marked `isCurrentlyEmploying` at any given time.
+- Admin UI must enforce this constraint (toggling one off when another is toggled on).
+
+---
+
+## FEATURE GROUP 7 — Interview Scheduling (F005)
+
+**Feature ID:** F005 — Interview Scheduling
+
+### Actions
+
+**INA01 — Interview invitation**
+- **INAS01:** Admin:
+  1. Selects applicant from dropdown.
+  2. Fills in interview details (date, time, timezone).
+  3. Adds Zoom link. This is mandatory — admin cannot send without it.
+  4. Request sent to server.
+  5. `applicant.interviewDate`, `applicant.interviewLink`, `applicant.interviewTime` updated in DB.
+  6. Email dispatched **from employer email** with:
+     - Interview link, date and time.
+     - Operational manual file attached (downloaded from Cloudinary via `JobListing.operationalManualUrl`).
+
+**INA02 — Second employer contact (1 hour after INA01)**
+- `employerSecondContact` email sent from employer email.
+- Educates applicant on the interview-to-onboarding steps.
+- Attaches `maca-employee-onboarding-guide.pdf` (generated server-side) with:
+  1. Applicant name appended.
+  2. Applicant interview date appended.
+- Email also includes:
+  - Notification of post-employment visa processing and onboarding process.
+  - Warning to confirm medical fitness before proceeding.
+  - High-level employment contract terms (salary, hours, etc.).
+  - Confirmed interview date and Zoom link.
+  - Promised steps: TRN -> nomination -> visa -> TRA skills assessment -> arrival -> start date. (Promises, not confirmed events.)
+
+---
+
+## FEATURE GROUP 8 — Ticket Sponsorship (F007)
+
+**Feature ID:** F007 — Ticket Sponsorship
+
+> **[RESOLVED C2 — Sponsorship trigger]**
+> Trigger confirmed: TSAS01 fires 3 hours after INAS01 (the interview notification email, F005/INA01).
+> The original "F002" reference in the source document was a mislabel and is disregarded.
+
+### Actions
+
+**TSA01 — Invite for Sponsorship**
+- **TSAS01:** 3 hours after the interview notification email (F005/INA01), a cron job sends the applicant an invitation to upload existing tickets and/or apply for sponsorship.
+- **TSAS02:** Applicant visits their dashboard and uploads any tickets they already possess.
+- **TSAS03:** If no tickets or gaps remain, the UI encourages the applicant to apply for sponsorship.
+- **TSAS04:** 6 hours after the sponsorship application is submitted, a cron job approves it, updates the DB, and sends a confirmation email.
+
+> **Gating rule:** The ticket sponsorship application form must not be accessible before the TSAS01 stage is due. The application detail page must enforce this gate.
+
+---
+
+## FEATURE GROUP 9 — CertHero Enrollment (F008)
+
+**Feature ID:** F008 — CertHero Enrollment
+
+### Actions
+
+**CEA01 — Enrollment notification**
+- **CEAS01:** 6 hours after employer selection acceptance (ESA03/ESAS06), a cron job:
+  1. Creates CertHero credentials for the applicant.
+  2. Prefills the enrollment letter with applicant details and ticket courses.
+  3. Sends an email from RTO email containing:
+     - CertHero credentials.
+     - Enrollment letter.
+     - Request to log in and review the syllabus.
+     - Note that AI tutor access is granted on completion of enrollment.
+     - Deadline warning: failing to commence and complete all courses and examinations before the deadline results in forfeiture of the opportunity.
+  - Enrollment email must also state:
+    - Officially enrolled; enrollment details to follow from partner RTO.
+    - Being medically fit and passing ticket examinations are the only guarantees to being hired.
+    - Why tickets are required (note: most overseas applicants do not have all tickets required to work in Australia, even if experienced).
+
+**CEAS02 — On first RTO login post-enrollment**
+- The selected employer (with `isCurrentlyEmploying = true`) sends an email from employer email:
+  1. Requests the applicant to submit an international means of receiving refunds within 3 weeks.
+  2. Outlines the refund policy for any financial responsibility borne by the applicant during training.
+  3. Asks the applicant to watch for the blue collar ticket sponsorship contract email.
+
+**CEAS03 — Sponsorship contract delivery (on first RTO login)**
+- On the applicant's first RTO login, the server:
+  1. Drafts the ticket sponsorship contract (template prefilled with applicant bio and ticket gaps).
+  2. Updates the stage.
+  3. Sends the contract from blue collar email with:
+     - Instruction to watch for a bank details request from their employer.
+     - Instruction to sign and upload the contract via dashboard to obtain a sponsorship ID.
+     - Note: contract ID will be sent within 3 hours of upload.
+  4. 2 hours after upload, a cron job sends the sponsorship ID.
+- On dashboard, the applicant can view the course syllabus but not the content until payment.
+- Attempting to access course content triggers: "Are you a sponsored candidate?"
+  - If yes -> system requests sponsorship ID.
+  - After valid sponsorship ID entry -> applicant is navigated to the invoice request page.
+
+**CEAS04 — Invoice request**
+- The applicant enters their contract ID, which navigates to the invoice request page showing:
+  - `applicant.percentageSubsidy` and the total amount in AUD.
+  - Payment purpose message: tone must reflect that, under the contract with the selected employer and partner labour-hire company, the residual refundable cost ensures the applicant completes the courses and examinations without dropping out.
+  - The 100% refund policy on ticket acquisition by the employer.
+- Refund policy is displayed above the "Request Invoice" button.
+
+---
+
+## FEATURE GROUP 10 — Payments (F009)
+
+**Feature ID:** F009 — Payments
+
+> **[RESOLVED C1 — Partial Payment: Option B]**
+> Partial pay is retained. All half-payment flows below are authoritative.
+
+### Actions
+
+**PA01 — Invoicing**
+- **PSAS01:** Once the applicant hits "Request Invoice" (CEAS04):
+  1. An `Invoice` record is created.
+  2. A CertHero-branded invoice is generated using the invoice template and total ticket costs.
+  3. The invoice email is sent from RTO email with:
+     - Payment instructions for all four methods (see table below).
+     - Minimum amount per route.
+     - Discount policy.
+     - Half-payment note for card and crypto routes (partial pay retained — C1 resolved).
+     - Refund policy prominently at the top.
+     - FAQ link (covering traceability, refund, speed, and legitimacy of each method).
+     - Payment link/details and refund means per route.
+  - Applicant is instructed to reply to the invoice email with the date and local time (including timezone) they intend to make payment, so that support can be available for a smooth process.
+  - If a payment FAQ exists in the database (`Faq` where `type = 'payment'`), include the link in the invoice email.
+
+| Method | Key Details |
+|---|---|
+| Wire transfer | For amounts above AUD threshold |
+| Agent wire transfer | For amounts below 700 AUD (only if agent bank account exists in DB) |
+| Card | Pros: instant, easy. Cons: not available in all countries. Includes refund method. |
+| Crypto (Bitget, USDT) | Pros: instant, traceable via Bitget. Play Store and App Store links included. Crypto FAQ link. |
+
+- **PSAS02:** Card payment button and crypto payment button displayed in the email.
+
+**PA02 — Card Payment**
+- **PCAS02:** On reaching the card payment page (dummy card details form):
+  1. On clicking Pay, user is alerted that card payments are not available in their country for this merchant.
+  2. An email is sent from CertHero finance team asking the applicant to use an alternative method, noting crypto via Bitget is fast and easy, and referring them to Ian for further enquiry.
+
+**PA03 — Crypto Payment**
+- **PA03S01:** User sees a clickable and scannable QR code from the admin wallet address in the DB. Only one wallet exists at a time.
+- **PA03S02:** User sees scanning/clicking instructions based on device (PC or mobile).
+- **PA03S03:** On click/scan, opens Bitget wallet if installed; otherwise opens Play Store or App Store based on OS.
+- **PA03S04:** Applicant views payment instructions.
+- **Crypto option email:** A separate email to calm applicants who fear crypto. Clearly explain why the method is safe and why Bitget specifically is safe and easy.
+
+**PA04 — Agent Bank Account CRUD**
+- Bank account for SWIFT international wire transfer.
+- The existing bank account model serves this purpose.
+- Only one entry at a time in the database.
+- Admin CRUD UI and server implementation required.
+
+**PA05 — Receipts**
+- **PA04S01:** Admin navigates to pending payments; system fetches applicants with unpaid or half-paid invoices.
+- **PA04S02:** Admin selects applicant, enters amount paid, sends request to server.
+- **PA04S03:** System marks the invoice as paid.
+- **PA04S04:** System generates a receipt document.
+- **PA04S05:** System sends the receipt via email.
+- Invoice and receipt generation must be moved to the server.
+
+---
+
+## FEATURE GROUP 11 — Course Access & Examinations (F010)
+
+**Feature ID:** F010 — Course Access
+
+### Actions
+
+**CA01 — Syllabus, Course, and Examination Content**
+- **CAS01:** Developer provides the PDF manual for each ticket.
+
+**CA02 — Course Consumption**
+- **CAS02:** If the applicant has paid their invoice, they can view the course as a non-downloadable, branded manual document on screen.
+- The AI bot is displayed and the user can interact with it based on the document in view or other ticket manuals.
+
+**CA03 — Examinations**
+- **CA03S01:**
+  - If invoice is **fully paid**: applicant may take the exam at any time; exams are graded immediately.
+  - If invoice is **half paid**: applicant may take only 3 examinations; a fourth attempt prompts payment method selection (bank transfer or crypto). Each payment page must link to the other.
+- **CA03S02:** If the applicant passes, a congratulatory message is shown; 3 hours later, a ticket is generated from the branded template and sent via email.
+- **CA04S03:** If a candidate fails on a **second attempt**, the system automatically passes them at the 60% pass mark and executes CA03S02.
+  If a candidate fails the **first attempt**, they are encouraged to retry, shown the questions they got wrong, and an email is sent.
+- **CA04S04:** System sends the receipt document via email.
+
+**CA04 — Handoff**
+- **CA04S01:** After the applicant completes the last ticket exam, passes, and receives their ticket, 6 hours later, blue collar sends a Handoff notice:
+  - Informs the applicant that their employer will be in contact.
+  - They will be off-boarded from the platform shortly after employer contact.
+
+---
+
+## FEATURE GROUP 12 — Crypto Wallet CRUD (F011)
+
+**Feature ID:** F011 — Crypto Wallet CRUD
+
+- Create admin UI for Wallet management.
+- Server implementation for Wallet CRUD.
+- Only one USDT (Tron network) wallet address stored in the database at any time.
+
+---
+
+## FEATURE GROUP 13 — Psychometric Testing
+
+### Module 1
+- On passing Module 1 (based on `HIRING_PROCESS_INFORMATION.pdf`), the applicant is congratulated for being eligible for at least partial ticket training sponsorship.
+
+### Module 2 — Geo-routing & Pre-module Gates
+
+> **[RESOLVED C3 — Module 2 Section 2 question scope]**
+> An earlier version of the document included refund policy questions in Section 2.
+> **Resolved by user:** Section 2 questions must NOT include refund policy questions.
+> Implementation: questions are based solely on `HIRING_PROCESS_INFORMATION.pdf`, covering SECTION 1 and SECTION 2 without refund policy content.
+
+**M2.1 — Geo-routing modal**
+- When any visitor navigates to the RTO site, a modal pops up to detect whether they are in Australia.
+  - If in Australia -> route to `https://certhero.com.au`.
+  - If not in Australia -> remain on RTO URL; display: "Course access on this portal is only for sponsored overseas candidates. Use the main portal."
+
+**M2.2 — Pre-module confirmation gate**
+- Before the applicant can start Module 2, a modal asks if the applicant has read `HIRING_PROCESS_INFORMATION.pdf` (attached to the welcome email).
+  - If no -> applicant is made to download the file immediately.
+  - If yes -> module begins.
+
+**M2.3 — Question rewrite**
+- Rewrite all Psychometric Module 2 questions based on `HIRING_PROCESS_INFORMATION.pdf`:
+  - SECTION 1: Questions from Section 1.
+  - SECTION 2: Questions from Section 2. Refund policy questions must NOT be included.
+
+---
+
+## FEATURE GROUP 14 — Application Lifecycle & Acceptance
+
+### Manual Acceptance Flow
+- Change application acceptance from automated (cron) to **manual** via the admin dashboard.
+- Admin must draft and send the acceptance email to the applicant as part of the acceptance action.
+- The acceptance email must be specific to:
+  1. The applicant's experience.
+  2. The job role applied for.
+  3. The applicant's qualifications.
+  4. Inform of the upcoming employer selection stage (dedicated email to follow within 24 hours).
+
+### Application Flow Sequence
+1. Onboarding — sign-up, verify email (fully implemented).
+2. Application — commenced with welcome email.
+3. Employer Selection.
+4. Interview Scheduling.
+5. Ticket Sponsorship: invited -> applied -> approved -> contract.
+6. Ticket Acquisition.
+7. Handoff.
+
+- Each approval email must state the effect of the approval in terms of the hiring procedure and the next step.
+- Each stage commencement email must clearly state:
+  - The aim of the stage.
+  - The reason behind the aim ("How does this help me get hired?").
+  - The procedure.
+  - Consequences of lateness or non-compliance.
+  - Communication channel and expected response time.
+
+---
+
+## FEATURE GROUP 15 — Documents
+
+All documents must be generated server-side unless noted.
+
+| # | Document | Notes |
+|---|---|---|
+| 1 | HIRING_PROCESS_INFORMATION.pdf | Attached to welcome email |
+| 2 | Employer Selection Form | Renamed from "Nomination Form"; move creation to server |
+| 3 | CertHero Enrollment Letter | Generated server-side; styled per certhero.com.au |
+| 4 | Sponsorship Contract | Moved to server; see edits below |
+| 5 | Invoice | Moved to server; CertHero branded |
+| 6 | Receipt | Generated on invoice marked paid |
+| 7 | Tickets | Generated from branded template after exam pass |
+
+**Employer Selection Form:**
+- Rename "NOMINATION OFFICIAL SPONSOR LIST" to "Official Sponsor Employers List" everywhere.
+- Only the employer with `isCurrentlyEmploying = true` is included in the form.
+
+**Enrollment Letter:**
+- Fetch applicant's tickets where `possessed = false`.
+- Outline tickets with a mode of instruction table (Online vs Practical).
+- Include: online procedure, practical procedure, communication channel, deadline section.
+- Examination completion deadline: 16 days from the date the enrollment email was dispatched.
+
+**Sponsorship Contract edits:**
+1. Move contract creation to the server.
+2. Body must state: this is not an employment contract; it is to ensure you get a job if you meet the requirements.
+3. Amount in AUD.
+4. Refunder and refund policy.
+5. Remove accommodation and other visa-related content.
+6. List what the employer covers in the employment contract:
+   - Skills assessment
+   - Medical
+   - Visa costs and sponsorship
+   - Flight
+   - Accommodation off-site (3 months) and on-site (for the duration of the employment contract)
+
+---
+
+## FEATURE GROUP 16 — Emails (Full List)
+
+All emails below must be implemented. Emails that commence a stage must follow the structure in Feature Group 14.
+
+| # | Email | Sender |
+|---|---|---|
+| 1 | Welcome email | Blue collar (info) |
+| 2 | Psychometric Module 1 mail | — |
+| 3 | Psychometric Module 2 mail | — |
+| 4 | Application submitted mail | — |
+| 5 | Application accepted mail | Admin (manual draft required) |
+| 6 | Employer Selection mail (M06) | Blue collar (info) |
+| 7 | Employer Selection filled mail | — |
+| 8 | Employer Selection accepted mail | Blue collar (info) |
+| 9 | Notification of interview date and time mail | Employer email |
+| 10 | Call for ticket sponsorship mail | Blue collar |
+| 11 | Ticket sponsorship accepted mail | — |
+| 12 | Ticket courses enrollment mail | RTO email |
+| 13 | Contract delivery mail | Blue collar |
+| 14 | Contract agreement acknowledgement mail | — |
+| 15 | Invoice mail | RTO email |
+| 16 | Receipt mail | — |
+| 17 | Ticket pass mail | — |
+| 18 | Ticket fail mail | — |
+| 19 | Ticket delivery mail | — |
+| 20 | Ticket drop-off mail | — |
+| 21 | Handoff mail | Blue collar |
+
+**Email sender environment variables (save as env vars):**
+- `INFO_EMAIL` — Blue collar (info)
+- `RTO_INFO_EMAIL` — RTO info
+- `EMPLOYER_EMAIL` — Employer
+- Admin and server can send from any of the three addresses above.
+
+---
+
+## FEATURE GROUP 17 — Seeding
+
+### Data to Seed
+
+1. **Employers:** Seed Maca Limited and Mineral Resources to match the Employer model.
+2. **Job Listings:**
+   - Edit `FIFO.csv` seed data to match the JobListing model.
+   - `benefit` column must be formatted as a numbered list so the client can render it as a bullet list.
+   - Add operational manual per job listing (uploaded to Cloudinary, linked via `operationalManualUrl`).
+   - Fetch from the web: any document detailing operational procedures for the job on a mining site.
+3. **Ticket Requirements:**
+   - Fetch all required tickets for each job listing in Perth, Western Australia.
+   - Create a `ticketRequirements.json` file for each job listing.
+   - Object notation per ticket must match the TicketCatalogue model.
+   - Include status columns: course seeded, exam questions seeded, catalogue seeded.
+   - Include tickets and driver's licences only — no police clearance.
+4. **Training Manuals (per ticket):**
+   - Search and download a training manual from the web.
+   - Ensure all manuals include a table of contents (syllabus).
+   - AI extracts the syllabus and text, then recreates the manual with CertHero branding.
+   - Rebranded manual uploaded to Cloudinary; public URL saved to `Course.contentUrl`.
+5. **Courses (per TicketCatalogue entry):**
+   - Seed using `contentUrl` (Cloudinary) and `syllabus` (template format). No `contentText`.
+6. **Examination Questions:**
+   - For each ticket training material, draft 35 examination questions.
+   - Save in JSON files, each linked to the relevant ticket.
+7. **Seed Jobs:**
+   - Operational manual saved in Cloudinary.
+8. **Seed TicketCatalogue:**
+   - For each TicketCatalogue, seed course and exam questions.
+   - Update `ticketRequirements.json` to reflect seeding progress.
+
+### Syllabus Template
+- Create a text or JSON template for the syllabus to ensure uniform front-end formatting.
+- Save each syllabus in this template format, linked to its ticket.
+
+---
+
+## FEATURE GROUP 18 — RTO Platform & Security
+
+### Security & Routing
+- All action-demanding public page components must route to `/login` when the user is not authenticated.
+- No secured page must exist as a public page.
+- Secured routes (require authentication):
+  - `/payments`
+  - `/notifications`
+  - `/my-certifications`
+  - `/courses/[id]`
+  - `/courses/[id]/exam`
+  - `/psychometric`
+- Navbar and landing page CTAs must route unauthenticated users to `/login`.
+- The `/login` page must handle a `redirect` search parameter to return the user to the intended page after login.
+
+### Credential Management
+- Unify RTO credentials creation and management.
+
+### Miscellaneous
+- Rename all instances of "Aveling" to "RTO" across client and server.
+
+---
+
+## FEATURE GROUP 19 — Vacancy URL Management
+
+- Create a page to fetch and update vacancy URLs for each `JoblistingEmployer` row.
+
+---
+
+## FEATURE GROUP 20 — Registration
+
+- On the registration form, add a consent checkbox: "I consent to making a testimonial video if hired."
