@@ -1,483 +1,782 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
-    Award,
-    BookOpen,
-    ShieldCheck,
-    CheckCircle2,
     ArrowRight,
-    MapPin,
-    ExternalLink,
-    FileText,
-    GraduationCap,
-    Clock,
+    ArrowDownRight,
+    CheckCircle2,
+    ShieldCheck,
+    Mail,
+    Phone,
+    Send,
+    Brain,
+    BookOpen,
+    HardHat,
+    Award,
     Layers,
-    ChevronRight,
-    HelpCircle,
-    Building2,
-    HardHat
+    ChevronDown,
+    ExternalLink,
+    Clock,
+    FileCheck,
+    Compass
 } from 'lucide-react';
 
-export default function RtoHomePage() {
-    const [showLocationModal, setShowLocationModal] = useState(false);
-    const [modalDismissed, setModalDismissed] = useState(false);
+export default function CertHeroHomePage() {
+    // Enquiry form states
+    const [enquiryName, setEnquiryName] = useState('');
+    const [enquiryEmail, setEnquiryEmail] = useState('');
+    const [enquiryPhone, setEnquiryPhone] = useState('');
+    const [enquiryService, setEnquiryService] = useState('Overseas Skills Assessment');
+    const [enquiryMessage, setEnquiryMessage] = useState('');
+    const [submitted, setSubmitted] = useState(false);
+    const [missionModalOpen, setMissionModalOpen] = useState(false);
 
-    useEffect(() => {
-        // Check if user has already made location choice in this session
-        const hasChosen = sessionStorage.getItem('certhero_location_choice');
-        if (!hasChosen) {
-            setShowLocationModal(true);
-        }
-    }, []);
+    // FAQ Accordion State
+    const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-    const handleAustraliaChoice = () => {
-        sessionStorage.setItem('certhero_location_choice', 'australia');
-        window.location.href = 'https://www.certhero.com.au';
+    const handleEnquirySubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitted(true);
     };
 
-    const handleOverseasChoice = () => {
-        sessionStorage.setItem('certhero_location_choice', 'overseas');
-        setShowLocationModal(false);
-        setModalDismissed(true);
-    };
-
-    const keyFeatures = [
+    const pathways = [
         {
-            icon: ShieldCheck,
-            title: 'Nationally Recognised Training',
-            desc: 'Delivered in accordance with ASQA Standards for Registered Training Organisations and the Australian Qualifications Framework (AQF).'
+            title: 'OVERSEAS SKILLS ASSESSMENT FOR TRADES IN AUSTRALIA',
+            desc: 'Get your international trade qualification formally assessed and recognized across Australia via TRA and accredited RTO pathways.',
+            image: '/images/certhero/pathway-overseas.jpg',
+            href: '/catalog?category=overseas',
+            tag: 'GLOBAL TRADESPEOPLE'
         },
         {
-            icon: HardHat,
-            title: 'High Risk Work & Mining Units',
-            desc: 'Curriculum structured specifically for resource sector operations, mining infrastructure, and high-risk work environments.'
+            title: 'MINING & FIFO TRADE CERTIFICATION PATHWAY',
+            desc: 'Become fully certified with high-demand plant operations, civil earthmoving, and mining site inductions in Western Australia & Queensland.',
+            image: '/images/certhero/pathway-mining.jpg',
+            href: '/catalog?category=civil_mining',
+            tag: 'RESOURCES & FIFO'
         },
         {
-            icon: BookOpen,
-            title: 'Structured LMS Courseware',
-            desc: 'Online theoretical modules, safety standards review, and integrated assessment tools with immediate digital verification.'
+            title: 'OFFSHORE READY CERTIFICATION PATHWAY FOR OIL & GAS AND MARITIME CAREERS',
+            desc: 'Fast-track your offshore safety tickets, OPITO compliance, confined space, and height certifications with approved providers.',
+            image: '/images/certhero/pathway-offshore.jpg',
+            href: '/catalog?category=high_risk',
+            tag: 'ENERGY & MARITIME'
         },
         {
-            icon: GraduationCap,
-            title: 'Statements of Attainment',
-            desc: 'Official certified units issued upon successful examination completion, accepted by tier-1 Australian resources contractors.'
-        }
-    ];
-
-    const trainingPathways = [
-        {
-            code: 'HRWL-01',
-            title: 'High Risk Work Licences',
-            units: 'TLILIC0003, TLILIC0004, CPCCLDG3001',
-            desc: 'Forklift operations, order picker, dogging and rigging essentials complying with SafeWork Australia standards.',
-            badge: 'High Demand'
+            title: 'APPRENTICESHIP SUPPORT FOR SCHOOL LEAVERS & EMERGING TRADESPEOPLE IN AUSTRALIA',
+            desc: 'Essential tickets, RTO connections, documentation and structured mentorship to become site-ready and appealing to top employers.',
+            image: '/images/certhero/pathway-apprenticeship.jpg',
+            href: '/catalog',
+            tag: 'EARLY CAREER'
         },
         {
-            code: 'CIV-02',
-            title: 'Civil & Mining Plant Operations',
-            units: 'RIIMPO320F, RIIMPO318F, RIIMPO338E',
-            desc: 'Excavator, front end loader, haul truck, and heavy earthmoving competencies for surface operations.',
-            badge: 'FIFO Standard'
+            title: 'SITE READY TICKETS & SAFETY CERTIFICATIONS FOR TRADES',
+            desc: 'Get the mandatory cards and verifications you need to step onto Australian commercial and civil work sites without delay.',
+            image: '/images/certhero/pathway-site-tickets.jpg',
+            href: '/catalog?category=safety',
+            tag: 'SITE COMPLIANCE'
         },
         {
-            code: 'SAF-03',
-            title: 'Site Safety & High-Risk Compliance',
-            units: 'RIIWHS204E, RIIWHS202E, MSMWHS217',
-            desc: 'Work safely at heights, enter and work in confined spaces, and gas test atmospheres on industrial sites.',
-            badge: 'Mandatory'
-        },
-        {
-            code: 'ELEC-04',
-            title: 'Electrical & Hazardous Areas',
-            units: 'UEERA0007, HLTAID009, UETDRRF004',
-            desc: 'EEHA equipment inspection, CPR, low voltage rescue (LVR), and hazardous site electrical compliance.',
-            badge: 'Specialist'
-        },
-        {
-            code: 'RPL-05',
-            title: 'Skills Recognition & RPL Pathway',
-            units: 'AQF Certificate III Equivalent Assessment',
-            desc: 'Formal qualification conversion for experienced tradespersons with documented industry service.',
-            badge: 'Fast Track'
-        },
-        {
-            code: 'SPS-06',
-            title: 'Employer-Sponsored Inductions',
-            units: 'Tailored Corporate Training Packages',
-            desc: 'Pre-mobilisation technical alignment for overseas candidates entering Australian FIFO projects.',
-            badge: 'Sponsored'
-        }
-    ];
-
-    const fourStepProcess = [
-        {
-            step: '01',
-            title: 'Enrollment & Credentials',
-            desc: 'Candidates receive verified CertHero LMS login credentials and formal letters of enrollment outlining course schedules.'
-        },
-        {
-            step: '02',
-            title: 'Curriculum Study & Review',
-            desc: 'Self-paced completion of interactive safety modules, regulatory standards, and unit-specific knowledge materials.'
-        },
-        {
-            step: '03',
-            title: 'Online Competency Exam',
-            desc: 'Strictly monitored theoretical examination testing regulatory safety, operational procedures, and hazard identification.'
-        },
-        {
-            step: '04',
-            title: 'Statement of Attainment',
-            desc: 'Digital issuance and secure storage of Statements of Attainment for site access pass approval and mobilisation.'
+            title: 'CAREER DEVELOPMENT & TRADE PATHWAY PLANNING',
+            desc: 'Professional resume preparation, employer alignment, licensing roadmap, and interview prep for high-paying trade careers.',
+            image: '/images/certhero/pathway-career.jpg',
+            href: '/#contact',
+            tag: 'CAREER MAPPING'
         }
     ];
 
     const faqs = [
         {
-            q: 'How does the CertHero LMS integrate with employer sponsorship?',
-            a: 'Blue Collar Recruitment and partner resource contractors sponsor theoretical and compliance training for eligible candidates. Course fees and credential allocations are managed through the candidate portal.'
+            q: 'How does Cert Hero assist with Overseas Skills Assessment for Australia?',
+            a: 'Cert Hero guides international tradespeople step-by-step through the Trades Recognition Australia (TRA) and offshore skills assessment pathways. We review your overseas credentials, assemble compliant documentary evidence, liaise with approved RTOs, and coordinate technical interviews or practical tests.'
         },
         {
-            q: 'Are the certificates nationally recognised across all Australian states?',
-            a: 'Yes. All completed competencies follow the Australian Qualifications Framework (AQF) and Nationally Recognised Training (NRT) framework, valid across WA, QLD, NSW, VIC, SA, NT, and TAS.'
+            q: 'What role does the Cert Hero LMS platform serve for candidate assessments?',
+            a: 'Our registered LMS provides online theoretical coursework, psychometric testing, safety compliance modules, and timed examinations required prior to mobilization on Australian mining and infrastructure sites.'
         },
         {
-            q: 'How are practical assessments handled for overseas candidates?',
-            a: 'Candidates complete theoretical components and examinations through this portal prior to arrival. Final hands-on verifications of competency (VOC) are conducted at accredited training centres upon mobilisation in Australia.'
+            q: 'How do I complete the psychometric test required for my job application?',
+            a: 'Candidates invited via BlueCollar Recruitment can launch the psychometric module directly from the top navigation or via their unique candidate invitation link. The assessment evaluates situational safety judgment, problem-solving, and Australian site readiness.'
         },
         {
-            q: 'What is required to begin training modules?',
-            a: 'You will need your assigned CertHero candidate credentials (sent via email upon enrollment) and a valid Unique Student Identifier (USI) or international exemption record.'
+            q: 'Are certificates and tickets issued through Cert Hero nationally recognized?',
+            a: 'Yes. All formal accredited competency units conform to the Australian Qualifications Framework (AQF) and Nationally Recognised Training (NRT) framework, recognized across all Australian states and territories.'
+        },
+        {
+            q: 'How long does it take to complete the theoretical modules and receive results?',
+            a: 'LMS theory modules are self-paced. The online theory assessments are timed at 15 minutes each with instant automated grading and digital recording to your candidate profile.'
         }
     ];
 
     return (
-        <div className="bg-slate-50 min-h-screen text-slate-900">
-            {/* Modal: Australia vs Overseas Router (CHANGES.md Prompt 5.1) */}
-            {showLocationModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative text-left">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="h-10 w-10 rounded-xl bg-[#ED9139]/10 text-[#ED9139] flex items-center justify-center shrink-0">
-                                <MapPin className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold text-slate-900 leading-tight">Location Verification</h3>
-                                <p className="text-xs text-slate-500">Please confirm your current geographic location</p>
-                            </div>
-                        </div>
+        <div className="flex flex-col min-h-screen bg-white text-slate-900 selection:bg-[#EAA240] selection:text-black">
+            
+            {/* 1. HERO SECTION (Screenshots 1 & 2) */}
+            <section className="relative overflow-hidden border-b border-slate-200">
+                {/* Background Image with warm industrial gradient overlay */}
+                <div 
+                    className="absolute inset-0 bg-cover bg-center z-0 scale-105 transition-transform duration-1000 ease-out"
+                    style={{ backgroundImage: `url('/images/certhero/hero-bg.jpg')` }}
+                >
+                    <div className="absolute inset-0 bg-gradient-to-r from-amber-50/95 via-amber-50/80 to-amber-100/60 md:from-amber-50/90 md:via-amber-50/70 md:to-transparent" />
+                </div>
 
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
-                            <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                                <strong className="text-slate-900">Important Notice:</strong> Course access on this is only for sponsored overseas candidates use main portal.
+                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 lg:py-28">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                        
+                        {/* Hero Text (Left Col) */}
+                        <div className="lg:col-span-7 space-y-6">
+                            <div className="inline-flex items-center gap-2 bg-black text-[#EAA240] px-3.5 py-1.5 rounded-full text-xs font-black tracking-widest uppercase shadow-sm">
+                                <Award className="w-4 h-4 text-[#EAA240]" />
+                                TRADE CERTIFICATION & CAREER PATHWAY SUPPORT
+                            </div>
+
+                            <h1 className="text-3xl sm:text-5xl lg:text-[3.35rem] font-black tracking-tight text-black leading-[1.12]">
+                                Trade Certification, Australian Skills Assessment, Mining/FIFO, Offshore & Apprenticeship Pathways in Australia
+                            </h1>
+
+                            <p className="text-lg sm:text-xl font-extrabold uppercase tracking-wide text-slate-900">
+                                EMPOWERING TRADESPEOPLE TO REACH NEW HEIGHTS
                             </p>
+
+                            <p className="text-sm sm:text-base text-slate-700 leading-relaxed max-w-2xl font-medium">
+                                Cert Hero provides end-to-end support to help clients become certified, qualified and work-ready in Australia. We handle the paperwork, liaise with RTOs and assessment authorities on your behalf, and guide you through the exact steps needed for your industry pathway.
+                            </p>
+
+                            <div className="flex flex-wrap items-center gap-3 pt-2">
+                                <Link
+                                    href="/#pathways"
+                                    className="bg-black hover:bg-slate-800 text-white px-7 py-3.5 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition-all shadow-md flex items-center gap-2"
+                                >
+                                    Explore Hero Pathways <ArrowRight className="w-4 h-4 text-[#EAA240]" />
+                                </Link>
+
+                                <Link
+                                    href="/psychometric"
+                                    className="bg-[#EAA240] hover:bg-[#de9330] text-black px-6 py-3.5 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition-all shadow-md flex items-center gap-2"
+                                >
+                                    <Brain className="w-4 h-4" /> Psychometric Test
+                                </Link>
+
+                                <Link
+                                    href="/catalog"
+                                    className="bg-white/90 hover:bg-white text-slate-900 border border-slate-300 px-6 py-3.5 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all shadow-sm"
+                                >
+                                    Course Catalog
+                                </Link>
+                            </div>
                         </div>
 
-                        <div className="space-y-3">
-                            <button
-                                onClick={handleAustraliaChoice}
-                                className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-slate-200 hover:border-[#0f172a] hover:bg-slate-50 transition-all text-left group"
-                            >
-                                <div>
-                                    <div className="text-sm font-bold text-slate-900 group-hover:text-[#0f172a] flex items-center gap-2">
-                                        I am currently in Australia
-                                        <ExternalLink className="h-3.5 w-3.5 text-slate-400 group-hover:text-slate-900" />
-                                    </div>
-                                    <p className="text-xs text-slate-500 mt-0.5">Route to domestic portal (certhero.com.au)</p>
+                        {/* Consultation Form Card (Right Col) */}
+                        <div className="lg:col-span-5">
+                            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-[#EAA240] p-6 sm:p-8">
+                                <div className="border-b border-slate-100 pb-4 mb-5">
+                                    <span className="text-[11px] font-black text-[#EAA240] uppercase tracking-widest block">
+                                        Personalised Guidance
+                                    </span>
+                                    <h3 className="text-xl sm:text-2xl font-black text-black tracking-tight mt-1">
+                                        Enquire Now For a Free Consultation
+                                    </h3>
+                                    <p className="text-xs text-slate-600 mt-1">
+                                        Get tailored advice for your Australian trade certification pathway.
+                                    </p>
                                 </div>
-                                <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 transition-all" />
-                            </button>
 
-                            <button
-                                onClick={handleOverseasChoice}
-                                className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-[#ED9139] bg-[#ED9139]/5 hover:bg-[#ED9139]/10 transition-all text-left group"
-                            >
-                                <div>
-                                    <div className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                                        I am an Overseas Candidate
-                                        <span className="text-[10px] bg-[#ED9139] text-[#0f172a] px-2 py-0.5 rounded font-extrabold uppercase">Sponsored</span>
+                                {submitted ? (
+                                    <div className="bg-amber-50 border border-[#EAA240] rounded-xl p-6 text-center space-y-3 animate-in fade-in">
+                                        <div className="w-12 h-12 rounded-full bg-[#EAA240] text-black flex items-center justify-center mx-auto">
+                                            <CheckCircle2 className="w-7 h-7" />
+                                        </div>
+                                        <h4 className="text-base font-black text-black">Enquiry Received!</h4>
+                                        <p className="text-xs text-slate-700">
+                                            Thank you, <strong>{enquiryName || 'Candidate'}</strong>. A Cert Hero pathway advisor will reach out to <strong>{enquiryEmail}</strong> within 1 business day.
+                                        </p>
+                                        <button
+                                            onClick={() => setSubmitted(false)}
+                                            className="text-xs text-black font-bold underline hover:text-[#EAA240] pt-2"
+                                        >
+                                            Submit another enquiry
+                                        </button>
                                     </div>
-                                    <p className="text-xs text-slate-600 mt-0.5">Continue to Blue Collar / CertHero Sponsored Training Portal</p>
-                                </div>
-                                <ChevronRight className="h-5 w-5 text-[#ED9139] group-hover:translate-x-0.5 transition-all" />
-                            </button>
-                        </div>
+                                ) : (
+                                    <form onSubmit={handleEnquirySubmit} className="space-y-4">
+                                        <div>
+                                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                                Full Name *
+                                            </label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={enquiryName}
+                                                onChange={(e) => setEnquiryName(e.target.value)}
+                                                placeholder="e.g. John Smith"
+                                                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#EAA240] focus:border-transparent bg-white"
+                                            />
+                                        </div>
 
-                        <p className="text-[11px] text-slate-400 text-center mt-5">
-                            Compliance verification governed under ASQA Standards for RTOs
-                        </p>
-                    </div>
-                </div>
-            )}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                                    Email *
+                                                </label>
+                                                <input
+                                                    type="email"
+                                                    required
+                                                    value={enquiryEmail}
+                                                    onChange={(e) => setEnquiryEmail(e.target.value)}
+                                                    placeholder="john@example.com"
+                                                    className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#EAA240] focus:border-transparent bg-white"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                                    Phone
+                                                </label>
+                                                <input
+                                                    type="tel"
+                                                    value={enquiryPhone}
+                                                    onChange={(e) => setEnquiryPhone(e.target.value)}
+                                                    placeholder="+61 4..."
+                                                    className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#EAA240] focus:border-transparent bg-white"
+                                                />
+                                            </div>
+                                        </div>
 
-            {/* Hero Section */}
-            <section className="relative bg-[#0f172a] text-white overflow-hidden py-16 sm:py-24 border-b border-slate-800">
-                {/* Subtle technical background grid */}
-                <div
-                    className="absolute inset-0 opacity-10 pointer-events-none"
-                    style={{
-                        backgroundImage: 'radial-gradient(circle at 2px 2px, #94a3b8 1px, transparent 0)',
-                        backgroundSize: '40px 40px'
-                    }}
-                />
+                                        <div>
+                                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                                Pathway Interest
+                                            </label>
+                                            <select
+                                                value={enquiryService}
+                                                onChange={(e) => setEnquiryService(e.target.value)}
+                                                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#EAA240] focus:border-transparent bg-white"
+                                            >
+                                                <option>Overseas Skills Assessment</option>
+                                                <option>Mining & FIFO Trade Certification</option>
+                                                <option>Offshore Ready Oil & Gas Certification</option>
+                                                <option>Apprenticeship Support</option>
+                                                <option>Site Ready Tickets & Safety Licences</option>
+                                                <option>Career Development & Planning</option>
+                                            </select>
+                                        </div>
 
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="max-w-3xl">
-                        {/* Status chip */}
-                        <div className="inline-flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-full px-3.5 py-1 text-xs text-slate-300 mb-6">
-                            <span className="w-2 h-2 rounded-full bg-[#ED9139] animate-pulse" />
-                            <span className="font-semibold text-white">CertHero RTO Partner</span>
-                            <span className="text-slate-500">•</span>
-                            <span>Australian Trade & FIFO Certification</span>
-                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                                Enquiry Details
+                                            </label>
+                                            <textarea
+                                                rows={3}
+                                                value={enquiryMessage}
+                                                onChange={(e) => setEnquiryMessage(e.target.value)}
+                                                placeholder="Tell us about your current trade experience and target qualifications..."
+                                                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#EAA240] focus:border-transparent bg-white"
+                                            />
+                                        </div>
 
-                        <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight mb-6">
-                            Trade Certification, Skills Assessment & Work Pathways
-                        </h1>
-
-                        <p className="text-base sm:text-lg text-slate-300 leading-relaxed mb-8">
-                            Official Registered Training Organisation (RTO) training platform delivering accredited theory coursework, competency assessments, and nationally recognised units of competency for domestic and sponsored workforce candidates.
-                        </p>
-
-                        {/* Action buttons */}
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 mb-10">
-                            <Link
-                                href="/catalog"
-                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#ED9139] hover:bg-[#dd7f26] text-[#0f172a] px-6 py-3.5 text-sm font-bold shadow-lg shadow-[#ED9139]/20 transition-all"
-                            >
-                                <BookOpen className="h-4 w-4" />
-                                Browse Course Syllabus
-                            </Link>
-
-                            <Link
-                                href="/login"
-                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-6 py-3.5 text-sm font-bold transition-all"
-                            >
-                                <GraduationCap className="h-4 w-4" />
-                                Candidate LMS Sign In
-                            </Link>
-                        </div>
-
-                        {/* Key bullet trust points */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-6 border-t border-slate-800 text-xs text-slate-300">
-                            <div className="flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-[#ED9139] shrink-0" />
-                                <span>100% AQF Compliant Units</span>
+                                        <button
+                                            type="submit"
+                                            className="w-full bg-black hover:bg-slate-900 text-[#EAA240] hover:text-white py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                                        >
+                                            <Send className="w-3.5 h-3.5" /> Submit Enquiry
+                                        </button>
+                                    </form>
+                                )}
                             </div>
-                            <div className="flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-[#ED9139] shrink-0" />
-                                <span>SafeWork Recognised</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-[#ED9139] shrink-0" />
-                                <span>Official Statements of Attainment</span>
-                            </div>
                         </div>
+
                     </div>
                 </div>
             </section>
 
-            {/* Accreditation & Regulatory Banner */}
-            <section className="bg-white border-b border-slate-200 py-6">
+            {/* 2. ABOUT CERT HERO & HOW WE CAN HELP (Screenshots 3 & 4) */}
+            <section id="about" className="py-20 bg-black text-white border-b border-neutral-900">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 text-center mb-4">
-                        Recognised Standards & Industry Compliance Frameworks
-                    </p>
-                    <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-12 text-slate-700 font-bold text-xs sm:text-sm">
-                        <div className="flex items-center gap-2">
-                            <ShieldCheck className="h-4 w-4 text-[#ED9139]" />
-                            <span>Nationally Recognised Training (NRT)</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Award className="h-4 w-4 text-[#ED9139]" />
-                            <span>Australian Qualifications Framework (AQF)</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Building2 className="h-4 w-4 text-[#ED9139]" />
-                            <span>SafeWork Australia</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <CheckCircle2 className="h-4 w-4 text-[#ED9139]" />
-                            <span>VETASSESS & TRA Mapped</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+                        
+                        {/* Left Column: Headings & Services List */}
+                        <div className="lg:col-span-7 space-y-8">
+                            
+                            {/* Section Header with crossed tools icon */}
+                            <div className="flex items-center gap-4">
+                                <h2 className="text-3xl sm:text-4xl font-black tracking-tight uppercase text-white">
+                                    ABOUT CERT HERO
+                                </h2>
+                                <img
+                                    src="/images/certhero/certhero-tools-icon.png"
+                                    alt="Cert Hero Icon"
+                                    className="w-12 h-12 object-contain bg-neutral-900 border border-neutral-800 rounded-lg p-1.5"
+                                />
+                            </div>
 
-            {/* Value Pillars Grid */}
-            <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center max-w-2xl mx-auto mb-12">
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                        Built for Industry Compliance & Workforce Readiness
-                    </h2>
-                    <p className="text-sm text-slate-600 mt-2">
-                        Designed to deliver high-integrity vocational education and skills verification for critical resource, industrial, and civil infrastructure positions.
-                    </p>
-                </div>
+                            {/* HOW WE CAN HELP Block */}
+                            <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 sm:p-7 space-y-3">
+                                <h3 className="text-lg font-black uppercase tracking-wide text-[#EAA240]">
+                                    HOW WE CAN HELP
+                                </h3>
+                                <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-medium">
+                                    Cert Hero provides end-to-end support to help clients become certified, qualified and work-ready in Australia. We handle the paperwork, liaise with RTOs and assessment authorities on your behalf, and guide you through the exact steps needed for your industry pathway.
+                                </p>
+                            </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {keyFeatures.map((feat, idx) => {
-                        const Icon = feat.icon;
-                        return (
-                            <div
-                                key={idx}
-                                className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
-                            >
-                                <div>
-                                    <div className="h-10 w-10 rounded-xl bg-slate-100 text-[#0f172a] flex items-center justify-center mb-4">
-                                        <Icon className="h-5 w-5 text-[#ED9139]" />
+                            {/* OUR SERVICES: List */}
+                            <div className="space-y-6">
+                                <h4 className="text-xs font-black uppercase tracking-widest text-[#EAA240] border-b border-neutral-800 pb-2">
+                                    OUR SERVICES:
+                                </h4>
+
+                                <div className="space-y-6">
+                                    {/* Service 1 */}
+                                    <div className="group border-l-2 border-[#EAA240] pl-4 space-y-1">
+                                        <h5 className="text-base font-black uppercase tracking-wide text-white group-hover:text-[#EAA240] transition-colors">
+                                            OVERSEAS SKILLS ASSESSMENT FOR TRADES IN AUSTRALIA
+                                        </h5>
+                                        <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                                            Get your international trade skills formally recognised in Australia. We manage your documentation, submit applications to assessment authorities, and guide you to TRA approved RTOs and assessment authorities so you can gain your Australian recognised trade qualification faster.
+                                        </p>
                                     </div>
-                                    <h3 className="text-base font-bold text-slate-900 mb-2">{feat.title}</h3>
-                                    <p className="text-xs text-slate-600 leading-relaxed">{feat.desc}</p>
+
+                                    {/* Service 2 */}
+                                    <div className="group border-l-2 border-[#EAA240] pl-4 space-y-1">
+                                        <h5 className="text-base font-black uppercase tracking-wide text-white group-hover:text-[#EAA240] transition-colors">
+                                            MINING & FIFO TRADE CERTIFICATION PATHWAY IN AUSTRALIA
+                                        </h5>
+                                        <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                                            Become fully certified and ready for a career in mining and FIFO work. We help you access the required training, safety tickets, and qualifications while handling submissions and paperwork so you can focus on securing your next role.
+                                        </p>
+                                    </div>
+
+                                    {/* Service 3 */}
+                                    <div className="group border-l-2 border-[#EAA240] pl-4 space-y-1">
+                                        <h5 className="text-base font-black uppercase tracking-wide text-white group-hover:text-[#EAA240] transition-colors">
+                                            OFFSHORE READY CERTIFICATION PATHWAY FOR OIL & GAS AND MARITIME CAREERS
+                                        </h5>
+                                        <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                                            Fast-track your offshore certifications with confidence. From safety tickets to specialist offshore requirements, we coordinate the entire process, deal with assessment bodies for you, and secure discounted courses.
+                                        </p>
+                                    </div>
+
+                                    {/* Service 4 */}
+                                    <div className="group border-l-2 border-[#EAA240] pl-4 space-y-1">
+                                        <h5 className="text-base font-black uppercase tracking-wide text-white group-hover:text-[#EAA240] transition-colors">
+                                            APPRENTICESHIP SUPPORT FOR SCHOOL LEAVERS & EMERGING TRADESPEOPLE IN AUSTRALIA
+                                        </h5>
+                                        <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                                            Start or advance your apprenticeship with the right certifications. We assist school leavers and new apprentices with essential tickets, RTO connections, paperwork and guidance to become site-ready and appealing to employers.
+                                        </p>
+                                    </div>
+
+                                    {/* Service 5 */}
+                                    <div className="group border-l-2 border-[#EAA240] pl-4 space-y-1">
+                                        <h5 className="text-base font-black uppercase tracking-wide text-white group-hover:text-[#EAA240] transition-colors">
+                                            SITE READY TICKETS & SAFETY CERTIFICATIONS FOR TRADES
+                                        </h5>
+                                        <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                                            Get the mandatory certificates you need to step onto site. Whether you’re starting out or beginning a new role, we ensure you meet all safety and compliance requirements efficiently and without confusion.
+                                        </p>
+                                    </div>
+
+                                    {/* Service 6 */}
+                                    <div className="group border-l-2 border-[#EAA240] pl-4 space-y-1">
+                                        <h5 className="text-base font-black uppercase tracking-wide text-white group-hover:text-[#EAA240] transition-colors">
+                                            CAREER DEVELOPMENT & TRADE PATHWAY PLANNING
+                                        </h5>
+                                        <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                                            Plan your trade career with professional guidance. We provide resume support, job application help, career mapping, and industry connections to accelerate your growth, and help you build a strong, future focussed trade career.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        );
-                    })}
-                </div>
-            </section>
 
-            {/* Core Training Pathways Grid */}
-            <section className="py-16 bg-slate-100/60 border-y border-slate-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-10">
-                        <div>
-                            <span className="text-xs font-bold uppercase tracking-wider text-[#ED9139]">Accredited Units</span>
-                            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1">
-                                Core Certification & Ticket Pathways
-                            </h2>
                         </div>
-                        <Link
-                            href="/catalog"
-                            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0f172a] hover:text-[#ED9139] transition-colors"
-                        >
-                            View Complete Syllabus Catalog <ArrowRight className="h-3.5 w-3.5" />
-                        </Link>
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {trainingPathways.map((path, idx) => (
-                            <div
-                                key={idx}
-                                className="bg-white rounded-2xl p-6 border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
-                            >
-                                <div>
-                                    <div className="flex items-center justify-between mb-3">
-                                        <span className="text-[11px] font-mono font-bold text-slate-500 uppercase">{path.code}</span>
-                                        <span className="text-[10px] font-bold bg-[#ED9139]/10 text-[#ED9139] px-2.5 py-0.5 rounded-full">
-                                            {path.badge}
-                                        </span>
-                                    </div>
-                                    <h3 className="text-base font-bold text-slate-900 mb-1">{path.title}</h3>
-                                    <p className="text-[11px] font-semibold text-slate-500 mb-3">{path.units}</p>
-                                    <p className="text-xs text-slate-600 leading-relaxed mb-4">{path.desc}</p>
-                                </div>
-                                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                                    <span className="text-[11px] font-semibold text-slate-500">LMS Theory & VOC</span>
+                        {/* Right Column: Industrial Refinery Photo (Screenshots 3 & 4) */}
+                        <div className="lg:col-span-5 sticky top-28">
+                            <div className="rounded-2xl overflow-hidden border border-neutral-800 shadow-2xl relative group">
+                                <img
+                                    src="/images/certhero/about-refinery.jpg"
+                                    alt="Industrial Refinery Sunset"
+                                    className="w-full h-[520px] object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                                <div className="absolute bottom-6 left-6 right-6 p-5 rounded-xl bg-black/80 backdrop-blur-md border border-neutral-800">
+                                    <span className="text-[10px] font-black tracking-widest uppercase text-[#EAA240] block">
+                                        RESOURCES & HEAVY INDUSTRY
+                                    </span>
+                                    <p className="text-sm font-bold text-white mt-1">
+                                        Direct alignment with Tier-1 Australian resource contractors and high-risk work compliance.
+                                    </p>
                                     <Link
                                         href="/catalog"
-                                        className="text-xs font-bold text-[#0f172a] hover:text-[#ED9139] inline-flex items-center gap-1 transition-colors"
+                                        className="inline-flex items-center gap-1.5 text-xs text-[#EAA240] hover:text-amber-300 font-bold mt-2"
                                     >
-                                        Details <ChevronRight className="h-3.5 w-3.5" />
+                                        View Required Tickets & Units <ArrowRight className="w-3.5 h-3.5" />
                                     </Link>
                                 </div>
                             </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            {/* 3. MUSTARD BANNER & HERO PATHWAYS (Screenshot 5) */}
+            <section id="pathways" className="border-b border-slate-200">
+                {/* Yellow/Mustard Banner Header */}
+                <div className="bg-[#F2B258] px-4 sm:px-6 lg:px-8 py-10">
+                    <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                            <ArrowDownRight className="w-12 h-12 text-black stroke-[2.5]" />
+                            <span className="text-xs sm:text-sm font-black tracking-widest uppercase text-black">
+                                HOW WE CAN HELP YOU
+                            </span>
+                        </div>
+                        <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-black">
+                            HERO PATHWAYS
+                        </h2>
+                    </div>
+                </div>
+
+                {/* 6 Pathway Cards Grid */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {pathways.map((p, idx) => (
+                            <Link
+                                key={idx}
+                                href={p.href}
+                                className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-[#EAA240] shadow-sm hover:shadow-xl transition-all duration-300"
+                            >
+                                <div className="relative h-60 overflow-hidden bg-slate-900">
+                                    <img
+                                        src={p.image}
+                                        alt={p.title}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                                    <div className="absolute top-4 left-4">
+                                        <span className="bg-black/90 text-[#EAA240] text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded">
+                                            {p.tag}
+                                        </span>
+                                    </div>
+                                    <div className="absolute bottom-4 left-4 right-4">
+                                        <h3 className="text-base sm:text-lg font-black uppercase text-white leading-snug drop-shadow-md">
+                                            {p.title}
+                                        </h3>
+                                    </div>
+                                </div>
+                                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                                        {p.desc}
+                                    </p>
+                                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-black group-hover:text-[#EAA240] transition-colors">
+                                        <span>View Pathway Syllabus</span>
+                                        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                                    </div>
+                                </div>
+                            </Link>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* 4-Step Process Section */}
-            <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center max-w-2xl mx-auto mb-12">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#ED9139]">Training Lifecycle</span>
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1">
-                        How the Training & Certification Process Operates
-                    </h2>
-                    <p className="text-sm text-slate-600 mt-2">
-                        A structured progression from corporate registration to official Statement of Attainment issuance.
-                    </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {fourStepProcess.map((step, idx) => (
-                        <div
-                            key={idx}
-                            className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm relative flex flex-col justify-between"
-                        >
-                            <div>
-                                <span className="text-3xl font-black text-[#ED9139]/40 mb-3 block font-mono">
-                                    {step.step}
-                                </span>
-                                <h3 className="text-base font-bold text-slate-900 mb-2">{step.title}</h3>
-                                <p className="text-xs text-slate-600 leading-relaxed">{step.desc}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            {/* Sponsored Candidates Banner */}
-            <section className="bg-[#0f172a] text-white py-12 border-y border-slate-800">
+            {/* 4. PSYCHOMETRIC TEST PORTAL CALLOUT */}
+            <section className="bg-gradient-to-br from-neutral-900 via-neutral-950 to-black text-white py-16 border-b border-neutral-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-8 sm:p-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                        <div className="max-w-2xl">
-                            <div className="inline-flex items-center gap-2 bg-[#ED9139]/20 text-[#ED9139] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
-                                Overseas Sponsorship Protocol
-                            </div>
-                            <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
-                                Sponsored FIFO & Mining Induction Program
-                            </h3>
-                            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                                Candidates enrolled under Blue Collar Recruitment sponsorship receive dedicated LMS credentials, subsidised ticket courses, and structured assessment preparation. Completed units are registered to your permanent candidate portfolio.
-                            </p>
+                    <div className="bg-neutral-900/90 border border-neutral-800 rounded-3xl p-8 sm:p-12 relative overflow-hidden">
+                        <div className="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+                            <Brain className="w-96 h-96 text-[#EAA240]" />
                         </div>
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full md:w-auto">
-                            <Link
-                                href="/login"
-                                className="inline-flex items-center justify-center gap-2 bg-[#ED9139] hover:bg-[#dd7f26] text-[#0f172a] px-6 py-3 rounded-xl text-xs font-bold transition-all shadow-md"
-                            >
-                                Log In With Credentials
-                            </Link>
-                            <a
-                                href="https://www.certhero.com.au"
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-5 py-3 rounded-xl text-xs font-bold transition-all"
-                            >
-                                Main Portal ↗
-                            </a>
+                        <div className="relative z-10 max-w-3xl space-y-5">
+                            <div className="inline-flex items-center gap-2 bg-[#EAA240] text-black px-3.5 py-1.5 rounded-full text-xs font-black tracking-wider uppercase">
+                                <Brain className="w-4 h-4" /> RECRUITMENT PARTNER TESTING PORTAL
+                            </div>
+                            <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
+                                Required Psychometric & Safety Situational Assessment
+                            </h2>
+                            <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-medium">
+                                Active candidate for <strong>BlueCollar Recruitment</strong>? Complete your official pre-employment psychometric assessment online. Your verified score feeds directly into your application profile and hiring employer portfolio.
+                            </p>
+                            <div className="flex flex-wrap items-center gap-4 pt-2">
+                                <Link
+                                    href="/psychometric"
+                                    className="bg-[#EAA240] hover:bg-[#de9330] text-black px-7 py-3.5 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition-all shadow-md flex items-center gap-2"
+                                >
+                                    Launch Psychometric Test <ArrowRight className="w-4 h-4" />
+                                </Link>
+                                <Link
+                                    href="/login"
+                                    className="bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 px-6 py-3.5 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all"
+                                >
+                                    Candidate LMS Login
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* FAQ Section */}
-            <section className="py-16 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-10">
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                        Frequently Asked Questions
-                    </h2>
-                    <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                        Operational and compliance guidelines for trainees and sponsoring employers
-                    </p>
+            {/* 5. MISSION BANNER (CertHero.html Section 12-15) */}
+            <section className="relative overflow-hidden py-24 sm:py-32 border-b border-slate-200">
+                <div 
+                    className="absolute inset-0 bg-cover bg-center z-0 scale-105"
+                    style={{ backgroundImage: `url('/images/certhero/mission-banner.jpg')` }}
+                >
+                    <div className="absolute inset-0 bg-black/65" />
                 </div>
-
-                <div className="space-y-4">
-                    {faqs.map((faq, idx) => (
-                        <div key={idx} className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                            <h4 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
-                                <HelpCircle className="h-4 w-4 text-[#ED9139] shrink-0" />
-                                {faq.q}
-                            </h4>
-                            <p className="text-xs text-slate-600 leading-relaxed pl-6">
-                                {faq.a}
-                            </p>
-                        </div>
-                    ))}
+                <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+                    <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight uppercase tracking-tight">
+                        Every certification journey is a step forward to new opportunities
+                    </h2>
+                    <p className="text-sm sm:text-base text-slate-200 max-w-2xl mx-auto font-medium">
+                        We bridge the gap between hard-working tradespeople and high-paying Australian infrastructure, mining, and civil resources careers.
+                    </p>
+                    <div>
+                        <button
+                            onClick={() => setMissionModalOpen(true)}
+                            className="bg-[#EAA240] hover:bg-[#de9330] text-black px-8 py-3.5 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition-all shadow-xl cursor-pointer"
+                        >
+                            Discover Our Mission
+                        </button>
+                    </div>
                 </div>
             </section>
+
+            {/* 6. ACCREDITATION & INDUSTRY BODIES (CertHero.html Section 16-19) */}
+            <section className="py-14 bg-slate-50 border-b border-slate-200">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <p className="text-center text-xs font-black uppercase tracking-widest text-slate-500 mb-8">
+                        ACCREDITED FRAMEWORKS & NATIONAL ASSESSMENT BODIES
+                    </p>
+                    
+                    {/* Logos and Badges */}
+                    <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-14 opacity-90">
+                        <img
+                            src="/images/certhero/logo-nrt.webp"
+                            alt="Nationally Recognised Training Logo"
+                            className="h-12 w-auto object-contain grayscale hover:grayscale-0 transition-all"
+                        />
+                        <img
+                            src="/images/certhero/logo-aqf.jpg"
+                            alt="Australian Qualifications Framework Logo"
+                            className="h-12 w-auto object-contain grayscale hover:grayscale-0 transition-all rounded"
+                        />
+                        <img
+                            src="/images/certhero/logo-opito.png"
+                            alt="OPITO Logo"
+                            className="h-12 w-auto object-contain grayscale hover:grayscale-0 transition-all"
+                        />
+                        <div className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-xs font-black uppercase tracking-widest text-slate-800 shadow-sm">
+                            TAFE
+                        </div>
+                        <div className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-xs font-black uppercase tracking-widest text-slate-800 shadow-sm">
+                            VETASSESS
+                        </div>
+                        <div className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-xs font-black uppercase tracking-widest text-slate-800 shadow-sm">
+                            TRADES RECOGNITION AUSTRALIA
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* 7. FREQUENTLY ASKED QUESTIONS */}
+            <section id="faq" className="py-20 bg-white border-b border-slate-200">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center space-y-3 mb-12">
+                        <span className="text-xs font-black text-[#EAA240] uppercase tracking-widest">
+                            Got Questions?
+                        </span>
+                        <h2 className="text-3xl font-black uppercase tracking-tight text-black">
+                            Frequently Asked Questions
+                        </h2>
+                    </div>
+
+                    <div className="space-y-4">
+                        {faqs.map((faq, idx) => {
+                            const isOpen = openFaq === idx;
+                            return (
+                                <div
+                                    key={idx}
+                                    className="border border-slate-200 rounded-xl overflow-hidden transition-all"
+                                >
+                                    <button
+                                        onClick={() => setOpenFaq(isOpen ? null : idx)}
+                                        className="w-full flex items-center justify-between p-5 text-left bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
+                                    >
+                                        <span className="text-sm sm:text-base font-black text-black">
+                                            {faq.q}
+                                        </span>
+                                        <ChevronDown className={`w-5 h-5 text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                    {isOpen && (
+                                        <div className="p-5 text-xs sm:text-sm text-slate-700 leading-relaxed bg-white border-t border-slate-200">
+                                            {faq.a}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </section>
+
+            {/* 8. CONTACT US SECTION (CertHero.html Section 20) */}
+            <section id="contact" className="py-20 bg-slate-100 border-b border-slate-200">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                        
+                        {/* Contact Details */}
+                        <div className="lg:col-span-5 space-y-6">
+                            <span className="text-xs font-black text-[#EAA240] uppercase tracking-widest">
+                                GET IN TOUCH
+                            </span>
+                            <h2 className="text-3xl sm:text-4xl font-black uppercase text-black tracking-tight">
+                                CONTACT US
+                            </h2>
+                            <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                                Reach out with any questions regarding course enrollments, overseas skills assessments, or corporate trade packages.
+                            </p>
+
+                            <div className="space-y-4 pt-2">
+                                <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                    <div className="w-10 h-10 rounded-lg bg-amber-50 text-[#EAA240] flex items-center justify-center">
+                                        <Mail className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">EMAIL</span>
+                                        <a href="mailto:Info@certhero.com.au" className="text-sm font-bold text-black hover:text-[#EAA240]">
+                                            Info@certhero.com.au
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                    <div className="w-10 h-10 rounded-lg bg-amber-50 text-[#EAA240] flex items-center justify-center">
+                                        <Phone className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">PHONE</span>
+                                        <a href="tel:+61447000919" className="text-sm font-bold text-black hover:text-[#EAA240]">
+                                            +61 447 000 919
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-white rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
+                                    <p className="font-bold text-black">Cert Hero Pty Ltd</p>
+                                    <p>ABN: 46 693 035 184 | ACN: 693 035 184</p>
+                                    <p className="text-[11px] text-slate-400 pt-1">
+                                        Official Website: <a href="https://www.certhero.com.au" target="_blank" rel="noreferrer" className="text-blue-600 underline">certhero.com.au</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Quick Message Card */}
+                        <div className="lg:col-span-7">
+                            <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-md">
+                                <h3 className="text-xl font-black text-black mb-1">
+                                    Send Us a Direct Message
+                                </h3>
+                                <p className="text-xs text-slate-500 mb-6">
+                                    Our specialist advisors will review your enquiry and respond promptly.
+                                </p>
+
+                                <form onSubmit={handleEnquirySubmit} className="space-y-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                                Your Name *
+                                            </label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={enquiryName}
+                                                onChange={(e) => setEnquiryName(e.target.value)}
+                                                placeholder="e.g. Michael Davies"
+                                                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#EAA240]"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                                Your Email *
+                                            </label>
+                                            <input
+                                                type="email"
+                                                required
+                                                value={enquiryEmail}
+                                                onChange={(e) => setEnquiryEmail(e.target.value)}
+                                                placeholder="michael@example.com"
+                                                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#EAA240]"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                            Message *
+                                        </label>
+                                        <textarea
+                                            rows={4}
+                                            required
+                                            value={enquiryMessage}
+                                            onChange={(e) => setEnquiryMessage(e.target.value)}
+                                            placeholder="Write your message here..."
+                                            className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#EAA240]"
+                                        />
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        className="bg-black hover:bg-slate-900 text-[#EAA240] hover:text-white px-8 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md flex items-center gap-2 cursor-pointer"
+                                    >
+                                        <Send className="w-3.5 h-3.5" /> Send Message
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            {/* Discover Mission Modal */}
+            {missionModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 animate-in fade-in">
+                    <div className="bg-white text-slate-900 rounded-2xl max-w-xl w-full p-6 sm:p-8 shadow-2xl relative">
+                        <button
+                            onClick={() => setMissionModalOpen(false)}
+                            className="absolute top-4 right-4 text-slate-400 hover:text-black font-bold text-xl"
+                        >
+                            ✕
+                        </button>
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 rounded-xl bg-black text-[#EAA240] flex items-center justify-center">
+                                <Award className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[#EAA240]">OUR PURPOSE</span>
+                                <h3 className="text-xl font-black text-black">The Cert Hero Mission</h3>
+                            </div>
+                        </div>
+                        <div className="text-xs sm:text-sm text-slate-700 space-y-3 leading-relaxed">
+                            <p>
+                                At Cert Hero, our mission is to empower tradespeople across Australia and internationally to achieve formal trade recognition, mandatory site qualifications, and rapid career progression.
+                            </p>
+                            <p>
+                                We eliminate the bureaucratic friction of skills assessment authorities, organize approved RTO verifications, and provide modern online LMS portals so you can step onto site fully compliant and with complete confidence.
+                            </p>
+                        </div>
+                        <div className="mt-6 flex justify-end">
+                            <button
+                                onClick={() => setMissionModalOpen(false)}
+                                className="bg-black text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-slate-800"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }

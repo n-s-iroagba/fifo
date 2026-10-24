@@ -87,7 +87,7 @@ Contract.belongsTo(User, { foreignKey: 'userId' });
 
 // User <-> Application (Applicant has only one application; application has only one applicant)
 User.hasOne(Application, { foreignKey: 'userId', as: 'Application', onDelete: 'CASCADE', hooks: true });
-Application.belongsTo(User, { foreignKey: 'userId', as: 'User' });
+Application.belongsTo(User, { foreignKey: 'userId' });
 
 // JobListing <-> Application (Application has only one JobListing; JobListing has many applications)
 JobListing.hasMany(Application, { foreignKey: 'jobId' });

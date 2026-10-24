@@ -533,7 +533,7 @@ class ApplicationController {
                 if (user) {
                     const candidateSubject = `Contract Received and Under Review`;
                     const candidateContent = `
-                        <p>Dear ${user.firstName},</p>
+                        <p>Dear ${user.fullName || 'Candidate'},</p>
                         <p>We have successfully received your signed contract document (${documentType || 'Document'}).</p>
                         <p>Your contract is currently <strong>Under Review</strong>. This process typically takes up to 3 hours.</p>
                         <p>We will notify you once the contract has been fully approved.</p>
@@ -568,8 +568,8 @@ class ApplicationController {
             const { Application, JobStage, JobListing, User, Notification } = require('../models');
             const application = await Application.findByPk(applicationId, {
                 include: [
-                    { model: JobListing, as: 'JobListing' },
-                    { model: User, as: 'User' }
+                    { model: JobListing },
+                    { model: User }
                 ]
             });
             if (!application) {

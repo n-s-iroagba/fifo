@@ -584,8 +584,8 @@ export class ApplicationController {
 
             const application = await Application.findByPk(applicationId, {
                 include: [
-                    { model: JobListing, as: 'JobListing' },
-                    { model: User, as: 'User' }
+                    { model: JobListing },
+                    { model: User }
                 ]
             });
 

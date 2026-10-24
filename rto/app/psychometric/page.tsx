@@ -256,7 +256,10 @@ function PsychometricTestContent() {
                             You have successfully passed both modules of the mandatory psychometric assessment. You are now cleared to apply for FIFO positions.
                         </p>
                         <button
-                            onClick={() => window.location.href = 'https://bluecollarrecruitment.co/dashboard'}
+                            onClick={() => {
+                                const clientUrl = (process.env.NEXT_PUBLIC_CLIENT_URL || 'https://www.bluecollarrecruitment.co').replace(/\/$/, '');
+                                window.location.href = `${clientUrl}/dashboard`;
+                            }}
                             className="inline-flex items-center gap-2 bg-[#ED9139] hover:bg-[#dd7f26] text-[#0f172a] font-bold px-7 py-3 rounded-xl uppercase tracking-wider shadow-sm transition-all text-xs"
                         >
                             Return to Recruitment Dashboard <ChevronRight className="w-4 h-4" />

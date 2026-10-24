@@ -56,9 +56,11 @@ export default function LmsLogin() {
 
                 {/* Brand Header */}
                 <div className="text-center">
-                    <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-[#ED9139] text-[#0f172a] mb-5 mx-auto shadow-xl shadow-[#ED9139]/20 font-black text-2xl">
-                        C
-                    </div>
+                    <img
+                        src="/certhero-logo.png"
+                        alt="CertHero RTO"
+                        className="inline-block h-16 w-16 rounded-2xl object-contain mb-5 mx-auto bg-white p-1 shadow-xl shadow-[#ED9139]/20"
+                    />
                     <h1 className="text-3xl font-black text-white tracking-tight">
                         Cert<span className="text-[#ED9139]">Hero</span>
                     </h1>

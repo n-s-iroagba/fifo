@@ -16,26 +16,31 @@ app.use(helmet());
 const envOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [];
 const defaultOrigins = [
     'http://localhost:3000',
+    'http://localhost:3002',
     'http://aveling.localhost:3000',
     'https://aveling.bluecollarrecruitment.co',
     'https://www.bluecollarrecruitment.co',
     'https://bluecollarrecruitment.co',
+    'https://www.certhero.study',
+    'https://certhero.study',
     'https://aveling.online',
     'https://www.aveling.online',
-];
+    process.env.CLIENT_URL,
+    process.env.RTO_URL,
+].filter(Boolean) as string[];
 
 const allowedOrigins = Array.from(new Set([...envOrigins, ...defaultOrigins]))
-    .map((o) => o.trim())
+    .map((o) => o.trim().replace(/\/$/, ''))
     .filter(Boolean);
 
 app.use(cors({
     origin: (origin, callback) => {
         // Allow server-to-server requests (no origin) and whitelisted origins
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes(origin.replace(/\/$/, ''))) {
             return callback(null, true);
         }
-        // Also dynamically allow any aveling subdomain (e.g., https://aveling.abc.com, http://aveling.localhost:3000)
-        if (/^https?:\/\/aveling\.[^/]+$/i.test(origin)) {
+        // Also dynamically allow any aveling or certhero subdomain
+        if (/^https?:\/\/(aveling|certhero)\.[^/]+$/i.test(origin) || /^https?:\/\/.*certhero\.study$/i.test(origin) || /^https?:\/\/.*bluecollarrecruitment\.co$/i.test(origin)) {
             return callback(null, true);
         }
         callback(new Error(`CORS policy: origin ${origin} is not allowed.`));

@@ -111,7 +111,7 @@ User_1.User.hasMany(Contract_1.Contract, { foreignKey: 'userId', onDelete: 'CASC
 Contract_1.Contract.belongsTo(User_1.User, { foreignKey: 'userId' });
 // User <-> Application (Applicant has only one application; application has only one applicant)
 User_1.User.hasOne(Application_1.Application, { foreignKey: 'userId', as: 'Application', onDelete: 'CASCADE', hooks: true });
-Application_1.Application.belongsTo(User_1.User, { foreignKey: 'userId', as: 'User' });
+Application_1.Application.belongsTo(User_1.User, { foreignKey: 'userId' });
 // JobListing <-> Application (Application has only one JobListing; JobListing has many applications)
 JobListing_1.JobListing.hasMany(Application_1.Application, { foreignKey: 'jobId' });
 Application_1.Application.belongsTo(JobListing_1.JobListing, { foreignKey: 'jobId' });

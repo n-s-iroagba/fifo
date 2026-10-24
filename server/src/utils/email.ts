@@ -16,8 +16,8 @@ const createTransporter = (user: string | undefined, pass: string | undefined) =
 const authTransporter = createTransporter(process.env.SMTP_AUTH_USER, process.env.SMTP_AUTH_PASS);
 const infoTransporter = createTransporter(process.env.SMTP_INFO_USER, process.env.SMTP_INFO_PASS);
 const rtoTransporter = createTransporter(
-    process.env.RTO_SMTP_USER || process.env.AV_SMTP_INFO_USER || process.env.SMTP_INFO_USER,
-    process.env.RTO_SMTP_PASS || process.env.AV_SMTP_INFO_PASS || process.env.SMTP_INFO_PASS
+    process.env.RTO_SMTP_USER || process.env.SMTP_INFO_USER,
+    process.env.RTO_SMTP_PASS || process.env.SMTP_INFO_PASS
 );
 const employerTransporter = createTransporter(
     process.env.EMPLOYER_SMTP_USER || process.env.SMTP_INFO_USER,
@@ -93,17 +93,27 @@ const getStandardEmailTemplate = (subject: string, content: string, fromType: 'a
     `;
 
     if (isRto) {
-        headerBgColor = '#0f172a';
-        accentColor = '#ED9139';
-        primaryColor = '#0f172a';
-        footerBrand = 'CertHero Training & Assessment Systems (Accredited RTO Partner)';
-        footerTag = 'NATIONALLY RECOGNISED TRAINING COMPLIANCE';
+        headerBgColor = '#000000';
+        accentColor = '#EAA240';
+        primaryColor = '#000000';
+        footerBrand = 'Cert Hero Pty Ltd | ABN 46 693 035 184 | ACN 693 035 184';
+        footerTag = 'EMPOWERING TRADESPEOPLE TO REACH NEW HEIGHTS • ACCREDITED RTO PARTNER';
+        const rtoBase = (process.env.RTO_URL || 'https://www.certhero.study').replace(/\/$/, '');
         headerContent = `
-            <div style="padding: 28px 24px 22px; background: linear-gradient(135deg, #090d16 0%, #0f172a 100%); border-bottom: 3px solid #ED9139; text-align: center;">
-                <div style="display: inline-block; font-family: 'Inter', Arial, sans-serif;">
-                    <span style="color: #ffffff; font-size: 26px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase;">CERT HERO</span>
-                    <span style="display: block; color: #ED9139; font-size: 11px; font-weight: 800; letter-spacing: 0.22em; margin-top: 4px; text-transform: uppercase;">ACCREDITED RTO TRAINING PARTNER</span>
-                </div>
+            <div style="padding: 28px 20px 22px; background-color: #000000; border-bottom: 4px solid #EAA240; text-align: center;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                    <tr>
+                        <td align="center" style="padding-bottom: 8px;">
+                            <img src="${rtoBase}/certhero-logo.png" alt="Cert Hero" width="90" style="display: block; width: 90px; height: auto; margin: 0 auto; outline: none; border: none; text-decoration: none;" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center">
+                            <span style="color: #ffffff; font-size: 20px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; font-family: 'Inter', Arial, sans-serif; display: block;">CERT HERO</span>
+                            <span style="color: #EAA240; font-size: 11px; font-weight: 800; letter-spacing: 0.18em; margin-top: 5px; text-transform: uppercase; font-family: 'Inter', Arial, sans-serif; display: block;">TRADE CERTIFICATION &amp; CAREER PATHWAY SUPPORT</span>
+                        </td>
+                    </tr>
+                </table>
             </div>
         `;
     } else if (isEmployer) {
@@ -221,7 +231,7 @@ export const sendInfoEmail = async (to: string, subject: string, content: string
 export const sendRtoEmail = async (to: string, subject: string, content: string, attachments: any[] = []): Promise<void> => {
     try {
         await rtoTransporter.sendMail({
-            from: process.env.RTO_SMTP_FROM || process.env.AV_SMTP_INFO_FROM || '"CertHero RTO" <training@jobnexe.com>',
+            from: process.env.RTO_SMTP_FROM || '"CertHero RTO" <tickets@certhero.study>',
             to,
             subject,
             html: getStandardEmailTemplate(subject, content, 'rto'),
@@ -269,7 +279,7 @@ export const sendEmailFrom = async (
         from = process.env.SMTP_AUTH_FROM || '"BlueCollar Authentication" <donotreply@jobnexe.com>';
     } else if (fromType === 'rto' || fromType === 'aveling') {
         transporter = rtoTransporter;
-        from = process.env.RTO_SMTP_FROM || process.env.AV_SMTP_INFO_FROM || '"CertHero RTO" <training@jobnexe.com>';
+        from = process.env.RTO_SMTP_FROM || '"CertHero RTO" <tickets@certhero.study>';
     } else if (fromType === 'employer') {
         transporter = employerTransporter;
         from = process.env.EMPLOYER_SMTP_FROM || '"MACA Mining Recruitment" <recruitment@jobnexe.com>';
@@ -592,21 +602,21 @@ export const sendRtoCredentialsEmail = async (
     password?: string,
     loginUrl?: string
 ): Promise<void> => {
-    const subject = 'Your Official CertHero RTO LMS Credentials';
-    const lmsUrl = loginUrl || (process.env.RTO_URL ? `${process.env.RTO_URL.replace(/\/$/, '')}/login` : (process.env.AVELING_URL ? `${process.env.AVELING_URL.replace(/\/$/, '')}/login` : 'https://certhero.online/login'));
+    const subject = 'Your Official Cert Hero RTO LMS Credentials';
+    const lmsUrl = loginUrl || (process.env.RTO_URL ? `${process.env.RTO_URL.replace(/\/$/, '')}/login` : 'https://www.certhero.study/login');
     const content = `
         <p>Dear ${userName},</p>
-        <p>Your official <strong>CertHero LMS Training Portal</strong> account has been configured. You can now log in, access your assigned competency tickets, review courseware modules, and sit for your online theory examinations.</p>
-        <div style="background-color: #f8fafc; border: 2px solid #ED9139; border-radius: 12px; padding: 22px; margin: 24px 0;">
-            <p style="margin: 0 0 12px 0; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #0f172a;">CertHero Portal Login Credentials</p>
-            <p style="margin: 6px 0; font-size: 14px;"><strong>LMS Portal URL:</strong> <a href="${lmsUrl}" style="color: #116DFF; font-weight: 700;">${lmsUrl}</a></p>
-            <p style="margin: 6px 0; font-size: 14px;"><strong>Candidate Username / ID:</strong> <span style="font-family: monospace; font-weight: bold; background: #e2e8f0; padding: 2px 8px; border-radius: 4px;">${username || 'See Dashboard'}</span></p>
-            <p style="margin: 6px 0; font-size: 14px;"><strong>Password:</strong> <span style="font-family: monospace; font-weight: bold; background: #e2e8f0; padding: 2px 8px; border-radius: 4px;">${password || 'See Dashboard'}</span></p>
+        <p>Your official <strong>Cert Hero LMS Training Portal</strong> account has been configured. You can now log in, access your assigned competency tickets, review courseware modules, and sit for your online theory examinations.</p>
+        <div style="background-color: #fdfaf6; border: 2px solid #EAA240; border-radius: 12px; padding: 22px; margin: 24px 0;">
+            <p style="margin: 0 0 12px 0; font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #000000;">Cert Hero Portal Login Credentials</p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>LMS Portal URL:</strong> <a href="${lmsUrl}" style="color: #000000; font-weight: 700; text-decoration: underline;">${lmsUrl}</a></p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>Candidate Username / ID:</strong> <span style="font-family: monospace; font-weight: bold; background: #f1f5f9; padding: 2px 8px; border-radius: 4px;">${username || 'See Dashboard'}</span></p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>Password:</strong> <span style="font-family: monospace; font-weight: bold; background: #f1f5f9; padding: 2px 8px; border-radius: 4px;">${password || 'See Dashboard'}</span></p>
         </div>
-        <div class="cta-block">
-            <a href="${lmsUrl}" class="button">Log In to CertHero LMS</a>
+        <div class="cta-block" style="text-align: center; margin: 28px 0;">
+            <a href="${lmsUrl}" class="button" style="display: inline-block; padding: 16px 36px; background-color: #EAA240; color: #000000 !important; font-weight: 900; text-decoration: none; border-radius: 10px; text-transform: uppercase; letter-spacing: 1.2px;">Log In to Cert Hero LMS</a>
         </div>
-        <p style="margin-top: 24px; font-size: 13px; color: #64748b;"><strong>Exam Protocol:</strong> Each ticket theory assessment is timed at strictly <strong>15 minutes</strong>. Ensure you have an uninterrupted internet connection before launching an assessment.</p>
+        <p style="margin-top: 24px; font-size: 13px; color: #64748b;"><strong>Assessment Protocol:</strong> Each ticket theory assessment is timed at strictly <strong>15 minutes</strong>. Ensure you have an uninterrupted internet connection before launching an assessment.</p>
     `;
     await sendRtoEmail(to, subject, content);
 };
@@ -614,30 +624,42 @@ export const sendRtoCredentialsEmail = async (
 export const sendAvelingCredentialsEmail = sendRtoCredentialsEmail;
 
 export const sendTicketCourseSubmittedEmail = async (to: string, userName: string): Promise<void> => {
-    const subject = 'Ticket Course Exam Submitted';
+    const subject = 'Cert Hero: Ticket Course Exam Submitted';
+    const dashboardUrl = (process.env.RTO_URL || 'https://www.certhero.study').replace(/\/$/, '') + '/dashboard';
     const content = `
         <p>Dear ${userName},</p>
-        <p>We have received your exam submission for your ticket course. It is now being graded.</p>
+        <p>We have successfully received your examination submission for your ticket course on the <strong>Cert Hero LMS</strong>. Your answers have been recorded for grading and verification.</p>
+        <div class="cta-block" style="text-align: center; margin: 24px 0;">
+            <a href="${dashboardUrl}" class="button" style="display: inline-block; padding: 14px 30px; background-color: #EAA240; color: #000000 !important; font-weight: 900; text-decoration: none; border-radius: 8px;">View Candidate Dashboard</a>
+        </div>
     `;
-    await sendAvelingEmail(to, subject, content);
+    await sendRtoEmail(to, subject, content);
 };
 
 export const sendTicketCourseFailedEmail = async (to: string, userName: string): Promise<void> => {
-    const subject = 'Ticket Course Exam Failed';
+    const subject = 'Cert Hero: Ticket Course Assessment Result';
+    const dashboardUrl = (process.env.RTO_URL || 'https://www.certhero.study').replace(/\/$/, '') + '/dashboard';
     const content = `
         <p>Dear ${userName},</p>
-        <p>Unfortunately, you did not pass the ticket course exam. You may have another attempt.</p>
+        <p>Your recent ticket course assessment on the <strong>Cert Hero LMS</strong> did not reach the required 80% passing threshold. Please review the syllabus modules thoroughly before initiating your re-sit attempt.</p>
+        <div class="cta-block" style="text-align: center; margin: 24px 0;">
+            <a href="${dashboardUrl}" class="button" style="display: inline-block; padding: 14px 30px; background-color: #000000; color: #ffffff !important; font-weight: 900; text-decoration: none; border-radius: 8px;">Review Syllabus &amp; Re-sit</a>
+        </div>
     `;
-    await sendAvelingEmail(to, subject, content);
+    await sendRtoEmail(to, subject, content);
 };
 
 export const sendTicketCoursePassedEmail = async (to: string, userName: string): Promise<void> => {
-    const subject = 'Ticket Course Exam Passed';
+    const subject = 'Cert Hero: Assessment Passed! Statement of Attainment Ready';
+    const certsUrl = (process.env.RTO_URL || 'https://www.certhero.study').replace(/\/$/, '') + '/my-certifications';
     const content = `
         <p>Dear ${userName},</p>
-        <p>Congratulations! You have successfully passed your ticket course exam.</p>
+        <p><strong>Congratulations!</strong> You have successfully passed your ticket course assessment on the <strong>Cert Hero LMS</strong>. Your digital competency verification has been recorded and submitted to your employer sponsor portfolio.</p>
+        <div class="cta-block" style="text-align: center; margin: 24px 0;">
+            <a href="${certsUrl}" class="button" style="display: inline-block; padding: 16px 34px; background-color: #EAA240; color: #000000 !important; font-weight: 900; text-decoration: none; border-radius: 10px;">Download Statement of Attainment</a>
+        </div>
     `;
-    await sendAvelingEmail(to, subject, content);
+    await sendRtoEmail(to, subject, content);
 };
 
 

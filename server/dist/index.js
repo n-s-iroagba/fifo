@@ -12,16 +12,18 @@ require("./models");
 const register_qstash_crons_1 = __importDefault(require("./scripts/register-qstash-crons"));
 const interview_feature_migration_1 = require("./migrations/interview_feature_migration");
 const faq_feature_migration_1 = require("./migrations/faq_feature_migration");
+const schema_update_migration_1 = require("./migrations/schema_update_migration");
 const PORT = process.env.PORT || 5000;
 const startServer = async () => {
     try {
         await (0, database_1.connectDB)();
         app_1.default.listen(PORT, async () => {
             logger_1.logger.info(`Server activated and mapping routes on port ${PORT}`);
-            // Run heavy seeding and migrations in the background so Fly.io health checks don't timeout
+            // Run heavy seeding and migrations in the background so Fly.io / Render health checks don't timeout
             (async () => {
                 try {
                     await database_1.sequelize.sync();
+                    await (0, schema_update_migration_1.migrateSchemaUpdates)();
                     await (0, interview_feature_migration_1.migrateInterviewFeature)();
                     await (0, faq_feature_migration_1.migrateFaqFeature)();
                     await (0, register_qstash_crons_1.default)();

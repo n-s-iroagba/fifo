@@ -6,6 +6,11 @@ import { Footer } from "@/components/Footer";
 export const metadata: Metadata = {
   title: "CertHero LMS — Trade Certification & Skills Assessment Portal",
   description: "Official Registered Training Organisation (RTO) LMS portal for trade certification, high-risk work licensing, mining compliance, and sponsored FIFO skills verification.",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/certhero-logo.png",
+  },
 };
 
 export default function RtoLayout({
