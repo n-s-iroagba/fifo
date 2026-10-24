@@ -5,8 +5,10 @@ import { useApiQuery, useApiMutation } from '@/lib/hooks';
 
 interface Notification {
     id: number;
-    title: string;
-    message: string;
+    subject?: string;
+    title?: string;
+    message?: string;
+    body?: string;
     type: string;
     isRead: boolean;
     createdAt: string;
@@ -70,10 +72,10 @@ export default function NotificationsPage() {
                                 <div className={`mt-1 h-2 w-2 rounded-full flex-shrink-0 ${!n.isRead ? 'bg-blue-900' : 'bg-transparent'}`} />
                                 <div className="flex-grow">
                                     <div className="flex justify-between items-start mb-2">
-                                        <h4 className="text-sm font-bold text-blue-900 uppercase tracking-tight">{n.title}</h4>
+                                        <h4 className="text-sm font-bold text-blue-900 uppercase tracking-tight">{n.subject || n.title}</h4>
                                         <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest">{new Date(n.createdAt).toLocaleDateString()}</span>
                                     </div>
-                                    <p className="text-sm text-blue-600 font-medium leading-relaxed mb-4">{n.message}</p>
+                                    <p className="text-sm text-blue-600 font-medium leading-relaxed mb-4">{n.message || n.body}</p>
                                     {!n.isRead && (
                                         <button
                                             onClick={() => markSingleReadMutation.mutate({ params: { id: n.id } })}

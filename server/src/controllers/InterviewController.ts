@@ -148,8 +148,9 @@ export class InterviewController {
             try {
                 await Notification.create({
                     userId: applicantId,
-                    title: 'Interview Scheduled',
-                    body: `Your interview has been scheduled for ${schedule.date} at ${schedule.time}.`,
+                    subject: 'Interview Scheduled',
+                    message: `Your interview has been scheduled for ${schedule.date} at ${schedule.time}.`,
+                    type: 'SYSTEM',
                     isRead: false,
                 });
             } catch (notifyErr: any) {
@@ -222,8 +223,9 @@ export class InterviewController {
                 try {
                     await Notification.create({
                         userId: interview.applicantId,
-                        title: 'Interview Outcome Updated',
-                        body: `Your interview status has been updated to: ${outcome}.`,
+                        subject: 'Interview Outcome Updated',
+                        message: `Your interview status has been updated to: ${outcome}.`,
+                        type: 'SYSTEM',
                         isRead: false,
                     });
                 } catch (notifyErr: any) {
@@ -417,8 +419,9 @@ export class InterviewController {
             try {
                 await Notification.create({
                     userId,
-                    title: 'Interview Confirmed',
-                    body: `Your interview has been booked for ${schedule.date} at ${schedule.time}.`,
+                    subject: 'Interview Confirmed',
+                    message: `Your interview has been booked for ${schedule.date} at ${schedule.time}.`,
+                    type: 'SYSTEM',
                     isRead: false,
                 });
             } catch (notifyErr: any) {
@@ -462,8 +465,9 @@ export class InterviewController {
                 try {
                     await Notification.create({
                         userId: user.id,
-                        title: 'Interview Scheduling Authorized',
-                        body: 'You are now authorized to select your interview schedule. Navigate to the Interviews tab in your dashboard.',
+                        subject: 'Interview Scheduling Authorized',
+                        message: 'You are now authorized to select your interview schedule. Navigate to the Interviews tab in your dashboard.',
+                        type: 'SYSTEM',
                         isRead: false,
                     });
                 } catch (notifyErr: any) {

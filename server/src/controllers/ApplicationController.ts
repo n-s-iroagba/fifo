@@ -621,8 +621,9 @@ export class ApplicationController {
             // 3. Create in-app notification
             await Notification.create({
                 userId: application.userId,
-                title: 'Application Accepted',
-                body: `Your application for "${jobTitle}" has been reviewed and accepted. Please check your dashboard for Employer Selection details.`,
+                subject: 'Application Accepted',
+                message: `Your application for "${jobTitle}" has been reviewed and accepted. Please check your dashboard for Employer Selection details.`,
+                type: 'SYSTEM',
                 isRead: false
             });
 

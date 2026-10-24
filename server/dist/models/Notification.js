@@ -31,9 +31,37 @@ Notification.init({
     type: {
         type: sequelize_1.DataTypes.STRING,
         defaultValue: 'SYSTEM',
+    },
+    title: {
+        type: sequelize_1.DataTypes.VIRTUAL,
+        get() {
+            return this.getDataValue('subject');
+        },
+        set(value) {
+            this.setDataValue('subject', value);
+        }
+    },
+    body: {
+        type: sequelize_1.DataTypes.VIRTUAL,
+        get() {
+            return this.getDataValue('message');
+        },
+        set(value) {
+            this.setDataValue('message', value);
+        }
     }
 }, {
     sequelize: database_1.sequelize,
     tableName: 'notifications',
     timestamps: true,
+    hooks: {
+        beforeValidate: (notification) => {
+            if (!notification.subject && notification.title) {
+                notification.subject = notification.title;
+            }
+            if (!notification.message && notification.body) {
+                notification.message = notification.body;
+            }
+        }
+    }
 });

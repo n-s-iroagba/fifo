@@ -197,8 +197,9 @@ class AdminService {
         // Maintain robust audit trail for offline-to-online wallet balance updates
         await NotificationRepository_1.notificationRepository.create({
             userId: id,
-            title: 'Refund Wallet Updated',
+            subject: 'Refund Wallet Updated',
             message: `Your refund wallet balance was adjusted from $${oldBalance} to $${walletBalance}.`,
+            type: 'SYSTEM',
             isRead: false
         });
         return { success: true, walletBalance: user.walletBalance };
