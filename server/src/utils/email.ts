@@ -349,6 +349,17 @@ export const sendInvoiceEmail = async (
             break;
     }
 
+    let paymentFaqLink = '';
+    try {
+        const { Faq } = require('../models');
+        const paymentFaq = await Faq.findOne({ where: { type: 'payment' } });
+        if (paymentFaq && paymentFaq.link) {
+            paymentFaqLink = paymentFaq.link;
+        }
+    } catch (e) {
+        // Fallback silently if Faq model not initialized
+    }
+
     const subject = `Invoice: ${typeDescription}`;
     const content = `
         <p>Dear ${candidateName},</p>
@@ -364,6 +375,16 @@ export const sendInvoiceEmail = async (
             <p style="margin: 0;"><strong>Payment Instructions:</strong><br>
             Please send the Final Amount Due using the approved payment details.</p>
             ${walletAddress ? `<p style="margin-top: 10px; word-break: break-all;"><strong>Payment Details:</strong><br>${walletAddress}</p>` : ''}
+        </div>
+        <div style="background-color: #f0fdf4; padding: 16px; border-left: 4px solid #16a34a; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0 0 8px 0; color: #166534; font-weight: bold; font-size: 14px;">Next Steps: Support &amp; Payment Availability Notice</p>
+            <p style="margin: 0; color: #15803d; font-size: 13px; line-height: 1.5;">
+                Please reply directly to this invoice email with the exact time you plan to make payment in your own local timezone (for example: <em>"I will make payment at 2:30 PM (UTC+1 / West Africa Time) tomorrow"</em>). This enables our dedicated support team to be actively available to verify your transaction immediately and ensure a smooth, seamless process.
+            </p>
+            ${paymentFaqLink ? `
+            <p style="margin: 12px 0 0 0; font-size: 13px; color: #166534;">
+                <strong>Payment Questions?</strong> Review our official <a href="${paymentFaqLink}" target="_blank" style="color: #15803d; font-weight: bold; text-decoration: underline;">Payment FAQ &amp; Guidance</a>.
+            </p>` : ''}
         </div>
         <p>Please arrange for payment at your earliest convenience.</p>
     `;
@@ -436,12 +457,18 @@ export const sendWelcomeApplicationFoundEmail = async (to: string, userName: str
         <p>Dear ${userName},</p>
         <p>Welcome to BlueCollar! Blue Collar Recruitment specializes in hiring and sponsoring foreign applicants to work FIFO in Australia. We detected an active application associated with your profile.</p>
         <p>You can track the progress of your application on your dashboard.</p>
-        <div style="background-color:#fff8e1;border-left:5px solid #FFC700;padding:18px 22px;border-radius:8px;margin:28px 0;">
+        <div style="background-color: #f0f7ff; border-left: 4px solid #004ac6; padding: 16px 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; color: #1e3a8a; font-size: 13.5px; line-height: 1.6;">
+                <strong>A quick personal note on communications:</strong><br/>
+                Our team dedicates a focused personal window every day between <strong>2:00 PM and 4:00 PM Australian Western Standard Time (AWST)</strong> to review submissions, answer questions, and provide status updates. You will always receive personal attention during this daily window.
+            </p>
+        </div>
+        <div style="background-color:#fff8e1;border-left:5px solid #FFC700;padding:18px 22px;border-radius:8px;margin:24px 0;">
             <p style="margin:0 0 10px 0;font-weight:900;font-size:15px;color:#1a1a1a;text-transform:uppercase;letter-spacing:0.5px;">
                 📄 IMPORTANT: Please Read the Attached Document
             </p>
             <p style="margin:0;color:#374151;font-size:14px;font-weight:600;line-height:1.6;">
-                We have attached our official <strong>Hiring Process Information Guide (HIRING_PROCESS_INFORMATION.pdf)</strong> to this email. This document contains critical information regarding our partnership with CertHero RTO, our 9-step recruitment workflow, zero-cost migration benefits, and candidate refund policies.
+                We have attached our official <strong>Hiring Process Information Guide (HIRING_PROCESS_INFORMATION.pdf)</strong> to this email. This document contains critical information regarding our partner Registered Training Organisation, our 9-step recruitment workflow, zero-cost migration benefits, and the technical interview conducted directly with your prospective employer (not Blue Collar Recruitment).
             </p>
             <p style="margin:12px 0 0 0;color:#374151;font-size:14px;font-weight:700;">
                 ⚠️ You are required to read and understand this document before proceeding with your application. Psychometric Test Module 2 strictly evaluates your comprehension of Sections 1 and 2.
@@ -494,11 +521,34 @@ export const sendBioReceivedEmail = async (to: string, userName: string): Promis
 
 // 11. psychometric module 1 passed mail (INFO BLUE)
 export const sendPsychoMod1PassedEmail = async (to: string, userName: string): Promise<void> => {
-    const subject = 'Psychometric Module 1 Completed Successfully';
+    const subject = 'Congratulations: You Have Passed Psychometric Module 1 — Training Sponsorship Eligibility Confirmed';
     const content = `
         <p>Dear ${userName},</p>
-        <p>Congratulations! You have successfully passed Psychometric Module 1.</p>
-        <p>Please log in to your dashboard to proceed to the next module.</p>
+        <p>We are delighted to congratulate you on successfully passing <strong>Psychometric Module 1</strong>!</p>
+        <div style="background-color: #f0fdf4; border: 2px solid #22c55e; border-radius: 12px; padding: 20px; margin: 24px 0;">
+            <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: 800; text-transform: uppercase; color: #166534; letter-spacing: 0.5px;">
+                🎉 Training Sponsorship Eligibility Milestone Achieved
+            </p>
+            <p style="margin: 0 0 10px 0; font-size: 13.5px; color: #15803d; line-height: 1.6;">
+                As detailed in our official <strong>Hiring Process Guide</strong>, successfully clearing Psychometric Module 1 confirms your cognitive readiness and trade problem-solving aptitude.
+            </p>
+            <p style="margin: 0; font-size: 13.5px; color: #166534; font-weight: 600; line-height: 1.6;">
+                This qualification confirms that you are now <strong>officially eligible for corporate training sponsorship</strong> covering mandatory High Risk Work tickets and vocational certifications to bridge any knowledge or credential gaps you may possess for Australian site operations.
+            </p>
+        </div>
+        <p><strong>Next Steps:</strong></p>
+        <ol style="margin-bottom: 20px; font-size: 13.5px; color: #374151; line-height: 1.7;">
+            <li>Please log in to your candidate portal and proceed to <strong>Psychometric Module 2</strong>.</li>
+            <li>Module 2 assesses your comprehension of the 9-step recruitment workflow and operational guidelines from the Hiring Process Guide.</li>
+            <li>Upon completing Module 2, our team will review your application file for employer selection and trade nomination.</li>
+        </ol>
+        <div class="cta-block">
+            <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard" class="button">Access Candidate Portal</a>
+        </div>
+        <p style="margin-top: 24px; font-size: 13px; color: #64748b;">
+            Warm regards,<br>
+            <strong>The Blue Collar Recruitment Team</strong>
+        </p>
     `;
     await sendInfoEmail(to, subject, content);
 };

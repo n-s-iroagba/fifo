@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useApiQuery } from '@/lib/hooks';
 import api from '@/lib/api';
-import Link from 'next/link';
 
 interface InterviewApplicant {
     id: number;
@@ -12,25 +11,30 @@ interface InterviewApplicant {
     candidateNumber?: string;
     phoneNumber?: string;
     canPickSchedule?: boolean;
-}
-
-interface ScheduleSlot {
-    id: number;
-    date: string;
-    time: string;
-    isBooked: boolean;
+    interviewDate?: string | null;
+    interviewTime?: string | null;
+    interviewLink?: string | null;
 }
 
 interface InterviewItem {
     id: number;
-    scheduleCatalogueId: number;
+    scheduleCatalogueId?: number | null;
     applicantId: number;
+    interviewDate?: string | null;
+    interviewTime?: string | null;
+    timezone?: string | null;
+    interviewUrl?: string | null;
+    meetingLink?: string | null;
     overview: string | null;
     outcome: 'Pending' | 'Passed' | 'Failed' | 'Completed' | 'Rescheduled';
-    meetingLink: string | null;
     createdAt?: string;
     updatedAt?: string;
-    selectedSchedule?: ScheduleSlot;
+    selectedSchedule?: {
+        id: number;
+        date: string;
+        time: string;
+        isBooked: boolean;
+    };
     applicant?: InterviewApplicant;
 }
 
@@ -41,14 +45,7 @@ export default function AdminInterviewsPage() {
     );
     const interviews = interviewsRes?.data || [];
 
-    // Also fetch available schedule slots for assignment
-    const { data: availableSlotsRes, refetch: refetchAvailableSlots } = useApiQuery<{ success: boolean; data: ScheduleSlot[] }>(
-        ['admin-available-schedules'],
-        '/schedule-catalogues?availableOnly=true'
-    );
-    const availableSlots = availableSlotsRes?.data || [];
-
-    // Also fetch applicants for manual interview creation
+    // Fetch applicants for interview creation
     const { data: applicantsRes } = useApiQuery<{ rows: InterviewApplicant[] }>(
         ['admin-users-all'],
         '/admin/users'
@@ -65,41 +62,48 @@ export default function AdminInterviewsPage() {
     const [editOverview, setEditOverview] = useState('');
     const [editOutcome, setEditOutcome] = useState<'Pending' | 'Passed' | 'Failed' | 'Completed' | 'Rescheduled'>('Pending');
     const [editMeetingLink, setEditMeetingLink] = useState('');
-    const [editScheduleId, setEditScheduleId] = useState<number | ''>('');
+    const [editDate, setEditDate] = useState('');
+    const [editTime, setEditTime] = useState('');
+    const [editTimezone, setEditTimezone] = useState('AWST (UTC+8)');
     const [isSavingEdit, setIsSavingEdit] = useState(false);
 
-    // Create Modal states
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [createApplicantId, setCreateApplicantId] = useState<number | ''>('');
-    const [createScheduleId, setCreateScheduleId] = useState<number | ''>('');
-    const [createOverview, setCreateOverview] = useState('');
-    const [createMeetingLink, setCreateMeetingLink] = useState('');
-    const [createOutcome, setCreateOutcome] = useState<'Pending' | 'Passed' | 'Failed' | 'Completed' | 'Rescheduled'>('Pending');
-    const [isCreating, setIsCreating] = useState(false);
-
-    // Employer Notification Modal states
+    // INAS01 / Employer Notification Modal states
     const [isNotifyModalOpen, setIsNotifyModalOpen] = useState(false);
-    const [notifyApplicant, setNotifyApplicant] = useState<InterviewApplicant | null>(null);
+    const [notifyApplicantId, setNotifyApplicantId] = useState<number | ''>('');
     const [notifyDate, setNotifyDate] = useState('');
-    const [notifyTime, setNotifyTime] = useState('');
+    const [notifyTime, setNotifyTime] = useState('10:00 AM');
+    const [notifyTimezone, setNotifyTimezone] = useState('AWST (UTC+8)');
     const [notifyZoomLink, setNotifyZoomLink] = useState('');
     const [notifyManualUrl, setNotifyManualUrl] = useState('');
     const [isSendingNotify, setIsSendingNotify] = useState(false);
     const [dispatchingId, setDispatchingId] = useState<number | null>(null);
 
     const handleOpenNotify = (applicant?: InterviewApplicant, defaultDate?: string, defaultTime?: string, defaultMeetingLink?: string) => {
-        if (!applicant) return;
-        setNotifyApplicant(applicant);
+        if (applicant) {
+            setNotifyApplicantId(applicant.id);
+        } else {
+            setNotifyApplicantId('');
+        }
         setNotifyDate(defaultDate || '');
-        setNotifyTime(defaultTime || '10:00 AM AWST');
+        setNotifyTime(defaultTime || '10:00 AM');
+        setNotifyTimezone('AWST (UTC+8)');
         setNotifyZoomLink(defaultMeetingLink || '');
         setNotifyManualUrl('');
         setIsNotifyModalOpen(true);
     };
 
+    // INAS01 Execution Handler
     const handleSendScheduleNotify = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!notifyApplicant) return;
+        if (!notifyApplicantId) {
+            alert('Please select an applicant from the dropdown.');
+            return;
+        }
+
+        if (!notifyDate.trim() || !notifyTime.trim()) {
+            alert('Please specify the interview date and time.');
+            return;
+        }
 
         if (!notifyZoomLink.trim()) {
             alert('A mandatory Zoom meeting link is required.');
@@ -109,13 +113,15 @@ export default function AdminInterviewsPage() {
         setIsSendingNotify(true);
         try {
             const { data } = await api.post('/admin/interviews/schedule-notify', {
-                applicantId: notifyApplicant.id,
-                interviewDate: notifyDate,
-                interviewTime: notifyTime,
+                applicantId: Number(notifyApplicantId),
+                interviewDate: notifyDate.trim(),
+                interviewTime: notifyTime.trim(),
+                timezone: notifyTimezone.trim(),
+                zoomLink: notifyZoomLink.trim(),
                 interviewLink: notifyZoomLink.trim(),
                 manualUrl: notifyManualUrl.trim() || undefined
             });
-            alert(data.message || 'Interview notification dispatched from employer email. Second contact onboarding guide scheduled 1 hour later.');
+            alert(data.message || 'Conditional Invitation dispatched from Employer email with Operational Manual attached. MACA onboarding guide scheduled for 1 hour later.');
             setIsNotifyModalOpen(false);
             refetch();
         } catch (err: any) {
@@ -125,8 +131,9 @@ export default function AdminInterviewsPage() {
         }
     };
 
+    // INA02 Manual / Immediate Trigger
     const handleDispatchOnboardingGuide = async (applicantId: number) => {
-        if (!confirm('Dispatch the second-contact employer onboarding guide PDF now?')) return;
+        if (!confirm('Dispatch the second-contact employer onboarding guide (maca-employee-onboarding-guide.pdf) now?')) return;
         setDispatchingId(applicantId);
         try {
             const { data } = await api.post('/admin/interviews/dispatch-onboarding-guide', { applicantId });
@@ -143,8 +150,10 @@ export default function AdminInterviewsPage() {
         setSelectedInterview(interview);
         setEditOverview(interview.overview || '');
         setEditOutcome(interview.outcome);
-        setEditMeetingLink(interview.meetingLink || '');
-        setEditScheduleId(interview.scheduleCatalogueId);
+        setEditMeetingLink(interview.meetingLink || interview.interviewUrl || '');
+        setEditDate(interview.interviewDate || interview.selectedSchedule?.date || '');
+        setEditTime(interview.interviewTime || interview.selectedSchedule?.time || '');
+        setEditTimezone(interview.timezone || 'AWST (UTC+8)');
         setIsEditModalOpen(true);
     };
 
@@ -159,12 +168,14 @@ export default function AdminInterviewsPage() {
                 overview: editOverview,
                 outcome: editOutcome,
                 meetingLink: editMeetingLink,
-                scheduleCatalogueId: editScheduleId || undefined,
+                interviewUrl: editMeetingLink,
+                interviewDate: editDate,
+                interviewTime: editTime,
+                timezone: editTimezone,
             });
-            alert('Interview updated successfully.');
+            alert('Interview details updated successfully.');
             setIsEditModalOpen(false);
             refetch();
-            refetchAvailableSlots();
         } catch (err: any) {
             alert(err.response?.data?.error || 'Failed to update interview.');
         } finally {
@@ -172,59 +183,15 @@ export default function AdminInterviewsPage() {
         }
     };
 
-    // Create Interview manually
-    const handleCreateInterview = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!createApplicantId || !createScheduleId) {
-            alert('Please select both an applicant and an available schedule slot.');
-            return;
-        }
-
-        setIsCreating(true);
-        try {
-            await api.post('/admin/interviews', {
-                applicantId: Number(createApplicantId),
-                scheduleCatalogueId: Number(createScheduleId),
-                overview: createOverview,
-                meetingLink: createMeetingLink,
-                outcome: createOutcome,
-            });
-            alert('Interview successfully scheduled.');
-            setIsCreateModalOpen(false);
-            setCreateApplicantId('');
-            setCreateScheduleId('');
-            setCreateOverview('');
-            setCreateMeetingLink('');
-            refetch();
-            refetchAvailableSlots();
-        } catch (err: any) {
-            alert(err.response?.data?.error || 'Failed to create interview.');
-        } finally {
-            setIsCreating(false);
-        }
-    };
-
     // Delete Interview
     const handleDeleteInterview = async (id: number) => {
-        if (!confirm('Are you sure you want to delete this interview record? This will cancel the booking and free up the schedule slot.')) return;
+        if (!confirm('Are you sure you want to delete this interview record?')) return;
         try {
             await api.delete(`/admin/interviews/${id}`);
-            alert('Interview deleted and schedule slot freed.');
+            alert('Interview deleted successfully.');
             refetch();
-            refetchAvailableSlots();
         } catch (err: any) {
             alert(err.response?.data?.error || 'Failed to delete interview.');
-        }
-    };
-
-    // Toggle Applicant canPickSchedule authorization
-    const handleToggleAuth = async (userId: number, currentVal?: boolean) => {
-        const newVal = !currentVal;
-        try {
-            await api.put(`/admin/users/${userId}/can-pick-schedule`, { canPickSchedule: newVal });
-            refetch();
-        } catch (err: any) {
-            alert('Failed to update applicant authorization.');
         }
     };
 
@@ -277,25 +244,18 @@ export default function AdminInterviewsPage() {
                         Interviews Management
                     </h1>
                     <p className="text-sm text-slate-500 mt-2 max-w-xl">
-                        Monitor booked appointments, record interview overviews and evaluation outcomes, and manage candidate scheduling permissions.
+                        Schedule employer competency interviews (INAS01), attach job operational materials, and dispatch onboarding documentation (INA02).
                     </p>
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <Link
-                        href="/admin/schedules"
-                        className="px-4 py-2.5 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-blue-900 font-bold text-xs uppercase tracking-wider transition-all shadow-xs inline-flex items-center gap-2"
-                    >
-                        <span className="material-symbols-outlined text-base">calendar_month</span>
-                        Manage Catalogue
-                    </Link>
                     <button
                         type="button"
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="px-5 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-blue-900/10 inline-flex items-center gap-2"
+                        onClick={() => handleOpenNotify()}
+                        className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/10 inline-flex items-center gap-2"
                     >
-                        <span className="material-symbols-outlined text-base">add</span>
-                        Schedule Interview
+                        <span className="material-symbols-outlined text-base">outgoing_mail</span>
+                        Schedule &amp; Notify (INAS01)
                     </button>
                 </div>
             </header>
@@ -321,19 +281,19 @@ export default function AdminInterviewsPage() {
                         </span>
                         <span className="text-2xl font-black text-amber-600">{pendingCount}</span>
                     </div>
-                    <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold">
-                        <span className="material-symbols-outlined text-xl">hourglass_top</span>
+                    <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                        <span className="material-symbols-outlined text-xl">hourglass_empty</span>
                     </div>
                 </div>
 
                 <div className="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm flex items-center justify-between">
                     <div>
                         <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600 block mb-1">
-                            Passed Candidates
+                            Passed
                         </span>
                         <span className="text-2xl font-black text-emerald-600">{passedCount}</span>
                     </div>
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
                         <span className="material-symbols-outlined text-xl">check_circle</span>
                     </div>
                 </div>
@@ -341,135 +301,121 @@ export default function AdminInterviewsPage() {
                 <div className="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm flex items-center justify-between">
                     <div>
                         <span className="text-[9px] font-black uppercase tracking-widest text-rose-600 block mb-1">
-                            Failed / Unsuccessful
+                            Failed / Ineligible
                         </span>
                         <span className="text-2xl font-black text-rose-600">{failedCount}</span>
                     </div>
-                    <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center font-bold">
+                    <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
                         <span className="material-symbols-outlined text-xl">cancel</span>
                     </div>
                 </div>
             </div>
 
             {/* Filter and Search Bar */}
-            <div className="bg-white p-4 rounded-2xl border border-blue-100 shadow-sm mb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-1.5 p-1 bg-blue-50/60 rounded-xl overflow-x-auto">
-                    {['all', 'Pending', 'Passed', 'Failed', 'Completed', 'Rescheduled'].map((status) => (
-                        <button
-                            key={status}
-                            type="button"
-                            onClick={() => setOutcomeFilter(status)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                                outcomeFilter === status
-                                    ? 'bg-blue-900 text-white shadow-xs'
-                                    : 'text-slate-600 hover:text-blue-900'
-                            }`}
-                        >
-                            {status === 'all' ? `All (${totalCount})` : status}
-                        </button>
-                    ))}
+            <div className="bg-white p-4 rounded-2xl border border-blue-100 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Status:</span>
+                    <select
+                        value={outcomeFilter}
+                        onChange={(e) => setOutcomeFilter(e.target.value)}
+                        className="bg-slate-50 border border-slate-200 text-xs font-bold text-blue-900 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-900"
+                    >
+                        <option value="all">All Outcomes</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Passed">Passed</option>
+                        <option value="Failed">Failed</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Rescheduled">Rescheduled</option>
+                    </select>
                 </div>
 
-                <div className="relative">
+                <div className="w-full sm:w-80 relative">
                     <input
                         type="text"
-                        placeholder="Search candidate name, email, or ID..."
+                        placeholder="Search candidate, email, or notes..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full sm:w-72 bg-slate-50 border border-blue-100 rounded-xl px-3.5 py-2 text-xs text-blue-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-900 transition-colors"
+                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-900"
                     />
+                    <span className="material-symbols-outlined text-slate-400 absolute left-2.5 top-2.5 text-base">
+                        search
+                    </span>
                 </div>
             </div>
 
-            {/* Interviews Table */}
-            <div className="bg-white rounded-3xl border border-blue-100 shadow-sm overflow-hidden">
+            {/* Table */}
+            <div className="bg-white rounded-3xl border border-blue-100 overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                        <thead className="bg-blue-50/50 text-[10px] font-bold uppercase tracking-widest text-blue-400 border-b border-blue-100">
-                            <tr>
-                                <th className="p-4 pl-6">Candidate</th>
-                                <th className="p-4">Selected Schedule</th>
-                                <th className="p-4">Overview / Notes</th>
-                                <th className="p-4">Outcome</th>
-                                <th className="p-4">Meeting Link</th>
-                                <th className="p-4 pr-6 text-right">Actions</th>
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="border-b border-blue-50 bg-slate-50/50">
+                                <th className="p-4 pl-6 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    Candidate Details
+                                </th>
+                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    Scheduled Time (AWST)
+                                </th>
+                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    Evaluation / Notes
+                                </th>
+                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    Outcome
+                                </th>
+                                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    Meeting Room Link
+                                </th>
+                                <th className="p-4 pr-6 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    Actions
+                                </th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-blue-50 font-medium text-slate-700">
+                        <tbody className="divide-y divide-blue-50 text-xs font-medium">
                             {filteredInterviews.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="p-12 text-center text-slate-400 italic">
-                                        No interviews found matching your filter criteria.
+                                        No scheduled interview sessions found matching your filters.
                                     </td>
                                 </tr>
                             ) : (
                                 filteredInterviews.map((item) => {
-                                    const schedule = item.selectedSchedule;
-                                    const formattedDate = schedule?.date
-                                        ? new Date(schedule.date + 'T00:00:00').toLocaleDateString(undefined, {
-                                              weekday: 'short',
-                                              month: 'short',
-                                              day: 'numeric',
-                                              year: 'numeric',
-                                          })
-                                        : 'Unscheduled';
+                                    const effectiveDate = item.interviewDate || item.selectedSchedule?.date || item.applicant?.interviewDate || null;
+                                    const effectiveTime = item.interviewTime || item.selectedSchedule?.time || item.applicant?.interviewTime || null;
+                                    const effectiveLink = item.interviewUrl || item.meetingLink || item.applicant?.interviewLink || null;
 
                                     return (
                                         <tr key={item.id} className="hover:bg-blue-50/30 transition-colors">
-                                            {/* Candidate Info */}
+                                            {/* Candidate Details */}
                                             <td className="p-4 pl-6">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-xl bg-blue-900 text-white font-black flex items-center justify-center text-xs shrink-0">
-                                                        {item.applicant?.fullName?.charAt(0) || 'A'}
+                                                    <div className="w-9 h-9 rounded-full bg-blue-900 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-xs">
+                                                        {item.applicant?.fullName?.charAt(0) || 'U'}
                                                     </div>
                                                     <div>
-                                                        <Link
-                                                            href={`/admin/applicants/${item.applicantId}`}
-                                                            className="font-bold text-blue-900 hover:underline flex items-center gap-1"
-                                                        >
-                                                            <span>{item.applicant?.fullName || 'Applicant'}</span>
-                                                            <span className="text-[10px] text-blue-400">↗</span>
-                                                        </Link>
-                                                        <span className="text-[11px] text-slate-400 block">
+                                                        <span className="font-bold text-blue-950 block">
+                                                            {item.applicant?.fullName || 'Unknown Candidate'}
+                                                        </span>
+                                                        <span className="text-[11px] text-slate-500 font-mono">
                                                             {item.applicant?.email}
                                                         </span>
-                                                        <div className="flex items-center gap-2 mt-0.5">
-                                                            {item.applicant?.candidateNumber && (
-                                                                <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">
-                                                                    #{item.applicant.candidateNumber}
-                                                                </span>
-                                                            )}
-                                                            {/* canPickSchedule badge with quick toggle */}
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleToggleAuth(item.applicantId, item.applicant?.canPickSchedule)}
-                                                                className={`text-[9px] font-bold px-1.5 py-0.5 rounded border transition-colors ${
-                                                                    item.applicant?.canPickSchedule
-                                                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                                                        : 'bg-slate-100 text-slate-500 border-slate-200'
-                                                                }`}
-                                                                title="Click to toggle candidate scheduling permission"
-                                                            >
-                                                                {item.applicant?.canPickSchedule ? '✓ Authorized' : 'Lockout'}
-                                                            </button>
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
 
-                                            {/* Selected Schedule Slot */}
+                                            {/* Scheduled Date & Time */}
                                             <td className="p-4">
-                                                {schedule ? (
+                                                {effectiveDate ? (
                                                     <div>
                                                         <span className="font-bold text-slate-900 block text-xs">
-                                                            📅 {formattedDate}
+                                                            📅 {effectiveDate}
                                                         </span>
                                                         <span className="text-[11px] text-slate-500 font-semibold">
-                                                            ⏰ {schedule.time}
+                                                            ⏰ {effectiveTime || 'Time confirmed'} ({item.timezone || 'AWST'})
                                                         </span>
                                                     </div>
                                                 ) : (
-                                                    <span className="text-slate-400 italic">No slot linked</span>
+                                                    <span className="text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full text-[10px] font-bold border border-amber-200">
+                                                        Interview Date Not Set
+                                                    </span>
                                                 )}
                                             </td>
 
@@ -489,14 +435,14 @@ export default function AdminInterviewsPage() {
 
                                             {/* Meeting Link */}
                                             <td className="p-4">
-                                                {item.meetingLink ? (
+                                                {effectiveLink ? (
                                                     <a
-                                                        href={item.meetingLink}
+                                                        href={effectiveLink}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs font-bold underline"
                                                     >
-                                                        <span>Join Call</span>
+                                                        <span>Join Zoom</span>
                                                         <span className="text-[10px]">↗</span>
                                                     </a>
                                                 ) : (
@@ -509,9 +455,9 @@ export default function AdminInterviewsPage() {
                                                 <div className="flex items-center justify-end gap-1.5 flex-wrap">
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleOpenNotify(item.applicant, item.selectedSchedule?.date, item.selectedSchedule?.time, item.meetingLink || undefined)}
+                                                        onClick={() => handleOpenNotify(item.applicant, effectiveDate || undefined, effectiveTime || undefined, effectiveLink || undefined)}
                                                         className="px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1 shadow-sm"
-                                                        title="Send formal interview invitation from Employer email with Operational Manual file attached"
+                                                        title="Send formal interview invitation from Employer email with Operational Manual file attached (INAS01)"
                                                     >
                                                         <span className="material-symbols-outlined text-[13px]">mail</span>
                                                         Employer Notify
@@ -521,7 +467,7 @@ export default function AdminInterviewsPage() {
                                                         onClick={() => handleDispatchOnboardingGuide(item.applicantId)}
                                                         disabled={dispatchingId === item.applicantId}
                                                         className="px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[10px] font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
-                                                        title="Send MACA Onboarding Guide PDF now"
+                                                        title="Dispatch MACA Onboarding Guide PDF now (INA02)"
                                                     >
                                                         {dispatchingId === item.applicantId ? 'Sending...' : 'Dispatch Guide'}
                                                     </button>
@@ -557,7 +503,7 @@ export default function AdminInterviewsPage() {
                         <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
                             <div>
                                 <span className="text-[10px] font-black uppercase tracking-widest text-blue-400 block">
-                                    Interview Evaluation & Configuration
+                                    Interview Configuration &amp; Evaluation
                                 </span>
                                 <h3 className="text-lg font-black text-blue-900">
                                     {selectedInterview.applicant?.fullName || 'Candidate Interview'}
@@ -573,75 +519,85 @@ export default function AdminInterviewsPage() {
                         </div>
 
                         <form onSubmit={handleSaveEdit} className="space-y-4">
-                            {/* Current Selected Schedule info & Change Schedule */}
-                            <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1">
-                                    Interview Schedule Slot
-                                </label>
-                                <select
-                                    value={editScheduleId}
-                                    onChange={(e) => setEditScheduleId(Number(e.target.value))}
-                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900"
-                                >
-                                    {selectedInterview.selectedSchedule && (
-                                        <option value={selectedInterview.selectedSchedule.id}>
-                                            Current: {selectedInterview.selectedSchedule.date} at {selectedInterview.selectedSchedule.time}
-                                        </option>
-                                    )}
-                                    {availableSlots
-                                        .filter((s) => s.id !== selectedInterview.selectedSchedule?.id)
-                                        .map((s) => (
-                                            <option key={s.id} value={s.id}>
-                                                Change to: {s.date} at {s.time}
-                                            </option>
-                                        ))}
-                                </select>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                                        Interview Date
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. 5 November 2026"
+                                        value={editDate}
+                                        onChange={(e) => setEditDate(e.target.value)}
+                                        className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                                        Interview Time
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. 10:00 AM"
+                                        value={editTime}
+                                        onChange={(e) => setEditTime(e.target.value)}
+                                        className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900"
+                                    />
+                                </div>
                             </div>
 
-                            {/* Outcome Selector */}
                             <div>
                                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                                    Interview Outcome / Status <span className="text-red-500">*</span>
+                                    Timezone
+                                </label>
+                                <input
+                                    type="text"
+                                    value={editTimezone}
+                                    onChange={(e) => setEditTimezone(e.target.value)}
+                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">
+                                    Zoom Video Call Link
+                                </label>
+                                <input
+                                    type="url"
+                                    placeholder="https://zoom.us/j/..."
+                                    value={editMeetingLink}
+                                    onChange={(e) => setEditMeetingLink(e.target.value)}
+                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 font-mono focus:outline-none focus:border-blue-900"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">
+                                    Outcome Evaluation
                                 </label>
                                 <select
-                                    required
                                     value={editOutcome}
                                     onChange={(e) => setEditOutcome(e.target.value as any)}
-                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900 font-bold"
+                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs font-bold text-blue-900 focus:outline-none focus:border-blue-900"
                                 >
-                                    <option value="Pending">Pending Evaluation</option>
-                                    <option value="Passed">Passed (Eligible for Placement)</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Passed">Passed (Recommend for Deployment)</option>
                                     <option value="Failed">Failed</option>
                                     <option value="Completed">Completed</option>
                                     <option value="Rescheduled">Rescheduled</option>
                                 </select>
                             </div>
 
-                            {/* Meeting Link */}
                             <div>
                                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                                    Meeting Room Link (Zoom, Teams, or Google Meet)
-                                </label>
-                                <input
-                                    type="url"
-                                    placeholder="https://meet.google.com/... or https://zoom.us/j/..."
-                                    value={editMeetingLink}
-                                    onChange={(e) => setEditMeetingLink(e.target.value)}
-                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900"
-                                />
-                            </div>
-
-                            {/* Overview & Evaluation Notes */}
-                            <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1">
-                                    Interview Overview & Evaluation Notes
+                                    Interview Overview / Evaluator Notes
                                 </label>
                                 <textarea
-                                    rows={4}
-                                    placeholder="Enter interview overview, technical observations, behavioral feedback, or agenda items..."
+                                    rows={3}
+                                    placeholder="Add evaluation summary or preparation notes..."
                                     value={editOverview}
                                     onChange={(e) => setEditOverview(e.target.value)}
-                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900 leading-relaxed"
+                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900"
                                 />
                             </div>
 
@@ -658,7 +614,7 @@ export default function AdminInterviewsPage() {
                                     disabled={isSavingEdit}
                                     className="px-5 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white text-xs font-black uppercase tracking-wider disabled:opacity-50"
                                 >
-                                    {isSavingEdit ? 'Saving Changes...' : 'Save Evaluation'}
+                                    {isSavingEdit ? 'Saving...' : 'Save Changes'}
                                 </button>
                             </div>
                         </form>
@@ -666,138 +622,17 @@ export default function AdminInterviewsPage() {
                 </div>
             )}
 
-            {/* Manual Create Modal */}
-            {isCreateModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-blue-950/60 backdrop-blur-sm animate-in fade-in duration-150">
-                    <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-blue-100 shadow-2xl">
-                        <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
-                            <div>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-400 block">
-                                    Manual Booking
-                                </span>
-                                <h3 className="text-lg font-black text-blue-900">
-                                    Schedule Interview for Candidate
-                                </h3>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setIsCreateModalOpen(false)}
-                                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold"
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleCreateInterview} className="space-y-4">
-                            {/* Candidate Picker */}
-                            <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1">
-                                    Select Candidate <span className="text-red-500">*</span>
-                                </label>
-                                <select
-                                    required
-                                    value={createApplicantId}
-                                    onChange={(e) => setCreateApplicantId(Number(e.target.value))}
-                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900"
-                                >
-                                    <option value="">-- Choose Candidate --</option>
-                                    {allApplicants.map((a) => (
-                                        <option key={a.id} value={a.id}>
-                                            {a.fullName} ({a.email}) {a.candidateNumber ? `[#${a.candidateNumber}]` : ''}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Schedule Slot Picker */}
-                            <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1">
-                                    Select Available Schedule Slot <span className="text-red-500">*</span>
-                                </label>
-                                {availableSlots.length === 0 ? (
-                                    <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900">
-                                        No unbooked slots available in the catalogue.{' '}
-                                        <Link href="/admin/schedules" className="font-bold underline">
-                                            Create slots in Schedule Catalogue first →
-                                        </Link>
-                                    </div>
-                                ) : (
-                                    <select
-                                        required
-                                        value={createScheduleId}
-                                        onChange={(e) => setCreateScheduleId(Number(e.target.value))}
-                                        className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900"
-                                    >
-                                        <option value="">-- Choose Date & Time Slot --</option>
-                                        {availableSlots.map((s) => (
-                                            <option key={s.id} value={s.id}>
-                                                {s.date} at {s.time}
-                                            </option>
-                                        ))}
-                                    </select>
-                                )}
-                            </div>
-
-                            {/* Meeting Link */}
-                            <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1">
-                                    Meeting Room Link (Optional)
-                                </label>
-                                <input
-                                    type="url"
-                                    placeholder="https://zoom.us/... or https://meet.google.com/..."
-                                    value={createMeetingLink}
-                                    onChange={(e) => setCreateMeetingLink(e.target.value)}
-                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900"
-                                />
-                            </div>
-
-                            {/* Overview / Notes */}
-                            <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1">
-                                    Interview Overview / Agenda
-                                </label>
-                                <textarea
-                                    rows={3}
-                                    placeholder="Enter initial overview notes, topics, or instructions for the interview..."
-                                    value={createOverview}
-                                    onChange={(e) => setCreateOverview(e.target.value)}
-                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900"
-                                />
-                            </div>
-
-                            <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsCreateModalOpen(false)}
-                                    className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-bold"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isCreating || availableSlots.length === 0}
-                                    className="px-5 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white text-xs font-black uppercase tracking-wider disabled:opacity-50"
-                                >
-                                    {isCreating ? 'Booking...' : 'Confirm Interview'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Employer Notification Modal */}
-            {isNotifyModalOpen && notifyApplicant && (
+            {/* INAS01: Conditional Invitation / Employer Notification Modal */}
+            {isNotifyModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-blue-950/60 backdrop-blur-sm animate-in fade-in duration-150">
                     <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-amber-200 shadow-2xl">
                         <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
                             <div>
                                 <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 block">
-                                    Employer Corporate Dispatch
+                                    Action INA01 &bull; INAS01
                                 </span>
                                 <h3 className="text-lg font-black text-blue-900">
-                                    Schedule & Notify Candidate via Employer
+                                    Conditional Invitation for Interview
                                 </h3>
                             </div>
                             <button
@@ -810,11 +645,24 @@ export default function AdminInterviewsPage() {
                         </div>
 
                         <form onSubmit={handleSendScheduleNotify} className="space-y-4">
-                            <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900">
-                                <span className="font-bold">Candidate:</span> {notifyApplicant.fullName} ({notifyApplicant.email})
-                                <p className="text-[11px] text-amber-700 mt-1">
-                                    Dispatched from the active hiring partner employer email address. The job operational manual will be attached directly as a document file.
-                                </p>
+                            {/* Applicant Dropdown */}
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">
+                                    Select Candidate <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    required
+                                    value={notifyApplicantId}
+                                    onChange={(e) => setNotifyApplicantId(Number(e.target.value))}
+                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 font-bold focus:outline-none focus:border-blue-900"
+                                >
+                                    <option value="">-- Choose Candidate from Dropdown --</option>
+                                    {allApplicants.map((a) => (
+                                        <option key={a.id} value={a.id}>
+                                            {a.fullName} ({a.email}) {a.candidateNumber ? `[#${a.candidateNumber}]` : ''}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -838,12 +686,25 @@ export default function AdminInterviewsPage() {
                                     <input
                                         type="text"
                                         required
-                                        placeholder="e.g. 10:00 AM AWST"
+                                        placeholder="e.g. 10:00 AM"
                                         value={notifyTime}
                                         onChange={(e) => setNotifyTime(e.target.value)}
                                         className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900"
                                     />
                                 </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">
+                                    Timezone <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={notifyTimezone}
+                                    onChange={(e) => setNotifyTimezone(e.target.value)}
+                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900"
+                                />
                             </div>
 
                             <div>
@@ -859,7 +720,7 @@ export default function AdminInterviewsPage() {
                                     className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 font-mono focus:outline-none focus:border-blue-900"
                                 />
                                 <p className="text-[10px] text-slate-400 mt-1">
-                                    Must be a valid video conference URL (Zoom meeting link).
+                                    Dispatched from the Host Employer mail account. The job operational manual will be attached as a PDF file.
                                 </p>
                             </div>
 
@@ -869,7 +730,7 @@ export default function AdminInterviewsPage() {
                                 </label>
                                 <input
                                     type="url"
-                                    placeholder="Leave blank to use the job listing's operational manual"
+                                    placeholder="Leave blank to use the applied job listing operational manual"
                                     value={notifyManualUrl}
                                     onChange={(e) => setNotifyManualUrl(e.target.value)}
                                     className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 font-mono focus:outline-none focus:border-blue-900"
@@ -890,7 +751,7 @@ export default function AdminInterviewsPage() {
                                     className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black uppercase tracking-wider disabled:opacity-50 flex items-center gap-1.5 shadow-md"
                                 >
                                     <span className="material-symbols-outlined text-sm">send</span>
-                                    {isSendingNotify ? 'Dispatching...' : 'Dispatch Interview Email'}
+                                    {isSendingNotify ? 'Dispatching...' : 'Dispatch Invitation (INAS01)'}
                                 </button>
                             </div>
                         </form>

@@ -1679,12 +1679,18 @@ export class TicketService {
         const { Application, JobStage } = require('../models');
         const application = await Application.findOne({
             where: { userId },
+            include: [{ model: JobStage, as: 'JobStages' }],
             order: [['createdAt', 'DESC']]
         });
         if (application) {
-            const stage = await JobStage.findOne({
-                where: { applicationId: application.id, name: 'TicketSponsorship' }
-            });
+            const stages = application.JobStages || [];
+            const isDue = stages.some((s: any) =>
+                s.name === 'TicketSponsorship' || s.name === 'Ticket Sponsorship'
+            );
+            if (!isDue) {
+                throw new Error('Ticket sponsorship application cannot be submitted before the Ticket Sponsorship stage is due.');
+            }
+            const stage = stages.find((s: any) => s.name === 'TicketSponsorship' || s.name === 'Ticket Sponsorship');
             if (stage && stage.status !== 'completed' && stage.status !== 'approved') {
                 await stage.update({ status: 'under-review' });
             }

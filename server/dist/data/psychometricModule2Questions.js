@@ -42,8 +42,8 @@ exports.psychometricModule2Questions = [
         questionText: 'Which of the following packages outlines the zero-cost migration benefits provided to sponsored candidates?',
         questionType: 'mcq',
         options: [
-            'Candidates must independently fund all visa processing, skills assessment, flight tickets, and trade certification without reimbursement.',
-            'Employer-sponsored 482 visa, employer-sponsored Positive Skills Assessment (TRA), employer-sponsored medical fitness test, flight tickets, and fully refunded ticket training.',
+            'Candidates must independently fund all visa processing, skills assessment, flight tickets, and trade certification without support.',
+            'Employer-sponsored 482 visa, employer-sponsored Positive Skills Assessment (TRA), employer-sponsored medical fitness test, flight tickets, and employer-sponsored ticket training.',
             'Only economy flight tickets are covered; candidates remain permanently liable for visa and licensing expenses.',
             'Permanent Australian residency is granted on day one without any credentialing or statutory medical assessments.'
         ],
@@ -99,25 +99,25 @@ exports.psychometricModule2Questions = [
         weight: 1
     },
     {
-        questionText: 'What is the refund policy regarding candidate financial contributions or ticket training expenses?',
+        questionText: 'What is the format and primary focus of the technical competency interview conducted with the potential employer in Step 7?',
         questionType: 'mcq',
         options: [
-            '100% of candidate-borne ticket training expenditure is refunded by the employer upon ticket acquisition and placement.',
-            'Ticket training fees are strictly non-refundable under all operational and employment conditions.',
-            'Candidates receive a 15% travel voucher redeemable after completing five continuous years on site.',
-            'Expenditures are refunded only if the candidate relocates to Australia at their own personal expense.'
+            'An online video meeting via Zoom evaluating practical trade background, site safety understanding, and operational readiness conducted directly with the host employer.',
+            'An informal telephone call without any technical or safety questioning.',
+            'A physical trial shift conducted at an international airport before departure.',
+            'A written essay on Australian labour history submitted by post.'
         ],
         correctOptionIndex: 0,
         weight: 1
     },
     {
-        questionText: 'Why does the ticket sponsorship policy prohibit candidates from dropping out mid-course after signing the sponsorship contract?',
+        questionText: 'Which statutory pre-employment medical assessments are mandatory for overseas candidates prior to Australian mine site deployment?',
         questionType: 'mcq',
         options: [
-            'Because Blue Collar Recruitment pays training fees upfront to Cert Hero before candidate training commences, making dropouts an unrecoverable corporate loss.',
-            'Because candidates forfeit their native national citizenship if they discontinue an accredited Australian short course.',
-            'Because Australian mining sites reserve heavy machinery exclusively registered under the candidate’s personal name.',
-            'Because statutory trade evaluation authorities file criminal sanctions against candidates who discontinue online study.'
+            'Statutory fit-for-work medical screening including audiometric hearing, drug and alcohol screening, lung function, and chest X-ray.',
+            'Only a basic routine eye test administered online via email.',
+            'Medical examinations are optional and can be waived by submitting a driver license.',
+            'A private dental checkup conducted after three months of site service.'
         ],
         correctOptionIndex: 0,
         weight: 1

@@ -122,13 +122,15 @@ export class AuthService {
                 }
                 processFaqSection = `
             <div style="background-color:#eff6ff;border-left:5px solid #2563eb;padding:18px 22px;border-radius:8px;margin:28px 0;">
-                <p style="margin:0 0 10px 0;font-weight:900;font-size:15px;color:#1e3a8a;text-transform:uppercase;letter-spacing:0.5px;">
-                     THIS IS NECESSARY, TO ENSURE CLARITY PLEASE READ OUR FAQs
+                <p style="margin:0 0 10px 0;font-weight:700;font-size:14px;color:#1e3a8a;">
+                    Frequently Asked Questions (FAQs)
                 </p>
-             
+                <p style="margin:0 0 12px 0;font-size:13px;color:#334155;line-height:1.5;">
+                    To ensure clarity about our recruitment journey, visas, and timelines, please review our comprehensive FAQ section.
+                </p>
                 <p style="margin:0;">
-                    <a href="${linkUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background-color:#1e3a8a;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:6px;font-size:13px;font-weight:bold;letter-spacing:0.3px;">
-                        Open FAQs &rarr;
+                    <a href="${linkUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background-color:#1e3a8a;color:#ffffff;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:bold;letter-spacing:0.3px;">
+                        Read Our FAQs &rarr;
                     </a>
                 </p>
             </div>`;
@@ -138,50 +140,55 @@ export class AuthService {
         }
 
         // Send Welcome Email after verification
-        const welcomeSubject = 'Welcome to BlueCollar - Account Verified';
+        const welcomeSubject = 'Welcome to Blue Collar Recruitment — Account Verified';
         const welcomeContent = `
             <p>Hello ${user.fullName.split(' ')[0]},</p>
-             <p>Your account has been successfully verified. Welcome to the BlueCollar Recruitment Platform!</p>
+            <p>Your account has been successfully verified. Welcome to the <strong>Blue Collar Recruitment</strong> platform!</p>
             <br/>
-            <p>KINDLY READ CARE FULLY AND UNDERSTAND, AND CARRYOUT THE REQUIRED ACTIONS</p>
-            <p> THE FOLLOWING ARE REQUIRED OF YOU IN THIS MAIL</p>
-               <ol style="margin-bottom: 20px;">
+            <p><strong>Please review the important steps and requirements below:</strong></p>
+            <ol style="margin-bottom: 20px;">
                 <li style="margin-bottom: 10px;">
-                  READ THE ATTACHED HIRING PROCESS DOCUMENT 
+                    <strong>Read the attached Hiring Process Guide:</strong> This guide outlines every stage of your journey, expected timeframes, and documentation.
                 </li>
-                ${processFaqSection && ` <li style="margin-bottom: 10px;">
-                  CLICK THE LINK AND READ THE FAQ SECTION 
-                </li'`
-            }
-                   <li style="margin-bottom: 10px;">
-                  REPLY THIS MAIL WITH THE HIDDEN ACTION RESPONSE IN THE ATTACHED HIRING PROCESS DOCUMENT AND ANY QUESTIONS YOU MAY HAVE ABOUT THE PROCESS , SO WE CAN VALIDATE YOU READ IT.
+                ${processFaqSection && `<li style="margin-bottom: 10px;">
+                    <strong>Read the FAQs:</strong> Click the link below to review answers to common questions about our FIFO recruitment process.
+                </li>`}
+                <li style="margin-bottom: 10px;">
+                    <strong>Reply to this email:</strong> Please reply with the confirmation phrase found inside the attached Hiring Process document, along with any questions you may have, so we can verify that you have reviewed it.
                 </li>
                 <li style="margin-bottom: 10px;">
-                  Proceed to start your application.
+                    <strong>Start your application:</strong> Complete your profile and submit your application on the candidate portal.
                 </li>
             </ol>
             <br/>
             
-            <strong>Ensure you are available for the following before you proceed: </strong>
+            <div style="background-color: #f0f7ff; border-left: 4px solid #004ac6; padding: 18px 22px; border-radius: 8px; margin: 24px 0;">
+                <p style="margin: 0 0 8px 0; font-weight: 700; font-size: 14px; color: #1e3a8a;">
+                    💬 A Personal Note on When You Will Hear from Us
+                </p>
+                <p style="margin: 0; color: #1e3a8a; font-size: 13.5px; line-height: 1.6;">
+                    To make sure your profile receives our dedicated care and attention, our recruitment team dedicates a focused personal window every day between <strong>2:00 PM and 4:00 PM Australian Western Standard Time (AWST)</strong> to review your submissions, reply to your questions, and send personalized updates. You can reach out at any time, and we will personally attend to your messages during this designated window.
+                </p>
+            </div>
+
+            <strong>Please ensure you are ready and available for:</strong>
             <ul>
-            <li>Correspondence with Blue Collar Recruitment; you are expected to act on your part at each stage of the hiring process in 48 hours or less</li>
-            <li>Phone call interviews with Blue Collar Recruitment hiring team agents during hiring process. </li>
-            <li>Tickets (Certification) Training</li>
-            <li>Skype/Zoom familiarisation call with employer after job placement </li>
-            <li>Medical Test</li>
-            <li>Visa application processes. </li>
-               
+                <li>Active correspondence with our team (we expect responses within 48 hours at each stage)</li>
+                <li>Interview with a potential employer (conducted directly with your prospective Australian employer, not Blue Collar Recruitment)</li>
+                <li>Vocational tickets and certification training</li>
+                <li>Required medical fit-for-work assessments</li>
+                <li>Visa application and sponsorship procedures</li>
             </ul>
 
-         <div style="background-color:#fff8e1;border-left:5px solid #FFC700;padding:18px 22px;border-radius:8px;margin:28px 0;">
-                <p style="margin:0 0 10px 0;font-weight:900;font-size:15px;color:#1a1a1a;text-transform:uppercase;letter-spacing:0.5px;">
-                    📄 ACTION REQUIRED: YOUR ARE TO READ THE ATTACHED HIRING PROCESS DOCUMENT AND REPLY TO THIS MAIL WITH TH EHIDDEN ACTION RESPONSE  IN THE DOCUMENT TO PROVE YOU ACTUALLY READ IT.
+            <div style="background-color:#fff8e1;border-left:5px solid #FFC700;padding:18px 22px;border-radius:8px;margin:28px 0;">
+                <p style="margin:0 0 10px 0;font-weight:700;font-size:14px;color:#1a1a1a;">
+                    📄 Important: Review the Attached Hiring Process Document
                 </p>
-                <p style="margin:0 0 10px 0;color:#374151;font-size:14px;font-weight:600;line-height:1.6;">
-                    We have attached our <strong>Hiring Process Guide</strong> to this email. It contains critical information about every stage of your recruitment journey — timelines, required documents, and what to expect at each milestone.
+                <p style="margin:0 0 10px 0;color:#374151;font-size:13px;font-weight:500;line-height:1.6;">
+                    We have attached our <strong>Hiring Process Guide</strong> to this email. It contains vital information about timelines, required documents, and what to expect at each stage.
                 </p>
-                <p style="margin:0;color:#374151;font-size:14px;font-weight:700;">
-                    ⚠️ You are expected to have read and understood this document before proceeding with your application. It will be referenced at each stage of the process.
+                <p style="margin:0;color:#374151;font-size:13px;font-weight:600;">
+                    Please read and understand this document before starting your application. It will be referenced throughout your recruitment process.
                 </p>
             </div>
 

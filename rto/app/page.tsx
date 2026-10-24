@@ -31,6 +31,12 @@ export default function CertHeroHomePage() {
     const [enquiryMessage, setEnquiryMessage] = useState('');
     const [submitted, setSubmitted] = useState(false);
     const [missionModalOpen, setMissionModalOpen] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    React.useEffect(() => {
+        const u = localStorage.getItem('lms_user') || localStorage.getItem('lms_token');
+        setIsLoggedIn(!!u);
+    }, []);
 
     // FAQ Accordion State
     const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -152,7 +158,7 @@ export default function CertHeroHomePage() {
                                 </Link>
 
                                 <Link
-                                    href="/psychometric"
+                                    href={isLoggedIn ? "/psychometric" : "/login?redirect=/psychometric"}
                                     className="bg-[#EAA240] hover:bg-[#de9330] text-black px-6 py-3.5 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition-all shadow-md flex items-center gap-2"
                                 >
                                     <Brain className="w-4 h-4" /> Psychometric Test
@@ -497,7 +503,7 @@ export default function CertHeroHomePage() {
                             </p>
                             <div className="flex flex-wrap items-center gap-4 pt-2">
                                 <Link
-                                    href="/psychometric"
+                                    href={isLoggedIn ? "/psychometric" : "/login?redirect=/psychometric"}
                                     className="bg-[#EAA240] hover:bg-[#de9330] text-black px-7 py-3.5 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition-all shadow-md flex items-center gap-2"
                                 >
                                     Launch Psychometric Test <ArrowRight className="w-4 h-4" />

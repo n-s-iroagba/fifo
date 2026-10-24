@@ -14,13 +14,12 @@ Interview.init({
     },
     scheduleCatalogueId: {
         type: sequelize_1.DataTypes.INTEGER,
-        allowNull: false,
-        unique: true,
+        allowNull: true,
         references: {
             model: 'schedule_catalogues',
             key: 'id',
         },
-        onDelete: 'CASCADE',
+        onDelete: 'SET NULL',
     },
     applicantId: {
         type: sequelize_1.DataTypes.INTEGER,
@@ -30,6 +29,23 @@ Interview.init({
             key: 'id',
         },
         onDelete: 'CASCADE',
+    },
+    interviewDate: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
+    interviewTime: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
+    timezone: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+        defaultValue: 'AWST (UTC+8)',
+    },
+    interviewUrl: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
     },
     overview: {
         type: sequelize_1.DataTypes.TEXT,

@@ -37,19 +37,19 @@ function ResetPasswordContent() {
     const mutation = useApiMutation<any, any>('post', '/auth/reset-password', {
         onSuccess: (data: any) => {
             setStatus('success');
-            setMessage(data.message || 'Access credentials updated successfully.');
+            setMessage(data.message || 'Your password has been reset successfully. Redirecting you to sign in...');
             setTimeout(() => router.push(CONSTANTS.ROUTES.LOGIN), 3000);
         },
         onError: (error: any) => {
             setStatus('error');
-            setMessage(error.response?.data?.error || 'Failed to authorize credential update. Link may be invalid.');
+            setMessage(error.response?.data?.error || 'Unable to reset password. The link may have expired or is invalid.');
         }
     });
 
     const onSubmit = (data: ResetPasswordForm) => {
         if (!token) {
             setStatus('error');
-            setMessage('Missing authorization token.');
+            setMessage('This password reset link is missing or invalid. Please request a new one.');
             return;
         }
         setStatus('idle');
@@ -59,71 +59,71 @@ function ResetPasswordContent() {
     return (
         <main className="max-w-[448px] w-full space-y-12">
             <div className="space-y-4 text-center lg:text-left">
-                <Link href="/" className="text-xl font-black italic uppercase tracking-[0.1em] text-blue-900 block mb-12">
+                <Link href="/" className="text-xl font-bold tracking-tight text-blue-900 block mb-12">
                     BlueCollar
                 </Link>
-                <h1 className="text-4xl font-bold text-blue-900 tracking-tight uppercase">Update Key</h1>
-                <p className="text-blue-400 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-                    Establish your new security credentials for account access.
+                <h1 className="text-3xl font-bold text-blue-900 tracking-tight">Create New Password</h1>
+                <p className="text-blue-600 text-xs leading-relaxed font-medium">
+                    Please enter your new password below.
                 </p>
             </div>
 
             {status === 'success' ? (
-                <div className="space-y-6 py-8 text-center lg:text-left">
-                    <div className="p-8 bg-blue-50 border border-blue-100 rounded-2xl text-blue-900 text-[10px] font-bold uppercase tracking-widest leading-relaxed italic">
+                <div className="space-y-6 py-6 text-center lg:text-left">
+                    <div className="p-6 bg-blue-50 border border-blue-100 rounded-xl text-blue-900 text-xs font-medium leading-relaxed">
                         {message}
                     </div>
-                    <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest animate-pulse">
-                        Redirecting to auth gateway...
+                    <p className="text-xs font-semibold text-blue-600 animate-pulse">
+                        Taking you to the sign in page...
                     </p>
                 </div>
             ) : (
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     {status === 'error' && (
-                        <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-[10px] font-bold uppercase tracking-widest flex items-center gap-3">
+                        <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-xs font-semibold flex items-center gap-3">
                             <span className="material-symbols-outlined text-base">error</span>
                             {message}
                         </div>
                     )}
 
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-blue-400 px-1" htmlFor="password">New Security Case</label>
+                            <label className="text-xs font-semibold text-blue-900 px-1" htmlFor="password">New Password</label>
                             <input
                                 {...register('password')}
-                                className="w-full bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 focus:bg-white focus:ring-2 focus:ring-blue-900/5 transition-all outline-none text-sm font-bold text-blue-900 placeholder:text-blue-300"
+                                className="w-full bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 focus:bg-white focus:ring-2 focus:ring-blue-900/5 transition-all outline-none text-sm font-medium text-blue-900 placeholder:text-blue-300"
                                 id="password"
                                 placeholder="••••••••"
                                 type="password"
                                 disabled={mutation.isPending}
                             />
-                            {errors.password && <p className="text-red-600 text-[10px] font-bold px-1 tracking-tight">{errors.password.message}</p>}
+                            {errors.password && <p className="text-red-600 text-xs font-medium px-1 tracking-tight">{errors.password.message}</p>}
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-blue-400 px-1" htmlFor="confirmPassword">Verify Security Case</label>
+                            <label className="text-xs font-semibold text-blue-900 px-1" htmlFor="confirmPassword">Confirm New Password</label>
                             <input
                                 {...register('confirmPassword')}
-                                className="w-full bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 focus:bg-white focus:ring-2 focus:ring-blue-900/5 transition-all outline-none text-sm font-bold text-blue-900 placeholder:text-blue-300"
+                                className="w-full bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 focus:bg-white focus:ring-2 focus:ring-blue-900/5 transition-all outline-none text-sm font-medium text-blue-900 placeholder:text-blue-300"
                                 id="confirmPassword"
                                 placeholder="••••••••"
                                 type="password"
                                 disabled={mutation.isPending}
                             />
-                            {errors.confirmPassword && <p className="text-red-600 text-[10px] font-bold px-1 tracking-tight">{errors.confirmPassword.message}</p>}
+                            {errors.confirmPassword && <p className="text-red-600 text-xs font-medium px-1 tracking-tight">{errors.confirmPassword.message}</p>}
                         </div>
                     </div>
 
                     <button
                         type="submit"
                         disabled={mutation.isPending || !token}
-                        className="w-full py-4 bg-blue-900 text-white rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-blue-900/10 hover:bg-blue-800 transition-all active:scale-[0.98] disabled:opacity-50"
+                        className="w-full py-4 bg-blue-900 text-white rounded-lg font-bold text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-900/10 hover:bg-blue-800 transition-all active:scale-[0.98] disabled:opacity-50"
                     >
-                        {mutation.isPending ? 'Propagating...' : 'Authorize New Key'}
+                        {mutation.isPending ? 'Saving...' : 'Reset Password'}
                     </button>
                     {!token && (
-                        <p className="text-red-600 text-[9px] font-bold uppercase tracking-widest text-center">
-                            Missing Protocol Token. Access Denied.
+                        <p className="text-red-600 text-xs font-semibold text-center">
+                            This reset link is missing or invalid. Please request a new link.
                         </p>
                     )}
                 </form>
@@ -135,14 +135,14 @@ function ResetPasswordContent() {
 export default function ResetPasswordPage() {
     return (
         <div className="min-h-screen bg-white text-blue-900 antialiased flex flex-col items-center justify-center p-8 font-sans">
-            <Suspense fallback={<div className="text-[10px] font-bold uppercase tracking-widest text-blue-400">Loading Protocol...</div>}>
+            <Suspense fallback={<div className="text-xs font-semibold text-blue-400">Loading...</div>}>
                 <ResetPasswordContent />
             </Suspense>
 
-            <footer className="mt-20 py-12 px-8 border-t border-blue-50 w-full max-w-[1440px]">
-                <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-[9px] font-bold text-blue-400 uppercase tracking-widest">
-                    <p>© 2026 JOBNEXE ENTERPRISE</p>
-                    <p>Registry Update Authority Active</p>
+            <footer className="mt-20 py-8 px-6 border-t border-blue-50 w-full max-w-[1440px]">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-blue-400">
+                    <p>© 2026 Blue Collar Recruitment</p>
+                    <p>All rights reserved.</p>
                 </div>
             </footer>
         </div>

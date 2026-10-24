@@ -1,17 +1,26 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Lock, User, AlertCircle, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { apiClient } from '@/lib/axios';
 
-export default function LmsLogin() {
+export default function LmsLoginPage() {
+    return (
+        <React.Suspense fallback={<div className="min-h-screen bg-[#0f172a]" />}>
+            <LmsLoginContent />
+        </React.Suspense>
+    );
+}
+
+function LmsLoginContent() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -22,11 +31,13 @@ export default function LmsLogin() {
             if (response.data?.success) {
                 const { accessToken, user } = response.data.data;
                 localStorage.setItem('lms_token', accessToken);
+                localStorage.setItem('accessToken', accessToken);
                 localStorage.setItem('lms_user', JSON.stringify(user));
-                router.push('/dashboard');
+                const redirectPath = searchParams.get('redirect') || '/dashboard';
+                router.push(redirectPath);
             }
         } catch (err: any) {
-            setError(err.response?.status === 401 ? 'Invalid LMS username or password.' : 'An error occurred during authentication. Please check your credentials and try again.');
+            setError(err.response?.status === 401 ? 'Incorrect username or password.' : 'Something went wrong. Please check your login details and try again.');
         } finally {
             setIsLoading(false);
         }
@@ -50,7 +61,7 @@ export default function LmsLogin() {
                         href="/"
                         className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
                     >
-                        <ArrowLeft className="h-3.5 w-3.5" /> Back to CertHero RTO Portal
+                        <ArrowLeft className="h-3.5 w-3.5" /> Back to CertHero Home
                     </Link>
                 </div>
 
@@ -65,11 +76,11 @@ export default function LmsLogin() {
                         Cert<span className="text-[#ED9139]">Hero</span>
                     </h1>
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
-                        Registered Training Organisation LMS
+                        Training & Assessment Portal
                     </p>
                     <div className="w-12 h-1 bg-[#ED9139] mx-auto mt-3 rounded-full" />
                     <p className="text-xs text-slate-400 font-medium mt-3">
-                        Sign in with your assigned training credentials
+                        Sign in to access your course materials and assessments
                     </p>
                 </div>
 
@@ -85,7 +96,7 @@ export default function LmsLogin() {
                     <form className="space-y-4" onSubmit={handleLogin}>
                         <div>
                             <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2" htmlFor="username">
-                                LMS Username
+                                Username
                             </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -96,7 +107,7 @@ export default function LmsLogin() {
                                     name="username"
                                     type="text"
                                     required
-                                    placeholder="e.g. CERTHERO-JOHDOE1234"
+                                    placeholder="Enter your username"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                     className="w-full bg-slate-800/90 border border-slate-700 text-white placeholder-slate-500 rounded-xl pl-10 pr-4 py-3 text-xs font-medium focus:outline-none focus:border-[#ED9139] focus:ring-1 focus:ring-[#ED9139] transition-all"
@@ -130,21 +141,21 @@ export default function LmsLogin() {
                             disabled={isLoading}
                             className="w-full bg-[#ED9139] hover:bg-[#dd7f26] text-[#0f172a] font-bold text-xs py-3.5 rounded-xl transition-all uppercase tracking-wider shadow-lg shadow-[#ED9139]/20 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
                         >
-                            {isLoading ? 'Verifying Credentials...' : 'Sign In to LMS Portal'}
+                            {isLoading ? 'Signing In...' : 'Sign In'}
                         </button>
                     </form>
 
                     <div className="pt-3 border-t border-slate-800 text-center">
                         <div className="flex items-center justify-center gap-2 text-[11px] text-slate-400">
                             <ShieldCheck className="h-3.5 w-3.5 text-[#ED9139]" />
-                            <span>Encrypted ASQA Accredited Training Session</span>
+                            <span>Accredited Training & Assessment Portal</span>
                         </div>
                     </div>
                 </div>
 
                 <div className="text-center text-[11px] text-slate-400">
                     <p>
-                        Credentials issued via sponsor notification email. If you have not received credentials, contact candidate support.
+                        Your login details were sent to your email when your training was scheduled. If you haven't received them, please contact candidate support.
                     </p>
                 </div>
             </div>

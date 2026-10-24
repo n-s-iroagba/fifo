@@ -70,7 +70,10 @@ export function Navbar() {
                         </span>
                     </div>
                     <div className="hidden sm:flex items-center gap-4 text-slate-400">
-                        <Link href="/psychometric" className="text-[#EAA240] hover:underline font-semibold flex items-center gap-1">
+                        <Link 
+                            href={user ? "/psychometric" : "/login?redirect=/psychometric"} 
+                            className="text-[#EAA240] hover:underline font-semibold flex items-center gap-1"
+                        >
                             <Brain className="w-3 h-3" /> Psychometric Testing Portal
                         </Link>
                         <span>•</span>
@@ -180,7 +183,7 @@ export function Navbar() {
                             {moreDropdownOpen && (
                                 <div className="absolute top-full left-0 w-56 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
                                     <Link
-                                        href="/psychometric"
+                                        href={user ? "/psychometric" : "/login?redirect=/psychometric"}
                                         onClick={() => setMoreDropdownOpen(false)}
                                         className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-amber-50 hover:text-[#EAA240]"
                                     >
@@ -319,7 +322,7 @@ export function Navbar() {
                     </div>
                     <div className="border-t border-slate-100 pt-2 space-y-1">
                         <Link
-                            href="/psychometric"
+                            href={user ? "/psychometric" : "/login?redirect=/psychometric"}
                             onClick={() => setMobileMenuOpen(false)}
                             className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-[#EAA240]"
                         >

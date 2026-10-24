@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { GeoRoutingModal } from "@/components/GeoRoutingModal";
 
 export const metadata: Metadata = {
   title: "CertHero LMS — Trade Certification & Skills Assessment Portal",
@@ -21,6 +22,7 @@ export default function RtoLayout({
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans antialiased">
+        <GeoRoutingModal />
         <Navbar />
         <main className="flex-1 w-full">
           {children}

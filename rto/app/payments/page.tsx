@@ -1,20 +1,29 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { CreditCard, CheckCircle2, Tag, ShieldCheck } from 'lucide-react';
 import { apiClient } from '@/lib/axios';
 import { PageShell } from '@/components/PageShell';
 
 export default function PaymentsPage() {
+    const router = useRouter();
     const [receipts, setReceipts] = React.useState<any[]>([]);
     const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
+        const token = typeof window !== 'undefined' ? (localStorage.getItem('lms_token') || localStorage.getItem('accessToken')) : null;
+        const user = typeof window !== 'undefined' ? localStorage.getItem('lms_user') : null;
+        if (!token && !user) {
+            router.push('/login?redirect=/payments');
+            return;
+        }
+
         apiClient.get('/payments/me')
             .then(res => { if (res.data?.data) setReceipts(res.data.data); })
             .catch(() => setReceipts([]))
             .finally(() => setLoading(false));
-    }, []);
+    }, [router]);
 
     return (
         <PageShell>

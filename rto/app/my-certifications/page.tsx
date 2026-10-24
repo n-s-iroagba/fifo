@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Award, AlertTriangle, CheckCircle2, Clock, ArrowRight, ShieldCheck, Download, X, Calendar } from 'lucide-react';
 import { apiClient } from '@/lib/axios';
 import { PageShell } from '@/components/PageShell';
@@ -13,16 +14,24 @@ interface CertGap {
 }
 
 export default function MyCertificationsPage() {
+    const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [certificates, setCertificates] = useState<CertGap[]>([]);
     const [selectedCert, setSelectedCert] = useState<CertGap | null>(null);
 
     useEffect(() => {
+        const token = localStorage.getItem('lms_token');
+        const user = localStorage.getItem('lms_user');
+        if (!token && !user) {
+            router.push('/login?redirect=/my-certifications');
+            return;
+        }
+
         apiClient.get('/certificates/learner/me')
             .then(res => { if (res.data?.success) setCertificates(res.data.data); })
             .catch(() => setCertificates([]))
             .finally(() => setLoading(false));
-    }, []);
+    }, [router]);
 
     const missingGaps = certificates.filter(c => c.status === 'MISSING');
     const expiredGaps = certificates.filter(c => c.status === 'EXPIRED');

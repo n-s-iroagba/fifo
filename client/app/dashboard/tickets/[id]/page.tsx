@@ -369,34 +369,34 @@ export default function TicketDetailPage() {
             {canSubmitSponsorshipForm && (
                 <section className="mb-8 bg-white p-8 rounded-3xl border border-blue-100 shadow-sm">
                     <span className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em] block mb-2">Apply For Sponsorship</span>
-                    <h2 className="text-lg font-bold text-blue-900 mb-2">Ticket Sponsorship & Refund Policy</h2>
+                    <h2 className="text-lg font-bold text-blue-900 mb-2">Ticket Training Sponsorship Guidelines</h2>
                     <p className="text-xs text-slate-500 mb-6">
-                        Review the official refund terms and confirm your commitment to fulfilling all training requirements.
+                        Review the corporate training terms and confirm your commitment to fulfilling all training requirements.
                     </p>
 
-                    {/* Official Refund Policy Card */}
-                    <div className="mb-6 p-4 bg-amber-50/80 border border-amber-200 rounded-2xl space-y-2.5">
-                        <div className="flex items-center gap-2 text-amber-950 font-black text-xs uppercase tracking-wider">
-                            <span className="material-symbols-outlined text-amber-600 text-lg">verified_user</span>
-                            <span>Official Refund Policy & Terms</span>
+                    {/* Official Training Sponsorship Guidelines */}
+                    <div className="mb-6 p-4 bg-blue-50/80 border border-blue-200 rounded-2xl space-y-2.5">
+                        <div className="flex items-center gap-2 text-blue-950 font-black text-xs uppercase tracking-wider">
+                            <span className="material-symbols-outlined text-blue-600 text-lg">verified_user</span>
+                            <span>Corporate Sponsorship Provisions</span>
                         </div>
                         <ul className="text-xs text-slate-700 space-y-2 pl-1 leading-relaxed">
                             <li className="flex items-start gap-2">
                                 <span className="text-emerald-600 font-black text-sm mt-[-2px]">&#10003;</span>
                                 <span>
-                                    <strong className="text-blue-950">100% Refund upon Passing:</strong> Upon successfully passing and acquiring your ticket certifications, 100% of your candidate contribution will be refunded.
-                                </span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <span className="text-amber-600 font-black text-sm mt-[-2px]">&#9679;</span>
-                                <span>
-                                    <strong className="text-blue-950">60% Refund after Two Attempts:</strong> In the event you are unable to acquire the tickets after two examination attempts, 60% of your candidate contribution will be refunded.
+                                    <strong className="text-blue-950">Accredited Training:</strong> Complete high-risk work courses and nationally recognized qualifications through CertHero Registered Training Organisation.
                                 </span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="text-blue-600 font-black text-sm mt-[-2px]">&#9679;</span>
                                 <span>
-                                    <strong className="text-blue-950">Corporate Risk Mitigation:</strong> Your partial contribution is a commitment deposit to ensure candidates complete their sponsored training and prevent corporate wastage.
+                                    <strong className="text-blue-950">Two Examination Attempts Covered:</strong> Corporate training sponsorship covers course materials and up to two examination attempts per ticket course.
+                                </span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-blue-600 font-black text-sm mt-[-2px]">&#9679;</span>
+                                <span>
+                                    <strong className="text-blue-950">Site Deployment Readiness:</strong> Acquired tickets satisfy Australian statutory requirements for your Subclass 482 visa and direct site mobilization.
                                 </span>
                             </li>
                         </ul>
@@ -419,7 +419,7 @@ export default function TicketDetailPage() {
                                 Applicant Responsibility Agreement
                             </p>
                             <p className="text-xs text-slate-600 leading-relaxed">
-                                By applying, you commit that if approved for corporate ticket sponsorship, you will diligently complete all assigned Aveling coursework modules, participate in required assessments, and fulfill your obligations under the recruitment and placement agreement.
+                                By applying, you commit that if approved for corporate ticket sponsorship, you will diligently complete all assigned coursework modules, participate in required assessments, and fulfill your obligations under the recruitment and placement agreement.
                             </p>
                             <label className="flex items-start gap-3 cursor-pointer select-none pt-1">
                                 <input
@@ -430,7 +430,7 @@ export default function TicketDetailPage() {
                                     required
                                 />
                                 <span className="text-xs font-bold text-blue-950 leading-snug">
-                                    I have read and agree to the Refund Policy, and I commit to fulfilling my responsibilities if granted ticket sponsorship.
+                                    I commit to diligently fulfilling all training responsibilities and coursework requirements if granted corporate ticket sponsorship.
                                 </span>
                             </label>
                         </div>

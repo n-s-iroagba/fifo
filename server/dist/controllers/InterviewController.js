@@ -93,10 +93,10 @@ class InterviewController {
      */
     async create(req, res) {
         try {
-            const { applicantId, scheduleCatalogueId, overview, outcome, meetingLink } = req.body;
-            if (!applicantId || !scheduleCatalogueId) {
+            const { applicantId, scheduleCatalogueId, overview, outcome, meetingLink, zoomLink, interviewUrl, interviewDate, interviewTime, timezone = 'AWST (UTC+8)', } = req.body;
+            if (!applicantId) {
                 res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({
-                    error: 'Applicant ID and Schedule Slot ID are required',
+                    error: 'Applicant ID is required',
                 });
                 return;
             }
@@ -106,41 +106,46 @@ class InterviewController {
                 res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: 'Applicant not found' });
                 return;
             }
-            // Check schedule slot existence and availability
-            const schedule = await models_1.ScheduleCatalogue.findByPk(scheduleCatalogueId);
-            if (!schedule) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: 'Schedule slot not found' });
-                return;
+            let slotDate = interviewDate;
+            let slotTime = interviewTime;
+            if (scheduleCatalogueId) {
+                const schedule = await models_1.ScheduleCatalogue.findByPk(scheduleCatalogueId);
+                if (schedule) {
+                    slotDate = schedule.date;
+                    slotTime = schedule.time;
+                    schedule.isBooked = true;
+                    await schedule.save();
+                }
             }
-            if (schedule.isBooked) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({
-                    error: 'This schedule slot is already booked for another interview',
-                });
-                return;
-            }
-            // Check if applicant already has an interview on this slot or pending
-            const existing = await models_1.Interview.findOne({ where: { scheduleCatalogueId } });
-            if (existing) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({
-                    error: 'An interview is already linked to this schedule slot',
-                });
-                return;
-            }
+            const effectiveMeetingLink = (meetingLink || zoomLink || interviewUrl || applicant.interviewLink || '').trim();
+            const effectiveDate = slotDate || applicant.interviewDate || null;
+            const effectiveTime = slotTime || applicant.interviewTime || null;
             const interview = await models_1.Interview.create({
                 applicantId,
-                scheduleCatalogueId,
-                overview: overview || null,
+                scheduleCatalogueId: scheduleCatalogueId ? Number(scheduleCatalogueId) : null,
+                interviewDate: effectiveDate ? String(effectiveDate) : null,
+                interviewTime: effectiveTime ? String(effectiveTime) : null,
+                timezone: String(timezone),
+                interviewUrl: effectiveMeetingLink || null,
+                meetingLink: effectiveMeetingLink || null,
+                overview: overview || (effectiveDate ? `Interview scheduled for ${effectiveDate} at ${effectiveTime} (${timezone})` : null),
                 outcome: outcome || 'Pending',
-                meetingLink: meetingLink || null,
             });
-            schedule.isBooked = true;
-            await schedule.save();
+            if (effectiveDate)
+                applicant.interviewDate = String(effectiveDate);
+            if (effectiveTime)
+                applicant.interviewTime = String(effectiveTime);
+            if (effectiveMeetingLink)
+                applicant.interviewLink = effectiveMeetingLink;
+            await applicant.save();
             // Send in-app notification to applicant
             try {
                 await models_1.Notification.create({
                     userId: applicantId,
                     subject: 'Interview Scheduled',
-                    message: `Your interview has been scheduled for ${schedule.date} at ${schedule.time}.`,
+                    message: effectiveDate
+                        ? `Your interview has been scheduled for ${effectiveDate} at ${effectiveTime} (${timezone}).`
+                        : 'Your interview has been scheduled. Please check your dashboard for details.',
                     type: 'SYSTEM',
                     isRead: false,
                 });
@@ -163,12 +168,12 @@ class InterviewController {
         }
     }
     /**
-     * Admin: Update an interview (overview, outcome, meeting link, or change schedule slot).
+     * Admin: Update an interview (overview, outcome, meeting link, date, time).
      */
     async update(req, res) {
         try {
             const { id } = req.params;
-            const { scheduleCatalogueId, overview, outcome, meetingLink } = req.body;
+            const { scheduleCatalogueId, overview, outcome, meetingLink, interviewUrl, interviewDate, interviewTime, timezone, } = req.body;
             const interview = await models_1.Interview.findByPk(Number(id));
             if (!interview) {
                 res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: 'Interview record not found' });
@@ -177,26 +182,16 @@ class InterviewController {
             // If scheduleCatalogueId is changed
             if (scheduleCatalogueId && scheduleCatalogueId !== interview.scheduleCatalogueId) {
                 const newSchedule = await models_1.ScheduleCatalogue.findByPk(Number(scheduleCatalogueId));
-                if (!newSchedule) {
-                    res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: 'New schedule slot not found' });
-                    return;
+                if (newSchedule && !newSchedule.isBooked) {
+                    const oldSchedule = interview.scheduleCatalogueId ? await models_1.ScheduleCatalogue.findByPk(interview.scheduleCatalogueId) : null;
+                    if (oldSchedule) {
+                        oldSchedule.isBooked = false;
+                        await oldSchedule.save();
+                    }
+                    newSchedule.isBooked = true;
+                    await newSchedule.save();
+                    interview.scheduleCatalogueId = scheduleCatalogueId;
                 }
-                if (newSchedule.isBooked) {
-                    res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({
-                        error: 'The new schedule slot is already booked',
-                    });
-                    return;
-                }
-                // Free old schedule slot
-                const oldSchedule = await models_1.ScheduleCatalogue.findByPk(interview.scheduleCatalogueId);
-                if (oldSchedule) {
-                    oldSchedule.isBooked = false;
-                    await oldSchedule.save();
-                }
-                // Claim new schedule slot
-                newSchedule.isBooked = true;
-                await newSchedule.save();
-                interview.scheduleCatalogueId = scheduleCatalogueId;
             }
             if (overview !== undefined)
                 interview.overview = overview;
@@ -204,7 +199,26 @@ class InterviewController {
                 interview.outcome = outcome;
             if (meetingLink !== undefined)
                 interview.meetingLink = meetingLink;
+            if (interviewUrl !== undefined)
+                interview.interviewUrl = interviewUrl;
+            if (interviewDate !== undefined)
+                interview.interviewDate = interviewDate;
+            if (interviewTime !== undefined)
+                interview.interviewTime = interviewTime;
+            if (timezone !== undefined)
+                interview.timezone = timezone;
             await interview.save();
+            // Sync with User model
+            const applicant = await models_1.User.findByPk(interview.applicantId);
+            if (applicant) {
+                if (interviewDate !== undefined)
+                    applicant.interviewDate = interviewDate;
+                if (interviewTime !== undefined)
+                    applicant.interviewTime = interviewTime;
+                if (meetingLink || interviewUrl)
+                    applicant.interviewLink = (interviewUrl || meetingLink || '').trim();
+                await applicant.save();
+            }
             // Notify applicant of outcome change if applicable
             if (outcome && outcome !== 'Pending') {
                 try {
@@ -244,11 +258,13 @@ class InterviewController {
                 res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: 'Interview record not found' });
                 return;
             }
-            // Free the schedule slot
-            const schedule = await models_1.ScheduleCatalogue.findByPk(interview.scheduleCatalogueId);
-            if (schedule) {
-                schedule.isBooked = false;
-                await schedule.save();
+            // Free the schedule slot if linked
+            if (interview.scheduleCatalogueId) {
+                const schedule = await models_1.ScheduleCatalogue.findByPk(interview.scheduleCatalogueId);
+                if (schedule) {
+                    schedule.isBooked = false;
+                    await schedule.save();
+                }
             }
             await interview.destroy();
             logger_1.logger.info(`Admin deleted interview ID ${id}`);
@@ -271,7 +287,7 @@ class InterviewController {
         try {
             const userId = req.user?.id;
             const user = await models_1.User.findByPk(userId, {
-                attributes: ['id', 'fullName', 'email', 'candidateNumber', 'canPickSchedule'],
+                attributes: ['id', 'fullName', 'email', 'candidateNumber', 'canPickSchedule', 'interviewDate', 'interviewTime', 'interviewLink'],
             });
             if (!user) {
                 res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: 'Applicant record not found' });
@@ -288,10 +304,35 @@ class InterviewController {
                     },
                 ],
             });
+            let responseData = null;
+            if (interview) {
+                const raw = interview.toJSON();
+                responseData = {
+                    ...raw,
+                    interviewDate: interview.interviewDate || user.interviewDate || raw.selectedSchedule?.date || null,
+                    interviewTime: interview.interviewTime || user.interviewTime || raw.selectedSchedule?.time || null,
+                    timezone: interview.timezone || 'AWST (UTC+8)',
+                    interviewUrl: interview.interviewUrl || interview.meetingLink || user.interviewLink || null,
+                    meetingLink: interview.meetingLink || interview.interviewUrl || user.interviewLink || null,
+                };
+            }
+            else if (user.interviewDate) {
+                responseData = {
+                    id: 0,
+                    applicantId: userId,
+                    interviewDate: user.interviewDate,
+                    interviewTime: user.interviewTime,
+                    timezone: 'AWST (UTC+8)',
+                    interviewUrl: user.interviewLink,
+                    meetingLink: user.interviewLink,
+                    overview: `Interview confirmed for ${user.interviewDate} at ${user.interviewTime}.`,
+                    outcome: 'Pending'
+                };
+            }
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({
                 success: true,
                 canPickSchedule: Boolean(user.canPickSchedule),
-                data: interview || null,
+                data: responseData,
             });
         }
         catch (error) {
@@ -580,14 +621,23 @@ class InterviewController {
             // Also create or update Interview record in DB
             let interview = await models_1.Interview.findOne({ where: { applicantId: applicant.id } });
             if (interview) {
+                interview.interviewDate = String(interviewDate);
+                interview.interviewTime = String(interviewTime);
+                interview.timezone = String(timezone);
+                interview.interviewUrl = zoomLink.trim();
                 interview.meetingLink = zoomLink.trim();
                 interview.overview = `Interview scheduled for ${interviewDate} at ${interviewTime} (${timezone}). Zoom: ${zoomLink.trim()}`;
+                interview.outcome = 'Pending';
                 await interview.save();
             }
             else {
                 interview = await models_1.Interview.create({
                     applicantId: applicant.id,
-                    scheduleCatalogueId: 1,
+                    scheduleCatalogueId: null,
+                    interviewDate: String(interviewDate),
+                    interviewTime: String(interviewTime),
+                    timezone: String(timezone),
+                    interviewUrl: zoomLink.trim(),
                     meetingLink: zoomLink.trim(),
                     overview: `Interview scheduled for ${interviewDate} at ${interviewTime} (${timezone}). Zoom: ${zoomLink.trim()}`,
                     outcome: 'Pending'

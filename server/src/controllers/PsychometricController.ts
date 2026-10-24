@@ -5,7 +5,7 @@ import { PsychometricAttempt } from '../models/PsychometricAttempt';
 import { psychometricModule1Questions } from '../data/psychometricModule1Questions';
 import { psychometricModule2Questions } from '../data/psychometricModule2Questions';
 import { Op } from 'sequelize';
-import { sendRtoEmail } from '../utils/email';
+import { sendRtoEmail, sendPsychoMod1PassedEmail } from '../utils/email';
 import { applicationService } from '../services/ApplicationService';
 
 export class PsychometricController {
@@ -181,7 +181,7 @@ export class PsychometricController {
                 user.psychometricModule1Passed = true;
                 await user.save();
                 try {
-                    await sendRtoEmail(user.email, 'Psychometric Module 1 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 1.</p><p>Please log in to your dashboard to proceed to the next module.</p>`);
+                    await sendPsychoMod1PassedEmail(user.email, user.fullName);
                     await applicationService.updateLatestApplicationStageStatus(userId, 'Psychometric Test Module 1 passed');
                 } catch (e) {
                     console.error('[PsychometricController] Error with Module 1 post-processing:', e);

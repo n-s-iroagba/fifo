@@ -94,11 +94,11 @@ function LoginContent() {
                                     <span className="material-symbols-outlined text-4xl">how_to_reg</span>
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-bold text-blue-900 uppercase tracking-tight">Session Detected</h2>
-                                    <p className="text-blue-500 text-[10px] uppercase font-black tracking-widest mt-1">Logged in as {user.fullName}</p>
+                                    <h2 className="text-2xl font-bold text-blue-900 tracking-tight">You're Already Signed In</h2>
+                                    <p className="text-blue-500 text-xs font-semibold mt-1">Signed in as {user.fullName}</p>
                                 </div>
-                                <p className="text-blue-400 text-xs leading-relaxed max-w-[280px] mx-auto uppercase tracking-widest font-bold italic">
-                                    An active protocol is already initialized. Would you like to proceed or switch nodes?
+                                <p className="text-blue-600 text-xs leading-relaxed max-w-[300px] mx-auto font-medium">
+                                    You are currently signed in. You can continue to your dashboard or sign out to use a different account.
                                 </p>
                             </div>
 
@@ -116,9 +116,9 @@ function LoginContent() {
                                 </button>
                                 <button
                                     onClick={() => logout()}
-                                    className="w-full py-4 bg-white border-2 border-red-100 text-red-600 font-bold text-[10px] uppercase tracking-[0.2em] rounded-lg hover:bg-red-50 hover:border-red-200 transition-all active:scale-[0.98]"
+                                    className="w-full py-4 bg-white border-2 border-red-100 text-red-600 font-bold text-xs uppercase tracking-[0.2em] rounded-lg hover:bg-red-50 hover:border-red-200 transition-all active:scale-[0.98]"
                                 >
-                                    Sign Out and Switch
+                                    Sign Out
                                 </button>
                             </div>
                         </div>
@@ -128,17 +128,17 @@ function LoginContent() {
                                 <div className="w-20 h-20 bg-blue-50 text-blue-900 rounded-3xl mx-auto flex items-center justify-center shadow-xl shadow-blue-900/5">
                                     <span className="material-symbols-outlined text-4xl animate-pulse">mail</span>
                                 </div>
-                                <h2 className="text-2xl font-bold text-blue-900 uppercase tracking-tight">Verify Your Identity</h2>
-                                <p className="text-blue-500 text-xs leading-relaxed max-w-[280px] mx-auto uppercase tracking-widest font-bold italic">
-                                    A fresh verification protocol has been dispatched to your inbox. Please secure your account before proceeding.
+                                <h2 className="text-2xl font-bold text-blue-900 tracking-tight">Please Verify Your Email</h2>
+                                <p className="text-blue-600 text-xs leading-relaxed max-w-[300px] mx-auto font-medium">
+                                    We sent a verification link to your email address. Please click the link in your email to activate your account before signing in.
                                 </p>
                             </div>
 
                             <button
                                 onClick={() => setIsUnverified(false)}
-                                className="w-full py-4 bg-white border-2 border-blue-900 text-blue-900 font-bold text-[10px] uppercase tracking-[0.2em] rounded-lg hover:bg-blue-50 transition-all active:scale-[0.98]"
+                                className="w-full py-4 bg-white border-2 border-blue-900 text-blue-900 font-bold text-xs uppercase tracking-[0.2em] rounded-lg hover:bg-blue-50 transition-all active:scale-[0.98]"
                             >
-                                Back to Login
+                                Back to Sign In
                             </button>
                         </div>
                     ) : (

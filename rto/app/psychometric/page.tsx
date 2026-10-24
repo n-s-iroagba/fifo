@@ -58,8 +58,7 @@ function PsychometricTestContent() {
         if (urlToken) localStorage.setItem('accessToken', urlToken);
 
         if (!activeToken) {
-            setErrorMsg('Authentication token missing. Please sign up or log in via the recruitment portal first.');
-            setLoading(false);
+            router.push('/login?redirect=/psychometric');
             return;
         }
 
@@ -533,7 +532,7 @@ function PsychometricTestContent() {
                                         </li>
                                         <li className="flex items-start gap-2">
                                             <span className="text-[#ED9139] font-bold">&#9679;</span>
-                                            <span><strong>Section 2:</strong> 9-step recruitment workflow, 48-hour communication rule, online vs practical modules, 2-attempt policy, and 100% refund policy.</span>
+                                            <span><strong>Section 2:</strong> 9-step recruitment workflow, 48-hour communication rule, online vs practical modules, 2-attempt policy, and employer interview preparation.</span>
                                         </li>
                                     </ul>
                                 </div>
@@ -580,7 +579,7 @@ function PsychometricTestContent() {
                                         <strong>HIRING_PROCESS_INFORMATION.pdf</strong> has been downloaded to your device.
                                     </p>
                                     <p className="text-zinc-600">
-                                        Please take time to thoroughly read <strong>Section 1</strong> and <strong>Section 2</strong> (including the 100% refund policy upon ticket acquisition). All questions in Module 2 directly test these sections.
+                                        Please take time to thoroughly read <strong>Section 1</strong> and <strong>Section 2</strong>. All questions in Module 2 directly test these sections.
                                     </p>
                                 </div>
 

@@ -1,16 +1,25 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Bell, ShieldCheck } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
 
 export default function NotificationsPage() {
+    const router = useRouter();
     const [notifications, setNotifications] = React.useState<any[]>([]);
     const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
+        const token = typeof window !== 'undefined' ? (localStorage.getItem('lms_token') || localStorage.getItem('accessToken')) : null;
+        const user = typeof window !== 'undefined' ? localStorage.getItem('lms_user') : null;
+        if (!token && !user) {
+            router.push('/login?redirect=/notifications');
+            return;
+        }
+
         setTimeout(() => { setNotifications([]); setLoading(false); }, 400);
-    }, []);
+    }, [router]);
 
     return (
         <PageShell>

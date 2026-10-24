@@ -83,8 +83,8 @@ function RegisterContent() {
                                 <div className="w-20 h-20 bg-blue-50 text-blue-900 rounded-3xl mx-auto flex items-center justify-center shadow-xl shadow-blue-900/5">
                                     <span className="material-symbols-outlined text-4xl animate-pulse">mail</span>
                                 </div>
-                                <h2 className="text-2xl font-bold text-blue-900 uppercase tracking-tight">Verify Your Identity</h2>
-                                <p className="text-blue-500 text-xs leading-relaxed max-w-[280px] mx-auto uppercase tracking-widest font-bold italic">
+                                <h2 className="text-2xl font-bold text-blue-900 tracking-tight">Verify Your Email Address</h2>
+                                <p className="text-blue-600 text-xs leading-relaxed max-w-[300px] mx-auto font-medium">
                                     {successMessage}
                                 </p>
                             </div>
@@ -92,18 +92,18 @@ function RegisterContent() {
                             <div className="mt-4 p-5 bg-blue-50/80 border border-blue-100 rounded-xl text-left flex items-start gap-3 shadow-inner">
                                 <span className="material-symbols-outlined text-blue-400 text-xl mt-0.5 animate-pulse">mark_email_unread</span>
                                 <div>
-                                    <p className="text-blue-900 text-[10px] font-black uppercase tracking-widest mb-1.5">Check Spam Folder</p>
-                                    <p className="text-blue-500/90 text-[9px] font-bold uppercase tracking-widest leading-relaxed">
-                                        Please check your spam or junk folder for the verification link. We highly advise that you always check your spam folder for all future communications and mark our emails as "Not Spam".
+                                    <p className="text-blue-900 text-xs font-bold mb-1">Can't find the email?</p>
+                                    <p className="text-blue-600 text-xs leading-relaxed font-normal">
+                                        Please check your spam or junk folder if the email doesn't appear in your inbox within a few minutes. Mark our emails as &quot;Not Spam&quot; so you don't miss updates on your applications.
                                     </p>
                                 </div>
                             </div>
 
                             <Link
                                 href="/login"
-                                className="block text-center w-full py-4 bg-white border-2 border-blue-900 text-blue-900 font-bold text-[10px] uppercase tracking-[0.2em] rounded-lg hover:bg-blue-50 transition-all active:scale-[0.98]"
+                                className="block text-center w-full py-4 bg-white border-2 border-blue-900 text-blue-900 font-bold text-xs uppercase tracking-[0.2em] rounded-lg hover:bg-blue-50 transition-all active:scale-[0.98]"
                             >
-                                Proceed to Login
+                                Go to Sign In
                             </Link>
                         </div>
                     ) : (

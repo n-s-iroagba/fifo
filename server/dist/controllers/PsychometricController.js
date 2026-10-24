@@ -161,7 +161,7 @@ class PsychometricController {
                 user.psychometricModule1Passed = true;
                 await user.save();
                 try {
-                    await (0, email_1.sendRtoEmail)(user.email, 'Psychometric Module 1 Completed Successfully', `<p>Dear ${user.fullName},</p><p>Congratulations! You have successfully passed Psychometric Module 1.</p><p>Please log in to your dashboard to proceed to the next module.</p>`);
+                    await (0, email_1.sendPsychoMod1PassedEmail)(user.email, user.fullName);
                     await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(userId, 'Psychometric Test Module 1 passed');
                 }
                 catch (e) {

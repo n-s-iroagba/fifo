@@ -1,5 +1,5 @@
 import { Transaction } from 'sequelize';
-import { Application, JobListing, JobStage, User, Ticket } from '../models';
+import { Application, JobListing, JobStage, User, Ticket, TicketCatalog } from '../models';
 
 export interface FindApplicationOptions {
     limit?: number;
@@ -125,9 +125,16 @@ export class ApplicationRepository {
     public async findById(id: number, transaction?: Transaction): Promise<Application | null> {
         const app = await Application.findByPk(id, {
             include: [
-                JobListing,
+                {
+                    model: JobListing,
+                    include: [{ model: TicketCatalog, as: 'RequiredTickets' }]
+                },
                 User,
-                { model: Ticket, as: 'Tickets' },
+                {
+                    model: Ticket,
+                    as: 'Tickets',
+                    include: [{ model: TicketCatalog, as: 'TicketCatalog' }]
+                },
                 {
                     model: JobStage,
                     as: 'JobStages'

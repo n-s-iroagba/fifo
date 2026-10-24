@@ -47,6 +47,13 @@ function ExamPortalContent() {
     const isRestoring = React.useRef(true);
 
     React.useEffect(() => {
+        const token = localStorage.getItem('lms_token');
+        const user = localStorage.getItem('lms_user');
+        if (!token && !user) {
+            router.push(`/login?redirect=/courses/${id}/exam`);
+            return;
+        }
+
         const savedStateStr = localStorage.getItem(`course_exam_state_${id}`);
         if (savedStateStr) {
             try {

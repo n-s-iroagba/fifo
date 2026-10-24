@@ -130,7 +130,7 @@ EDITS
 3. If the answer to the question asked by the modal above is no applicants are made to download the file immediately.  
 4. Rewrite the psychometric module 2 questions to be based of the \`HIRING\_PROCESS\_INFORMATION.pdf\` document with concentration  
 * SECTION 1  
-* SECTION 2 (refund policy questions must be included).  
+* SECTION 2 (refund policy questions should not be included).  
 8. Application accepted should be manual with mandatory email sent alongside by admin.  
 1. Change application acceptance from crown to manual via admin dashboard.  
 2. For an admin to accept an application, the admin must also draft the mail to be sent to the applicant for notification.  

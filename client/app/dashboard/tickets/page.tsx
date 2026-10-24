@@ -217,8 +217,8 @@ export default function UserTicketsPage() {
             {tickets.length === 0 ? (
                 <div className="bg-white p-16 rounded-3xl border-2 border-dashed border-blue-200 text-center">
                     <span className="material-symbols-outlined text-5xl text-blue-200 mb-4 block">confirmation_number</span>
-                    <h3 className="text-lg font-bold text-blue-900 mb-2">No Ticket Requirements Yet</h3>
-                    <p className="text-blue-400 text-[11px]">Your recruiter will assign ticket requirements to your application. Check back soon.</p>
+                    <h3 className="text-lg font-bold text-blue-900 mb-2">Ticket Requirements</h3>
+                    <p className="text-blue-400 text-[11px]">Your required role certifications are synchronized from your job application profile. Check your application details to view or update your ticket items.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -466,7 +466,7 @@ export default function UserTicketsPage() {
                                         required
                                     />
                                     <span className="text-xs font-bold text-blue-950 leading-snug">
-                                        I have read and agree to the Refund Policy, and I commit to fulfilling my responsibilities if granted ticket sponsorship.
+                                        I commit to diligently fulfilling all training responsibilities and coursework requirements if granted corporate ticket sponsorship.
                                     </span>
                                 </label>
                             </div>

@@ -18,6 +18,13 @@ export default function CoursePlayerPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        const token = localStorage.getItem('lms_token');
+        const user = localStorage.getItem('lms_user');
+        if (!token && !user) {
+            router.push(`/login?redirect=/courses/${id}`);
+            return;
+        }
+
         const fetchCourse = async () => {
             try {
                 const res = await apiClient.get(`/courses/${id}`);

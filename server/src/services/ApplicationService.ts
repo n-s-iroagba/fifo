@@ -117,9 +117,119 @@ export class ApplicationService {
     }
 
     // Maps to STK-APP-APPLY-002, SCR-APP-JOBAPPLY-001
+    public async copyTicketsFromJobToApplication(applicationId: number, userId: number, jobId: number, ticketsData: any[] = [], transaction?: any) {
+        const { Ticket, Course, TicketCatalog, JobListing } = require('../models');
+        const { Op } = require('sequelize');
+
+        // Check if application already has tickets
+        const existingCount = await Ticket.count({
+            where: { applicationId },
+            transaction
+        });
+        if (existingCount > 0) return;
+
+        const job = await JobListing.findByPk(jobId, {
+            include: [{ model: TicketCatalog, as: 'RequiredTickets' }],
+            transaction
+        });
+        if (!job) return;
+
+        const possessedNames = new Set(
+            (ticketsData || []).map((td: any) => (td.ticketType || '').toLowerCase().trim())
+        );
+
+        let catalogTickets: any[] = job.RequiredTickets && Array.isArray(job.RequiredTickets) && job.RequiredTickets.length > 0
+            ? job.RequiredTickets
+            : [];
+
+        if (catalogTickets.length === 0 && Array.isArray(job.ticketIds) && job.ticketIds.length > 0) {
+            catalogTickets = await TicketCatalog.findAll({
+                where: { id: { [Op.in]: job.ticketIds } },
+                transaction
+            });
+        }
+
+        // If still empty, fall back to standard mining entry certifications (White Card: 21, First Aid: 3, Working at Heights: 34)
+        if (catalogTickets.length === 0) {
+            catalogTickets = await TicketCatalog.findAll({
+                where: { id: { [Op.in]: [21, 3, 34] } },
+                transaction
+            });
+        }
+
+        // Ensure job <-> TicketCatalog relationship is populated on junction table
+        if (catalogTickets.length > 0) {
+            try {
+                await (job as any).setRequiredTickets(catalogTickets.map((c: any) => c.id), { transaction });
+            } catch (err) {
+                // Ignore junction sync error if already exists
+            }
+        }
+
+        // Also include any user-declared possessed tickets not already in catalogTickets
+        const extraPossessedTickets = (ticketsData || []).filter((td: any) => {
+            const name = (td.ticketType || '').toLowerCase().trim();
+            return !catalogTickets.some((c: any) => (c.name || '').toLowerCase().trim() === name);
+        });
+
+        for (const cat of catalogTickets) {
+            const catNameLower = (cat.name || '').toLowerCase();
+            const matchingCourse = await Course.findOne({
+                where: {
+                    [Op.or]: [
+                        { title: { [Op.like]: `%${cat.name}%` } },
+                        ...(catNameLower.split(' ')
+                            .filter((w: string) => w.length > 4)
+                            .slice(0, 2)
+                            .map((w: string) => ({ title: { [Op.like]: `%${w}%` } })))
+                    ]
+                },
+                transaction
+            });
+
+            const isAlreadyPossessed = possessedNames.has(cat.name.toLowerCase().trim());
+            const normalPrice = cat.normalPrice || 0;
+
+            await Ticket.create({
+                userId,
+                applicationId,
+                ticketCatalogId: cat.id || null,
+                ticketType: cat.name,
+                description: cat.description,
+                realPrice: normalPrice,
+                purchasePrice: normalPrice,
+                status: isAlreadyPossessed ? 'possessed' : 'not_possessed',
+                ticketSponsorship: 'no_application',
+                refundStatus: 'none',
+                canApplySponsorship: !isAlreadyPossessed,
+                courseId: matchingCourse ? matchingCourse.id : null
+            }, { transaction });
+        }
+
+        for (const td of extraPossessedTickets) {
+            await Ticket.create({
+                ...td,
+                userId,
+                applicationId,
+                status: 'possessed',
+                ticketSponsorship: 'no_application',
+                refundStatus: 'none',
+                canApplySponsorship: false
+            }, { transaction });
+        }
+    }
+
+    // Maps to STK-APP-APPLY-002, SCR-APP-JOBAPPLY-001
     public async getApplicationDetails(id: number) {
-        const app = await applicationRepository.findById(id);
+        let app = await applicationRepository.findById(id);
         if (!app) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
+
+        // Ensure tickets exist for this application! If not, populate immediately from catalogue
+        if ((!(app as any).Tickets || (app as any).Tickets.length === 0) && app.jobId) {
+            await this.copyTicketsFromJobToApplication(app.id, app.userId, app.jobId);
+            app = await applicationRepository.findById(id);
+        }
+
         return app;
     }
 
@@ -149,6 +259,9 @@ export class ApplicationService {
                 status: CONSTANTS.APPLICATION_STATUSES.DRAFT,
                 currentStageId: null
             }, t);
+
+            // Copy tickets from catalogue on draft creation
+            await this.copyTicketsFromJobToApplication(newApp.id, userId, jobId, [], t);
 
             await t.commit();
             return applicationRepository.findById(newApp.id);
@@ -195,88 +308,8 @@ export class ApplicationService {
                 currentStageId: initialStage.id
             }, t);
 
-            // ── Ticket Copying (Spec Step 2) ──────────────────────────────────
-            // All RequiredTickets from the job are copied as applicant ticket gaps.
-            // If the user declared they already possess some tickets in ticketsData,
-            // those are marked 'possessed'; the rest default to 'not_possessed'.
-            const { Ticket, Course, TicketCatalog } = require('../models');
-            const { Op } = require('sequelize');
-
-            // Build a Set of possessed ticket names declared by the applicant
-            const possessedNames = new Set(
-                (ticketsData || []).map((td: any) => (td.ticketType || '').toLowerCase().trim())
-            );
-
-            // Collect source: RequiredTickets from the job listing (canonical gaps)
-            let catalogTickets: any[] = (job as any).RequiredTickets && Array.isArray((job as any).RequiredTickets)
-                ? (job as any).RequiredTickets
-                : [];
-
-            // If the M:M relationship is empty, fallback to fetching from the ticketIds JSON array
-            if (catalogTickets.length === 0 && Array.isArray(job.ticketIds) && job.ticketIds.length > 0) {
-                catalogTickets = await TicketCatalog.findAll({
-                    where: { id: { [Op.in]: job.ticketIds } },
-                    transaction: t
-                });
-            }
-
-            // Also include any user-declared possessed tickets not already in the job catalog
-            const extraPossessedTickets = (ticketsData || []).filter((td: any) => {
-                const name = (td.ticketType || '').toLowerCase().trim();
-                return !catalogTickets.some((c: any) => c.name.toLowerCase() === name);
-            });
-
-            // Create ticket rows
-            for (const cat of catalogTickets) {
-                // Match linked course by catalog name
-                const catNameLower = (cat.name || '').toLowerCase();
-                const matchingCourse = await Course.findOne({
-                    where: {
-                        [Op.or]: [
-                            { title: { [Op.like]: `%${cat.name}%` } },
-                            // match on first significant word in cat name
-                            ...(catNameLower.split(' ')
-                                .filter((w: string) => w.length > 4)
-                                .slice(0, 2)
-                                .map((w: string) => ({ title: { [Op.like]: `%${w}%` } })))
-                        ]
-                    },
-                    transaction: t
-                });
-
-                const isAlreadyPossessed = possessedNames.has(cat.name.toLowerCase().trim());
-
-                const { User } = require('../models');
-                const applicant = await User.findByPk(userId, { transaction: t });
-                const normalPrice = cat.normalPrice || 0;
-
-                await Ticket.create({
-                    userId,
-                    applicationId: newApp.id,
-                    ticketType: cat.name,
-                    catalogId: cat.id || null,
-                    status: isAlreadyPossessed ? 'possessed' : 'not_possessed',
-                    ticketSponsorship: 'no_application',
-                    refundStatus: 'none',
-                    description: cat.description,
-                    realPrice: normalPrice,
-                    purchasePrice: normalPrice,
-                    canApplySponsorship: !isAlreadyPossessed,
-                    courseId: matchingCourse ? matchingCourse.id : null
-                }, { transaction: t });
-            }
-
-            // Any extra possessed tickets declared by user that aren't in the job catalog
-            for (const td of extraPossessedTickets) {
-                await Ticket.create({
-                    ...td,
-                    userId,
-                    applicationId: newApp.id,
-                    status: 'possessed',
-                    ticketSponsorship: 'no_application',
-                    refundStatus: 'none'
-                }, { transaction: t });
-            }
+            // ── Ticket Copying (Spec Step 2 / CHANGES.md 5.2.46) ─────────────
+            await this.copyTicketsFromJobToApplication(newApp.id, userId, jobId, ticketsData, t);
 
             // Immediate feedback on application start
             await notificationRepository.create({

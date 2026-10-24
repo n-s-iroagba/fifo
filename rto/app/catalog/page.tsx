@@ -31,6 +31,15 @@ export default function CourseCatalogPage() {
             .finally(() => setLoading(false));
     }, []);
 
+    const handleCourseAction = (courseId?: string) => {
+        const user = typeof window !== 'undefined' ? (localStorage.getItem('lms_user') || localStorage.getItem('lms_token')) : null;
+        if (!user) {
+            router.push('/login?redirect=/catalog');
+            return;
+        }
+        router.push(courseId ? `/courses/${courseId}` : '/dashboard');
+    };
+
     const recommended = courses.filter(c => c.isGapRecommended);
     const others = courses.filter(c => !c.isGapRecommended);
 
@@ -115,10 +124,10 @@ export default function CourseCatalogPage() {
                                                     </div>
                                                 </div>
                                                 <button
-                                                    onClick={() => router.push('/dashboard')}
+                                                    onClick={() => handleCourseAction(course.id)}
                                                     className="inline-flex items-center gap-1.5 bg-[#ED9139] hover:bg-[#dd7f26] text-[#0f172a] px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm"
                                                 >
-                                                    Go to Dashboard <ArrowRight className="h-3.5 w-3.5" />
+                                                    Enrol Now <ArrowRight className="h-3.5 w-3.5" />
                                                 </button>
                                             </div>
                                         </div>
@@ -158,7 +167,7 @@ export default function CourseCatalogPage() {
                                     <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
                                         <span className="text-lg font-extrabold text-slate-900">${course.price} AUD</span>
                                         <button
-                                            onClick={() => router.push('/dashboard')}
+                                            onClick={() => handleCourseAction(course.id)}
                                             className="inline-flex items-center gap-1.5 border border-slate-300 bg-slate-50 hover:bg-slate-100 px-4 py-2 rounded-xl text-xs font-bold text-slate-800 transition-all uppercase tracking-wider"
                                         >
                                             View Details
