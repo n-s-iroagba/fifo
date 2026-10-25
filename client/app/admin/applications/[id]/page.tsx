@@ -735,37 +735,49 @@ export default function ApplicationDetailPage() {
         }
     };
 
-    const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
-    const [acceptSubject, setAcceptSubject] = useState('');
-    const [acceptMessage, setAcceptMessage] = useState('');
-    const [advanceStage, setAdvanceStage] = useState(true);
-    const [isSubmittingAccept, setIsSubmittingAccept] = useState(false);
+    // Feature Group 21: Forced Stage Update & Cron Trigger for single applicant
+    const [isForceStageModalOpen, setIsForceStageModalOpen] = useState(false);
+    const [forceStageName, setForceStageName] = useState('Employer Selection');
+    const [forceStageStatus, setForceStageStatus] = useState('ongoing');
+    const [isSubmittingForceStage, setIsSubmittingForceStage] = useState(false);
 
-    const openAcceptModal = () => {
-        setAcceptSubject('Formal Acceptance & Progression: Your Application with Blue Collar Recruitment');
-        setAcceptMessage(
-            `Dear ${application?.User?.fullName || 'Candidate'},\n\nWe are pleased to inform you that your application for the ${application?.JobListing?.title || 'advertised position'} has been officially accepted by our recruitment team following initial review and screening.\n\nYou have now progressed to the Employer Selection stage. Please log in to your dashboard to review participating mining employer opportunities and proceed with your onboarding requirements.\n\nBest regards,\nBlue Collar Recruitment Operations Team`
-        );
-        setAdvanceStage(true);
-        setIsAcceptModalOpen(true);
-    };
+    const [isTriggerCronModalOpen, setIsTriggerCronModalOpen] = useState(false);
+    const [selectedCronName, setSelectedCronName] = useState('all');
+    const [isSubmittingTriggerCron, setIsSubmittingTriggerCron] = useState(false);
 
-    const handleConfirmAccept = async (e: React.FormEvent) => {
+    const handleConfirmForceStage = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmittingAccept(true);
+        setIsSubmittingForceStage(true);
         try {
-            const { data } = await api.post(`/admin/applications/${id}/accept`, {
-                subject: acceptSubject,
-                message: acceptMessage,
-                advanceStage
+            const { data } = await api.post(`/admin/applications/${id}/force-stage`, {
+                stageName: forceStageName,
+                stageStatus: forceStageStatus
             });
-            alert(data.message || 'Application accepted and notification sent.');
-            setIsAcceptModalOpen(false);
+            alert(data.message || 'Stage updated successfully with all notifications.');
+            setIsForceStageModalOpen(false);
             refetch();
         } catch (err: any) {
-            alert(err.response?.data?.message || err.response?.data?.error || 'Failed to accept application.');
+            alert(err.response?.data?.message || err.response?.data?.error || 'Failed to force stage update.');
         } finally {
-            setIsSubmittingAccept(false);
+            setIsSubmittingForceStage(false);
+        }
+    };
+
+    const handleConfirmTriggerCron = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmittingTriggerCron(true);
+        try {
+            const { data } = await api.post('/admin/crons/trigger', {
+                applicantId: user?.id,
+                cronName: selectedCronName
+            });
+            alert(data.message || 'Cron triggered successfully.');
+            setIsTriggerCronModalOpen(false);
+            refetch();
+        } catch (err: any) {
+            alert(err.response?.data?.message || err.response?.data?.error || 'Failed to trigger cron.');
+        } finally {
+            setIsSubmittingTriggerCron(false);
         }
     };
 
@@ -812,12 +824,21 @@ export default function ApplicationDetailPage() {
                     </span>
                     <button
                         type="button"
-                        onClick={openAcceptModal}
-                        className="bg-emerald-600 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg shadow-emerald-600/20 active:scale-95"
-                        title="Manually accept application and dispatch corporate acceptance notification"
+                        onClick={() => setIsForceStageModalOpen(true)}
+                        className="bg-blue-900 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-800 transition-all flex items-center gap-2 shadow-lg shadow-blue-900/10 active:scale-95"
+                        title="Force stage update with automated notifications and idempotent state transitions"
                     >
-                        <span className="material-symbols-outlined text-sm font-bold">verified</span>
-                        Accept Application
+                        <span className="material-symbols-outlined text-sm font-bold">published_with_changes</span>
+                        Force Stage
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setIsTriggerCronModalOpen(true)}
+                        className="bg-indigo-600 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-lg shadow-indigo-600/20 active:scale-95"
+                        title="Force cron job execution for this applicant immediately"
+                    >
+                        <span className="material-symbols-outlined text-sm font-bold">bolt</span>
+                        Force Cron
                     </button>
                     <Link
                         href={`/admin/nominations?applicantId=${user?.id || ''}`}
@@ -1203,91 +1224,161 @@ export default function ApplicationDetailPage() {
                 </div>
             )}
 
-            {/* Manual Application Acceptance Modal */}
-            {isAcceptModalOpen && (
+            {/* Feature Group 21: Forced Stage Update Modal */}
+            {isForceStageModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-blue-950/60 backdrop-blur-sm animate-in fade-in duration-150">
-                    <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full border border-emerald-200 shadow-2xl">
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-blue-200 shadow-2xl">
                         <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
                             <div>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 block">
-                                    Manual Progression
+                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 block">
+                                    Feature Group 21 Control
                                 </span>
                                 <h3 className="text-lg font-black text-blue-900">
-                                    Accept Application & Dispatch Notification
+                                    Force Stage Update
                                 </h3>
                             </div>
                             <button
                                 type="button"
-                                onClick={() => setIsAcceptModalOpen(false)}
+                                onClick={() => setIsForceStageModalOpen(false)}
                                 className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold"
                             >
                                 ✕
                             </button>
                         </div>
 
-                        <form onSubmit={handleConfirmAccept} className="space-y-4">
-                            <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-900">
+                        <form onSubmit={handleConfirmForceStage} className="space-y-4">
+                            <div className="p-3 bg-blue-50 rounded-xl border border-blue-100 text-xs text-blue-900">
                                 <span className="font-bold">Applicant:</span> {user?.fullName} ({user?.email})
-                                <p className="text-[11px] text-emerald-700 mt-1">
-                                    Accepting this application will officially advance the candidate's stage to Employer Selection and dispatch the drafted notification email below.
+                                <p className="text-[11px] text-blue-700 mt-1">
+                                    Forcing a stage update enforces idempotency (avoiding duplicate stage records) and executes standard application notifications and side-effects.
                                 </p>
                             </div>
 
                             <div>
                                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                                    Email Subject <span className="text-red-500">*</span>
+                                    Target Stage Name <span className="text-red-500">*</span>
                                 </label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={acceptSubject}
-                                    onChange={(e) => setAcceptSubject(e.target.value)}
-                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900 font-medium"
-                                />
+                                <select
+                                    value={forceStageName}
+                                    onChange={(e) => setForceStageName(e.target.value)}
+                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900 font-bold"
+                                >
+                                    <option value="Application">Application</option>
+                                    <option value="Employer Selection">Employer Selection</option>
+                                    <option value="Interview Scheduling">Interview Scheduling</option>
+                                    <option value="Ticket Sponsorship">Ticket Sponsorship</option>
+                                    <option value="Training">Training</option>
+                                    <option value="Handoff">Handoff</option>
+                                </select>
                             </div>
 
                             <div>
                                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                                    Email Message (Clean corporate tone) <span className="text-red-500">*</span>
+                                    Stage Status <span className="text-red-500">*</span>
                                 </label>
-                                <textarea
-                                    rows={8}
-                                    required
-                                    value={acceptMessage}
-                                    onChange={(e) => setAcceptMessage(e.target.value)}
-                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900 leading-relaxed font-sans"
-                                />
-                            </div>
-
-                            <div className="pt-2">
-                                <label className="flex items-center gap-3 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={advanceStage}
-                                        onChange={(e) => setAdvanceStage(e.target.checked)}
-                                        className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
-                                    />
-                                    <span className="text-xs font-medium text-slate-700">
-                                        Advance candidate's current stage to Employer Selection
-                                    </span>
-                                </label>
+                                <select
+                                    value={forceStageStatus}
+                                    onChange={(e) => setForceStageStatus(e.target.value)}
+                                    className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-blue-900 font-medium"
+                                >
+                                    <option value="ongoing">ongoing</option>
+                                    <option value="completed">completed</option>
+                                    <option value="under-review">under-review</option>
+                                    <option value="invited">invited</option>
+                                    <option value="applied">applied</option>
+                                    <option value="approved">approved</option>
+                                    <option value="contract">contract</option>
+                                    <option value="enrollment">enrollment</option>
+                                </select>
                             </div>
 
                             <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
                                 <button
                                     type="button"
-                                    onClick={() => setIsAcceptModalOpen(false)}
+                                    onClick={() => setIsForceStageModalOpen(false)}
                                     className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-bold"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={isSubmittingAccept}
-                                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-wider disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-emerald-600/20"
+                                    disabled={isSubmittingForceStage}
+                                    className="px-5 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white text-xs font-black uppercase tracking-wider disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-blue-900/20"
                                 >
-                                    <span className="material-symbols-outlined text-sm">verified</span>
-                                    {isSubmittingAccept ? 'Processing...' : 'Confirm & Dispatch Acceptance'}
+                                    <span className="material-symbols-outlined text-sm">published_with_changes</span>
+                                    {isSubmittingForceStage ? 'Executing...' : 'Force Update Stage'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Feature Group 21: Force Cron Execution for Single Applicant Modal */}
+            {isTriggerCronModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-blue-950/60 backdrop-blur-sm animate-in fade-in duration-150">
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-indigo-200 shadow-2xl">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
+                            <div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 block">
+                                    Feature Group 21 Control
+                                </span>
+                                <h3 className="text-lg font-black text-blue-900">
+                                    Force Cron Job Execution
+                                </h3>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsTriggerCronModalOpen(false)}
+                                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleConfirmTriggerCron} className="space-y-4">
+                            <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100 text-xs text-indigo-900">
+                                <span className="font-bold">Applicant:</span> {user?.fullName} ({user?.email})
+                                <p className="text-[11px] text-indigo-700 mt-1">
+                                    Trigger background cron routines immediately for this candidate without waiting for the scheduled time intervals.
+                                </p>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">
+                                    Cron Routine <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={selectedCronName}
+                                    onChange={(e) => setSelectedCronName(e.target.value)}
+                                    className="w-full bg-slate-50 border border-indigo-200 rounded-xl p-3 text-xs text-blue-900 focus:outline-none focus:border-indigo-900 font-bold"
+                                >
+                                    <option value="all">All Applicable Crons</option>
+                                    <option value="application">Application 12-Hour Automated Acceptance</option>
+                                    <option value="nomination">Employer Selection Invite (24hr) & Acceptance (5hr)</option>
+                                    <option value="sponsorship">Ticket Sponsorship Invite (3hr) & Approval (6hr)</option>
+                                    <option value="contract">Sponsorship Contract Delivery & ID Generation (2hr)</option>
+                                    <option value="rto-welcome">CertHero Enrollment Credentials & Letter (6hr)</option>
+                                    <option value="rto-delivery">Competency Ticket Issuance (3hr) & Handoff (6hr)</option>
+                                    <option value="psychometric">Psychometric Module Verification</option>
+                                </select>
+                            </div>
+
+                            <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsTriggerCronModalOpen(false)}
+                                    className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-bold"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmittingTriggerCron}
+                                    className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-indigo-600/20"
+                                >
+                                    <span className="material-symbols-outlined text-sm">bolt</span>
+                                    {isSubmittingTriggerCron ? 'Triggering...' : 'Execute Cron Now'}
                                 </button>
                             </div>
                         </form>

@@ -477,53 +477,97 @@ export class AdminController {
     }
     public async triggerCron(req: Request, res: Response): Promise<void> {
         try {
-            const { applicantId, cronName } = req.body;
-            if (!applicantId || !cronName) {
-                res.status(400).json({ success: false, message: 'Applicant ID and Cron Name are required' });
-                return;
+            const { applicantId, cronName = 'all', stage, status } = req.body;
+
+            const runCronByName = async (name: string, targetApplicantId?: number): Promise<number> => {
+                switch (name.toLowerCase()) {
+                    case 'application': {
+                        const { runApplicationApprovalCron } = require('../cron/applicationCron');
+                        return await runApplicationApprovalCron(targetApplicantId);
+                    }
+                    case 'nomination':
+                    case 'employer-selection': {
+                        const { runNominationFollowupCron } = require('../cron/nominationCron');
+                        return await runNominationFollowupCron(targetApplicantId);
+                    }
+                    case 'sponsorship': {
+                        const { runSponsorshipApprovalCron } = require('../cron/sponsorshipCron');
+                        return await runSponsorshipApprovalCron(targetApplicantId);
+                    }
+                    case 'contract': {
+                        const { runContractApprovalCron } = require('../cron/contractCron');
+                        return await runContractApprovalCron(targetApplicantId);
+                    }
+                    case 'rto-welcome':
+                    case 'aveling-welcome': {
+                        const { runRtoWelcomeCron } = require('../cron/rtoCron');
+                        return await runRtoWelcomeCron(targetApplicantId);
+                    }
+                    case 'rto-delivery':
+                    case 'aveling-delivery': {
+                        const { runRtoTicketDeliveryCron } = require('../cron/rtoCron');
+                        return await runRtoTicketDeliveryCron(targetApplicantId);
+                    }
+                    case 'psychometric': {
+                        const { runPsychometricApprovalCron } = require('../cron/psychometricCron');
+                        return await runPsychometricApprovalCron(targetApplicantId);
+                    }
+                    default:
+                        return 0;
+                }
+            };
+
+            const parsedId = applicantId ? parseInt(applicantId, 10) : undefined;
+            let affected = 0;
+
+            if (cronName === 'all') {
+                const crons = ['application', 'nomination', 'sponsorship', 'contract', 'rto-welcome', 'rto-delivery', 'psychometric'];
+                for (const c of crons) {
+                    affected += await runCronByName(c, parsedId);
+                }
+            } else {
+                affected = await runCronByName(cronName, parsedId);
             }
 
-            let result = 0;
-            switch (cronName) {
-                case 'application':
-                    const { runApplicationApprovalCron } = require('../cron/applicationCron');
-                    result = await runApplicationApprovalCron(parseInt(applicantId));
-                    break;
-                case 'nomination':
-                    const { runNominationFollowupCron } = require('../cron/nominationCron');
-                    result = await runNominationFollowupCron(parseInt(applicantId));
-                    break;
-                case 'sponsorship':
-                    const { runSponsorshipApprovalCron } = require('../cron/sponsorshipCron');
-                    result = await runSponsorshipApprovalCron(parseInt(applicantId));
-                    break;
-                case 'contract':
-                    const { runContractApprovalCron } = require('../cron/contractCron');
-                    result = await runContractApprovalCron(parseInt(applicantId));
-                    break;
-                case 'rto-welcome':
-                case 'aveling-welcome':
-                    const { runRtoWelcomeCron } = require('../cron/rtoCron');
-                    result = await runRtoWelcomeCron(parseInt(applicantId));
-                    break;
-                case 'rto-delivery':
-                case 'aveling-delivery':
-                    const { runRtoTicketDeliveryCron } = require('../cron/rtoCron');
-                    result = await runRtoTicketDeliveryCron(parseInt(applicantId));
-                    break;
-                case 'psychometric':
-                    const { runPsychometricApprovalCron } = require('../cron/psychometricCron');
-                    result = await runPsychometricApprovalCron(parseInt(applicantId));
-                    break;
-                default:
-                    res.status(400).json({ success: false, message: 'Invalid cron name' });
-                    return;
-            }
-
-            res.status(200).json({ success: true, message: `Cron triggered successfully. Processes affected: ${result}` });
+            res.status(200).json({ 
+                success: true, 
+                message: `Cron execution finished. Total affected records: ${affected}`,
+                cronName,
+                applicantId: parsedId || 'all'
+            });
         } catch (error: any) {
             console.error('[AdminController.triggerCron]', error);
             res.status(500).json({ success: false, message: error.message || 'Failed to trigger cron' });
+        }
+    }
+
+    public async forceStageUpdate(req: Request, res: Response): Promise<void> {
+        try {
+            const applicationId = parseInt(req.params.id as string, 10);
+            const { stageName, stageStatus = 'ongoing' } = req.body;
+
+            if (!stageName) {
+                res.status(400).json({ success: false, message: 'stageName is required' });
+                return;
+            }
+
+            const { applicationService } = require('../services/ApplicationService');
+            const result = await applicationService.addStageToApplication(applicationId, {
+                name: stageName,
+                status: stageStatus,
+                setAsCurrent: true,
+                notifyInApp: true,
+                notifyEmail: true
+            });
+
+            res.status(200).json({
+                success: true,
+                message: `Stage successfully updated to "${stageName}" (${stageStatus}) with all side-effects and notifications.`,
+                stage: result
+            });
+        } catch (error: any) {
+            console.error('[AdminController.forceStageUpdate]', error);
+            res.status(500).json({ success: false, message: error.message || 'Failed to force stage update' });
         }
     }
 

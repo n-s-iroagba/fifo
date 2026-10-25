@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { Application } from '@/types/models';
 import { useApiQuery, useApiMutation } from '@/lib/hooks';
 import Link from 'next/link';
+import api from '@/lib/api';
 
 interface ApplicationsResponse {
     rows: Application[];
@@ -14,13 +16,66 @@ export default function AdminApplicationsPage() {
     const deleteMutation = useApiMutation('delete', '/admin/applications');
     const appList = apps?.rows || [];
 
+    const [selectedCron, setSelectedCron] = useState('all');
+    const [isRunningCron, setIsRunningCron] = useState(false);
+
+    const handleRunCron = async () => {
+        setIsRunningCron(true);
+        try {
+            const { data } = await api.post('/admin/crons/trigger', {
+                cronName: selectedCron
+            });
+            alert(data.message || 'Cron triggered successfully across applications.');
+            refetch();
+        } catch (err: any) {
+            alert(err.response?.data?.message || err.response?.data?.error || 'Failed to execute cron.');
+        } finally {
+            setIsRunningCron(false);
+        }
+    };
+
     if (isLoading) return <div className="p-12 text-center text-[10px] font-bold uppercase tracking-widest text-blue-400">Loading Applications...</div>;
 
     return (
         <div className="font-sans antialiased text-blue-900">
-            <div className="mb-12">
-                <h1 className="text-3xl font-bold tracking-tight uppercase leading-tight">Application Management</h1>
-                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.3em] mt-2">Manage candidate applications and recruitment workflows</p>
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 gap-6">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight uppercase leading-tight">Application Management</h1>
+                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.3em] mt-2">Manage candidate applications and recruitment workflows</p>
+                </div>
+
+                {/* Feature Group 21: Forced Cron Execution across Applications */}
+                <div className="bg-white p-3 sm:p-4 rounded-2xl border border-blue-100 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-indigo-600 text-lg">bolt</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-blue-900 whitespace-nowrap">
+                            Forced Cron Run:
+                        </span>
+                    </div>
+                    <select
+                        value={selectedCron}
+                        onChange={(e) => setSelectedCron(e.target.value)}
+                        className="bg-blue-50/70 border border-blue-200 text-blue-900 text-xs font-bold rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-600"
+                    >
+                        <option value="all">All Scheduled Crons</option>
+                        <option value="application">12h Automated Acceptance</option>
+                        <option value="nomination">Employer Selection (24h Invites / 5h Accept)</option>
+                        <option value="sponsorship">Ticket Sponsorship (3h Invites / 6h Approvals)</option>
+                        <option value="contract">Sponsorship Contract Delivery &amp; ID</option>
+                        <option value="rto-welcome">CertHero Enrollment Credentials &amp; Letter</option>
+                        <option value="rto-delivery">Competency Tickets &amp; Handoff</option>
+                        <option value="psychometric">Psychometric Approvals</option>
+                    </select>
+                    <button
+                        type="button"
+                        onClick={handleRunCron}
+                        disabled={isRunningCron}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10 active:scale-95"
+                    >
+                        <span className="material-symbols-outlined text-sm">play_arrow</span>
+                        {isRunningCron ? 'Executing...' : 'Run Cron Now'}
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white rounded-[2rem] border border-blue-100 overflow-hidden shadow-2xl shadow-blue-900/5">

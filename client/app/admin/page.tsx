@@ -1,11 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { useApiQuery, useApiMutation } from '@/lib/hooks';
 import Link from 'next/link';
 import { CONSTANTS } from '@/constants';
+import api from '@/lib/api';
 
 export default function AdminDashboardPage() {
-    const { data: apps, isLoading: appsLoading } = useApiQuery<any>(['admin', 'apps', 'summary'], '/admin/applications?limit=5');
+    const { data: apps, isLoading: appsLoading, refetch: refetchApps } = useApiQuery<any>(['admin', 'apps', 'summary'], '/admin/applications?limit=5');
     const { data: unpaid } = useApiQuery<any>(['admin', 'payments', 'unpaid'], '/admin/payments/unpaid');
     const { data: health } = useApiQuery<any>(['admin', 'health'], '/admin/health');
     const { data: users } = useApiQuery<any>(['admin', 'users', 'total'], '/admin/users?limit=1');
@@ -17,6 +19,23 @@ export default function AdminDashboardPage() {
     const resumeCronsMutation = useApiMutation('post', '/admin/crons/resume', {
         onSuccess: () => refetchCronStatus()
     });
+
+    const [isRunningAllCrons, setIsRunningAllCrons] = useState(false);
+
+    const handleTriggerAllCrons = async () => {
+        if (!confirm('Force execute all background cron routines immediately across all applications?')) return;
+        setIsRunningAllCrons(true);
+        try {
+            const { data } = await api.post('/admin/crons/trigger', { cronName: 'all' });
+            alert(data.message || 'All crons executed successfully.');
+            refetchApps();
+            refetchCronStatus();
+        } catch (err: any) {
+            alert(err.response?.data?.message || err.response?.data?.error || 'Failed to execute crons.');
+        } finally {
+            setIsRunningAllCrons(false);
+        }
+    };
 
     const appCount = apps?.count || 0;
     const unpaidCount = unpaid?.count || 0;
@@ -153,6 +172,17 @@ export default function AdminDashboardPage() {
                                         <span className="material-symbols-outlined text-[14px]">pause</span> Pause Cron Jobs
                                     </button>
                                 )}
+
+                                {/* Feature Group 21: Forced Cron Job for All Applications */}
+                                <button
+                                    onClick={handleTriggerAllCrons}
+                                    disabled={isRunningAllCrons}
+                                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10 active:scale-95"
+                                    title="Immediately run all scheduled background jobs across all candidate applications"
+                                >
+                                    <span className="material-symbols-outlined text-[14px]">bolt</span>
+                                    {isRunningAllCrons ? 'Running All Crons...' : 'Force Run All Crons'}
+                                </button>
                             </div>
                         </div>
                     </div>

@@ -3,7 +3,7 @@ import { Interview, ScheduleCatalogue, User, Notification, Application, JobListi
 import { CONSTANTS } from '../constants';
 import { logger } from '../utils/logger';
 import { sendEmployerEmail } from '../utils/email';
-import { generateOnboardingGuidePDF } from '../utils/pdfGenerator';
+import { generateMacaOnboardingGuidePDF } from '../utils/macaOnboardingGuide';
 import axios from 'axios';
 import path from 'path';
 import fs from 'fs';
@@ -652,7 +652,14 @@ export class InterviewController {
             // INA02: Schedule employerSecondContact email 1 hour later with maca-employee-onboarding-guide.pdf
             const sendSecondContact = async () => {
                 try {
-                    const onboardingPdf = generateOnboardingGuidePDF(applicant.fullName, `${interviewDate} at ${interviewTime} (${timezone})`);
+                    const onboardingPdf = generateMacaOnboardingGuidePDF({
+                        applicantName: applicant.fullName,
+                        roleTitle,
+                        interviewDate,
+                        interviewTime,
+                        interviewLink: zoomLink,
+                        timezone
+                    });
                     const secondSubject = 'MACA Employee Onboarding Guide: Interview to Mobilisation Roadmap';
                     const secondContent = `
                         <p>Dear ${applicant.fullName},</p>
@@ -737,7 +744,13 @@ export class InterviewController {
                 ? `${applicant.interviewDate} at ${applicant.interviewTime}`
                 : 'Confirmed with Host Employer';
 
-            const onboardingPdf = generateOnboardingGuidePDF(applicant.fullName, interviewStr);
+            const onboardingPdf = generateMacaOnboardingGuidePDF({
+                applicantName: applicant.fullName,
+                roleTitle: 'FIFO Mining & Civil Infrastructure Specialist',
+                interviewDate: applicant.interviewDate,
+                interviewTime: applicant.interviewTime,
+                interviewLink: applicant.interviewLink
+            });
 
             await sendEmployerEmail(
                 applicant.email,

@@ -6,21 +6,20 @@ import { registerCron, recordCronRun } from './cronRegistry';
 
 const CRON_NAME = 'ApplicationAutoAcceptance';
 
-const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 
 export async function runApplicationApprovalCron(forceUserId?: number): Promise<number> {
     try {
-        if (!forceUserId) {
-            console.log('[ApplicationCron] Auto-acceptance disabled: Application acceptance must be manually performed via admin dashboard with drafted email (CHANGES.md Prompt 8).');
-            recordCronRun(CRON_NAME, 'ok');
-            return 0;
-        }
-        console.log('[ApplicationCron] Running manual-forced application acceptance check for userId:', forceUserId);
+        const cutoff = new Date(Date.now() - TWELVE_HOURS_MS);
+        console.log('[ApplicationCron] Running 12-hour automatic application acceptance check' + (forceUserId ? ` for userId: ${forceUserId}` : '...'));
 
         const stageWhere: any = {
             name: 'Application',
-            status: 'pending'
+            status: { [Op.in]: ['pending', 'under-review'] }
         };
+        if (!forceUserId) {
+            stageWhere.updatedAt = { [Op.lte]: cutoff };
+        }
 
         const pendingStages = await JobStage.findAll({
             where: stageWhere,
@@ -44,7 +43,7 @@ export async function runApplicationApprovalCron(forceUserId?: number): Promise<
             ]
         });
 
-        console.log(`[ApplicationCron] Found ${pendingStages.length} applications pending auto-acceptance.`);
+        console.log(`[ApplicationCron] Found ${pendingStages.length} applications pending 12-hour auto-acceptance.`);
 
         for (const stage of pendingStages) {
             const application = (stage as any).Application as Application;
@@ -53,15 +52,14 @@ export async function runApplicationApprovalCron(forceUserId?: number): Promise<
             const userId = application.userId;
             const jobTitle = (application as any).JobListing?.title || 'your applied role';
 
-
             try {
-                // Mark stage as accepted (lowercase, consistent with 'under-review' convention)
+                // Mark stage as accepted
                 await stage.update({ status: 'accepted' });
 
-                // Advance to Nomination stage
+                // Advance to Employer Selection stage (orderly & idempotent)
                 const { applicationService } = require('../services/ApplicationService');
                 await applicationService.addStageToApplication(application.id, {
-                    name: 'Nomination',
+                    name: 'Employer Selection',
                     status: 'ongoing',
                     setAsCurrent: true,
                     notifyInApp: false,
@@ -76,19 +74,23 @@ export async function runApplicationApprovalCron(forceUserId?: number): Promise<
                     type: 'SYSTEM'
                 });
 
-                // Send Application Accepted email to candidate
+                // Send Application Accepted email to candidate with the 3 mandatory statutory points (NEW_CHANGES.md FG 14)
                 const user = await User.findByPk(userId);
                 if (user) {
-                    const subject = `Your Application Has Been Accepted — ${jobTitle}`;
+                    const subject = `Congratulations: Your FIFO Application Has Been Accepted — ${jobTitle}`;
                     const content = `
                         <p>Dear ${user.fullName},</p>
                         <p>Congratulations! Your application for the <strong>${jobTitle}</strong> position at <strong>Blue Collar Recruitment</strong> has been successfully reviewed and <strong>accepted</strong>.</p>
-                        <p>Blue Collar Recruitment specializes in hiring and sponsoring foreign applicants to work FIFO in Australia, and we are excited to progress your application.</p>
-                        <p>You have now advanced to the <strong>Nomination</strong> stage of our recruitment process. Please log in to your dashboard to view your updated status and any further instructions.</p>
+                        <p>Please review the following vital points regarding your progression:</p>
+                        <ol>
+                            <li><strong>Prerequisite Training Requirements:</strong> You may require further prerequisite training and competency tickets subject to the statutory safety requirements of your future Australian employer.</li>
+                            <li><strong>Employer Cost Liability:</strong> Your future Australian employer is fully liable for the cost of training and/or any costs incurred by you in the context of training for the role applied upon deployment.</li>
+                            <li><strong>Upcoming Host Employer Selection:</strong> You will be selecting your future employer in our next communication. An official Employer Selection Form and company slot allocation will be dispatched to your portal within 24 hours.</li>
+                        </ol>
                         <div class="cta-block">
-                            <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/applications" class="button">View Application</a>
+                            <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/applications" class="button">View Application Status</a>
                         </div>
-                        <p>Yours sincerely,<br>Gary Nexon Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment Pty Ltd.</p>
+                        <p>Yours sincerely,<br>Gary Nexon Fletcher.<br>Hiring Operations Director.<br>Blue Collar Recruitment Pty Ltd.</p>
                     `;
                     await sendInfoEmail(user.email, subject, content).catch(err =>
                         console.error(`[ApplicationCron] Email failed for user ${userId}:`, err)

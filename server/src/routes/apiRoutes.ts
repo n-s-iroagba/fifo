@@ -148,6 +148,7 @@ router.post('/admin/mail', ...adminMW, upload.array('attachments'), adminControl
 
 // New: manage ad-hoc stages for specific applications
 router.post('/admin/applications/:id/stages', ...adminMW, applicationController.addStage.bind(applicationController));
+router.post('/admin/applications/:id/force-stage', ...adminMW, adminController.forceStageUpdate.bind(adminController));
 router.post('/admin/applications/:id/accept', ...adminMW, applicationController.acceptApplicationWithDraft.bind(applicationController));
 router.get('/admin/applications/:id/stages/:stageId', ...adminMW, applicationController.getStageDetails.bind(applicationController));
 router.put('/admin/applications/:id/stages/:stageId', ...adminMW, applicationController.updateStage.bind(applicationController));

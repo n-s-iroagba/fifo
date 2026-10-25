@@ -427,10 +427,22 @@ export class ApplicationService {
             const app = await applicationRepository.findById(applicationId, t);
             if (!app) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
 
-            const newStage = await jobStageRepository.create({
-                ...rest,
-                applicationId
-            }, t);
+            const { JobStage } = require('../models');
+            const existingStage = await JobStage.findOne({
+                where: { applicationId, name: rest.name },
+                transaction: t
+            });
+
+            let newStage: any;
+            if (existingStage) {
+                await existingStage.update(rest, { transaction: t });
+                newStage = existingStage;
+            } else {
+                newStage = await jobStageRepository.create({
+                    ...rest,
+                    applicationId
+                }, t);
+            }
 
             if (setAsCurrent) {
                 await applicationRepository.update(applicationId, {
