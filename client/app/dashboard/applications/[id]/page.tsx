@@ -311,7 +311,7 @@ export default function ApplicationDetailPage() {
                                 <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 text-amber-900 text-xs font-semibold flex items-center gap-3">
                                     <span className="material-symbols-outlined text-amber-600 text-lg shrink-0">info</span>
                                     <span>
-                                        Ticket sponsorship applications are not yet open for this application. Once your application advances past Employer Selection to the Ticket Sponsorship stage (Stage 4), sponsorship applications will become active.
+                                        Ticket sponsorship applications are not yet open for this application. Once your application advances past Employer Selection, sponsorship applications will become active.
                                     </span>
                                 </div>
                             )}
@@ -402,7 +402,7 @@ export default function ApplicationDetailPage() {
                                                             href="/dashboard/tickets"
                                                             className="bg-blue-900 text-white px-3.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-blue-800 transition-all flex items-center gap-1 shrink-0"
                                                         >
-                                                            Fix Missing Ticket
+                                                            Upload Missing Ticket
                                                         </Link>
                                                     </div>
                                                 )}
@@ -414,124 +414,18 @@ export default function ApplicationDetailPage() {
                         </section>
                     )}
 
-                    {/* Visa Sponsorship Section */}
-                    {app.JobListing?.visaSponsorship && (
-                        <section className="bg-white p-10 rounded-[2.5rem] border border-blue-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
-                            <div>
-                                <h2 className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.3em] mb-2 flex items-center gap-3">
-                                    <span className="material-symbols-outlined text-sm">flight_takeoff</span>
-                                    Visa Sponsorship
-                                </h2>
-                                <p className="text-[11px] font-bold text-slate-500 max-w-lg leading-relaxed">
-                                    This role is eligible for visa sponsorship. If you have acquired all required certifications, you may apply for sponsorship here.
-                                </p>
-                            </div>
-                            <div className="flex-shrink-0">
-                                {app.visaSponsorshipStatus ? (
-                                    <div className={`px-6 py-3 rounded-xl border flex flex-col items-center justify-center ${
-                                        app.visaSponsorshipStatus === 'Pending' ? 'bg-blue-50 border-blue-100' :
-                                        app.visaSponsorshipStatus === 'Approved' ? 'bg-emerald-50 border-emerald-100' :
-                                        'bg-red-50 border-red-100'
-                                    }`}>
-                                        <span className={`text-[9px] font-black uppercase tracking-widest ${
-                                            app.visaSponsorshipStatus === 'Pending' ? 'text-blue-500' :
-                                            app.visaSponsorshipStatus === 'Approved' ? 'text-emerald-600' :
-                                            'text-red-500'
-                                        }`}>Sponsorship Status</span>
-                                        <span className={`text-sm font-bold ${
-                                            app.visaSponsorshipStatus === 'Pending' ? 'text-blue-700' :
-                                            app.visaSponsorshipStatus === 'Approved' ? 'text-emerald-800' :
-                                            'text-red-700'
-                                        }`}>{app.visaSponsorshipStatus}</span>
-                                    </div>
-                                ) : (
-                                    <button
-                                        onClick={handleVisaSponsorship}
-                                        disabled={applyVisaMutation.isPending}
-                                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-widest px-8 py-4 rounded-xl transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-50"
-                                    >
-                                        {applyVisaMutation.isPending ? 'Applying...' : 'Apply for Sponsorship'}
-                                    </button>
-                                )}
-                            </div>
-                        </section>
-                    )}
 
 
 
-                    {/* Application Journey */}
-                    <section className="space-y-6">
-                        <div className="flex items-center justify-between px-2">
-                            <h2 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em]">Your Application Journey</h2>
-                            <span className="text-[9px] font-black text-blue-300 uppercase tracking-widest">Official Status</span>
-                        </div>
-                        <div className="space-y-4">
-                            {stages.map((stage: any) => {
-                                    const isActive = stage.id === app.currentStageId;
-                                    const isCompleted = stage.status === 'completed';
 
-                                    return (
-                                        <div key={stage.id} className="p-8 rounded-[2.5rem] border transition-all flex flex-col md:flex-row md:items-center justify-between gap-8 bg-white border-blue-100 shadow-sm">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-4 mb-4">
-                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black ${isCompleted ? 'bg-emerald-500 text-white' : isActive ? 'bg-blue-900 text-white' : 'bg-blue-100 text-blue-400'}`}>
-                                                        {isCompleted ? <span className="material-symbols-outlined text-sm">done</span> : <span className="material-symbols-outlined text-sm">pending</span>}
-                                                    </div>
-                                                    <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-lg ${isCompleted ? 'bg-emerald-50 text-emerald-600' : isActive ? (isPendingVerification ? 'bg-amber-50 text-amber-600' : 'bg-blue-900 text-white') : 'bg-blue-100 text-blue-400'}`}>
-                                                        {isCompleted ? 'Completed' : isActive ? (isPendingVerification ? 'Reviewing' : 'Current Stage') : 'Pending'}
-                                                    </span>
-                                                </div>
-                                                <h4 className="font-bold text-blue-900 uppercase tracking-tight text-lg mb-2">{stage.name || 'Unnamed Stage'}</h4>
-                                            </div>
-                                            <div className="flex flex-col items-end md:min-w-[150px] pt-6 md:pt-0 border-t md:border-t-0 border-blue-50">
-                                                <span className="text-[9px] font-black text-blue-300 uppercase tracking-widest mb-2">Status</span>
-                                                <div className="flex items-center gap-2 text-blue-500 font-bold uppercase tracking-widest text-[9px]">
-                                                    {stage.status}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                        </div>
-                    </section>
+
                 </div>
 
-                {/* Right Column */}
-                <div className="space-y-10">
-                    <section className="bg-blue-50 p-8 rounded-[2.5rem] border border-blue-100 border-dashed">
-                        <h4 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-sm">info</span>
-                            Applicant Notice
-                        </h4>
-                        <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight leading-loose opacity-60 italic">
-                            All updates on this dashboard are strictly maintained by our recruitment team. Applicants are notified automatically upon each successful verification.
-                        </p>
-                    </section>
-                </div>
+
             </div>
 
-            {/* Visa Popup Modal */}
-            {showVisaPopup && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl relative">
-                        <div className="w-16 h-16 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center mb-6 border border-amber-100">
-                            <span className="material-symbols-outlined text-3xl">warning</span>
-                        </div>
-                        <h3 className="text-xl font-bold text-blue-900 tracking-tight mb-3">Certifications Required</h3>
-                        <p className="text-sm font-medium text-slate-500 leading-relaxed mb-8">
-                            Please obtain all required certifications and tickets for this role before seeking visa sponsorship. You can manage your tickets in the required tickets section above.
-                        </p>
-                        <div className="flex justify-end">
-                            <button
-                                onClick={() => setShowVisaPopup(false)}
-                                className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-colors"
-                            >
-                                Understood
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+
+
         </div>
     );
 }
