@@ -112,9 +112,16 @@ class ApplicationRepository {
     async findById(id, transaction) {
         const app = await models_1.Application.findByPk(id, {
             include: [
-                models_1.JobListing,
+                {
+                    model: models_1.JobListing,
+                    include: [{ model: models_1.TicketCatalog, as: 'RequiredTickets' }]
+                },
                 models_1.User,
-                { model: models_1.Ticket, as: 'Tickets' },
+                {
+                    model: models_1.Ticket,
+                    as: 'Tickets',
+                    include: [{ model: models_1.TicketCatalog, as: 'TicketCatalog' }]
+                },
                 {
                     model: models_1.JobStage,
                     as: 'JobStages'

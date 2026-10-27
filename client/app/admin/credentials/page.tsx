@@ -360,7 +360,7 @@ export default function AdminCredentialsPage() {
                             </h2>
                         </div>
                         <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                            Server: info@jobnexe.com
+                            Server: info@bluecollarrecruitment.co
                         </span>
                     </div>
 

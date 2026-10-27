@@ -44,9 +44,20 @@ class JobService {
             throw new Error(constants_1.CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
         const jobJson = job.toJSON();
         const fullJob = await JobRepository_1.jobRepository.findById(id);
-        if (fullJob && fullJob.RequiredTickets) {
+        if (fullJob && fullJob.RequiredTickets && fullJob.RequiredTickets.length > 0) {
             jobJson.ticketIds = fullJob.RequiredTickets.map((t) => t.id);
             jobJson.RequiredTickets = fullJob.RequiredTickets;
+        }
+        else if (job.ticketIds && Array.isArray(job.ticketIds) && job.ticketIds.length > 0) {
+            const { TicketCatalog } = require('../models');
+            const { Op } = require('sequelize');
+            const catalogs = await TicketCatalog.findAll({
+                where: { id: { [Op.in]: job.ticketIds } }
+            });
+            jobJson.RequiredTickets = catalogs;
+        }
+        else {
+            jobJson.RequiredTickets = [];
         }
         return jobJson;
     }

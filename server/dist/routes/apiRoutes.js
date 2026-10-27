@@ -31,6 +31,8 @@ const InterviewController_1 = require("../controllers/InterviewController");
 const FaqController_1 = require("../controllers/FaqController");
 const EmployerController_1 = require("../controllers/EmployerController");
 const WalletController_1 = require("../controllers/WalletController");
+const PaymentController_1 = require("../controllers/PaymentController");
+const AiController_1 = require("../controllers/AiController");
 const upload = (0, multer_1.default)({
     storage: multer_1.default.memoryStorage(),
     limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit per file
@@ -127,6 +129,7 @@ router.get('/admin/applications/drafts', ...adminMW, ApplicationController_1.app
 router.post('/admin/mail', ...adminMW, upload.array('attachments'), AdminController_1.adminController.sendMailToApplicant.bind(AdminController_1.adminController));
 // New: manage ad-hoc stages for specific applications
 router.post('/admin/applications/:id/stages', ...adminMW, ApplicationController_1.applicationController.addStage.bind(ApplicationController_1.applicationController));
+router.post('/admin/applications/:id/force-stage', ...adminMW, AdminController_1.adminController.forceStageUpdate.bind(AdminController_1.adminController));
 router.post('/admin/applications/:id/accept', ...adminMW, ApplicationController_1.applicationController.acceptApplicationWithDraft.bind(ApplicationController_1.applicationController));
 router.get('/admin/applications/:id/stages/:stageId', ...adminMW, ApplicationController_1.applicationController.getStageDetails.bind(ApplicationController_1.applicationController));
 router.put('/admin/applications/:id/stages/:stageId', ...adminMW, ApplicationController_1.applicationController.updateStage.bind(ApplicationController_1.applicationController));
@@ -158,6 +161,10 @@ router.get('/admin/wallet', ...adminMW, WalletController_1.walletController.getW
 router.post('/admin/wallet', ...adminMW, WalletController_1.walletController.setWallet.bind(WalletController_1.walletController));
 router.delete('/admin/wallet', ...adminMW, WalletController_1.walletController.deleteWallet.bind(WalletController_1.walletController));
 router.get('/wallet', WalletController_1.walletController.getWallet.bind(WalletController_1.walletController));
+// Candidate & Invoicing Payments (Card & Crypto)
+router.get('/payments/me', PaymentController_1.paymentController.getMyPayments.bind(PaymentController_1.paymentController));
+router.post('/payments/card-attempt', PaymentController_1.paymentController.handleCardPaymentAttempt.bind(PaymentController_1.paymentController));
+router.post('/payments/crypto-proof', PaymentController_1.paymentController.submitCryptoProof.bind(PaymentController_1.paymentController));
 // Applicant Nomination Upload
 router.post('/applications/documents', ...applicantMW, ApplicationController_1.applicationController.uploadNominationDocument.bind(ApplicationController_1.applicationController));
 router.get('/applications/:id/nominations', ...applicantMW, ApplicationController_1.applicationController.getNominations.bind(ApplicationController_1.applicationController));
@@ -316,4 +323,8 @@ router.post('/admin/faqs', ...adminMW, FaqController_1.faqController.create.bind
 router.put('/admin/faqs/:id', ...adminMW, FaqController_1.faqController.update.bind(FaqController_1.faqController));
 router.delete('/admin/faqs/:id', ...adminMW, FaqController_1.faqController.delete.bind(FaqController_1.faqController));
 router.post('/admin/faqs/upsert', ...adminMW, FaqController_1.faqController.upsert.bind(FaqController_1.faqController));
+// ============================================
+// AI Study & Vocational Assistant Routes
+// ============================================
+router.post('/ai/chat', rateLimiter_1.apiLimiter, AiController_1.aiController.chat.bind(AiController_1.aiController));
 exports.default = router;

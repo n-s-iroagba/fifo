@@ -91,26 +91,42 @@ export async function generateAllTestData(applicationId: number = 53): Promise<{
     console.log(`  - ${mailsDir}`);
     console.log(`  - ${docsDir}`);
 
-    // 1. Generate 23 Emails in docx
-    console.log(`[TestData] Generating 23 emails in DOCX format...`);
+    // Clean up any obsolete email 07 file
+    const oldMail07 = path.join(mailsDir, '07_Employer_Selection_filled_mail.docx');
+    if (fs.existsSync(oldMail07)) {
+        fs.unlinkSync(oldMail07);
+    }
+
+    // 1. Generate Emails in docx
     const emails = getAll23EmailDefinitions(candidateDocData);
+    console.log(`[TestData] Generating ${emails.length} emails in DOCX format...`);
 
     for (const emailDef of emails) {
         const doc = await generateEmailDocx(emailDef);
         const buffer = await Packer.toBuffer(doc);
         const safeName = emailDef.name.replace(/[^a-zA-Z0-9_\-]/g, '_');
-        const filename = `${String(emailDef.number).padStart(2, '0')}_${safeName}.docx`;
+        const numStr = typeof emailDef.number === 'number' 
+            ? String(emailDef.number).padStart(2, '0') 
+            : String(emailDef.number);
+        const filename = `${numStr}_${safeName}.docx`;
         const filePath = path.join(mailsDir, filename);
         fs.writeFileSync(filePath, buffer);
-        console.log(`  [Mail ${emailDef.number}/23] Created ${filename}`);
+        console.log(`  [Mail ${emailDef.number}/${emails.length}] Created ${filename}`);
     }
 
-    // 2. Generate 7 Documents in docx
-    console.log(`[TestData] Generating 7 documents in DOCX format...`);
+    // 2. Generate Documents in docx
+    console.log(`[TestData] Generating documents in DOCX format...`);
     const docGenerators: { name: string; run: () => Promise<any> }[] = [
         {
             name: '01_Employer_Selection_Form.docx',
             run: () => generateEmployerSelectionFormDocx(candidateDocData)
+        },
+        {
+            name: '01b_Employer_Selection_Form_MACA_Only.docx',
+            run: () => generateEmployerSelectionFormDocx({
+                ...candidateDocData,
+                onlyEmployingEmployer: true
+            })
         },
         {
             name: '02_CertHero_Enrollment_Letter.docx',
@@ -152,7 +168,7 @@ export async function generateAllTestData(applicationId: number = 53): Promise<{
         console.log(`  [Doc ${docItem.name}] Created successfully`);
     }
 
-    console.log(`[TestData] Successfully generated all 23 emails and 7 documents.`);
+    console.log(`[TestData] Successfully generated all ${emails.length} emails and ${docGenerators.length} documents.`);
     return {
         mailsCount: emails.length,
         documentsCount: docGenerators.length,

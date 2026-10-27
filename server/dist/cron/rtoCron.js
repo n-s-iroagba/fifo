@@ -75,6 +75,15 @@ async function runRtoWelcomeCron(forceUserId) {
                 });
                 ticketListHtml += '</ul>';
                 const totalCandidateUsd = totalCandidateAud * audToUsd;
+                let paymentFaqLink = '';
+                try {
+                    const { Faq } = require('../models');
+                    const paymentFaq = await Faq.findOne({ where: { type: 'payment' } });
+                    if (paymentFaq && paymentFaq.link) {
+                        paymentFaqLink = paymentFaq.link;
+                    }
+                }
+                catch (e) { }
                 const subject = 'Your CertHero RTO Training Payment Confirmation';
                 const content = `
                     <div style="padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
@@ -97,8 +106,15 @@ async function runRtoWelcomeCron(forceUserId) {
                             <li><strong>Option 2:</strong> Pay half the amount now, and complete the remaining payment before your 3rd ticket certification is dispatched.</li>
                         </ul>
                         
-                        <div style="background-color: #fef3c7; color: #92400e; padding: 16px; font-weight: 700; text-align: center; border-radius: 8px; margin-top: 22px; border: 1px solid #fde68a;">
-                            <p style="margin: 0;">ACTION REQUIRED: Please reply to this email indicating your preferred payment option. Your official CertHero training invoice will be issued upon your reply.</p>
+                        <div style="background-color: #eff6ff; color: #1e3a8a; padding: 18px; text-align: left; border-radius: 8px; margin-top: 22px; border: 1px solid #bfdbfe;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold; font-size: 14px;">ACTION REQUIRED: Payment Schedule &amp; Support Coordination</p>
+                            <p style="margin: 0 0 10px 0; font-size: 13px; line-height: 1.5; color: #1e40af;">
+                                Please reply directly to this email indicating your preferred payment option (Option 1 or Option 2) and the exact time you plan to make payment in your own local timezone (for example: <em>"Option 1 at 3:00 PM West Africa Time"</em>). This ensures our dedicated support desk is directly on standby to verify your transaction smoothly and immediately activate your LMS coursework credentials.
+                            </p>
+                            ${paymentFaqLink ? `
+                            <p style="margin: 0; font-size: 13px; color: #1e40af;">
+                                <strong>Payment FAQs &amp; Security:</strong> <a href="${paymentFaqLink}" target="_blank" style="color: #2563eb; font-weight: bold; text-decoration: underline;">Review our official Payment FAQs</a>.
+                            </p>` : ''}
                         </div>
                         
                         <p style="margin-top: 24px;">We look forward to helping you achieve your Australian FIFO compliance and site readiness.</p>
@@ -110,6 +126,12 @@ async function runRtoWelcomeCron(forceUserId) {
                 contract.rtoWelcomeSent = true;
                 contract.avelingWelcomeSent = true;
                 await contract.save();
+                const userPrefs = {
+                    ...(user.preferences || {}),
+                    enrollmentLetterSent: true,
+                    rtoWelcomeSent: true
+                };
+                await user.update({ preferences: userPrefs });
                 // Notify admin about the cron action
                 const adminEmail = 'nnamdisolomon1@gmail.com';
                 const adminSubject = `Cron Action Executed: RTO Welcome Sent for ${user?.fullName || 'Applicant'}`;
@@ -204,7 +226,7 @@ async function runRtoTicketDeliveryCron(forceUserId) {
                 <div style="background-color: #f8fafc; padding: 20px; margin: 20px 0; border-radius: 12px; border: 1px solid #e2e8f0;">
                     ${ticketsHtml}
                 </div>
-                <p>You can also download PDF versions of these certificates directly from your candidate dashboard under the <strong>My Certifications</strong> section.</p>
+                <p>You can also download PDF versions of these certificates directly from your candidate dashboard under the <strong>My Certifications</strong> section. Copies have also been forwarded to MACA LIMITED and they shall be required by the Trades Recognition Australia (TRA) for your visa skills assessment.</p>
                 <p>Best regards,<br>CertHero RTO & Blue Collar Recruitment Team</p>
             `;
             try {

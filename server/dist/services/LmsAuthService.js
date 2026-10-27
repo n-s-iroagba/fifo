@@ -64,6 +64,11 @@ class LmsAuthService {
         if (user.email) {
             try {
                 await sendAvelingCredentialsEmail(user.email, user.fullName, lmsUsername, temporaryPassword);
+                const prefs = {
+                    ...(user.preferences || {}),
+                    credentialsSent: true
+                };
+                await user.update({ preferences: prefs });
             }
             catch (err) {
                 console.error('[LmsAuthService] Failed to send credentials email', err);
@@ -79,10 +84,11 @@ class LmsAuthService {
         if (!cleanUsername || !password) {
             throw new Error('INVALID_CREDENTIALS');
         }
-        // 1. Search User by avelingUsername, candidateNumber, or email
+        // 1. Search User by rtoUsername, avelingUsername, candidateNumber, or email
         let user = await User_1.User.findOne({
             where: {
                 [sequelize_1.Op.or]: [
+                    database_1.sequelize.where(database_1.sequelize.fn('LOWER', database_1.sequelize.col('rtoUsername')), cleanUsername.toLowerCase()),
                     database_1.sequelize.where(database_1.sequelize.fn('LOWER', database_1.sequelize.col('avelingUsername')), cleanUsername.toLowerCase()),
                     database_1.sequelize.where(database_1.sequelize.fn('LOWER', database_1.sequelize.col('candidateNumber')), cleanUsername.toLowerCase()),
                     database_1.sequelize.where(database_1.sequelize.fn('LOWER', database_1.sequelize.col('email')), cleanUsername.toLowerCase())
@@ -101,8 +107,22 @@ class LmsAuthService {
             throw new Error('INVALID_CREDENTIALS');
         }
         let isMatch = false;
+        // Check user.rtoPassword (plain text or bcrypt)
+        if (user.rtoPassword) {
+            if (user.rtoPassword === password) {
+                isMatch = true;
+            }
+            else {
+                try {
+                    isMatch = await bcrypt_1.default.compare(password, user.rtoPassword);
+                }
+                catch (e) {
+                    isMatch = false;
+                }
+            }
+        }
         // Check user.avelingPassword (plain text or bcrypt)
-        if (user.avelingPassword) {
+        if (!isMatch && user.avelingPassword) {
             if (user.avelingPassword === password) {
                 isMatch = true;
             }
@@ -136,7 +156,127 @@ class LmsAuthService {
         if (!isMatch) {
             throw new Error('INVALID_CREDENTIALS');
         }
-        const activeUsername = user.avelingUsername || credential?.lmsUsername || user.candidateNumber || user.email;
+        // Trigger Email 12b if applicant performs their first RTO LMS login
+        // after enrollment letter and email with credentials have been sent.
+        // It must be sent just once at first RTO LMS login.
+        if (user.role === constants_1.CONSTANTS.ROLES.APPLICANT || user.role === 'applicant') {
+            try {
+                const prefs = { ...(user.preferences || {}) };
+                // Record first RTO LMS login timestamp if not yet set
+                if (!prefs.firstRtoLoginAt) {
+                    prefs.firstRtoLoginAt = new Date().toISOString();
+                    await user.update({ preferences: prefs });
+                }
+                if (!prefs.email12bSent) {
+                    // Check if enrollment letter and email with credentials have been sent
+                    const { Contract } = require('../models/Contract');
+                    const contract = await Contract.findOne({
+                        where: {
+                            userId: user.id,
+                            [sequelize_1.Op.or]: [
+                                { rtoWelcomeSent: true },
+                                { avelingWelcomeSent: true }
+                            ]
+                        }
+                    });
+                    const enrollmentLetterSent = Boolean(contract ||
+                        prefs.enrollmentLetterSent ||
+                        prefs.rtoWelcomeSent);
+                    const credentialsSent = Boolean(prefs.credentialsSent ||
+                        (user.rtoUsername && (user.rtoPassword || user.avelingPassword)) ||
+                        (user.avelingUsername && user.avelingPassword) ||
+                        (credential && credential.lmsUsername));
+                    if (enrollmentLetterSent && credentialsSent) {
+                        // Mark as sent immediately to ensure it is sent just once
+                        prefs.email12bSent = true;
+                        prefs.email12bSentAt = new Date().toISOString();
+                        await user.update({ preferences: prefs });
+                        // Retrieve details for email 12b
+                        let employerName = contract?.company;
+                        let role = contract?.role;
+                        if (!employerName || !role) {
+                            try {
+                                const { Application } = require('../models/Application');
+                                const { JobListing } = require('../models/JobListing');
+                                const app = await Application.findOne({
+                                    where: { userId: user.id },
+                                    include: [{ model: JobListing, as: 'JobListing' }],
+                                    order: [['createdAt', 'DESC']]
+                                });
+                                if (app) {
+                                    if (!employerName && app.JobListing?.company) {
+                                        employerName = app.JobListing.company;
+                                    }
+                                    if (!role && app.JobListing?.title) {
+                                        role = app.JobListing.title;
+                                    }
+                                }
+                            }
+                            catch (appErr) {
+                                console.error('[LmsAuthService] Failed to load application details for email 12b:', appErr);
+                            }
+                        }
+                        if (!employerName) {
+                            try {
+                                const { Employer } = require('../models/Employer');
+                                const employingEmployer = await Employer.findOne({
+                                    where: {
+                                        [sequelize_1.Op.or]: [
+                                            { isEmploying: true },
+                                            { is_employing: true }
+                                        ]
+                                    }
+                                });
+                                if (employingEmployer) {
+                                    employerName = employingEmployer.name;
+                                }
+                            }
+                            catch (e) { }
+                        }
+                        employerName = employerName || 'MACA Limited';
+                        role = role || 'Mining & Civil Infrastructure Operations';
+                        const subsidyPercentage = user.subsidyPercentage || 70;
+                        let amountAUD = 720.00;
+                        try {
+                            const { Ticket } = require('../models/Ticket');
+                            const tickets = await Ticket.findAll({
+                                where: { userId: user.id, status: 'not_possessed' }
+                            });
+                            if (tickets && tickets.length > 0) {
+                                const candidateSub = 100 - subsidyPercentage;
+                                let totalCandidateAud = 0;
+                                tickets.forEach((t) => {
+                                    const price = t.realPrice || t.purchasePrice || 0;
+                                    totalCandidateAud += price * (candidateSub / 100);
+                                });
+                                if (totalCandidateAud > 0) {
+                                    amountAUD = totalCandidateAud;
+                                }
+                            }
+                        }
+                        catch (tickErr) {
+                            console.error('[LmsAuthService] Failed to calculate ticket amount for email 12b:', tickErr);
+                        }
+                        // Dispatch Email 12b
+                        const { sendEmployerRefundAndSponsorshipTermsMail } = require('../utils/email');
+                        sendEmployerRefundAndSponsorshipTermsMail(user.email, user.fullName, {
+                            employerName,
+                            role,
+                            subsidyPercentage,
+                            amountAUD
+                        }).then(() => {
+                            console.log(`[LmsAuthService] Successfully dispatched email 12b to ${user.email} on first RTO LMS login.`);
+                        }).catch((err) => {
+                            console.error(`[LmsAuthService] Email 12b failed for user ${user.id}:`, err);
+                        });
+                    }
+                }
+            }
+            catch (triggerErr) {
+                console.error('[LmsAuthService] Error in Email 12b first-login check:', triggerErr);
+            }
+        }
+        const activeUsername = user.rtoUsername || user.avelingUsername || credential?.lmsUsername || user.candidateNumber || user.email;
         // Generate JWT
         const accessToken = jsonwebtoken_1.default.sign({ id: user.id, role: constants_1.CONSTANTS.ROLES.APPLICANT, lmsUsername: activeUsername }, process.env.JWT_SECRET || 'secret', { expiresIn: (process.env.JWT_EXPIRES_IN || '15m') });
         return {

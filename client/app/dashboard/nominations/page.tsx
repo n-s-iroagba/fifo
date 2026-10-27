@@ -29,6 +29,13 @@ export default function NominationsPage() {
     const alreadyApproved = nominations.some((n: any) => n.status === 'approved' || (n.isSelected && hasTicketSponsorshipStage));
     const underReview = nominations.some((n: any) => n.documentUrl) && !alreadyApproved;
 
+    const getDocHref = (url?: string) => {
+        if (!url) return '#';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        return `${base.replace(/\/$/, '')}${url.startsWith('/') ? '' : '/'}${url}`;
+    };
+
     const handleCheckbox = (nominationId: number) => {
         if (alreadyApproved || underReview) return;
         setSelectedIds(prev => {
@@ -165,6 +172,22 @@ export default function NominationsPage() {
                 </div>
             ) : (
                 <div className="space-y-6">
+                    {/* 7b Quota Alert Banner when only 1 nomination (MACA) remains and not approved */}
+                    {nominations.length === 1 && !alreadyApproved && (
+                        <div className="p-5 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3.5 shadow-sm">
+                            <span className="material-symbols-outlined text-amber-600 text-2xl shrink-0 mt-0.5">notification_important</span>
+                            <div>
+                                <h4 className="text-xs font-bold text-amber-900 uppercase tracking-widest">Important: Employer Vacancy Filled</h4>
+                                <p className="text-xs text-amber-800 mt-1 leading-relaxed">
+                                    Your previously selected employer vacancy has reached maximum capacity. <strong>{nominations[0]?.hostEmployer || 'MACA Limited'}</strong> is currently the only available Australian visa sponsor with active vacancies.
+                                </p>
+                                <p className="text-xs text-amber-700 mt-1.5 font-medium">
+                                    Please download the updated nomination document below, check the nomination card to select <strong>{nominations[0]?.hostEmployer || 'MACA Limited'}</strong>, and upload your signed document to confirm your allocation.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Instructions */}
                     <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
                         <h2 className="text-sm font-bold text-blue-900 uppercase tracking-widest mb-2">Instructions</h2>
@@ -196,9 +219,10 @@ export default function NominationsPage() {
                         </div>
                         {nominations[0]?.adminDocumentUrl && (
                             <a
-                                href={nominations[0].adminDocumentUrl}
+                                href={getDocHref(nominations[0].adminDocumentUrl)}
                                 target="_blank"
                                 rel="noreferrer"
+                                download
                                 className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-900 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-blue-800 transition-all"
                             >
                                 <span className="material-symbols-outlined text-sm">download</span>
@@ -228,7 +252,7 @@ export default function NominationsPage() {
                                     <div>
                                         <p className="text-[11px] font-bold text-blue-900 uppercase tracking-widest">Document Uploaded</p>
                                         <a
-                                            href={nominations.find((n: any) => n.documentUrl)?.documentUrl}
+                                            href={getDocHref(nominations.find((n: any) => n.documentUrl)?.documentUrl)}
                                             target="_blank"
                                             rel="noreferrer"
                                             className="text-xs text-blue-600 hover:underline"

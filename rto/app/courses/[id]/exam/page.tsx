@@ -4,7 +4,7 @@
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
-import { Award, CheckCircle2, XCircle, ShieldCheck, ChevronRight, ArrowRight, Wallet, RotateCcw, Banknote, Mail, Clock } from 'lucide-react';
+import { Award, CheckCircle2, XCircle, ShieldCheck, ChevronRight, ArrowRight, Wallet, RotateCcw, Banknote, Mail, Clock, CreditCard } from 'lucide-react';
 import { apiClient } from '@/lib/axios';
 import { PageShell } from '@/components/PageShell';
 
@@ -138,6 +138,8 @@ function ExamPortalContent() {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
+    const [paymentGateModal, setPaymentGateModal] = useState<boolean>(false);
+
     const startAssessment = async () => {
         setStarting(true);
         try {
@@ -159,11 +161,19 @@ function ExamPortalContent() {
             }
         } catch (err: any) {
             console.error("Failed to start assessment:", err);
-            const errCode = err.response?.data?.error;
+            const errCode = err.response?.data?.error || err.response?.data?.code;
             const errMsg = err.response?.data?.message;
 
-            if (errCode === 'PARTIAL_LIMIT_EXCEEDED' || errMsg?.includes('partial')) {
-                alert("Candidates with only an initial partial payment cannot take the third ticket exam. Please settle your full payment balance to unlock the third ticket exam.");
+            if (
+                errCode === 'FULL_BALANCE_REQUIRED' || 
+                errCode === 'PARTIAL_LIMIT_EXCEEDED' || 
+                errCode === 'DEPOSIT_REQUIRED' ||
+                errCode === 'PAYMENT_REQUIRED' ||
+                errMsg?.includes('balance') || 
+                errMsg?.includes('partial') ||
+                errMsg?.includes('deposit')
+            ) {
+                setPaymentGateModal(true);
             } else if (err.response?.status !== 401) {
                 alert(errMsg || errCode || "Failed to start assessment");
             }
@@ -539,6 +549,73 @@ function ExamPortalContent() {
                     </div>
                 )}
             </div>
+
+            {/* PAYMENT GATE MODAL (CA03S01: 4th attempt / balance requirement prompts payment method selection) */}
+            {paymentGateModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 text-center space-y-5 animate-in zoom-in-95 duration-200">
+                        <div className="w-16 h-16 bg-amber-100 text-amber-800 rounded-2xl flex items-center justify-center mx-auto">
+                            <Wallet className="h-8 w-8 text-amber-600" />
+                        </div>
+
+                        <div>
+                            <span className="text-xs font-bold uppercase tracking-widest text-amber-600 block mb-1">
+                                Milestone Payment Gate (CA03S01)
+                            </span>
+                            <h3 className="text-xl font-extrabold text-slate-900">
+                                Full Balance Settlement Required
+                            </h3>
+                        </div>
+
+                        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed text-left bg-slate-50 border border-slate-200 rounded-2xl p-4 font-medium">
+                            Candidates with an initial 50% commitment deposit may complete up to three (3) competency unit examinations. 
+                            <br /><br />
+                            To unlock this 4th examination and finalize credential issuance for your host employer (<strong>MACA Limited</strong>), please settle your remaining course balance.
+                            <br /><br />
+                            <span className="text-emerald-700 font-bold block">
+                                🛡️ Remember: 100% of all expenditures are refunded by MACA Limited upon ticket acquisition under Policy 3G.
+                            </span>
+                        </p>
+
+                        <div className="space-y-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => router.push('/payments/crypto')}
+                                className="w-full py-3.5 px-6 bg-[#EAA240] hover:bg-[#d89130] text-[#000000] font-black rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-wider"
+                            >
+                                <Wallet className="h-4 w-4" />
+                                Pay via Bitget Web3 Crypto (Instant, 0% Fee)
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => router.push('/payments/card')}
+                                className="w-full py-3.5 px-6 bg-[#000000] hover:bg-slate-900 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-wider"
+                            >
+                                <CreditCard className="h-4 w-4 text-[#ED9139]" />
+                                Pay via Card Gateway
+                            </button>
+
+                            <div className="pt-2 flex items-center justify-between text-xs text-slate-500">
+                                <button
+                                    type="button"
+                                    onClick={() => setPaymentGateModal(false)}
+                                    className="hover:text-slate-800 font-medium"
+                                >
+                                    Dismiss &amp; Review Syllabus
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => router.push('/payments/faq')}
+                                    className="hover:text-slate-800 font-bold text-[#ED9139]"
+                                >
+                                    Payment FAQ &rarr;
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </PageShell>
     );
 }

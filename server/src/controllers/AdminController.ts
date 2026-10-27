@@ -294,6 +294,14 @@ export class AdminController {
             const parsedTotalCost = parseFloat(totalCost || '0');
             const parsedSubsidy = parseFloat(subsidyPercentage || String(user.subsidyPercentage || 0));
 
+            // Persist the invoice record first to obtain invoice ID
+            const createdInvoice = await Invoice.create({
+                applicantId: user.id,
+                purpose: invoiceType,
+                amountInUSD: parsedFinalAmount,
+                walletAddress: walletAddress || null,
+            });
+
             await sendInvoiceEmail(
                 email || user.email,
                 user.fullName,
@@ -303,18 +311,11 @@ export class AdminController {
                 parsedSubsidy,
                 parsedFinalAmount,
                 attachments,
-                walletAddress || undefined
+                walletAddress || undefined,
+                createdInvoice.id
             );
 
-            // Persist the invoice record
-            await Invoice.create({
-                applicantId: user.id,
-                purpose: invoiceType,
-                amountInUSD: parsedFinalAmount,
-                walletAddress: walletAddress || null,
-            });
-
-            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Invoice email dispatched successfully' });
+            res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Invoice email dispatched successfully', invoiceId: createdInvoice.id });
         } catch (error: any) {
             console.error('[AdminController.dispatchInvoiceEmail]', error);
             res.status(CONSTANTS.HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: error.message || CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR });
@@ -340,6 +341,7 @@ export class AdminController {
             const { Invoice, User } = require('../models');
             const { sendReceiptEmail } = require('../utils/email');
             const id = parseInt(req.params.id as string, 10);
+            const paymentType: 'complete' | 'partial' = req.body?.paymentType === 'partial' ? 'partial' : 'complete';
 
             const invoice = await Invoice.findByPk(id, {
                 include: [{ model: User, as: 'applicant' }]
@@ -370,7 +372,8 @@ export class AdminController {
                     parseFloat(invoice.amountInUSD || '0'),
                     invoice.id,
                     attachments,
-                    invoice.walletAddress || undefined
+                    invoice.walletAddress || undefined,
+                    paymentType
                 );
             }
 
@@ -382,8 +385,9 @@ export class AdminController {
             const senderLabel = receiptType === 'blue-collar' ? 'BlueCollar Infrastructure' : 'CertHero RTO Training';
             res.status(200).json({
                 success: true,
-                message: `Receipt generated, marked as paid, and dispatched via ${senderLabel}.`,
-                invoice
+                message: `Receipt generated (${paymentType}), marked as paid, and dispatched via ${senderLabel}.`,
+                invoice,
+                paymentType
             });
         } catch (error: any) {
             console.error('[AdminController.generateInvoiceReceipt]', error);

@@ -5,7 +5,7 @@ import {
 import { ApplicantDocData } from './documentGenerator';
 
 export interface EmailDefinition {
-    number: number;
+    number: number | string;
     name: string;
     senderType: string;
     fromAddress: string;
@@ -25,13 +25,14 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
         : 'Monday, 27 October 2026 at 10:00 AM (AWST)';
     const wallet = data.walletAddress || 'TX7k9VwE3nQ9LmPzR4tY2uA1sD5fG8hJ0k';
     const amount = data.amountAUD || 720;
+    const subsidy = data.subsidyPercentage ?? 70;
 
     return [
         {
             number: 1,
             name: 'Welcome email',
             senderType: 'System - Blue - Event',
-            fromAddress: 'Blue Collar Recruitment <info@jobnexe.com>',
+            fromAddress: 'Blue Collar Recruitment <info@bluecollarrecruitment.co>',
             toAddress: `${name} <${email}>`,
             subject: 'Welcome to Blue Collar Recruitment — Overseas FIFO Portal',
             trigger: 'Registration & Onboarding Initiation',
@@ -52,7 +53,7 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             number: 2,
             name: 'Psychometric Module 1 mail',
             senderType: 'System - Blue - Event',
-            fromAddress: 'Blue Collar Recruitment <info@jobnexe.com>',
+            fromAddress: 'Blue Collar Recruitment <info@bluecollarrecruitment.co>',
             toAddress: `${name} <${email}>`,
             subject: 'Stage 1.1: Psychometric Assessment Module 1 Access Unlocked',
             trigger: 'CV Verified / Screening Passed',
@@ -68,7 +69,7 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             number: 3,
             name: 'Psychometric Module 2 mail',
             senderType: 'System - Blue - Cron',
-            fromAddress: 'Blue Collar Recruitment <info@jobnexe.com>',
+            fromAddress: 'Blue Collar Recruitment <info@bluecollarrecruitment.co>',
             toAddress: `${name} <${email}>`,
             subject: 'Stage 1.2: Psychometric Assessment Module 2 Activation',
             trigger: 'Module 1 Passed Cron Follow-up',
@@ -84,7 +85,7 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             number: 4,
             name: 'Application submitted mail',
             senderType: 'System - Blue - Event',
-            fromAddress: 'Blue Collar Recruitment <info@jobnexe.com>',
+            fromAddress: 'Blue Collar Recruitment <info@bluecollarrecruitment.co>',
             toAddress: `${name} <${email}>`,
             subject: 'Application Successfully Submitted — Under Operational Review',
             trigger: 'Applicant Submits Completed Application',
@@ -99,7 +100,7 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             number: 5,
             name: 'Application accepted mail',
             senderType: 'System - Blue - Cron',
-            fromAddress: 'Blue Collar Recruitment <info@jobnexe.com>',
+            fromAddress: 'Blue Collar Recruitment <info@bluecollarrecruitment.co>',
             toAddress: `${name} <${email}>`,
             subject: 'Congratulations: Your FIFO Application Has Been Accepted',
             trigger: '12-Hour Automated Application Run (Feature Group 14)',
@@ -119,15 +120,15 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             number: 6,
             name: 'Employer Selection mail (M06)',
             senderType: 'System - Blue - Cron',
-            fromAddress: 'Blue Collar Recruitment <info@jobnexe.com>',
+            fromAddress: 'Blue Collar Recruitment <info@bluecollarrecruitment.co>',
             toAddress: `${name} <${email}>`,
             subject: 'Action Required: Select Your FIFO Host Employer (Stage: Ongoing)',
             trigger: '24 Hours Post-Acceptance Cron Dispatch',
             contentHtml: `
                 <p>Dear ${name},</p>
                 <p>Your recruitment stage has been updated to: <strong>Employer Selection — Ongoing</strong>.</p>
-                <p>Below are the current Tier-1 Australian mining employers offering visa sponsorship slots for the position of <strong>${role}</strong>:</p>
-                <table border="1" cellpadding="6" style="border-collapse: collapse;">
+                <p>Below are the current Tier-1 Australian mining employers offering approved Subclass 482 visa sponsorship slots for the position of <strong>${role}</strong>:</p>
+                <table border="1" cellpadding="6" style="border-collapse: collapse; width: 100%;">
                     <thead>
                         <tr style="background-color: #0b3486; color: white;">
                             <th>Host Employer</th>
@@ -138,44 +139,81 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
                     </thead>
                     <tbody>
                         <tr>
-                            <td><strong>${employer}</strong></td>
+                            <td><strong>MACA Limited</strong></td>
                             <td>${role}</td>
-                            <td>5 Slots Available</td>
+                            <td>3 Slots Available</td>
                             <td><a href="https://www.maca.net.au">maca.net.au</a></td>
                         </tr>
                         <tr>
                             <td><strong>Mineral Resources Ltd</strong></td>
                             <td>${role}</td>
-                            <td>3 Slots Available</td>
+                            <td>2 Slots Available</td>
                             <td><a href="https://www.mineralresources.com.au">mineralresources.com.au</a></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Northern Star Resources Ltd.</strong></td>
+                            <td>${role}</td>
+                            <td>2 Slots Available</td>
+                            <td><a href="https://www.nsrltd.com">nsrltd.com</a></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Rio Tinto</strong></td>
+                            <td>${role}</td>
+                            <td>3 Slots Available</td>
+                            <td><a href="https://www.riotinto.com">riotinto.com</a></td>
                         </tr>
                     </tbody>
                 </table>
+                <p><em>Total Host Employer Positions Available: 10 | Total Nominated Candidate Pool: 12 qualified candidates (Sum of slots + 2). Slots are locked upon receipt of signed forms and ticket commencement.</em></p>
                 <p><strong>Official Australian Visa Sponsorship Verification:</strong> You can independently verify registered Australian sponsor employers on the official register: <a href="https://www.workvisalawyers.com.au/images/Approved-Sponsor-List-2025.pdf">Approved Sponsor List (2025 Release)</a>.</p>
                 <p><strong>Action Required:</strong> Log in to your portal, download your pre-populated <strong>Employer Selection Form</strong>, sign it, and upload the signed document within 48 hours.</p>
                 <p>Yours faithfully,<br><strong>Blue Collar Employer Partnerships Team</strong></p>
             `
         },
         {
-            number: 7,
-            name: 'Employer Selection filled mail',
-            senderType: 'System - Blue - Cron',
-            fromAddress: 'Blue Collar Recruitment <info@jobnexe.com>',
+            number: '07a',
+            name: 'Employer selection submitted email - 7a',
+            senderType: 'System - Blue - Event',
+            fromAddress: 'Blue Collar Recruitment <info@bluecollarrecruitment.co>',
             toAddress: `${name} <${email}>`,
             subject: 'Employer Selection Form Received — Verification In Progress',
-            trigger: 'Candidate Uploads Signed Employer Selection Form',
+            trigger: 'Candidate Submits Signed Employer Selection Form on Dashboard',
             contentHtml: `
                 <p>Dear ${name},</p>
-                <p>We confirm receipt of your signed <strong>Employer Selection Form</strong> nominating <strong>${employer}</strong> as your preferred Australian host employer.</p>
-                <p>Our corporate liaison desk is currently validating your selection against active quota allocations. A formal confirmation and interview schedule will follow within 5 hours.</p>
-                <p>Yours faithfully,<br><strong>Blue Collar Employer Partnerships Team</strong></p>
+                <p>We confirm that Blue Collar Recruitment has successfully received your submitted <strong>Employer Selection Form</strong> for the position of <strong>${role}</strong>.</p>
+                <p>Your nominated employer selection (<strong>${employer}</strong>) has been securely registered in our placement system. Our corporate partnerships desk is now validating your submission against active host employer quota allocations, visa compliance standards, and Western Australian resources project deployment schedules.</p>
+                <p>Your candidate portal status has been updated to: <strong>Employer Selection — Under Review</strong>.</p>
+                <p>Our liaison team will provide a formal allocation update upon completion of the quota verification process.</p>
+                <p>Yours faithfully,<br><strong>Blue Collar Employer Partnerships Team</strong><br>Blue Collar Recruitment Pty Ltd</p>
+            `
+        },
+        {
+            number: '07b',
+            name: 'Employer selection filled email - 7b',
+            senderType: 'System - Blue - Event',
+            fromAddress: 'Blue Collar Recruitment <info@bluecollarrecruitment.co>',
+            toAddress: `${name} <${email}>`,
+            subject: 'Important Notice: Employer Selection Quota Filled — Alternative Allocation Available',
+            trigger: 'Submitted Selection Does Not Match MACA (isEmploying = true)',
+            contentHtml: `
+                <p>Dear ${name},</p>
+                <p>We are writing to provide an important operational update regarding your recent Employer Selection submission for the position of <strong>${role}</strong>.</p>
+                <p>Due to high applicant demand and statutory Subclass 482 visa nomination quota caps, the allocated vacancies for your previously selected employer have now been <strong>fully filled and closed</strong> for the current intake.</p>
+                <p>To ensure your international mobilization timeline is protected and you do not lose your candidate standing, Blue Collar Recruitment has reserved your priority placement with our primary Tier-1 host employer: <strong>MACA Limited</strong>. MACA Limited is currently the <strong>only available approved sponsor</strong> with active open vacancies and immediate Western Australian mine site deployment.</p>
+                <p><strong>Action Required:</strong></p>
+                <ol>
+                    <li>Please review your updated <strong>Employer Selection Form</strong> containing exclusively <strong>MACA Limited</strong> (attached to this email and available on your portal).</li>
+                    <li>Log in to your candidate dashboard (<a href="https://www.bluecollarrecruitment.co/dashboard/nominations">Employer Selection Portal</a>), where MACA Limited is now presented as your exclusive available option.</li>
+                    <li>Sign and upload your updated Employer Selection Form confirming your acceptance of MACA Limited to proceed immediately to technical interview scheduling.</li>
+                </ol>
+                <p>Yours faithfully,<br><strong>Troy Latuff</strong><br>Chief Executive Officer<br>Blue Collar Recruitment Pty Ltd</p>
             `
         },
         {
             number: 8,
             name: 'Employer Selection accepted mail',
             senderType: 'System - Blue - Cron',
-            fromAddress: 'Blue Collar Recruitment <info@jobnexe.com>',
+            fromAddress: 'Blue Collar Recruitment <info@bluecollarrecruitment.co>',
             toAddress: `${name} <${email}>`,
             subject: 'Employer Selection Confirmed — Next Step: Technical Interview',
             trigger: '5 Hours Post-Submission Cron Match',
@@ -191,7 +229,7 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             number: 9,
             name: 'Notification of interview date and time mail',
             senderType: 'Admin - Employer - Event',
-            fromAddress: 'MACA Mining Recruitment <recruitment@jobnexe.com>',
+            fromAddress: 'MACA Mining Recruitment <recruitment@bluecollarrecruitment.co>',
             toAddress: `${name} <${email}>`,
             subject: 'Technical Video Interview Confirmation: MACA Limited / WA Mining Operations',
             trigger: 'Admin / Employer Schedules Interview (INAS01)',
@@ -212,7 +250,7 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             number: 10,
             name: 'Hire procedure email',
             senderType: 'System - Employer - Cron (INA02)',
-            fromAddress: 'MACA Limited Human Resources <recruitment@jobnexe.com>',
+            fromAddress: 'MACA Limited Human Resources <recruitment@bluecollarrecruitment.co>',
             toAddress: `${name} <${email}>`,
             subject: 'MACA Employee Onboarding Guide: Interview to Mobilisation Roadmap',
             trigger: 'INA02 Cron (1 Hour Post-Interview Notice)',
@@ -228,26 +266,33 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             number: 11,
             name: 'Call for ticket sponsorship mail',
             senderType: 'System - Blue - Cron',
-            fromAddress: 'Blue Collar Recruitment <info@jobnexe.com>',
+            fromAddress: 'Blue Collar Recruitment <info@bluecollarrecruitment.co>',
             toAddress: `${name} <${email}>`,
             subject: 'Action Required: Invitation to Apply for FIFO Ticket Training Sponsorship',
             trigger: 'TSAS01 Cron (3 Hours Post-Interview Notice)',
             contentHtml: `
                 <p>Dear ${name},</p>
-                <p>To ensure total compliance with Australian mining regulations ahead of your interview and visa lodgement, you are invited to apply for <strong>Ticket Training Sponsorship</strong>.</p>
-                <p>Please visit your candidate dashboard to:</p>
-                <ol>
-                    <li>Upload any existing Australian or recognized tickets you already possess.</li>
-                    <li>Submit your application for a subsidized training allocation on any prerequisite gap tickets.</li>
+                <p>Following the successful approval of your host employer nomination for the position of <strong>${role}</strong>, you are formally invited to apply for prerequisite <strong>FIFO Ticket Training Sponsorship</strong>.</p>
+                <p>Please note the following critical terms governing your sponsorship framework:</p>
+                <ol style="line-height: 1.6; margin-top: 12px; margin-bottom: 16px;">
+                    <li><strong>Temporary Partial Coverage:</strong> Please be advised that your host employer, <strong>${employer}</strong>, only temporarily covers ticket sponsorship partially at this preparatory stage.</li>
+                    <li><strong>Refund Account Notice:</strong> Please keep a close eye on your mailbox, as <strong>${employer}</strong> will ask for your nominated bank account details to deposit your refund soon.</li>
+                    <li><strong>Commitment Rationale:</strong> The employer demands a temporary financial commitment from the applicant to reduce drop-off rates and in turn reduce financial waste for the employer on unutilized training allocations.</li>
+                    <li><strong>No Fees to Blue Collar Recruitment:</strong> Applicants are not in any way paying Blue Collar Recruitment Pty Ltd for recruitment services, representation, or visa nomination coordination.</li>
+                    <li><strong>Payment Directly to Cert Hero RTO After Enrollment:</strong> Applicants shall pay <strong>Cert Hero RTO</strong> after they have been enrolled for the ticket courses; not before, but a commitment deposit will be required to complete the courses and write the examinations.</li>
+                    <li><strong>Flexible Installment Options:</strong> Applicants can pay half of the fee initially and complete the balance midway or towards the end of the training.</li>
+                    <li><strong>Refund Guarantee Policy:</strong> The employer shall refund <strong>100%</strong> of your expenditure if you successfully complete the training and acquire the necessary tickets, and <strong>80%</strong> on failure to do so, with the 20% accounting for institutional admin fees.</li>
+                    <li><strong>Approved Coverage & Payable Amount:</strong> Your approved employer subsidy coverage is <strong>${subsidy}%</strong>, leaving an applicant payable commitment amount of <strong>$${amount.toFixed(2)} AUD</strong>.</li>
                 </ol>
-                <p>Yours faithfully,<br><strong>Blue Collar Training & Sponsorship Desk</strong></p>
+                <p>Please log in to your candidate dashboard (<a href="https://www.bluecollarrecruitment.co/dashboard/tickets">Tickets Portal</a>) to verify your competency requirements and submit your sponsorship application within 48 hours.</p>
+                <p>Yours faithfully,<br><strong>Blue Collar Training & Sponsorship Desk</strong><br>Blue Collar Recruitment Pty Ltd</p>
             `
         },
         {
             number: 12,
             name: 'Ticket sponsorship accepted mail',
             senderType: 'System - Blue - Cron',
-            fromAddress: 'Blue Collar Recruitment <info@jobnexe.com>',
+            fromAddress: 'Blue Collar Recruitment <info@bluecollarrecruitment.co>',
             toAddress: `${name} <${email}>`,
             subject: 'Approved: Ticket Training Sponsorship Granted (70% Employer Subsidy)',
             trigger: 'TSAS04 Cron (6 Hours Post-Sponsorship Application)',
@@ -259,10 +304,36 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             `
         },
         {
+            number: '12b',
+            name: 'Employer refund account and sponsorship terms email - 12b',
+            senderType: 'System - Employer - Cron',
+            fromAddress: 'MACA Mining Recruitment <recruitment@bluecollarrecruitment.co>',
+            toAddress: `${name} <${email}>`,
+            subject: 'MACA Limited: Refund Banking Details Request & Prerequisite Training Terms',
+            trigger: 'Immediately Post-Call for Ticket Sponsorship',
+            contentHtml: `
+                <p>Dear ${name},</p>
+                <p>Following your employer allocation to <strong>MACA Limited</strong> for the position of <strong>${role}</strong>, our corporate finance and mobilization department requires your banking particulars for our refund register.</p>
+                <p><strong>Action Required — Refund Bank Account Submission:</strong><br>
+                Please reply directly to this email with your nominated bank account details (including Account Name, Account Number / IBAN, Bank Name, Branch, and International SWIFT / BIC Code). These details will be placed on official file for the direct deposit and collection of your refunds of the money spent on mandatory training.</p>
+                <p><strong>Corporate Sponsorship & Verification Terms:</strong></p>
+                <ol style="line-height: 1.6; margin-top: 12px; margin-bottom: 16px;">
+                    <li><strong>Temporary Partial Coverage:</strong> Please be advised that MACA Limited only temporarily covers ticket sponsorship partially at this offshore preparation stage.</li>
+                    <li><strong>Financial Commitment Rationale:</strong> Our executive management requires a temporary financial commitment from candidates to reduce drop-off rates and protect our allocated workforce sponsorship budget from unnecessary financial waste on uncompleted modules.</li>
+                    <li><strong>Institutional Training Payment to Cert Hero RTO:</strong> You shall pay accredited training provider <strong>Cert Hero RTO</strong> strictly after you have been successfully enrolled in the prerequisite ticket courses (not before). This commitment deposit is required to unlock your learning syllabus and sit your competency examinations.</li>
+                    <li><strong>Flexible Installment Options:</strong> To support your financial planning, you are permitted to pay half (50%) of the fee initially and complete the balance midway or towards the end of the training.</li>
+                    <li><strong>100% Employer Refund Covenant:</strong> MACA Limited shall refund <strong>100%</strong> of your expenditure upon successful completion of your training and acquisition of the necessary tickets. In the event of failure to acquire the tickets, the employer shall refund <strong>80%</strong>, with the remaining 20% retained for institutional RTO assessment and administrative fees.</li>
+                    <li><strong>Coverage Percentage & Payable Commitment:</strong> Under your approved allocation, MACA Limited covers <strong>${subsidy}%</strong> of the ticketing costs, leaving an applicant payable commitment of <strong>$${amount.toFixed(2)} AUD</strong>.</li>
+                </ol>
+                <p>Please reply with your bank account details at your earliest convenience to ensure uninterrupted candidate processing.</p>
+                <p>Yours faithfully,<br><strong>MACA Limited Recruitment & Human Resources</strong><br>45 Briggs St, Welshpool WA 6106 | maca.net.au</p>
+            `
+        },
+        {
             number: 13,
             name: 'Ticket courses enrollment mail',
             senderType: 'System - Rto - Cron',
-            fromAddress: 'CertHero RTO Partner <info@certhero.com.au>',
+            fromAddress: 'CertHero Admissions <tickets@certhero.study>',
             toAddress: `${name} <${email}>`,
             subject: 'CertHero RTO Course Enrollment Confirmation & Learner Schedule',
             trigger: 'Course Enrollment Stage Cron',
@@ -270,23 +341,24 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
                 <p>Dear ${name},</p>
                 <p>Welcome to <strong>CertHero RTO</strong> (Registered Training Organisation Partner). You have been officially enrolled in your prerequisite mining competency coursework for <strong>${role}</strong>.</p>
                 <p>Attached to this email is your <strong>CertHero Enrollment Letter</strong>, outlining your enrolled units, mode of instruction (Online Theory vs On-site Practical), and assessment criteria.</p>
-                <p><strong>Mandatory Completion Window:</strong> All online examinations must be completed within <strong>16 days</strong> from the date of this enrollment notice.</p>
-                <p>Yours faithfully,<br><strong>CertHero Admissions & Student Administration</strong><br>Perth, Western Australia | certhero.com.au</p>
+                <p><strong>Mandatory Completion Window:</strong> All online examinations must be completed by <strong>${new Date(Date.now() + 16 * 86400000).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}</strong> (strictly 16 days from this enrollment notice) to maintain your employer sponsorship status.</p>
+                <p>Learner support & queries: <a href="mailto:tickets@certhero.study">tickets@certhero.study</a>.</p>
+                <p>Yours faithfully,<br><strong>CertHero Admissions & Student Administration</strong><br>Perth, Western Australia | tickets@certhero.study</p>
             `
         },
         {
             number: 14,
             name: 'Contract delivery mail',
             senderType: 'System - Blue - Event',
-            fromAddress: 'Blue Collar Recruitment <info@jobnexe.com>',
+            fromAddress: 'Blue Collar Recruitment <info@bluecollarrecruitment.co>',
             toAddress: `${name} <${email}>`,
             subject: 'Sponsored Candidate Competency Agreement — Action Required',
             trigger: 'Contract Generation Event',
             contentHtml: `
                 <p>Dear ${name},</p>
-                <p>Your official <strong>Sponsored Candidate Competency Agreement</strong> is now ready for review and ratification on your portal.</p>
-                <p><strong>Clarification:</strong> This document is a Ticket Sponsorship & Verification Agreement, not an employment contract. It guarantees that upon acquiring and verifying prerequisite tickets, ${employer} will proceed with your formal visa nomination.</p>
-                <p><strong>Refund Guarantee:</strong> Under our guarantee, 100% of your residual candidate contribution ($${amount} AUD) is refunded by ${employer} upon arrival and site deployment.</p>
+                <p>Your official <strong>FIFO Employment Ticketing, Training & Visa Sponsorship Candidate Agreement</strong> is now ready for review and ratification on your portal.</p>
+                <p><strong>Clarification:</strong> This document is issued by Blue Collar Recruitment Pty Limited (BC Recruit Pty Ltd) as a Ticket Sponsorship & Prerequisite Verification Agreement, not an employment contract. It guarantees that upon acquiring and verifying prerequisite tickets, ${employer} will proceed with your formal visa nomination.</p>
+                <p><strong>100% Refund Guarantee:</strong> Under the Blue Collar Partner Guarantee, 100% of your residual candidate commitment deposit ($${amount} AUD) is refunded by ${employer} upon arrival and site deployment, or refunded if Blue Collar fails to secure placement.</p>
                 <p>Yours faithfully,<br><strong>Blue Collar Legal & Compliance Office</strong></p>
             `
         },
@@ -294,7 +366,7 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             number: 15,
             name: 'Contract agreement acknowledgement mail',
             senderType: 'System - Blue - Event',
-            fromAddress: 'Blue Collar Recruitment <info@jobnexe.com>',
+            fromAddress: 'Blue Collar Recruitment <info@bluecollarrecruitment.co>',
             toAddress: `${name} <${email}>`,
             subject: 'Contract Agreement Ratified — Official Tax Invoice Issued',
             trigger: 'Candidate Ratifies Sponsorship Contract',
@@ -309,20 +381,44 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             number: 16,
             name: 'Invoice mail',
             senderType: 'System - Rto - Event',
-            fromAddress: 'CertHero Finance <finance@certhero.com.au>',
+            fromAddress: 'CertHero Finance <tickets@certhero.study>',
             toAddress: `${name} <${email}>`,
             subject: 'Tax Invoice #INV-53: CertHero Competency Courseware & Verification',
             trigger: 'Invoice Creation Event',
             contentHtml: `
                 <p>Dear ${name},</p>
-                <p>Please find attached your official Tax Invoice (<strong>#INV-53</strong>) covering your courseware, LMS assessment modules, and statement of attainment verification for <strong>${role}</strong>.</p>
-                <table border="1" cellpadding="6" style="border-collapse: collapse;">
+                <p>Please find attached your official Tax Invoice (<strong>#INV-53</strong>) covering your prerequisite mining competency coursework, LMS assessment modules, and statement of attainment verification for the position of <strong>${role}</strong>.</p>
+                <table border="1" cellpadding="6" style="border-collapse: collapse; width: 100%; margin: 16px 0;">
                     <tr><td><strong>Total Courseware Cost:</strong></td><td>$2,400.00 AUD</td></tr>
-                    <tr><td><strong>Approved 70% Subsidy:</strong></td><td>-$1,680.00 AUD</td></tr>
-                    <tr><td><strong>Net Candidate Contribution:</strong></td><td><strong>$${amount}.00 AUD (100% Refundable)</strong></td></tr>
+                    <tr><td><strong>Approved 70% Employer Subsidy:</strong></td><td>-$1,680.00 AUD</td></tr>
+                    <tr><td><strong>Net Candidate Contribution:</strong></td><td><strong>$${amount}.00 AUD (Refundable Commitment Deposit)</strong></td></tr>
                 </table>
-                <p><strong>Payment Channels:</strong> Instant Cryptocurrency Gateway (USDT TRC20) or International Swift Wire Transfer to our escrow account.</p>
-                <p><em>Refund Policy: 100% refunded by ${employer} upon mobilisation.</em></p>
+                <div style="background-color: #f8fafc; padding: 14px; border-left: 4px solid #0b3486; border-radius: 6px; margin: 16px 0;">
+                    <p style="margin: 0 0 6px 0; color: #0b3486; font-weight: bold; font-size: 13px;">Employer Refund Policy Guarantee</p>
+                    <p style="margin: 0; color: #334155; font-size: 13px; line-height: 1.5;">
+                        Under the host employer covenant, MACA Limited shall refund <strong>100%</strong> of your training expenditure upon successful completion of your training and acquisition of the required tickets, and <strong>80%</strong> on failure to do so, with the 20% accounting for institutional admin fees.
+                    </p>
+                </div>
+                <div style="background-color: #f0fdf4; padding: 14px; border-left: 4px solid #16a34a; border-radius: 6px; margin: 16px 0;">
+                    <p style="margin: 0 0 6px 0; color: #166534; font-weight: bold; font-size: 13px;">Payment Scheduling &amp; Real-Time Manager Guidance</p>
+                    <p style="margin: 0; color: #15803d; font-size: 13px; line-height: 1.5;">
+                        Please respond directly to this invoice email with your preferred date and time of payment so that your dedicated application manager can be online and offer assistance, if needed.
+                    </p>
+                </div>
+                <p><strong>Available Payment Channels:</strong></p>
+                <div style="margin: 16px 0; padding: 14px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <p style="margin: 0 0 4px 0;"><strong>1. Cryptocurrency Gateway (USDT TRC20 — Fastest):</strong> <a href="https://www.certhero.study/payments/crypto?invoice=INV-53">Go to Crypto Checkout &rarr;</a></p>
+                    <p style="margin: 0 0 4px 0; font-size: 12px; color: #166534;">• <em>Pros:</em> Instant blockchain verification, zero international wire delays, low network fees, direct 1:1 settlement.</p>
+                    <p style="margin: 0 0 10px 0; font-size: 12px; color: #991b1b;">• <em>Cons:</em> Requires a supported Web3 wallet (Bitget recommended).</p>
+
+                    <p style="margin: 10px 0 4px 0;"><strong>2. Credit / Debit Card Gateway:</strong> <a href="https://www.certhero.study/payments/card?invoice=INV-53">Go to Card Payment &rarr;</a></p>
+                    <p style="margin: 0 0 4px 0; font-size: 12px; color: #166534;">• <em>Pros:</em> Familiar checkout interface, immediate card entry.</p>
+                    <p style="margin: 0 0 4px 0; font-size: 12px; color: #991b1b;">• <em>Cons:</em> Cross-border transaction surcharges (3.5%–5%), potential regional merchant processing restrictions on international remittances.</p>
+                    <p style="margin: 4px 0 0 0; font-size: 11px; color: #64748b; font-style: italic;">
+                        • <em>Agent Proximity &amp; Cost Reduction:</em> If card clearing is restricted by regional banks, selecting card payment seamlessly connects you with your online application manager to route via our low-fee digital settlement protocol, eliminating wire delays and excess bank surcharges.
+                    </p>
+                </div>
+                <p>Support inquiries: <a href="mailto:tickets@certhero.study">tickets@certhero.study</a>.</p>
                 <p>Yours faithfully,<br><strong>CertHero RTO Accounts Department</strong></p>
             `
         },
@@ -330,21 +426,37 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             number: 17,
             name: 'Crypto payment direction mail',
             senderType: 'System - Rto - Event (Trigger, PA02, PCAS02)',
-            fromAddress: 'CertHero Finance <finance@certhero.com.au>',
+            fromAddress: 'CertHero Finance <tickets@certhero.study>',
             toAddress: `${name} <${email}>`,
             subject: 'Cryptocurrency Gateway Protocol: USDT TRC20 Payment Instructions',
             trigger: 'Candidate Initiates Crypto Payment Selection',
             contentHtml: `
                 <p>Dear ${name},</p>
-                <p>You have selected the Cryptocurrency gateway for settling your subsidized candidate verification fee.</p>
-                <p>Please dispatch your transfer using the following verified credentials:</p>
-                <table border="1" cellpadding="6" style="border-collapse: collapse;">
+                <p>We understand that navigating international payments for Australian career training can feel unfamiliar. To ensure your funds are protected and to avoid the multi-day delays and exorbitant wire surcharges of traditional cross-border banking, CertHero has partnered with <strong>Bitget</strong>, one of the world's most trusted, highly regulated Web3 financial platforms with over 30 million verified global users.</p>
+                <p>Settling your subsidized training deposit via <strong>USDT on the Tron (TRC20) network</strong> is fast, completely secure, costs less than $1 in network gas, and confirms on the blockchain within 2 minutes. Our finance desk verifies your hash immediately so your learning modules and exams are unlocked without delay.</p>
+                <table border="1" cellpadding="6" style="border-collapse: collapse; width: 100%; margin: 16px 0;">
                     <tr><td><strong>Asset:</strong></td><td>USDT (Tether USD)</td></tr>
                     <tr><td><strong>Network:</strong></td><td><strong>Tron Network (TRC20)</strong></td></tr>
-                    <tr><td><strong>Amount Due:</strong></td><td>$468.00 USDT (Equivalent of $${amount} AUD)</td></tr>
-                    <tr><td><strong>Wallet Address:</strong></td><td><code>${wallet}</code></td></tr>
+                    <tr><td><strong>Amount Due:</strong></td><td>$468.00 USDT (Equivalent of $${amount}.00 AUD)</td></tr>
+                    <tr><td><strong>Deposit Wallet Address:</strong></td><td><code>${wallet}</code></td></tr>
                 </table>
-                <p><strong>Crucial Warning:</strong> Ensure you transfer strictly over the TRC20 (Tron) network. Dispatches via ERC20, BSC, or other protocols will fail. Following dispatch, submit your transaction hash on your billing tab for instant automated clearance.</p>
+                <p><strong>Click or Scan to Pay via Bitget:</strong></p>
+                <p style="text-align: center; margin: 16px 0;">
+                    <a href="https://bkcode.vip?action=dapp&url=https%3A%2F%2Fwww.certhero.study%2Fpayments%2Fcrypto%3Finvoice%3DINV-53" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #EAA240; color: #000000; font-weight: bold; text-decoration: none; border-radius: 8px;">
+                        Open Bitget Wallet / Pay Online &rarr;
+                    </a>
+                </p>
+                <p><em>(If you do not currently have the Bitget wallet installed, clicking the link or scanning will guide you to download it directly for your device).</em></p>
+                <p><strong>Download Bitget Wallet:</strong></p>
+                <ul>
+                    <li><a href="https://apps.apple.com/app/bitget-wallet-crypto-web3/id1552528731" target="_blank">Download on Apple App Store (iOS)</a></li>
+                    <li><a href="https://play.google.com/store/apps/details?id=com.bitkeep.wallet" target="_blank">Download on Google Play Store (Android)</a></li>
+                    <li><a href="https://chromewebstore.google.com/detail/bitget-wallet-crypto-web/jiidiaihnpaekcfingnlagblgnbihjem" target="_blank">Download Chrome Browser Extension</a></li>
+                </ul>
+                <p><strong>Payment Instructions &amp; Verification:</strong><br>
+                For complete step-by-step guidance, please visit your <a href="https://www.certhero.study/payments/crypto?invoice=INV-53">CertHero Crypto Checkout Page</a>.</p>
+                <p>Have questions about crypto security, refunds, or payment traceability? Please review our official <a href="https://www.certhero.study/faq#crypto" target="_blank">Crypto Payment FAQ &amp; Guidance</a>.</p>
+                <p>Direct assistance: <a href="mailto:tickets@certhero.study">tickets@certhero.study</a>.</p>
                 <p>Yours faithfully,<br><strong>CertHero Digital Settlement Desk</strong></p>
             `
         },
@@ -352,22 +464,23 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             number: 18,
             name: 'Receipt mail',
             senderType: 'Admin - Rto - Manual',
-            fromAddress: 'CertHero Finance <finance@certhero.com.au>',
+            fromAddress: 'CertHero Finance <tickets@certhero.study>',
             toAddress: `${name} <${email}>`,
-            subject: 'Official Payment Receipt #REC-53 — Full LMS Access Unlocked',
-            trigger: 'Invoice Marked Paid (Full or Half)',
+            subject: 'Official Payment Receipt #REC-53 — LMS Courseware Access Verified',
+            trigger: 'Invoice Marked Paid (Full or Partial)',
             contentHtml: `
                 <p>Dear ${name},</p>
                 <p>Your payment of <strong>$${amount}.00 AUD</strong> has been verified and permanently credited against Tax Invoice #INV-53.</p>
-                <p>Attached is your official <strong>Payment Receipt (#REC-53)</strong>. Your CertHero LMS account is now fully unlocked, granting you unrestricted access to study all technical syllabi and sit for competency assessments.</p>
-                <p>Yours faithfully,<br><strong>CertHero Finance & Student Portal</strong></p>
+                <p>Attached is your official <strong>Payment Receipt (#REC-53)</strong>. Your CertHero LMS account is now active, granting you verified access to study courseware and complete competency assessments in accordance with your registered settlement status.</p>
+                <p>Direct inquiries: <a href="mailto:tickets@certhero.study">tickets@certhero.study</a>.</p>
+                <p>Yours faithfully,<br><strong>CertHero Finance & Student Administration</strong></p>
             `
         },
         {
             number: 19,
             name: 'Ticket pass mail',
             senderType: 'System - Rto - Event',
-            fromAddress: 'CertHero Examination Board <exams@certhero.com.au>',
+            fromAddress: 'CertHero Examination Board <tickets@certhero.study>',
             toAddress: `${name} <${email}>`,
             subject: 'Examination Passed: Competency Unit Successfully Verified',
             trigger: 'Applicant Achieves >= 80% on Examination',
@@ -382,7 +495,7 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             number: 20,
             name: 'Ticket fail mail',
             senderType: 'System - Rto - Event',
-            fromAddress: 'CertHero Examination Board <exams@certhero.com.au>',
+            fromAddress: 'CertHero Examination Board <tickets@certhero.study>',
             toAddress: `${name} <${email}>`,
             subject: 'Examination Assessment Result: Review Syllabus & Re-Sit Information',
             trigger: 'Applicant Scores Below 80%',
@@ -390,6 +503,7 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
                 <p>Dear ${name},</p>
                 <p>Thank you for submitting your examination for <strong>RIIWHS202E — Enter and work in confined spaces</strong>. Your score was <strong>74%</strong>, which falls just short of the required 80% competency threshold.</p>
                 <p>You have been allocated a complimentary re-sit opportunity. Please review the highlighted syllabus sections in your course portal and attempt the assessment again at your convenience.</p>
+                <p>Academic inquiries: <a href="mailto:tickets@certhero.study">tickets@certhero.study</a>.</p>
                 <p>Yours faithfully,<br><strong>CertHero Academic Review Panel</strong></p>
             `
         },
@@ -397,14 +511,15 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             number: 21,
             name: 'Ticket delivery mail',
             senderType: 'System - Rto - Event',
-            fromAddress: 'CertHero Credentials Desk <credentials@certhero.com.au>',
+            fromAddress: 'CertHero Credentials Desk <tickets@certhero.study>',
             toAddress: `${name} <${email}>`,
             subject: 'Official Statement of Attainment & Competency Ticket Certificates',
             trigger: 'All Tickets Passed and Issued',
             contentHtml: `
                 <p>Dear ${name},</p>
                 <p>We are pleased to formally issue your accredited Australian mining competency certificates. All required units for <strong>${role}</strong> have been verified.</p>
-                <p>Attached is your official <strong>Statement of Attainment (CERT-FIFO-53)</strong>. Copies have also been forwarded to ${employer} and Trades Recognition Australia (TRA) for your visa skills assessment.</p>
+                <p>Attached is your official <strong>Statement of Attainment (CERT-FIFO-53)</strong>. Copies have also been forwarded to ${employer} and they shall be required by the Trades Recognition Australia (TRA) for your visa skills assessment.</p>
+                <p>Credentials desk: <a href="mailto:tickets@certhero.study">tickets@certhero.study</a>.</p>
                 <p>Yours faithfully,<br><strong>CertHero RTO Registrar</strong></p>
             `
         },
@@ -412,7 +527,7 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             number: 22,
             name: 'Ticket drop-off mail',
             senderType: 'System - Rto - Event',
-            fromAddress: 'CertHero Student Services <support@certhero.com.au>',
+            fromAddress: 'CertHero Student Services <tickets@certhero.study>',
             toAddress: `${name} <${email}>`,
             subject: 'Urgent Notice: Examination Completion Window Closing (16-Day Notice)',
             trigger: 'Inactivity or Deadline Warning Event',
@@ -420,6 +535,7 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
                 <p>Dear ${name},</p>
                 <p>This is a formal reminder that your 16-day examination completion window for your sponsored competency coursework is expiring in <strong>3 days</strong>.</p>
                 <p>To avoid forfeiture of your employer sponsorship subsidy and maintain your technical interview standing with ${employer}, please log in to your student portal immediately and finalize any outstanding modules.</p>
+                <p>Assistance: <a href="mailto:tickets@certhero.study">tickets@certhero.study</a>.</p>
                 <p>Yours faithfully,<br><strong>CertHero Student Support Desk</strong></p>
             `
         },
@@ -427,7 +543,7 @@ export function getAll23EmailDefinitions(data: ApplicantDocData): EmailDefinitio
             number: 23,
             name: 'Handoff mail',
             senderType: 'Admin - Blue collar - Event',
-            fromAddress: 'Blue Collar Executive Team <info@jobnexe.com>',
+            fromAddress: 'Blue Collar Executive Team <info@bluecollarrecruitment.co>',
             toAddress: `${name} <${email}>`,
             subject: 'Final Stage Completed: Handover to Host Employer (MACA Limited) for Visa & Deployment',
             trigger: 'All Training & Verification Completed (Final Handoff)',
@@ -471,7 +587,7 @@ export async function generateEmailDocx(email: EmailDefinition): Promise<Documen
             alignment: AlignmentType.CENTER,
             spacing: { before: 0, after: 180 },
             children: [
-                new TextRun({ text: 'FIFO RECRUITMENT & RTO SYSTEM EMAIL DISPATCH SPECIFICATION', size: 18, color: '64748B' })
+                new TextRun({ text: 'OFFICIAL RECRUITMENT & TRAINING TRANSMISSION RECORD', size: 18, color: '64748B' })
             ]
         })
     );
@@ -493,12 +609,10 @@ export async function generateEmailDocx(email: EmailDefinition): Promise<Documen
                             },
                             margins: { top: 100, bottom: 100, left: 160, right: 160 },
                             children: [
-                                new Paragraph({ children: [new TextRun({ text: 'EMAIL NUMBER: ', bold: true, color: charcoal }), new TextRun({ text: `#${email.number} of 23`, bold: true, color: navy })] }),
-                                new Paragraph({ children: [new TextRun({ text: 'SENDER CLASSIFICATION: ', bold: true, color: charcoal }), new TextRun({ text: email.senderType, bold: true })] }),
+                                new Paragraph({ children: [new TextRun({ text: 'EMAIL REFERENCE: ', bold: true, color: charcoal }), new TextRun({ text: `#${email.number}`, bold: true, color: navy })] }),
                                 new Paragraph({ children: [new TextRun({ text: 'FROM: ', bold: true, color: charcoal }), new TextRun({ text: email.fromAddress })] }),
                                 new Paragraph({ children: [new TextRun({ text: 'TO: ', bold: true, color: charcoal }), new TextRun({ text: email.toAddress, bold: true })] }),
-                                new Paragraph({ children: [new TextRun({ text: 'SUBJECT: ', bold: true, color: charcoal }), new TextRun({ text: email.subject, bold: true, color: navy })] }),
-                                new Paragraph({ children: [new TextRun({ text: 'SYSTEM TRIGGER: ', bold: true, color: charcoal }), new TextRun({ text: email.trigger, italics: true, color: '64748B' })] })
+                                new Paragraph({ children: [new TextRun({ text: 'SUBJECT: ', bold: true, color: charcoal }), new TextRun({ text: email.subject, bold: true, color: navy })] })
                             ]
                         })
                     ]

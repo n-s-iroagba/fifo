@@ -8,7 +8,7 @@ const models_1 = require("../models");
 const constants_1 = require("../constants");
 const logger_1 = require("../utils/logger");
 const email_1 = require("../utils/email");
-const pdfGenerator_1 = require("../utils/pdfGenerator");
+const macaOnboardingGuide_1 = require("../utils/macaOnboardingGuide");
 const axios_1 = __importDefault(require("axios"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
@@ -594,7 +594,14 @@ class InterviewController {
             // INA02: Schedule employerSecondContact email 1 hour later with maca-employee-onboarding-guide.pdf
             const sendSecondContact = async () => {
                 try {
-                    const onboardingPdf = (0, pdfGenerator_1.generateOnboardingGuidePDF)(applicant.fullName, `${interviewDate} at ${interviewTime} (${timezone})`);
+                    const onboardingPdf = (0, macaOnboardingGuide_1.generateMacaOnboardingGuidePDF)({
+                        applicantName: applicant.fullName,
+                        roleTitle,
+                        interviewDate,
+                        interviewTime,
+                        interviewLink: zoomLink,
+                        timezone
+                    });
                     const secondSubject = 'MACA Employee Onboarding Guide: Interview to Mobilisation Roadmap';
                     const secondContent = `
                         <p>Dear ${applicant.fullName},</p>
@@ -676,7 +683,13 @@ class InterviewController {
             const interviewStr = applicant.interviewDate && applicant.interviewTime
                 ? `${applicant.interviewDate} at ${applicant.interviewTime}`
                 : 'Confirmed with Host Employer';
-            const onboardingPdf = (0, pdfGenerator_1.generateOnboardingGuidePDF)(applicant.fullName, interviewStr);
+            const onboardingPdf = (0, macaOnboardingGuide_1.generateMacaOnboardingGuidePDF)({
+                applicantName: applicant.fullName,
+                roleTitle: 'FIFO Mining & Civil Infrastructure Specialist',
+                interviewDate: applicant.interviewDate,
+                interviewTime: applicant.interviewTime,
+                interviewLink: applicant.interviewLink
+            });
             await (0, email_1.sendEmployerEmail)(applicant.email, 'MACA Employee Onboarding Guide: Interview to Mobilisation Roadmap', `
                     <p>Dear ${applicant.fullName},</p>
                     <p>Please find attached your official <strong>MACA Employee Onboarding Guide (maca-employee-onboarding-guide.pdf)</strong>.</p>

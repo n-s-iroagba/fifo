@@ -27,14 +27,32 @@ export default function PaymentsPage() {
 
     return (
         <PageShell>
-            <div className="mb-6">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ED9139]/10 text-[#ED9139] font-bold text-xs uppercase tracking-wider w-fit mb-2">
-                    <ShieldCheck className="h-3.5 w-3.5" /> Official Invoicing Records
+            <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ED9139]/10 text-[#ED9139] font-bold text-xs uppercase tracking-wider w-fit mb-2">
+                        <ShieldCheck className="h-3.5 w-3.5" /> Official Invoicing Records
+                    </div>
+                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Payment &amp; Receipt History</h1>
+                    <p className="text-xs sm:text-sm font-medium text-slate-500 mt-1 max-w-2xl">
+                        Review payment receipts, verified transaction references, and sponsor subsidies applied to your training modules.
+                    </p>
                 </div>
-                <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Payment & Receipt History</h1>
-                <p className="text-xs sm:text-sm font-medium text-slate-500 mt-1 max-w-2xl">
-                    Review payment receipts, verified transaction references, and sponsor subsidies applied to your training modules.
-                </p>
+                <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+                    <button
+                        type="button"
+                        onClick={() => router.push('/payments/crypto')}
+                        className="py-2.5 px-4 bg-[#EAA240] hover:bg-[#d89130] text-[#000000] font-black rounded-xl text-xs uppercase tracking-wider transition-all shadow-xs"
+                    >
+                        Crypto Checkout
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => router.push('/payments/card')}
+                        className="py-2.5 px-4 bg-[#000000] hover:bg-slate-900 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-xs"
+                    >
+                        Card Gateway
+                    </button>
+                </div>
             </div>
             <div className="w-full h-0.5 bg-[#ED9139] mb-8" />
 

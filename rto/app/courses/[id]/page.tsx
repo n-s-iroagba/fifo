@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
-import { BookOpen, Lock, Download, ArrowRight, Award, ChevronRight, ShieldCheck } from 'lucide-react';
+import { BookOpen, Lock, Download, ArrowRight, Award, ChevronRight, ShieldCheck, Bot, Sparkles } from 'lucide-react';
 import { apiClient } from '@/lib/axios';
 import { PageShell } from '@/components/PageShell';
+import { useAiAssistant } from '@/context/AiAssistantContext';
 
 export default function CoursePlayerPage() {
     const router = useRouter();
@@ -17,12 +18,23 @@ export default function CoursePlayerPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const { openAssistant, setStudyContext, setHasPaid } = useAiAssistant();
+
     useEffect(() => {
         const token = localStorage.getItem('lms_token');
         const user = localStorage.getItem('lms_user');
         if (!token && !user) {
             router.push(`/login?redirect=/courses/${id}`);
             return;
+        }
+
+        if (user) {
+            try {
+                const u = JSON.parse(user);
+                if (u.hasPaid || u.isPaid || u.paymentStatus === 'payment_verified') {
+                    setHasPaid(true);
+                }
+            } catch {}
         }
 
         const fetchCourse = async () => {
@@ -53,7 +65,21 @@ export default function CoursePlayerPage() {
         };
 
         fetchCourse();
-    }, [id]);
+    }, [id, setHasPaid]);
+
+    // Keep AI Study Mentor synced with currently viewed course and module
+    useEffect(() => {
+        if (courseData) {
+            setStudyContext({
+                courseId: courseData.id,
+                courseTitle: courseData.title,
+                courseCode: courseData.code,
+                syllabus: courseData.modules?.map((m: any) => ({ title: m.title, duration: m.duration })),
+                currentModuleTitle: selectedModule !== null ? courseData.modules[selectedModule]?.title : undefined,
+                currentModuleContent: selectedModule !== null ? courseData.modules[selectedModule]?.description : undefined,
+            });
+        }
+    }, [courseData, selectedModule, setStudyContext]);
 
     if (loading) {
         return (
@@ -123,6 +149,32 @@ export default function CoursePlayerPage() {
 
                 <div className="w-full h-0.5 bg-[#ED9139] mb-8" />
 
+                {/* AI Study Assistance Hero Card */}
+                <div className="bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#0F172A] text-white rounded-2xl p-5 border border-slate-700 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3.5">
+                        <div className="h-10 w-10 rounded-xl bg-[#FFC700] text-[#0F172A] flex items-center justify-center font-bold shrink-0 shadow-sm mt-0.5">
+                            <Bot className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-sm font-black uppercase tracking-wider text-white">CertHero AI Study Assistant</h3>
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                                    Active Study Context
+                                </span>
+                            </div>
+                            <p className="text-xs text-slate-300 mt-1 max-w-xl leading-relaxed">
+                                Need help reviewing key regulations, duty of care, or technical procedures for <strong>{courseData.title}</strong>? Your AI vocational mentor is loaded with this syllabus.
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => openAssistant(`Can you provide an overview of the key topics, safety standards, and exam objectives for ${courseData.code}: ${courseData.title}?`)}
+                        className="inline-flex items-center justify-center gap-2 bg-[#FFC700] hover:bg-[#f0bb00] text-[#0F172A] font-extrabold text-xs px-5 py-2.5 rounded-xl uppercase tracking-wider transition-all shrink-0 shadow-md hover:scale-105"
+                    >
+                        <Sparkles className="h-4 w-4 text-[#0F172A]" /> Ask Study Tutor
+                    </button>
+                </div>
+
                 {/* Course Materials & Exam Launch */}
                 <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm space-y-6">
                     <div className="flex items-center justify-between border-b border-slate-100 pb-4">
@@ -171,20 +223,28 @@ export default function CoursePlayerPage() {
                                                 <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
                                                     Study Reference Material
                                                 </span>
-                                                <button
-                                                    onClick={() => {
-                                                        const blob = new Blob([mod.description], { type: 'text/plain' });
-                                                        const url = URL.createObjectURL(blob);
-                                                        const a = document.createElement('a');
-                                                        a.href = url;
-                                                        a.download = `${mod.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
-                                                        a.click();
-                                                        URL.revokeObjectURL(url);
-                                                    }}
-                                                    className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-800 hover:text-black bg-white border border-slate-200 px-3 py-1 rounded-md transition-colors uppercase"
-                                                >
-                                                    <Download className="h-3 w-3 text-[#ED9139]" /> Download TXT
-                                                </button>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => openAssistant(`Can you explain the key concepts and safety duties covered in "${mod.title}"?`)}
+                                                        className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#0F172A] hover:text-black bg-[#FFC700]/25 hover:bg-[#FFC700]/40 border border-[#FFC700]/60 px-3 py-1 rounded-md transition-colors uppercase"
+                                                    >
+                                                        <Bot className="h-3.5 w-3.5 text-[#ED9139]" /> Ask AI Tutor
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            const blob = new Blob([mod.description], { type: 'text/plain' });
+                                                            const url = URL.createObjectURL(blob);
+                                                            const a = document.createElement('a');
+                                                            a.href = url;
+                                                            a.download = `${mod.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
+                                                            a.click();
+                                                            URL.revokeObjectURL(url);
+                                                        }}
+                                                        className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-800 hover:text-black bg-white border border-slate-200 px-3 py-1 rounded-md transition-colors uppercase"
+                                                    >
+                                                        <Download className="h-3 w-3 text-[#ED9139]" /> Download TXT
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div className="text-xs text-slate-700 leading-relaxed font-normal whitespace-pre-line">
                                                 {mod.description}

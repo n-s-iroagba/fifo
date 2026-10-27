@@ -91,6 +91,8 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // Serve uploaded documents
 app.use('/uploads', express.static(require('path').join(__dirname, '../public/uploads')));
 app.use('/uploads', express.static(require('path').join(__dirname, '../uploads')));
+app.use('/documents', express.static(require('path').join(__dirname, '../public/documents')));
+app.use('/documents', express.static(require('path').join(__dirname, '../test_data/documents')));
 
 
 // Health check endpoint for infrastructure monitoring

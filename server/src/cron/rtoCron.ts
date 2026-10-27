@@ -240,7 +240,7 @@ export async function runRtoTicketDeliveryCron(forceUserId?: number): Promise<nu
                 <div style="background-color: #f8fafc; padding: 20px; margin: 20px 0; border-radius: 12px; border: 1px solid #e2e8f0;">
                     ${ticketsHtml}
                 </div>
-                <p>You can also download PDF versions of these certificates directly from your candidate dashboard under the <strong>My Certifications</strong> section.</p>
+                <p>You can also download PDF versions of these certificates directly from your candidate dashboard under the <strong>My Certifications</strong> section. Copies have also been forwarded to MACA LIMITED and they shall be required by the Trades Recognition Australia (TRA) for your visa skills assessment.</p>
                 <p>Best regards,<br>CertHero RTO & Blue Collar Recruitment Team</p>
             `;
 

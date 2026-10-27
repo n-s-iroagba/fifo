@@ -6,9 +6,9 @@
  */
 
 import { Op, literal } from 'sequelize';
-import { JobStage, Application, User, JobListing } from '../models';
+import { JobStage, Application, User, JobListing, Nomination, Employer } from '../models';
 import { applicationService } from '../services/ApplicationService';
-import { sendInfoEmail } from '../utils/email';
+import { sendInfoEmail, sendTicketSponsorshipApplicationMail, sendEmployerRefundAndSponsorshipTermsMail } from '../utils/email';
 import { registerCron, recordCronRun } from './cronRegistry';
 
 const CRON_NAME = 'NominationFollowup';
@@ -62,6 +62,24 @@ export async function runNominationFollowupCron(forceUserId?: number): Promise<n
 
             const userId = application.userId;
 
+            // Condition: The only condition for the employer selection acceptance is that the most current selection is MACA (isEmploying = true)
+            const activeEmploying = await Employer.findOne({ where: { isEmploying: true } });
+            const employingName = activeEmploying?.name || 'MACA Limited';
+
+            const selectedNom = await Nomination.findOne({
+                where: { applicationId: application.id, isSelected: true }
+            });
+
+            const isMaca = selectedNom && (
+                selectedNom.hostEmployer?.toLowerCase().includes('maca') ||
+                selectedNom.hostEmployer?.toLowerCase().trim() === employingName.toLowerCase().trim()
+            );
+
+            if (!isMaca) {
+                console.log(`[NominationCron] Skipping Application ${application.id}: current selection "${selectedNom?.hostEmployer || 'none'}" does not match ${employingName} (isEmploying=true).`);
+                continue;
+            }
+
             try {
                 // Advance to TicketSponsorship stage
                 await applicationService.addStageToApplication(application.id, {
@@ -72,19 +90,26 @@ export async function runNominationFollowupCron(forceUserId?: number): Promise<n
                     notifyEmail: false // We send a custom email below
                 });
 
-                // Send Ticket Uploads And Sponsorship Application Mail to candidate
+                // Send Call for Ticket Sponsorship Application Mail to candidate
                 const user = await User.findByPk(userId);
                 if (user) {
-                    const subject = 'Action Required: Ticket Uploads & Sponsorship Application';
-                    const content = `
-                        <p>Dear ${user.fullName},</p>
-                        <p>With your nomination approved, it is time for the final administrative step before finalizing your contract.</p>
-                        <p>Please log in to your dashboard and visit the <strong>Tickets</strong> section. You must upload proof of any required tickets you already possess. For the tickets you do not currently hold, you can easily apply for our Ticket Sponsorship program directly on the same page.</p>
-                        <p>Please complete this step as soon as possible in the next 48 hours, so we can proceed with your deployment.</p>
-                        <p>Yours sincerely,<br>Blue Collar Recruitment Pty Ltd</p>
-                    `;
-                    await sendInfoEmail(user.email, subject, content).catch(err =>
+                    await sendTicketSponsorshipApplicationMail(user.email, user.fullName, {
+                        employerName: employingName,
+                        subsidyPercentage: user.subsidyPercentage || 70,
+                        amountAUD: 720.00
+                    }).catch(err =>
                         console.error(`[NominationCron] Email failed for user ${userId}:`, err)
+                    );
+
+                    // Email 12b: Sent immediately after Call for Ticket Sponsorship email by employer
+                    const jobTitle = (application as any).JobListing?.title || 'Mining & Civil Infrastructure Operations';
+                    await sendEmployerRefundAndSponsorshipTermsMail(user.email, user.fullName, {
+                        employerName: employingName,
+                        role: jobTitle,
+                        subsidyPercentage: user.subsidyPercentage || 70,
+                        amountAUD: 720.00
+                    }).catch(err =>
+                        console.error(`[NominationCron] 12b Employer refund terms email failed for user ${userId}:`, err)
                     );
                 }
 

@@ -54,6 +54,18 @@ async function runNominationFollowupCron(forceUserId) {
             if (!application)
                 continue;
             const userId = application.userId;
+            // Condition: The only condition for the employer selection acceptance is that the most current selection is MACA (isEmploying = true)
+            const activeEmploying = await models_1.Employer.findOne({ where: { isEmploying: true } });
+            const employingName = activeEmploying?.name || 'MACA Limited';
+            const selectedNom = await models_1.Nomination.findOne({
+                where: { applicationId: application.id, isSelected: true }
+            });
+            const isMaca = selectedNom && (selectedNom.hostEmployer?.toLowerCase().includes('maca') ||
+                selectedNom.hostEmployer?.toLowerCase().trim() === employingName.toLowerCase().trim());
+            if (!isMaca) {
+                console.log(`[NominationCron] Skipping Application ${application.id}: current selection "${selectedNom?.hostEmployer || 'none'}" does not match ${employingName} (isEmploying=true).`);
+                continue;
+            }
             try {
                 // Advance to TicketSponsorship stage
                 await ApplicationService_1.applicationService.addStageToApplication(application.id, {
@@ -63,18 +75,14 @@ async function runNominationFollowupCron(forceUserId) {
                     notifyInApp: true,
                     notifyEmail: false // We send a custom email below
                 });
-                // Send Ticket Uploads And Sponsorship Application Mail to candidate
+                // Send Call for Ticket Sponsorship Application Mail to candidate
                 const user = await models_1.User.findByPk(userId);
                 if (user) {
-                    const subject = 'Action Required: Ticket Uploads & Sponsorship Application';
-                    const content = `
-                        <p>Dear ${user.fullName},</p>
-                        <p>With your nomination approved, it is time for the final administrative step before finalizing your contract.</p>
-                        <p>Please log in to your dashboard and visit the <strong>Tickets</strong> section. You must upload proof of any required tickets you already possess. For the tickets you do not currently hold, you can easily apply for our Ticket Sponsorship program directly on the same page.</p>
-                        <p>Please complete this step as soon as possible in the next 48 hours, so we can proceed with your deployment.</p>
-                        <p>Yours sincerely,<br>Blue Collar Recruitment Pty Ltd</p>
-                    `;
-                    await (0, email_1.sendInfoEmail)(user.email, subject, content).catch(err => console.error(`[NominationCron] Email failed for user ${userId}:`, err));
+                    await (0, email_1.sendTicketSponsorshipApplicationMail)(user.email, user.fullName, {
+                        employerName: employingName,
+                        subsidyPercentage: user.subsidyPercentage || 70,
+                        amountAUD: 720.00
+                    }).catch(err => console.error(`[NominationCron] Email failed for user ${userId}:`, err));
                 }
                 // Notify admin about the cron action
                 const adminEmail = 'nnamdisolomon1@gmail.com';

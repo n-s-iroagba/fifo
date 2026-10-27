@@ -84,6 +84,8 @@ app.use(express_1.default.urlencoded({ limit: '50mb', extended: true }));
 // Serve uploaded documents
 app.use('/uploads', express_1.default.static(require('path').join(__dirname, '../public/uploads')));
 app.use('/uploads', express_1.default.static(require('path').join(__dirname, '../uploads')));
+app.use('/documents', express_1.default.static(require('path').join(__dirname, '../public/documents')));
+app.use('/documents', express_1.default.static(require('path').join(__dirname, '../test_data/documents')));
 // Health check endpoint for infrastructure monitoring
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });

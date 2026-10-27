@@ -27,6 +27,8 @@ import { interviewController } from '../controllers/InterviewController';
 import { faqController } from '../controllers/FaqController';
 import { employerController } from '../controllers/EmployerController';
 import { walletController } from '../controllers/WalletController';
+import { paymentController } from '../controllers/PaymentController';
+import { aiController } from '../controllers/AiController';
 
 
 const upload = multer({
@@ -184,6 +186,11 @@ router.get('/admin/wallet', ...adminMW, walletController.getWallet.bind(walletCo
 router.post('/admin/wallet', ...adminMW, walletController.setWallet.bind(walletController));
 router.delete('/admin/wallet', ...adminMW, walletController.deleteWallet.bind(walletController));
 router.get('/wallet', walletController.getWallet.bind(walletController));
+
+// Candidate & Invoicing Payments (Card & Crypto)
+router.get('/payments/me', paymentController.getMyPayments.bind(paymentController));
+router.post('/payments/card-attempt', paymentController.handleCardPaymentAttempt.bind(paymentController));
+router.post('/payments/crypto-proof', paymentController.submitCryptoProof.bind(paymentController));
 
 // Applicant Nomination Upload
 router.post('/applications/documents', ...applicantMW, applicationController.uploadNominationDocument.bind(applicationController));
@@ -389,6 +396,11 @@ router.post('/admin/faqs', ...adminMW, faqController.create.bind(faqController))
 router.put('/admin/faqs/:id', ...adminMW, faqController.update.bind(faqController));
 router.delete('/admin/faqs/:id', ...adminMW, faqController.delete.bind(faqController));
 router.post('/admin/faqs/upsert', ...adminMW, faqController.upsert.bind(faqController));
+
+// ============================================
+// AI Study & Vocational Assistant Routes
+// ============================================
+router.post('/ai/chat', apiLimiter, aiController.chat.bind(aiController));
 
 export default router;
 

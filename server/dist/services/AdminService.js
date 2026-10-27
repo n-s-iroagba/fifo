@@ -249,6 +249,11 @@ class AdminService {
             try {
                 await sendRtoCredentialsEmail(user.email, user.fullName, credUser, credPass || undefined);
                 emailDispatched = true;
+                const userPrefs = {
+                    ...(user.preferences || {}),
+                    credentialsSent: true
+                };
+                await user.update({ preferences: userPrefs });
             }
             catch (err) {
                 console.error('[AdminService.updateRtoCredentials] Failed to dispatch RTO email:', err);

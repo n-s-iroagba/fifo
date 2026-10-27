@@ -60,7 +60,7 @@ export async function seedJobCategories(): Promise<void> {
 /**
  * Model Seed 2: Employers (MACA Limited as active partner, Mineral Resources)
  */
-export async function seedEmployers(): Promise<{ maca: Employer; minRes: Employer }> {
+export async function seedEmployers(): Promise<{ maca: Employer; minRes: Employer; northernStar: Employer; rioTinto: Employer }> {
     console.log('[Seeding] Seeding Hiring Employers...');
 
     const [maca] = await Employer.findOrCreate({
@@ -70,7 +70,7 @@ export async function seedEmployers(): Promise<{ maca: Employer; minRes: Employe
             companyDescription: 'MACA Limited is an international mining, civil construction, and infrastructure contracting company based in Welshpool, Western Australia, operating major open-pit and underground iron ore and gold projects across the Pilbara and Goldfields.',
             location: 'Welshpool, Western Australia',
             isEmploying: true,
-            logoUrl: 'https://res.cloudinary.com/dh2cpesxu/image/upload/v1729700000/logos/maca_logo.png'
+            logoUrl: 'https://www.maca.net.au/wp-content/uploads/2022/05/MACA-LOGO@4x.png'
         }
     });
     await maca.update({
@@ -97,8 +97,42 @@ export async function seedEmployers(): Promise<{ maca: Employer; minRes: Employe
         isEmploying: false
     });
 
+    const [northernStar] = await Employer.findOrCreate({
+        where: { name: 'Northern Star Resources Ltd.' },
+        defaults: {
+            websiteUrl: 'https://www.nsrltd.com',
+            companyDescription: 'Northern Star Resources Ltd is a premier global gold producer operating high-grade underground and open-pit resource projects in the Western Australian Goldfields and Tanami region, committed to environmental safety and heavy industry leadership.',
+            location: 'Subiaco, Western Australia',
+            isEmploying: false,
+            logoUrl: 'https://www.nsrltd.com/images/logo.png'
+        }
+    });
+    await northernStar.update({
+        websiteUrl: 'https://www.nsrltd.com',
+        companyDescription: 'Northern Star Resources Ltd is a premier global gold producer operating high-grade underground and open-pit resource projects in the Western Australian Goldfields and Tanami region, committed to environmental safety and heavy industry leadership.',
+        location: 'Subiaco, Western Australia',
+        isEmploying: false
+    });
+
+    const [rioTinto] = await Employer.findOrCreate({
+        where: { name: 'Rio Tinto' },
+        defaults: {
+            websiteUrl: 'https://www.riotinto.com',
+            companyDescription: 'Rio Tinto is a world leader in mining and metals, operating world-scale automated iron ore rail networks, ports, and deep open-pit operations across the Pilbara region of Western Australia with extensive Subclass 482 visa sponsorship programs.',
+            location: 'Perth, Western Australia',
+            isEmploying: false,
+            logoUrl: 'https://www.riotinto.com/assets/images/logo.svg'
+        }
+    });
+    await rioTinto.update({
+        websiteUrl: 'https://www.riotinto.com',
+        companyDescription: 'Rio Tinto is a world leader in mining and metals, operating world-scale automated iron ore rail networks, ports, and deep open-pit operations across the Pilbara region of Western Australia with extensive Subclass 482 visa sponsorship programs.',
+        location: 'Perth, Western Australia',
+        isEmploying: false
+    });
+
     console.log('[Seeding] Employers seeded successfully.');
-    return { maca, minRes };
+    return { maca, minRes, northernStar, rioTinto };
 }
 
 /**
@@ -121,7 +155,7 @@ export async function seedWallet(): Promise<void> {
 /**
  * Model Seed 4: Job Listings with Operational Manual & Linked Employers
  */
-export async function seedJobListings(maca: Employer, minRes: Employer): Promise<void> {
+export async function seedJobListings(maca: Employer, minRes: Employer, northernStar?: Employer, rioTinto?: Employer): Promise<void> {
     console.log('[Seeding] Seeding FIFO Job Listings...');
 
     const defaultManualUrl = 'https://res.cloudinary.com/dh2cpesxu/image/upload/v1729700000/operational_manuals/maca_mining_standard_operating_procedure.pdf';
@@ -182,9 +216,35 @@ export async function seedJobListings(maca: Employer, minRes: Employer): Promise
             }
         });
         await linkMinRes.update({ vacancyUrl: 'https://www.mineralresources.com.au/careers' });
+
+        // Link with Northern Star Resources Ltd.
+        if (northernStar) {
+            const [linkNsr] = await JoblistingEmployer.findOrCreate({
+                where: { employerId: northernStar.id, joblistingId: job.id },
+                defaults: {
+                    employerId: northernStar.id,
+                    joblistingId: job.id,
+                    vacancyUrl: 'https://www.nsrltd.com/careers'
+                }
+            });
+            await linkNsr.update({ vacancyUrl: 'https://www.nsrltd.com/careers' });
+        }
+
+        // Link with Rio Tinto
+        if (rioTinto) {
+            const [linkRio] = await JoblistingEmployer.findOrCreate({
+                where: { employerId: rioTinto.id, joblistingId: job.id },
+                defaults: {
+                    employerId: rioTinto.id,
+                    joblistingId: job.id,
+                    vacancyUrl: 'https://www.riotinto.com/en/careers'
+                }
+            });
+            await linkRio.update({ vacancyUrl: 'https://www.riotinto.com/en/careers' });
+        }
     }
 
-    console.log('[Seeding] Job Listings seeded and linked to employers.');
+    console.log('[Seeding] Job Listings seeded and linked to all 4 employers.');
 }
 
 /**
@@ -355,9 +415,9 @@ export async function seedDatabase() {
 
     // 2. Seed data model by model
     await seedJobCategories();
-    const { maca, minRes } = await seedEmployers();
+    const { maca, minRes, northernStar, rioTinto } = await seedEmployers();
     await seedWallet();
-    await seedJobListings(maca, minRes);
+    await seedJobListings(maca, minRes, northernStar, rioTinto);
     await seedLmsAndTickets();
 
     console.log('====================================================');

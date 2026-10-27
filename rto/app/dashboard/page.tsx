@@ -3,9 +3,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Award, User, CreditCard, ArrowRight, Wallet, Lock, ShieldCheck, AlertCircle, FileText, Download, Mail, BookOpen } from 'lucide-react';
+import { Award, User, CreditCard, ArrowRight, Wallet, Lock, ShieldCheck, AlertCircle, FileText, Download, Mail, BookOpen, Bot, Sparkles } from 'lucide-react';
 import { apiClient } from '@/lib/axios';
 import { PageShell } from '@/components/PageShell';
+import { useAiAssistant } from '@/context/AiAssistantContext';
 
 interface MappedTicket {
     id: number | string; userId: number | string; applicationId: number | string;
@@ -32,21 +33,35 @@ export default function CandidateDashboardPage() {
     const [error, setError] = useState<string | null>(null);
     const [profile, setProfile] = useState<CandidateProfile | null>(null);
 
+    const { openAssistant, setHasPaid, setStudyContext } = useAiAssistant();
+
     React.useEffect(() => {
+        // Reset to general program study context on dashboard
+        setStudyContext(null);
+
         const fetchProfile = async () => {
             const userStr = localStorage.getItem('lms_user');
             if (!userStr) { router.push('/login'); return; }
             const user = JSON.parse(userStr);
             try {
                 const res = await apiClient.post('/candidate/lookup', { candidateNumber: user.lmsUsername, email: user.lmsUsername });
-                if (res.data?.success) setProfile(res.data.data);
-                else setError(res.data?.message || 'Candidate record not found.');
+                if (res.data?.success) {
+                    const data = res.data.data;
+                    setProfile(data);
+                    const tickets = data.tickets || [];
+                    const hasAnyVerified = tickets.some((t: any) => t.paymentStatus === 'payment_verified' || t.courseAccessGranted);
+                    if (hasAnyVerified) {
+                        setHasPaid(true);
+                    }
+                } else {
+                    setError(res.data?.message || 'Candidate record not found.');
+                }
             } catch (err: any) {
                 setError(err.response?.data?.message || 'Failed to fetch your candidate profile.');
             } finally { setLoading(false); }
         };
         fetchProfile();
-    }, [router]);
+    }, [router, setHasPaid, setStudyContext]);
 
     return (
         <PageShell>
@@ -108,6 +123,32 @@ export default function CandidateDashboardPage() {
                                 <span className="text-xl font-black text-[#ED9139]">${Number(profile.walletBalance || 0).toFixed(2)} AUD</span>
                             </div>
                         </div>
+                    </div>
+
+                    {/* CertHero AI Vocational Advisor Card */}
+                    <div className="bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#0F172A] text-white rounded-2xl p-5 border border-slate-700 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-start gap-4">
+                            <div className="h-11 w-11 rounded-xl bg-[#FFC700] text-[#0F172A] flex items-center justify-center font-bold shrink-0 shadow-sm mt-0.5">
+                                <Bot className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <h3 className="text-sm font-black uppercase tracking-wider text-white">CertHero AI Study & FIFO Career Mentor</h3>
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FFC700]/20 text-[#FFC700] border border-[#FFC700]/30">
+                                        24/7 Vocational Support
+                                    </span>
+                                </div>
+                                <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+                                    Have questions regarding your mining ticket syllabus, Western Australia FIFO mobilization, host employer requirements (MACA, MinRes, Northern Star, Rio Tinto), or refund guarantees? Chat with your AI mentor now.
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => openAssistant("G'day! Can you give me an overview of the required prerequisite tickets and the next steps in my WA FIFO placement?")}
+                            className="inline-flex items-center justify-center gap-2 bg-[#FFC700] hover:bg-[#f0bb00] text-[#0F172A] font-extrabold text-xs px-5 py-3 rounded-xl uppercase tracking-wider transition-all shrink-0 shadow-md hover:scale-105"
+                        >
+                            <Sparkles className="h-4 w-4 text-[#0F172A]" /> Ask Career Mentor
+                        </button>
                     </div>
 
                     {/* Assigned Tickets & Courseware */}

@@ -55,17 +55,17 @@ const PURPOSE_META: Record<string, {
 }> = {
     'aveling-partial': {
         owner: 'aveling',
-        ownerName: 'Aveling LMS Training',
-        ownerEmail: 'info@jobnexe.com',
+        ownerName: 'CertHero RTO Training',
+        ownerEmail: 'tickets@certhero.study',
         title: 'Partial Ticket Sponsorship Receipt',
-        note: 'Partial ticket courses and certification payment verification.',
+        note: 'Partial ticket courses and certification payment verification (Up to 3 Exams).',
         brandBg: 'bg-[#FFC700] text-black',
         badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
     },
     'aveling-complete-after-partial': {
         owner: 'aveling',
-        ownerName: 'Aveling LMS Training',
-        ownerEmail: 'info@jobnexe.com',
+        ownerName: 'CertHero RTO Training',
+        ownerEmail: 'tickets@certhero.study',
         title: 'Final Ticket Sponsorship Receipt',
         note: 'Completion balance for partial ticket courses & certifications.',
         brandBg: 'bg-[#FFC700] text-black',
@@ -73,17 +73,17 @@ const PURPOSE_META: Record<string, {
     },
     'aveling-complete': {
         owner: 'aveling',
-        ownerName: 'Aveling LMS Training',
-        ownerEmail: 'info@jobnexe.com',
+        ownerName: 'CertHero RTO Training',
+        ownerEmail: 'tickets@certhero.study',
         title: 'Full Ticket Sponsorship Receipt',
-        note: 'Full ticket courses and certification package (10% discount applied).',
+        note: 'Full ticket courses and certification package (Unlimited LMS Access).',
         brandBg: 'bg-[#FFC700] text-black',
         badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
     },
     'shipping': {
         owner: 'aveling',
-        ownerName: 'Aveling LMS Training',
-        ownerEmail: 'info@jobnexe.com',
+        ownerName: 'CertHero RTO Training',
+        ownerEmail: 'tickets@certhero.study',
         title: 'Ticket Shipping Fee Receipt',
         note: 'Courier shipping and delivery of physical certification cards.',
         brandBg: 'bg-[#FFC700] text-black',
@@ -107,9 +107,10 @@ export default function AdminReceiptsPage() {
     const [successMsg, setSuccessMsg] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
 
-    // Step 1 & 2: Selected invoice & drafting
+    // Step 1 & 2: Selected invoice, payment choice & drafting
     const [selectedInvoiceId, setSelectedInvoiceId] = useState('');
     const [receiptAttachment, setReceiptAttachment] = useState<File | null>(null);
+    const [paymentSettlementType, setPaymentSettlementType] = useState<'complete' | 'partial'>('complete');
 
     // Step 3: Preview Modal
     const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -152,7 +153,7 @@ export default function AdminReceiptsPage() {
         return PURPOSE_META[selectedInvoice.purpose] || {
             owner: 'aveling' as const,
             ownerName: 'Aveling LMS Training',
-            ownerEmail: 'info@jobnexe.com',
+            ownerEmail: 'info@bluecollarrecruitment.co',
             title: 'Official Payment Receipt',
             note: 'Verification of payment.',
             brandBg: 'bg-[#FFC700] text-black',
@@ -176,6 +177,7 @@ export default function AdminReceiptsPage() {
 
         try {
             const formData = new FormData();
+            formData.append('paymentType', paymentSettlementType);
             if (receiptAttachment) {
                 formData.append('receiptFile', receiptAttachment);
             }
@@ -474,6 +476,39 @@ export default function AdminReceiptsPage() {
                                 </div>
                             )}
 
+                            {/* Settlement Type Choice (Item 8 in FIX_1) */}
+                            <div className="pt-2 border-t border-zinc-200 text-xs space-y-2">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 block">
+                                    Payment Settlement Option:
+                                </span>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setPaymentSettlementType('complete')}
+                                        className={`p-2.5 rounded-xl border-2 text-left transition-all ${
+                                            paymentSettlementType === 'complete'
+                                                ? 'border-emerald-600 bg-emerald-50 text-emerald-900 font-black ring-2 ring-emerald-500/20'
+                                                : 'border-zinc-200 bg-white text-zinc-600 font-bold hover:border-zinc-300'
+                                        }`}
+                                    >
+                                        <div className="text-xs">Complete (100%)</div>
+                                        <div className="text-[10px] text-zinc-500 font-normal">Unlimited LMS Access</div>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setPaymentSettlementType('partial')}
+                                        className={`p-2.5 rounded-xl border-2 text-left transition-all ${
+                                            paymentSettlementType === 'partial'
+                                                ? 'border-amber-600 bg-amber-50 text-amber-900 font-black ring-2 ring-amber-500/20'
+                                                : 'border-zinc-200 bg-white text-zinc-600 font-bold hover:border-zinc-300'
+                                        }`}
+                                    >
+                                        <div className="text-xs">Partial (50%+)</div>
+                                        <div className="text-[10px] text-zinc-500 font-normal">3-Exam Limit Notice</div>
+                                    </button>
+                                </div>
+                            </div>
+
                             {/* Total Verified Amount */}
                             <div className="pt-3 border-t-2 border-zinc-200 flex items-center justify-between bg-white p-3 rounded-lg border">
                                 <div>
@@ -608,24 +643,50 @@ export default function AdminReceiptsPage() {
                                 )}
                             </div>
 
-                            {/* Verified Status Banner */}
-                            <div className="bg-emerald-50 border-2 border-emerald-200 p-4 rounded-xl flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="bg-emerald-600 text-white p-2 rounded-full">
-                                        <CheckCircle2 className="w-5 h-5" />
+                            {/* Verified Status Banner & Settlement Notice */}
+                            <div className={`p-4 rounded-xl border-2 flex flex-col gap-3 ${
+                                paymentSettlementType === 'partial'
+                                    ? 'bg-amber-50 border-amber-200'
+                                    : 'bg-emerald-50 border-emerald-200'
+                            }`}>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`p-2 rounded-full text-white ${
+                                            paymentSettlementType === 'partial' ? 'bg-amber-600' : 'bg-emerald-600'
+                                        }`}>
+                                            <CheckCircle2 className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className={`text-xs font-black uppercase tracking-wider ${
+                                                paymentSettlementType === 'partial' ? 'text-amber-900' : 'text-emerald-900'
+                                            }`}>
+                                                Official Status: {paymentSettlementType === 'partial' ? 'Partial Payment Verified (50%+ Deposit)' : 'Full Payment Verified & Paid'}
+                                            </p>
+                                            <p className={`text-[11px] mt-0.5 ${
+                                                paymentSettlementType === 'partial' ? 'text-amber-700' : 'text-emerald-700'
+                                            }`}>
+                                                {paymentSettlementType === 'partial'
+                                                    ? '3-Exam Limit Notice: Candidate authorized for up to 3 exams. Full balance required for remainder.'
+                                                    : 'Unlimited LMS Access Unlocked: Candidate authorized for all course modules and exams.'}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-xs font-black uppercase tracking-wider text-emerald-900">
-                                            Official Receipt Status: Verified & Paid
-                                        </p>
-                                        <p className="text-[11px] text-emerald-700 mt-0.5">
-                                            Upon confirmation, invoice #{selectedInvoice.id} will be permanently marked as Paid.
-                                        </p>
-                                    </div>
+                                    <span className={`text-xl font-black ${
+                                        paymentSettlementType === 'partial' ? 'text-amber-700' : 'text-emerald-700'
+                                    }`}>
+                                        ${parseFloat(String(selectedInvoice.amountInUSD || '0')).toFixed(2)}
+                                    </span>
                                 </div>
-                                <span className="text-xl font-black text-emerald-700">
-                                    ${parseFloat(String(selectedInvoice.amountInUSD || '0')).toFixed(2)}
-                                </span>
+                                <div className={`p-2.5 rounded-lg text-xs leading-relaxed border ${
+                                    paymentSettlementType === 'partial'
+                                        ? 'bg-amber-100/70 border-amber-300 text-amber-900'
+                                        : 'bg-emerald-100/70 border-emerald-300 text-emerald-950'
+                                }`}>
+                                    <strong>Document Notice on Output Receipt:</strong>{' '}
+                                    {paymentSettlementType === 'partial'
+                                        ? 'PARTIAL PAYMENT (50%+) REGISTERED: Your initial commitment deposit has been verified and registered. You are authorized to access course modules and complete up to three (3) competency unit examinations. Full balance settlement is required prior to unlocking remaining examinations and final credential issuance.'
+                                        : 'FULL PAYMENT CONFIRMED — UNLIMITED LMS ACCESS UNLOCKED: Your payment has been verified and registered. You are authorized to access all course modules and sit for the accredited examination portal.'}
+                                </div>
                             </div>
 
                             {/* Attachment Notice */}

@@ -7,19 +7,18 @@ const email_1 = require("../utils/email");
 const NotificationRepository_1 = require("../repositories/NotificationRepository");
 const cronRegistry_1 = require("./cronRegistry");
 const CRON_NAME = 'ApplicationAutoAcceptance';
-const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 async function runApplicationApprovalCron(forceUserId) {
     try {
-        if (!forceUserId) {
-            console.log('[ApplicationCron] Auto-acceptance disabled: Application acceptance must be manually performed via admin dashboard with drafted email (CHANGES.md Prompt 8).');
-            (0, cronRegistry_1.recordCronRun)(CRON_NAME, 'ok');
-            return 0;
-        }
-        console.log('[ApplicationCron] Running manual-forced application acceptance check for userId:', forceUserId);
+        const cutoff = new Date(Date.now() - TWELVE_HOURS_MS);
+        console.log('[ApplicationCron] Running 12-hour automatic application acceptance check' + (forceUserId ? ` for userId: ${forceUserId}` : '...'));
         const stageWhere = {
             name: 'Application',
-            status: 'pending'
+            status: { [sequelize_1.Op.in]: ['pending', 'under-review'] }
         };
+        if (!forceUserId) {
+            stageWhere.updatedAt = { [sequelize_1.Op.lte]: cutoff };
+        }
         const pendingStages = await models_1.JobStage.findAll({
             where: stageWhere,
             include: [
@@ -41,7 +40,7 @@ async function runApplicationApprovalCron(forceUserId) {
                 }
             ]
         });
-        console.log(`[ApplicationCron] Found ${pendingStages.length} applications pending auto-acceptance.`);
+        console.log(`[ApplicationCron] Found ${pendingStages.length} applications pending 12-hour auto-acceptance.`);
         for (const stage of pendingStages) {
             const application = stage.Application;
             if (!application)
@@ -49,12 +48,12 @@ async function runApplicationApprovalCron(forceUserId) {
             const userId = application.userId;
             const jobTitle = application.JobListing?.title || 'your applied role';
             try {
-                // Mark stage as accepted (lowercase, consistent with 'under-review' convention)
+                // Mark stage as accepted
                 await stage.update({ status: 'accepted' });
-                // Advance to Nomination stage
+                // Advance to Employer Selection stage (orderly & idempotent)
                 const { applicationService } = require('../services/ApplicationService');
                 await applicationService.addStageToApplication(application.id, {
-                    name: 'Nomination',
+                    name: 'Employer Selection',
                     status: 'ongoing',
                     setAsCurrent: true,
                     notifyInApp: false,
@@ -67,19 +66,23 @@ async function runApplicationApprovalCron(forceUserId) {
                     message: `Your application for "${jobTitle}" has been reviewed and accepted. Check your dashboard for next steps.`,
                     type: 'SYSTEM'
                 });
-                // Send Application Accepted email to candidate
+                // Send Application Accepted email to candidate with the 3 mandatory statutory points (NEW_CHANGES.md FG 14)
                 const user = await models_1.User.findByPk(userId);
                 if (user) {
-                    const subject = `Your Application Has Been Accepted — ${jobTitle}`;
+                    const subject = `Congratulations: Your FIFO Application Has Been Accepted — ${jobTitle}`;
                     const content = `
                         <p>Dear ${user.fullName},</p>
                         <p>Congratulations! Your application for the <strong>${jobTitle}</strong> position at <strong>Blue Collar Recruitment</strong> has been successfully reviewed and <strong>accepted</strong>.</p>
-                        <p>Blue Collar Recruitment specializes in hiring and sponsoring foreign applicants to work FIFO in Australia, and we are excited to progress your application.</p>
-                        <p>You have now advanced to the <strong>Nomination</strong> stage of our recruitment process. Please log in to your dashboard to view your updated status and any further instructions.</p>
+                        <p>Please review the following vital points regarding your progression:</p>
+                        <ol>
+                            <li><strong>Prerequisite Training Requirements:</strong> You may require further prerequisite training and competency tickets subject to the statutory safety requirements of your future Australian employer.</li>
+                            <li><strong>Employer Cost Liability:</strong> Your future Australian employer is fully liable for the cost of training and/or any costs incurred by you in the context of training for the role applied upon deployment.</li>
+                            <li><strong>Upcoming Host Employer Selection:</strong> You will be selecting your future employer in our next communication. An official Employer Selection Form and company slot allocation will be dispatched to your portal within 24 hours.</li>
+                        </ol>
                         <div class="cta-block">
-                            <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/applications" class="button">View Application</a>
+                            <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/applications" class="button">View Application Status</a>
                         </div>
-                        <p>Yours sincerely,<br>Gary Nexon Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment Pty Ltd.</p>
+                        <p>Yours sincerely,<br>Gary Nexon Fletcher.<br>Hiring Operations Director.<br>Blue Collar Recruitment Pty Ltd.</p>
                     `;
                     await (0, email_1.sendInfoEmail)(user.email, subject, content).catch(err => console.error(`[ApplicationCron] Email failed for user ${userId}:`, err));
                 }

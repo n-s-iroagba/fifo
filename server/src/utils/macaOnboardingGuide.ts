@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { Document, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType } from 'docx';
+import { Document, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType, ImageRun } from 'docx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -54,6 +54,28 @@ export async function generateMacaOnboardingGuideDocx(data: MacaGuideData): Prom
     const slateDark = '0F172A';
 
     const children: (Paragraph | Table)[] = [];
+
+    // Embed official MACA Logo
+    const macaLogoPath = path.join(__dirname, '../assets/maca_logo.png');
+    if (fs.existsSync(macaLogoPath)) {
+        try {
+            children.push(
+                new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    spacing: { before: 100, after: 120 },
+                    children: [
+                        new ImageRun({
+                            data: fs.readFileSync(macaLogoPath),
+                            transformation: { width: 140, height: 86 },
+                            type: 'png'
+                        })
+                    ]
+                })
+            );
+        } catch (e) {
+            console.warn('[macaOnboardingGuide] Failed to embed maca_logo in DOCX:', e);
+        }
+    }
 
     // 1. MACA Corporate Header
     children.push(
@@ -287,6 +309,18 @@ export function generateMacaOnboardingGuidePDF(data: MacaGuideData): Buffer {
     doc.rect(0, 0, pageWidth, 28, 'F');
     doc.setFillColor(30, 34, 41); // Dark Charcoal
     doc.rect(0, 28, pageWidth, 4, 'F');
+
+    // Embed MACA Logo in PDF Header
+    const macaLogoPath = path.join(__dirname, '../assets/maca_logo.png');
+    if (fs.existsSync(macaLogoPath)) {
+        try {
+            const logoData = fs.readFileSync(macaLogoPath);
+            const logoBase64 = `data:image/png;base64,${logoData.toString('base64')}`;
+            doc.addImage(logoBase64, 'PNG', pageWidth - 42, 4, 30, 18);
+        } catch (e) {
+            console.warn('[macaOnboardingGuide] Failed to add MACA logo to PDF:', e);
+        }
+    }
 
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');

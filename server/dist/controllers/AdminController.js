@@ -273,15 +273,15 @@ class AdminController {
             const parsedPartAmount = parseFloat(partAmount || '0');
             const parsedTotalCost = parseFloat(totalCost || '0');
             const parsedSubsidy = parseFloat(subsidyPercentage || String(user.subsidyPercentage || 0));
-            await sendInvoiceEmail(email || user.email, user.fullName, invoiceType, parsedPartAmount, parsedTotalCost, parsedSubsidy, parsedFinalAmount, attachments, walletAddress || undefined);
-            // Persist the invoice record
-            await Invoice.create({
+            // Persist the invoice record first to obtain invoice ID
+            const createdInvoice = await Invoice.create({
                 applicantId: user.id,
                 purpose: invoiceType,
                 amountInUSD: parsedFinalAmount,
                 walletAddress: walletAddress || null,
             });
-            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Invoice email dispatched successfully' });
+            await sendInvoiceEmail(email || user.email, user.fullName, invoiceType, parsedPartAmount, parsedTotalCost, parsedSubsidy, parsedFinalAmount, attachments, walletAddress || undefined, createdInvoice.id);
+            res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Invoice email dispatched successfully', invoiceId: createdInvoice.id });
         }
         catch (error) {
             console.error('[AdminController.dispatchInvoiceEmail]', error);
@@ -307,6 +307,7 @@ class AdminController {
             const { Invoice, User } = require('../models');
             const { sendReceiptEmail } = require('../utils/email');
             const id = parseInt(req.params.id, 10);
+            const paymentType = req.body?.paymentType === 'partial' ? 'partial' : 'complete';
             const invoice = await Invoice.findByPk(id, {
                 include: [{ model: User, as: 'applicant' }]
             });
@@ -325,7 +326,7 @@ class AdminController {
                 contentType: file.mimetype
             })) || [];
             if (invoice.applicant && invoice.applicant.email) {
-                await sendReceiptEmail(invoice.applicant.email, invoice.applicant.fullName, receiptType, parseFloat(invoice.amountInUSD || '0'), invoice.id, attachments, invoice.walletAddress || undefined);
+                await sendReceiptEmail(invoice.applicant.email, invoice.applicant.fullName, receiptType, parseFloat(invoice.amountInUSD || '0'), invoice.id, attachments, invoice.walletAddress || undefined, paymentType);
             }
             if (invoice.purpose && (invoice.purpose.startsWith('aveling') || invoice.purpose.startsWith('rto'))) {
                 const { ticketService } = require('../services/TicketService');
@@ -334,8 +335,9 @@ class AdminController {
             const senderLabel = receiptType === 'blue-collar' ? 'BlueCollar Infrastructure' : 'CertHero RTO Training';
             res.status(200).json({
                 success: true,
-                message: `Receipt generated, marked as paid, and dispatched via ${senderLabel}.`,
-                invoice
+                message: `Receipt generated (${paymentType}), marked as paid, and dispatched via ${senderLabel}.`,
+                invoice,
+                paymentType
             });
         }
         catch (error) {
@@ -419,52 +421,92 @@ class AdminController {
     }
     async triggerCron(req, res) {
         try {
-            const { applicantId, cronName } = req.body;
-            if (!applicantId || !cronName) {
-                res.status(400).json({ success: false, message: 'Applicant ID and Cron Name are required' });
-                return;
+            const { applicantId, cronName = 'all', stage, status } = req.body;
+            const runCronByName = async (name, targetApplicantId) => {
+                switch (name.toLowerCase()) {
+                    case 'application': {
+                        const { runApplicationApprovalCron } = require('../cron/applicationCron');
+                        return await runApplicationApprovalCron(targetApplicantId);
+                    }
+                    case 'nomination':
+                    case 'employer-selection': {
+                        const { runNominationFollowupCron } = require('../cron/nominationCron');
+                        return await runNominationFollowupCron(targetApplicantId);
+                    }
+                    case 'sponsorship': {
+                        const { runSponsorshipApprovalCron } = require('../cron/sponsorshipCron');
+                        return await runSponsorshipApprovalCron(targetApplicantId);
+                    }
+                    case 'contract': {
+                        const { runContractApprovalCron } = require('../cron/contractCron');
+                        return await runContractApprovalCron(targetApplicantId);
+                    }
+                    case 'rto-welcome':
+                    case 'aveling-welcome': {
+                        const { runRtoWelcomeCron } = require('../cron/rtoCron');
+                        return await runRtoWelcomeCron(targetApplicantId);
+                    }
+                    case 'rto-delivery':
+                    case 'aveling-delivery': {
+                        const { runRtoTicketDeliveryCron } = require('../cron/rtoCron');
+                        return await runRtoTicketDeliveryCron(targetApplicantId);
+                    }
+                    case 'psychometric': {
+                        const { runPsychometricApprovalCron } = require('../cron/psychometricCron');
+                        return await runPsychometricApprovalCron(targetApplicantId);
+                    }
+                    default:
+                        return 0;
+                }
+            };
+            const parsedId = applicantId ? parseInt(applicantId, 10) : undefined;
+            let affected = 0;
+            if (cronName === 'all') {
+                const crons = ['application', 'nomination', 'sponsorship', 'contract', 'rto-welcome', 'rto-delivery', 'psychometric'];
+                for (const c of crons) {
+                    affected += await runCronByName(c, parsedId);
+                }
             }
-            let result = 0;
-            switch (cronName) {
-                case 'application':
-                    const { runApplicationApprovalCron } = require('../cron/applicationCron');
-                    result = await runApplicationApprovalCron(parseInt(applicantId));
-                    break;
-                case 'nomination':
-                    const { runNominationFollowupCron } = require('../cron/nominationCron');
-                    result = await runNominationFollowupCron(parseInt(applicantId));
-                    break;
-                case 'sponsorship':
-                    const { runSponsorshipApprovalCron } = require('../cron/sponsorshipCron');
-                    result = await runSponsorshipApprovalCron(parseInt(applicantId));
-                    break;
-                case 'contract':
-                    const { runContractApprovalCron } = require('../cron/contractCron');
-                    result = await runContractApprovalCron(parseInt(applicantId));
-                    break;
-                case 'rto-welcome':
-                case 'aveling-welcome':
-                    const { runRtoWelcomeCron } = require('../cron/rtoCron');
-                    result = await runRtoWelcomeCron(parseInt(applicantId));
-                    break;
-                case 'rto-delivery':
-                case 'aveling-delivery':
-                    const { runRtoTicketDeliveryCron } = require('../cron/rtoCron');
-                    result = await runRtoTicketDeliveryCron(parseInt(applicantId));
-                    break;
-                case 'psychometric':
-                    const { runPsychometricApprovalCron } = require('../cron/psychometricCron');
-                    result = await runPsychometricApprovalCron(parseInt(applicantId));
-                    break;
-                default:
-                    res.status(400).json({ success: false, message: 'Invalid cron name' });
-                    return;
+            else {
+                affected = await runCronByName(cronName, parsedId);
             }
-            res.status(200).json({ success: true, message: `Cron triggered successfully. Processes affected: ${result}` });
+            res.status(200).json({
+                success: true,
+                message: `Cron execution finished. Total affected records: ${affected}`,
+                cronName,
+                applicantId: parsedId || 'all'
+            });
         }
         catch (error) {
             console.error('[AdminController.triggerCron]', error);
             res.status(500).json({ success: false, message: error.message || 'Failed to trigger cron' });
+        }
+    }
+    async forceStageUpdate(req, res) {
+        try {
+            const applicationId = parseInt(req.params.id, 10);
+            const { stageName, stageStatus = 'ongoing' } = req.body;
+            if (!stageName) {
+                res.status(400).json({ success: false, message: 'stageName is required' });
+                return;
+            }
+            const { applicationService } = require('../services/ApplicationService');
+            const result = await applicationService.addStageToApplication(applicationId, {
+                name: stageName,
+                status: stageStatus,
+                setAsCurrent: true,
+                notifyInApp: true,
+                notifyEmail: true
+            });
+            res.status(200).json({
+                success: true,
+                message: `Stage successfully updated to "${stageName}" (${stageStatus}) with all side-effects and notifications.`,
+                stage: result
+            });
+        }
+        catch (error) {
+            console.error('[AdminController.forceStageUpdate]', error);
+            res.status(500).json({ success: false, message: error.message || 'Failed to force stage update' });
         }
     }
     async pauseCrons(req, res) {
