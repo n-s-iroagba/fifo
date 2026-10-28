@@ -50,7 +50,7 @@ export function AiStudyAssistant() {
         if (messages.length === 0) {
             const initialGreeting = studyContext?.courseTitle
                 ? `G'day! I am your CertHero AI Study Mentor for **${studyContext.courseTitle}** (${studyContext.courseCode || 'Prerequisite Unit'}). How can I assist you with your module theory, safety protocols, or syllabus review today?`
-                : `G'day! I am your official CertHero AI Vocational Mentor. I can answer questions regarding the Western Australia FIFO program, course syllabi, employer sponsorships (MACA, MinRes, Northern Star, Rio Tinto), and regulatory requirements. How can I assist you?`;
+                : `G'day! I am your official CertHero AI Vocational Mentor. I can answer questions regarding the Western Australia FIFO program, course syllabi, employer sponsorships and regulatory requirements. How can I assist you?`;
 
             setMessages([
                 {
