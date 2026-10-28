@@ -58,7 +58,8 @@ export default async function RootLayout({
   const isAvelingHeader = headersList.get('x-is-aveling') === 'true';
   const rawHost = headersList.get('x-forwarded-host') || headersList.get('host') || '';
   const host = rawHost.split(',')[0].trim().toLowerCase().split(':')[0];
-  const isAveling = isAvelingHeader || host.startsWith('certhero') || host === 'certhero.study' || host === 'www.certhero.study';
+  const isAveling = false
+  //isAvelingHeader || host.startsWith('certhero') || host === 'certhero.study' || host === 'www.certhero.study';
 
   return (
     <html

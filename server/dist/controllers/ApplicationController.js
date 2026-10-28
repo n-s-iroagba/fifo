@@ -373,10 +373,8 @@ class ApplicationController {
                             const pdfBuf = (0, pdfGenerator_1.generateEmployerSelectionFormPDF)({
                                 applicantId: userId,
                                 fullName: candidateName || 'Candidate',
-                                applicationId: id,
+                                email: candidateEmail,
                                 jobTitle: app?.JobListing?.title || 'FIFO Specialist',
-                                dateStr: new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }),
-                                totalCompetitorApplicants: totalApplicants || 24,
                                 onlyEmployingEmployer: false
                             });
                             attachments.push({
