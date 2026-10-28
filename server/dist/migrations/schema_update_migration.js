@@ -65,7 +65,41 @@ async function migrateSchemaUpdates() {
             console.log('[Migration] Note on courses.syllabus:', e.message);
         }
     }
-    // 4. Sync new models if not yet synced
+    // 4. Ensure Application cron columns exist
+    try {
+        await models_1.sequelize.query('ALTER TABLE applications ADD COLUMN `isCronPaused` BOOLEAN NOT NULL DEFAULT false;');
+        console.log('[Migration] Added isCronPaused column to applications table.');
+    }
+    catch (e) {
+        if (!e.message?.includes('Duplicate column') && e.original?.code !== 'ER_DUP_FIELDNAME') {
+            console.log('[Migration] Note on applications.isCronPaused:', e.message);
+        }
+    }
+    try {
+        await models_1.sequelize.query('ALTER TABLE applications ADD COLUMN `pausedStageCrons` JSON NULL;');
+        console.log('[Migration] Added pausedStageCrons column to applications table.');
+    }
+    catch (e) {
+        if (!e.message?.includes('Duplicate column') && e.original?.code !== 'ER_DUP_FIELDNAME') {
+            console.log('[Migration] Note on applications.pausedStageCrons:', e.message);
+        }
+    }
+    // 5. Ensure cron_settings table exists
+    try {
+        await models_1.sequelize.query(`
+            CREATE TABLE IF NOT EXISTS \`cron_settings\` (
+                \`key\` VARCHAR(191) PRIMARY KEY,
+                \`value\` TEXT NULL,
+                \`createdAt\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                \`updatedAt\` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            );
+        `);
+        console.log('[Migration] Checked/created cron_settings table.');
+    }
+    catch (e) {
+        console.log('[Migration] Note on cron_settings table:', e.message);
+    }
+    // 6. Sync new models if not yet synced
     try {
         await models_1.Employer.sync();
         await models_1.JoblistingEmployer.sync();

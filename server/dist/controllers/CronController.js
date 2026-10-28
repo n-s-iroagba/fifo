@@ -21,8 +21,8 @@ const notifyAdmin = async (cronName, itemsProcessed) => {
 };
 exports.cronController = {
     async application(req, res) {
-        if ((0, cronRegistry_1.areCronsPaused)())
-            return res.status(200).json({ success: true, processed: 0, paused: true });
+        if ((0, cronRegistry_1.isCronPaused)('application'))
+            return res.status(200).json({ success: true, processed: 0, paused: true, cron: 'application' });
         try {
             const count = await (0, applicationCron_1.runApplicationApprovalCron)();
             await notifyAdmin('Application Auto-Acceptance', count);
@@ -34,8 +34,8 @@ exports.cronController = {
         }
     },
     async nomination(req, res) {
-        if ((0, cronRegistry_1.areCronsPaused)())
-            return res.status(200).json({ success: true, processed: 0, paused: true });
+        if ((0, cronRegistry_1.isCronPaused)('nomination'))
+            return res.status(200).json({ success: true, processed: 0, paused: true, cron: 'nomination' });
         try {
             const count = await (0, nominationCron_1.runNominationFollowupCron)();
             await notifyAdmin('Nomination Followup', count);
@@ -46,9 +46,23 @@ exports.cronController = {
             res.status(500).json({ success: false, error: error.message });
         }
     },
+    async onboarding(req, res) {
+        if ((0, cronRegistry_1.isCronPaused)('onboarding'))
+            return res.status(200).json({ success: true, processed: 0, paused: true, cron: 'onboarding' });
+        try {
+            const { runOnboardingCron } = require('../cron/onboardingCron');
+            const count = await runOnboardingCron();
+            await notifyAdmin('Post-Interview Onboarding Process Email Followup', count);
+            res.status(200).json({ success: true, processed: count });
+        }
+        catch (error) {
+            console.error('Error in onboarding cron webhook:', error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    },
     async contract(req, res) {
-        if ((0, cronRegistry_1.areCronsPaused)())
-            return res.status(200).json({ success: true, processed: 0, paused: true });
+        if ((0, cronRegistry_1.isCronPaused)('contract'))
+            return res.status(200).json({ success: true, processed: 0, paused: true, cron: 'contract' });
         try {
             const count = await (0, contractCron_1.runContractApprovalCron)();
             await notifyAdmin('Contract Auto-Approval', count);
@@ -60,8 +74,8 @@ exports.cronController = {
         }
     },
     async sponsorship(req, res) {
-        if ((0, cronRegistry_1.areCronsPaused)())
-            return res.status(200).json({ success: true, processed: 0, paused: true });
+        if ((0, cronRegistry_1.isCronPaused)('sponsorship'))
+            return res.status(200).json({ success: true, processed: 0, paused: true, cron: 'sponsorship' });
         try {
             const count = await (0, sponsorshipCron_1.runSponsorshipApprovalCron)();
             await notifyAdmin('Sponsorship Auto-Approval', count);
@@ -73,11 +87,14 @@ exports.cronController = {
         }
     },
     async rto(req, res) {
-        if ((0, cronRegistry_1.areCronsPaused)())
-            return res.status(200).json({ success: true, processed: 0, paused: true });
+        const welcomePaused = (0, cronRegistry_1.isCronPaused)('rto-welcome');
+        const deliveryPaused = (0, cronRegistry_1.isCronPaused)('rto-delivery');
+        if (welcomePaused && deliveryPaused) {
+            return res.status(200).json({ success: true, processed: 0, paused: true, cron: 'rto' });
+        }
         try {
-            const count1 = await (0, rtoCron_1.runRtoWelcomeCron)();
-            const count2 = await (0, rtoCron_1.runRtoTicketDeliveryCron)();
+            const count1 = welcomePaused ? 0 : await (0, rtoCron_1.runRtoWelcomeCron)();
+            const count2 = deliveryPaused ? 0 : await (0, rtoCron_1.runRtoTicketDeliveryCron)();
             const count = count1 + count2;
             await notifyAdmin('RTO (CertHero) Welcome & Ticket Delivery', count);
             res.status(200).json({ success: true, processed: count });
@@ -91,8 +108,8 @@ exports.cronController = {
         return (exports.cronController.rto || this.rto)(req, res);
     },
     async psychometric(req, res) {
-        if ((0, cronRegistry_1.areCronsPaused)())
-            return res.status(200).json({ success: true, processed: 0, paused: true });
+        if ((0, cronRegistry_1.isCronPaused)('psychometric'))
+            return res.status(200).json({ success: true, processed: 0, paused: true, cron: 'psychometric' });
         try {
             const count = await (0, psychometricCron_1.runPsychometricApprovalCron)();
             await notifyAdmin('Psychometric Auto-Approval', count);

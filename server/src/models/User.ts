@@ -48,6 +48,9 @@ export class User extends Model {
     declare interviewDate: string | null;
     declare interviewTime: string | null;
     declare interviewLink: string | null;
+    declare interviewEmailSentAt: Date | null;
+    declare onboardingEmailSentAt: Date | null;
+    declare onboardingEmailSent: boolean;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 }
@@ -250,6 +253,19 @@ User.init({
     interviewLink: {
         type: DataTypes.STRING,
         allowNull: true,
+    },
+    interviewEmailSentAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
+    onboardingEmailSentAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
+    onboardingEmailSent: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
     }
 }, {
     sequelize,

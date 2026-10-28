@@ -578,7 +578,37 @@ export default function ApplicationDetailPage() {
         { enabled: !!id }
     );
 
+    const [isCronActionPending, setIsCronActionPending] = useState(false);
 
+    const handleToggleApplicationAllCrons = async (shouldPause: boolean) => {
+        const action = shouldPause ? 'pause' : 'resume';
+        if (!confirm(`${shouldPause ? 'Stop/pause' : 'Resume'} all automated stage crons for this candidate's application?`)) return;
+        setIsCronActionPending(true);
+        try {
+            const { data } = await api.post(`/admin/applications/${id}/crons/${action}`, {});
+            alert(data.message || `All stage crons ${action}d for this application.`);
+            refetch();
+        } catch (err: any) {
+            alert(err.response?.data?.message || `Failed to ${action} crons for this application.`);
+        } finally {
+            setIsCronActionPending(false);
+        }
+    };
+
+    const handleToggleApplicationStageCron = async (stageCronKey: string, isPaused: boolean) => {
+        const action = isPaused ? 'resume' : 'pause';
+        if (!confirm(`${isPaused ? 'Resume' : 'Stop/pause'} the "${stageCronKey}" stage cron for this candidate?`)) return;
+        setIsCronActionPending(true);
+        try {
+            const { data } = await api.post(`/admin/applications/${id}/crons/${action}`, { stageCron: stageCronKey });
+            alert(data.message || `Stage cron "${stageCronKey}" ${action}d for this application.`);
+            refetch();
+        } catch (err: any) {
+            alert(err.response?.data?.message || `Failed to ${action} stage cron.`);
+        } finally {
+            setIsCronActionPending(false);
+        }
+    };
 
     const { data: coursesResponse } = useApiQuery<any>(
         ['admin', 'courses'],
@@ -1078,6 +1108,95 @@ export default function ApplicationDetailPage() {
                             </div>
                         )}
 
+                        {/* Candidate Application Stage Crons Control */}
+                        <div className="p-5 bg-white rounded-2xl border border-slate-200 mb-6 shadow-sm">
+                            <div className="flex items-center justify-between mb-3">
+                                <h4 className="text-[9px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-1.5">
+                                    <span className="material-symbols-outlined text-[16px] text-indigo-600">timer_off</span>
+                                    Candidate Stage Crons
+                                </h4>
+                                <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider shrink-0 ${
+                                    application?.isCronPaused 
+                                        ? 'bg-amber-100 text-amber-800 border border-amber-300' 
+                                        : (application?.pausedStageCrons?.length ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200')
+                                }`}>
+                                    {application?.isCronPaused ? 'All Stopped' : (application?.pausedStageCrons?.length ? `${application.pausedStageCrons.length} Stopped` : 'Active')}
+                                </span>
+                            </div>
+
+                            <p className="text-[9px] text-slate-500 mb-4 leading-relaxed">
+                                Control automated background cron advancement specifically for this applicant. Stopping crons prevents automated stage approvals and triggers.
+                            </p>
+
+                            {/* Master Toggle for this Candidate */}
+                            <div className="mb-4">
+                                {application?.isCronPaused ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleToggleApplicationAllCrons(false)}
+                                        disabled={isCronActionPending}
+                                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-black uppercase tracking-widest py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50"
+                                    >
+                                        <span className="material-symbols-outlined text-[14px]">play_arrow</span>
+                                        Resume All Crons for Candidate
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleToggleApplicationAllCrons(true)}
+                                        disabled={isCronActionPending}
+                                        className="w-full bg-amber-500 hover:bg-amber-600 text-white text-[9px] font-black uppercase tracking-widest py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50"
+                                    >
+                                        <span className="material-symbols-outlined text-[14px]">pause</span>
+                                        Stop All Crons for Candidate
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Individual Stage Crons for this Candidate */}
+                            <div className="border-t border-slate-100 pt-3">
+                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-2">
+                                    Individual Stage Crons
+                                </span>
+                                <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
+                                    {[
+                                        { key: 'application', label: '12h Application Acceptance' },
+                                        { key: 'nomination', label: '1h Employer Selection' },
+                                        { key: 'onboarding', label: '1h Post-Interview Onboarding' },
+                                        { key: 'sponsorship', label: '2h Ticket Sponsorship' },
+                                        { key: 'contract', label: '3h Contract Approval' },
+                                        { key: 'rto-welcome', label: '3h RTO Welcome' },
+                                        { key: 'rto-delivery', label: '4h Tickets Delivery' },
+                                        { key: 'psychometric', label: '1h Psychometric Module 2' }
+                                    ].map((sc) => {
+                                        const isStagePaused = application?.isCronPaused || (application?.pausedStageCrons && (
+                                            application.pausedStageCrons.includes(sc.key) ||
+                                            (sc.key === 'rto-welcome' && application.pausedStageCrons.includes('rto')) ||
+                                            (sc.key === 'rto-delivery' && application.pausedStageCrons.includes('rto'))
+                                        ));
+
+                                        return (
+                                            <div key={sc.key} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200/60 text-[9px]">
+                                                <span className="font-bold text-slate-700 truncate mr-2">{sc.label}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleToggleApplicationStageCron(sc.key, isStagePaused)}
+                                                    disabled={isCronActionPending || application?.isCronPaused}
+                                                    className={`px-2 py-1 rounded-md font-black uppercase text-[8px] tracking-wider transition-all disabled:opacity-40 ${
+                                                        isStagePaused 
+                                                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white' 
+                                                            : 'bg-white hover:bg-amber-50 text-amber-700 border border-amber-200'
+                                                    }`}
+                                                >
+                                                    {isStagePaused ? 'Resume' : 'Stop'}
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+
                         {/* System Overrides (Cron Triggers) */}
                         <div className="p-5 bg-slate-50/50 rounded-2xl border border-slate-200 mb-6">
                             <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -1356,6 +1475,7 @@ export default function ApplicationDetailPage() {
                                     <option value="all">All Applicable Crons</option>
                                     <option value="application">Application 12-Hour Automated Acceptance</option>
                                     <option value="nomination">Employer Selection Invite (24hr) & Acceptance (5hr)</option>
+                                    <option value="onboarding">1h Post-Interview Onboarding Guide & Regional Directives</option>
                                     <option value="sponsorship">Ticket Sponsorship Invite (3hr) & Approval (6hr)</option>
                                     <option value="contract">Sponsorship Contract Delivery & ID Generation (2hr)</option>
                                     <option value="rto-welcome">CertHero Enrollment Credentials & Letter (6hr)</option>

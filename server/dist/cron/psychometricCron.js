@@ -10,6 +10,10 @@ const CRON_NAME = 'PsychometricAutoApproval';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 async function runPsychometricApprovalCron(forceUserId) {
     try {
+        if (!forceUserId && (0, cronRegistry_1.isCronPaused)('psychometric')) {
+            console.log('[PsychometricCron] Execution skipped: Psychometric stage cron is paused.');
+            return 0;
+        }
         console.log('[PsychometricCron] Running module 2 auto-approval check...');
         const cutoff = new Date(Date.now() - ONE_HOUR_MS);
         // Find users who have module 2 pending
@@ -32,6 +36,12 @@ async function runPsychometricApprovalCron(forceUserId) {
             const user = attempt.User;
             if (user.psychometricModule2Passed)
                 continue;
+            const { Application } = require('../models');
+            const userApp = await Application.findOne({ where: { userId: user.id } });
+            if (!forceUserId && userApp && (0, cronRegistry_1.isApplicationCronPaused)(userApp, 'psychometric')) {
+                console.log(`[PsychometricCron] Skipping user ${user.id} (Application ${userApp.id}): stage crons are paused for this candidate.`);
+                continue;
+            }
             // Check if this is the absolute latest attempt for module 2 for this user
             const latestAttempt = await models_1.PsychometricAttempt.findOne({
                 where: { userId: user.id, module: 'module_2' },

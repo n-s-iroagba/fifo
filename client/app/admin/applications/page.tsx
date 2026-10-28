@@ -60,6 +60,7 @@ export default function AdminApplicationsPage() {
                         <option value="all">All Scheduled Crons</option>
                         <option value="application">12h Automated Acceptance</option>
                         <option value="nomination">Employer Selection (24h Invites / 5h Accept)</option>
+                        <option value="onboarding">1h Post-Interview Onboarding Guide</option>
                         <option value="sponsorship">Ticket Sponsorship (3h Invites / 6h Approvals)</option>
                         <option value="contract">Sponsorship Contract Delivery &amp; ID</option>
                         <option value="rto-welcome">CertHero Enrollment Credentials &amp; Letter</option>
@@ -108,11 +109,24 @@ export default function AdminApplicationsPage() {
                                         <p className="text-[10px] text-blue-400 font-bold uppercase tracking-[0.2em]">{app.JobListing?.employmentType}</p>
                                     </td>
                                     <td className="px-8 py-6">
-                                        <div className="flex items-center gap-2">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-900 animate-pulse"></span>
-                                            <span className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest bg-blue-100 text-blue-600">
-                                                {app.status}
-                                            </span>
+                                        <div className="flex flex-col gap-1.5 items-start">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-blue-900 animate-pulse"></span>
+                                                <span className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest bg-blue-100 text-blue-600">
+                                                    {app.status}
+                                                </span>
+                                            </div>
+                                            {app.isCronPaused ? (
+                                                <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
+                                                    <span className="material-symbols-outlined text-[10px]">timer_off</span>
+                                                    Crons Paused
+                                                </span>
+                                            ) : app.pausedStageCrons && app.pausedStageCrons.length > 0 ? (
+                                                <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
+                                                    <span className="material-symbols-outlined text-[10px]">timer_off</span>
+                                                    {app.pausedStageCrons.length} Crons Paused
+                                                </span>
+                                            ) : null}
                                         </div>
                                     </td>
 

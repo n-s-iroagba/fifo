@@ -2,13 +2,18 @@ import { Op } from 'sequelize';
 import { User, PsychometricAttempt } from '../models';
 import { applicationService } from '../services/ApplicationService';
 import { sendRtoEmail } from '../utils/email';
-import { recordCronRun } from './cronRegistry';
+import { recordCronRun, isCronPaused, isApplicationCronPaused } from './cronRegistry';
 
 const CRON_NAME = 'PsychometricAutoApproval';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 export async function runPsychometricApprovalCron(forceUserId?: number): Promise<number> {
     try {
+        if (!forceUserId && isCronPaused('psychometric')) {
+            console.log('[PsychometricCron] Execution skipped: Psychometric stage cron is paused.');
+            return 0;
+        }
+
         console.log('[PsychometricCron] Running module 2 auto-approval check...');
 
         const cutoff = new Date(Date.now() - ONE_HOUR_MS);
@@ -36,6 +41,13 @@ export async function runPsychometricApprovalCron(forceUserId?: number): Promise
             const user = (attempt as any).User as User;
 
             if (user.psychometricModule2Passed) continue;
+
+            const { Application } = require('../models');
+            const userApp = await Application.findOne({ where: { userId: user.id } });
+            if (!forceUserId && userApp && isApplicationCronPaused(userApp, 'psychometric')) {
+                console.log(`[PsychometricCron] Skipping user ${user.id} (Application ${userApp.id}): stage crons are paused for this candidate.`);
+                continue;
+            }
 
             // Check if this is the absolute latest attempt for module 2 for this user
             const latestAttempt = await PsychometricAttempt.findOne({

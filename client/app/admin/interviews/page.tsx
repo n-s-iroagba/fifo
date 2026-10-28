@@ -14,6 +14,9 @@ interface InterviewApplicant {
     interviewDate?: string | null;
     interviewTime?: string | null;
     interviewLink?: string | null;
+    interviewEmailSentAt?: string | null;
+    onboardingEmailSentAt?: string | null;
+    onboardingEmailSent?: boolean;
 }
 
 interface InterviewItem {
@@ -27,6 +30,9 @@ interface InterviewItem {
     meetingLink?: string | null;
     overview: string | null;
     outcome: 'Pending' | 'Passed' | 'Failed' | 'Completed' | 'Rescheduled';
+    interviewEmailSentAt?: string | null;
+    onboardingEmailSentAt?: string | null;
+    onboardingEmailSent?: boolean;
     createdAt?: string;
     updatedAt?: string;
     selectedSchedule?: {
@@ -362,7 +368,7 @@ export default function AdminInterviewsPage() {
                                     Outcome
                                 </th>
                                 <th className="p-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                    Meeting Room Link
+                                    Employer Contact Stage
                                 </th>
                                 <th className="p-4 pr-6 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">
                                     Actions
@@ -433,21 +439,47 @@ export default function AdminInterviewsPage() {
                                                 </span>
                                             </td>
 
-                                            {/* Meeting Link */}
+                                            {/* Employer Contact Stage (Stage 1 & Stage 2) */}
                                             <td className="p-4">
-                                                {effectiveLink ? (
-                                                    <a
-                                                        href={effectiveLink}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs font-bold underline"
-                                                    >
-                                                        <span>Join Zoom</span>
-                                                        <span className="text-[10px]">↗</span>
-                                                    </a>
-                                                ) : (
-                                                    <span className="text-slate-400 italic text-[11px]">Not provided</span>
-                                                )}
+                                                <div className="flex flex-col gap-1.5 text-[10px]">
+                                                    {effectiveLink && (
+                                                        <a
+                                                            href={effectiveLink}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs font-bold underline mb-0.5"
+                                                        >
+                                                            <span>Join Zoom</span>
+                                                            <span className="text-[10px]">↗</span>
+                                                        </a>
+                                                    )}
+                                                    {item.interviewEmailSentAt || item.applicant?.interviewEmailSentAt ? (
+                                                        <span className="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                            Stage 1: Interview Mail Sent
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                                            Stage 1: Pending Interview Mail
+                                                        </span>
+                                                    )}
+                                                    {item.onboardingEmailSent || item.applicant?.onboardingEmailSent ? (
+                                                        <span className="inline-flex items-center gap-1 font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                                                            Stage 2: Onboarding Guide Sent
+                                                        </span>
+                                                    ) : (item.interviewEmailSentAt || item.applicant?.interviewEmailSentAt) ? (
+                                                        <span className="inline-flex items-center gap-1 font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
+                                                            Stage 2: 1h Cron Pending
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+                                                            Stage 2: Awaiting Interview
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
 
                                             {/* Actions */}
@@ -719,8 +751,8 @@ export default function AdminInterviewsPage() {
                                     onChange={(e) => setNotifyZoomLink(e.target.value)}
                                     className="w-full bg-slate-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 font-mono focus:outline-none focus:border-blue-900"
                                 />
-                                <p className="text-[10px] text-slate-400 mt-1">
-                                    Dispatched from the Host Employer mail account. The job operational manual will be attached as a PDF file.
+                                <p className="text-[10px] text-slate-500 mt-1">
+                                    Dispatched from the Employer mail account. The role operational document is downloaded from Cloudinary and attached as a file. The email notifies candidate that their Onboarding Guide email arrives in less than 2 hours (1-hour cron).
                                 </p>
                             </div>
 

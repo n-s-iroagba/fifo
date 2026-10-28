@@ -11,6 +11,8 @@ export class Application extends Model {
     declare readonly updatedAt: Date;
     declare status: string;
     declare visaSponsorshipStatus: string | null;
+    declare isCronPaused: boolean;
+    declare pausedStageCrons: string[] | null;
 
     // Associations
     declare User?: any;
@@ -45,6 +47,16 @@ Application.init({
         type: DataTypes.ENUM('Pending', 'Approved', 'Rejected'),
         allowNull: true,
         defaultValue: null
+    },
+    isCronPaused: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
+    pausedStageCrons: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        defaultValue: []
     }
 }, {
     sequelize,

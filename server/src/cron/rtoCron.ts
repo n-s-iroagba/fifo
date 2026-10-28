@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 import { Contract, Application, User, Ticket } from '../models';
 import { sendInfoEmail, sendRtoEmail } from '../utils/email';
-import { recordCronRun } from './cronRegistry';
+import { recordCronRun, isCronPaused, isApplicationCronPaused } from './cronRegistry';
 import axios from 'axios';
 
 const CRON_NAME = 'RtoWelcome';
@@ -9,6 +9,11 @@ const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 
 export async function runRtoWelcomeCron(forceUserId?: number): Promise<number> {
     try {
+        if (!forceUserId && (isCronPaused('rto-welcome') || isCronPaused('rto'))) {
+            console.log('[RtoCron] Execution skipped: RTO Welcome stage cron is paused.');
+            return 0;
+        }
+
         console.log('[RtoCron] Running RTO (CertHero) welcome check...');
 
         const cutoff = new Date(Date.now() - THREE_HOURS_MS);
@@ -56,6 +61,11 @@ export async function runRtoWelcomeCron(forceUserId?: number): Promise<number> {
             const user = (contract as any).User as any;
             const application = (contract as any).Application as any;
             if (!user || !application) continue;
+
+            if (!forceUserId && isApplicationCronPaused(application, 'rto-welcome')) {
+                console.log(`[RtoCron] Skipping welcome for application ${application.id}: stage crons are paused for this candidate.`);
+                continue;
+            }
 
             try {
                 // Get ticket gaps
@@ -165,6 +175,11 @@ export async function runRtoWelcomeCron(forceUserId?: number): Promise<number> {
 
 export async function runRtoTicketDeliveryCron(forceUserId?: number): Promise<number> {
     try {
+        if (!forceUserId && (isCronPaused('rto-delivery') || isCronPaused('rto'))) {
+            console.log('[RtoCron] Execution skipped: RTO Ticket Delivery stage cron is paused.');
+            return 0;
+        }
+
         console.log('[RtoCron] Running RTO ticket delivery check...');
 
         const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
@@ -187,6 +202,12 @@ export async function runRtoTicketDeliveryCron(forceUserId?: number): Promise<nu
         let processedCount = 0;
 
         for (const user of users) {
+            const userApp = await Application.findOne({ where: { userId: user.id } });
+            if (!forceUserId && userApp && isApplicationCronPaused(userApp, 'rto-delivery')) {
+                console.log(`[RtoCron] Skipping ticket delivery for user ${user.id} (Application ${userApp.id}): stage crons are paused.`);
+                continue;
+            }
+
             const anyUser = user as any;
             const prefs = anyUser.preferences || {};
             if (prefs.certificatesSent) {

@@ -33,6 +33,8 @@ const startServer = async () => {
                 try {
                     await sequelize.sync();
                     await migrateSchemaUpdates();
+                    const { initCronSettings } = require('./cron/cronRegistry');
+                    await initCronSettings();
                     await migrateInterviewFeature();
                     await migrateFaqFeature();
 

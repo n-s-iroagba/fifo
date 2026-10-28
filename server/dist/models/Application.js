@@ -33,6 +33,16 @@ Application.init({
         type: sequelize_1.DataTypes.ENUM('Pending', 'Approved', 'Rejected'),
         allowNull: true,
         defaultValue: null
+    },
+    isCronPaused: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
+    pausedStageCrons: {
+        type: sequelize_1.DataTypes.JSON,
+        allowNull: true,
+        defaultValue: []
     }
 }, {
     sequelize: database_1.sequelize,

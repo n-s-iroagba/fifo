@@ -101,6 +101,8 @@ export interface Application {
     User?: User;
     JobListing?: JobListing;
     JobStages?: JobStage[];
+    isCronPaused?: boolean;
+    pausedStageCrons?: string[];
 }
 
 export interface BankAccount {

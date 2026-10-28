@@ -234,7 +234,13 @@ router.post('/admin/invoices/:id/receipt', upload.any(), ...adminMW, AdminContro
 router.post('/admin/crons/trigger', ...adminMW, AdminController_1.adminController.triggerCron.bind(AdminController_1.adminController));
 router.post('/admin/crons/pause', ...adminMW, AdminController_1.adminController.pauseCrons.bind(AdminController_1.adminController));
 router.post('/admin/crons/resume', ...adminMW, AdminController_1.adminController.resumeCrons.bind(AdminController_1.adminController));
+router.post('/admin/crons/:cronName/pause', ...adminMW, AdminController_1.adminController.pauseCrons.bind(AdminController_1.adminController));
+router.post('/admin/crons/:cronName/resume', ...adminMW, AdminController_1.adminController.resumeCrons.bind(AdminController_1.adminController));
 router.get('/admin/crons/status', ...adminMW, AdminController_1.adminController.getCronStatus.bind(AdminController_1.adminController));
+// Application-specific stage cron pause/resume controls
+router.get('/admin/applications/:id/crons', ...adminMW, AdminController_1.adminController.getApplicationCronStatus.bind(AdminController_1.adminController));
+router.post('/admin/applications/:id/crons/pause', ...adminMW, AdminController_1.adminController.pauseApplicationCrons.bind(AdminController_1.adminController));
+router.post('/admin/applications/:id/crons/resume', ...adminMW, AdminController_1.adminController.resumeApplicationCrons.bind(AdminController_1.adminController));
 // Admin Psychometric Test Review
 router.get('/admin/psychometric/attempts', ...adminMW, PsychometricController_1.psychometricController.getAdminAttempts.bind(PsychometricController_1.psychometricController));
 router.post('/admin/psychometric/attempts/:id/approve', ...adminMW, PsychometricController_1.psychometricController.approveAttempt.bind(PsychometricController_1.psychometricController));

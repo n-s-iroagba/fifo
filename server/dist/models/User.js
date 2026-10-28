@@ -204,6 +204,19 @@ User.init({
     interviewLink: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: true,
+    },
+    interviewEmailSentAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: true,
+    },
+    onboardingEmailSentAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: true,
+    },
+    onboardingEmailSent: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
     }
 }, {
     sequelize: database_1.sequelize,

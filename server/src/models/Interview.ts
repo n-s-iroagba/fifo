@@ -12,6 +12,9 @@ export class Interview extends Model {
     declare interviewDate: string | null;
     declare interviewTime: string | null;
     declare timezone: string | null;
+    declare interviewEmailSentAt: Date | null;
+    declare onboardingEmailSentAt: Date | null;
+    declare onboardingEmailSent: boolean;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 }
@@ -70,6 +73,19 @@ Interview.init(
         meetingLink: {
             type: DataTypes.STRING,
             allowNull: true,
+        },
+        interviewEmailSentAt: {
+            type: DataTypes.DATE,
+            allowNull: true,
+        },
+        onboardingEmailSentAt: {
+            type: DataTypes.DATE,
+            allowNull: true,
+        },
+        onboardingEmailSent: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+            allowNull: false,
         },
     },
     {

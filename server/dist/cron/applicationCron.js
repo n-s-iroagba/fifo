@@ -10,6 +10,10 @@ const CRON_NAME = 'ApplicationAutoAcceptance';
 const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 async function runApplicationApprovalCron(forceUserId) {
     try {
+        if (!forceUserId && (0, cronRegistry_1.isCronPaused)('application')) {
+            console.log('[ApplicationCron] Execution skipped: Application stage cron is paused.');
+            return 0;
+        }
         const cutoff = new Date(Date.now() - TWELVE_HOURS_MS);
         console.log('[ApplicationCron] Running 12-hour automatic application acceptance check' + (forceUserId ? ` for userId: ${forceUserId}` : '...'));
         const stageWhere = {
@@ -45,6 +49,10 @@ async function runApplicationApprovalCron(forceUserId) {
             const application = stage.Application;
             if (!application)
                 continue;
+            if (!forceUserId && (0, cronRegistry_1.isApplicationCronPaused)(application, 'application')) {
+                console.log(`[ApplicationCron] Skipping application ${application.id}: stage crons are paused for this candidate.`);
+                continue;
+            }
             const userId = application.userId;
             const jobTitle = application.JobListing?.title || 'your applied role';
             try {

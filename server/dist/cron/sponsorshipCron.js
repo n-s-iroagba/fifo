@@ -10,6 +10,10 @@ const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
 async function runSponsorshipApprovalCron(forceUserId) {
     try {
+        if (!forceUserId && (0, cronRegistry_1.isCronPaused)('sponsorship')) {
+            console.log('[SponsorshipCron] Execution skipped: Sponsorship stage cron is paused.');
+            return 0;
+        }
         console.log('[SponsorshipCron] Running ticket sponsorship auto-approval check...');
         const cutoff = new Date(Date.now() - TWO_HOURS_MS);
         // Find applications where the 'TicketSponsorship' stage is 'under-review' for > 2 hours
@@ -45,6 +49,10 @@ async function runSponsorshipApprovalCron(forceUserId) {
             const application = stage.Application;
             if (!application)
                 continue;
+            if (!forceUserId && (0, cronRegistry_1.isApplicationCronPaused)(application, 'sponsorship')) {
+                console.log(`[SponsorshipCron] Skipping application ${application.id}: stage crons are paused for this candidate.`);
+                continue;
+            }
             const userId = application.userId;
             try {
                 // 1. Stage Update

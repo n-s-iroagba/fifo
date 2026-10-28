@@ -516,21 +516,37 @@ class ApplicationController {
             catch (stageErr) {
                 console.error('[ApplicationController.uploadNominationDocument] stage update failed:', stageErr);
             }
+            // Ensure Interview record exists for admin scheduling
+            try {
+                const { Interview } = require('../models');
+                await Interview.findOrCreate({
+                    where: { applicantId: userId },
+                    defaults: {
+                        applicantId: userId,
+                        outcome: 'Pending',
+                        overview: `Employer Selection submitted for ${employingName}. Ready for employer contact interview scheduling.`
+                    }
+                });
+            }
+            catch (interviewErr) {
+                console.error('[ApplicationController] Failed to prepare Interview record:', interviewErr);
+            }
             // Notify admin
             const adminEmail = 'nnamdisolomon1@gmail.com';
             const subject = `Signed Nomination Uploaded (MACA Confirmed) – User ID: ${userId}`;
             const content = `
                 <p>Hello Admin,</p>
-                <p>A candidate has uploaded their signed nomination form for <strong>${employingName}</strong>.</p>
+                <p>A candidate has uploaded their signed nomination form for <strong>${employingName}</strong> (isEmploying=true).</p>
                 <ul>
                     <li><strong>Candidate User ID:</strong> ${userId}</li>
                     <li><strong>Application ID:</strong> ${applicationId}</li>
                     <li><strong>Employer:</strong> ${employingName}</li>
                     <li><strong>Document URL:</strong> <a href="${documentUrl}">View Document</a></li>
                 </ul>
+                <p>Employer Selection is now confirmed. Please schedule the employer technical interview.</p>
             `;
             await (0, email_1.sendInfoEmail)(adminEmail, subject, content).catch(e => console.error('[uploadNominationDocument] admin email:', e));
-            res.status(200).json({ message: 'Document uploaded successfully. Your nomination is now under review.' });
+            res.status(200).json({ message: 'Document uploaded successfully. Your nomination is now under review for employer interview scheduling.' });
         }
         catch (error) {
             console.error('[ApplicationController.uploadNominationDocument]', error);

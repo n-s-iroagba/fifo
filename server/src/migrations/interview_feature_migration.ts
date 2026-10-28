@@ -9,15 +9,18 @@ import { sequelize, ScheduleCatalogue, Interview } from '../models';
 export async function migrateInterviewFeature(): Promise<void> {
     console.log('[Migration] Running interview feature migration...');
 
-    // 1. Add canPickSchedule to users table if missing
-    try {
-        await sequelize.query('ALTER TABLE users ADD COLUMN canPickSchedule BOOLEAN NOT NULL DEFAULT false;');
-        console.log('[Migration] Added canPickSchedule column to users table.');
-    } catch (e: any) {
-        if (e.message?.includes('Duplicate column') || e.original?.code === 'ER_DUP_FIELDNAME') {
-            console.log('[Migration] canPickSchedule column already exists on users.');
-        } else {
-            console.log('[Migration] Note on users.canPickSchedule:', e.message);
+    // 1. Add canPickSchedule & interview tracking to users table if missing
+    const userQueries = [
+        'ALTER TABLE users ADD COLUMN canPickSchedule BOOLEAN NOT NULL DEFAULT false;',
+        'ALTER TABLE users ADD COLUMN interviewEmailSentAt DATETIME NULL;',
+        'ALTER TABLE users ADD COLUMN onboardingEmailSentAt DATETIME NULL;',
+        'ALTER TABLE users ADD COLUMN onboardingEmailSent BOOLEAN NOT NULL DEFAULT false;'
+    ];
+    for (const q of userQueries) {
+        try {
+            await sequelize.query(q);
+        } catch (e: any) {
+            // ignore duplicate column
         }
     }
 
@@ -32,7 +35,19 @@ export async function migrateInterviewFeature(): Promise<void> {
     // 3. Sync interviews table
     try {
         await Interview.sync();
-        console.log('[Migration] interviews table synced successfully.');
+        const queries = [
+            'ALTER TABLE interviews ADD COLUMN interviewEmailSentAt DATETIME NULL;',
+            'ALTER TABLE interviews ADD COLUMN onboardingEmailSentAt DATETIME NULL;',
+            'ALTER TABLE interviews ADD COLUMN onboardingEmailSent BOOLEAN NOT NULL DEFAULT false;'
+        ];
+        for (const q of queries) {
+            try {
+                await sequelize.query(q);
+            } catch (colErr: any) {
+                // Ignore duplicate column errors
+            }
+        }
+        console.log('[Migration] interviews table synced and patched successfully.');
     } catch (e: any) {
         console.error('[Migration] Failed to sync interviews table:', e.message);
     }

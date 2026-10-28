@@ -378,7 +378,28 @@ The work below follows the General Process Overview. Several actions can run in 
 * Provide the practical modules and physical onboarding.  
 * Introduce you to your team and workplace.
 
+## **C. Communication Channels & Onboarding Submission Protocol**
+
+### **C.1 Official Regional Communication Channels**
+
+> **STRONG NOTICE REGARDING REGIONAL CHANNELS:**
+> Strong notice is given regarding non-Australians using the Australian communication channel and vice versa, as this will result in delay in response or no response at all. You must strictly communicate through your designated regional channel.
+
+1. **For Australian and New Zealand Residents:** [all.recruitment@maca.net.au](mailto:all.recruitment@maca.net.au)  
+2. **For Non Australian or New Zealand Residents:** [recruitement@maca.works](mailto:recruitement@maca.works)
+
+---
+
+### **C.2 Mandatory Submission to Human Resource Department**
+
+**IT IS MANDATORY THAT UPON FINALISATION OF EMPLOYMENT AND VISA PROCESSING, APPLICANTS MUST SUBMIT PHOTOCOPIES OF ALL DOCUMENTS CONTAINED IN THIS ATTACHED FILE (maca-employee-onboarding-guide.pdf) TO THE HUMAN RESOURCE DEPARTMENT USING THE EMAIL [hr@maca.net.au](mailto:hr@maca.net.au).**
+
+*All applicants must understand that this step is critically important to initiate formal employee onboarding, generate your company ID, issue equipment, and arrange arrival reception in Western Australia.*
+
+---
+
 ## **Important Disclaimer**
 
 Immigration policies, income thresholds, fees and test requirements are subject to change. Always refer to the Australian Department of Home Affairs website (immi.homeaffairs.gov.au) for the most current and legally binding information.
+
 

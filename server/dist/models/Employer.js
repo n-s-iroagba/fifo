@@ -41,4 +41,17 @@ Employer.init({
     sequelize: database_1.sequelize,
     tableName: 'employers',
     timestamps: true,
+    hooks: {
+        beforeSave: async (employer, options) => {
+            if (employer.isEmploying) {
+                // Strictly enforce that ONLY one employer can have isEmploying = true
+                const { Op } = require('sequelize');
+                const whereClause = { isEmploying: true };
+                if (employer.id) {
+                    whereClause.id = { [Op.ne]: employer.id };
+                }
+                await Employer.update({ isEmploying: false }, { where: whereClause, transaction: options?.transaction });
+            }
+        }
+    }
 });

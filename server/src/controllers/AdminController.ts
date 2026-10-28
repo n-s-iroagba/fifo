@@ -494,6 +494,12 @@ export class AdminController {
                         const { runNominationFollowupCron } = require('../cron/nominationCron');
                         return await runNominationFollowupCron(targetApplicantId);
                     }
+                    case 'onboarding':
+                    case 'interview-onboarding':
+                    case 'employer-contact': {
+                        const { runOnboardingCron } = require('../cron/onboardingCron');
+                        return await runOnboardingCron(targetApplicantId);
+                    }
                     case 'sponsorship': {
                         const { runSponsorshipApprovalCron } = require('../cron/sponsorshipCron');
                         return await runSponsorshipApprovalCron(targetApplicantId);
@@ -525,7 +531,7 @@ export class AdminController {
             let affected = 0;
 
             if (cronName === 'all') {
-                const crons = ['application', 'nomination', 'sponsorship', 'contract', 'rto-welcome', 'rto-delivery', 'psychometric'];
+                const crons = ['application', 'nomination', 'onboarding', 'sponsorship', 'contract', 'rto-welcome', 'rto-delivery', 'psychometric'];
                 for (const c of crons) {
                     affected += await runCronByName(c, parsedId);
                 }
@@ -577,9 +583,25 @@ export class AdminController {
 
     public async pauseCrons(req: Request, res: Response): Promise<void> {
         try {
-            const { setCronsPaused } = require('../cron/cronRegistry');
-            setCronsPaused(true);
-            res.status(200).json({ success: true, message: 'All crons have been paused.' });
+            const { setCronsPaused, setCronPaused, normalizeCronKey } = require('../cron/cronRegistry');
+            const cronName = req.body?.cronName || req.params?.cronName || req.query?.cronName;
+            
+            if (cronName && cronName !== 'all') {
+                setCronPaused(cronName, true);
+                res.status(200).json({ 
+                    success: true, 
+                    message: `Stage cron "${cronName}" has been paused.`, 
+                    cronName: normalizeCronKey(cronName), 
+                    paused: true 
+                });
+            } else {
+                setCronsPaused(true);
+                res.status(200).json({ 
+                    success: true, 
+                    message: 'All stage crons have been paused.', 
+                    paused: true 
+                });
+            }
         } catch (error: any) {
             console.error('[AdminController.pauseCrons]', error);
             res.status(500).json({ success: false, message: error.message || 'Failed to pause crons' });
@@ -588,9 +610,25 @@ export class AdminController {
 
     public async resumeCrons(req: Request, res: Response): Promise<void> {
         try {
-            const { setCronsPaused } = require('../cron/cronRegistry');
-            setCronsPaused(false);
-            res.status(200).json({ success: true, message: 'All crons have been resumed.' });
+            const { setCronsPaused, setCronPaused, normalizeCronKey } = require('../cron/cronRegistry');
+            const cronName = req.body?.cronName || req.params?.cronName || req.query?.cronName;
+
+            if (cronName && cronName !== 'all') {
+                setCronPaused(cronName, false);
+                res.status(200).json({ 
+                    success: true, 
+                    message: `Stage cron "${cronName}" has been resumed.`, 
+                    cronName: normalizeCronKey(cronName), 
+                    paused: false 
+                });
+            } else {
+                setCronsPaused(false);
+                res.status(200).json({ 
+                    success: true, 
+                    message: 'All stage crons have been resumed.', 
+                    paused: false 
+                });
+            }
         } catch (error: any) {
             console.error('[AdminController.resumeCrons]', error);
             res.status(500).json({ success: false, message: error.message || 'Failed to resume crons' });
@@ -599,12 +637,134 @@ export class AdminController {
 
     public async getCronStatus(req: Request, res: Response): Promise<void> {
         try {
-            const { areCronsPaused } = require('../cron/cronRegistry');
-            const paused = areCronsPaused();
-            res.status(200).json({ success: true, paused });
+            const { getCronStatusDetails } = require('../cron/cronRegistry');
+            const status = getCronStatusDetails();
+            res.status(200).json({ 
+                success: true, 
+                paused: status.globalPaused, 
+                ...status 
+            });
         } catch (error: any) {
             console.error('[AdminController.getCronStatus]', error);
             res.status(500).json({ success: false, message: error.message || 'Failed to get cron status' });
+        }
+    }
+
+    public async pauseApplicationCrons(req: Request, res: Response): Promise<void> {
+        try {
+            const applicationId = parseInt(req.params.id as string, 10);
+            const { stageCron } = req.body;
+            const { Application } = require('../models');
+            const { normalizeCronKey } = require('../cron/cronRegistry');
+
+            const application = await Application.findByPk(applicationId);
+            if (!application) {
+                res.status(404).json({ success: false, message: 'Application not found' });
+                return;
+            }
+
+            if (stageCron && stageCron !== 'all') {
+                const normalized = normalizeCronKey(stageCron);
+                let current = application.pausedStageCrons || [];
+                if (typeof current === 'string') {
+                    try { current = JSON.parse(current); } catch (e) { current = []; }
+                }
+                const set = new Set(Array.isArray(current) ? current : []);
+                set.add(normalized);
+                application.pausedStageCrons = Array.from(set);
+                await application.save();
+
+                res.status(200).json({
+                    success: true,
+                    message: `Stage cron "${stageCron}" paused for application #${applicationId}.`,
+                    isCronPaused: application.isCronPaused,
+                    pausedStageCrons: application.pausedStageCrons
+                });
+            } else {
+                application.isCronPaused = true;
+                await application.save();
+
+                res.status(200).json({
+                    success: true,
+                    message: `All stage crons paused for application #${applicationId}.`,
+                    isCronPaused: true,
+                    pausedStageCrons: application.pausedStageCrons
+                });
+            }
+        } catch (error: any) {
+            console.error('[AdminController.pauseApplicationCrons]', error);
+            res.status(500).json({ success: false, message: error.message || 'Failed to pause application crons' });
+        }
+    }
+
+    public async resumeApplicationCrons(req: Request, res: Response): Promise<void> {
+        try {
+            const applicationId = parseInt(req.params.id as string, 10);
+            const { stageCron } = req.body;
+            const { Application } = require('../models');
+            const { normalizeCronKey } = require('../cron/cronRegistry');
+
+            const application = await Application.findByPk(applicationId);
+            if (!application) {
+                res.status(404).json({ success: false, message: 'Application not found' });
+                return;
+            }
+
+            if (stageCron && stageCron !== 'all') {
+                const normalized = normalizeCronKey(stageCron);
+                let current = application.pausedStageCrons || [];
+                if (typeof current === 'string') {
+                    try { current = JSON.parse(current); } catch (e) { current = []; }
+                }
+                const set = new Set(Array.isArray(current) ? current : []);
+                set.delete(normalized);
+                application.pausedStageCrons = Array.from(set);
+                await application.save();
+
+                res.status(200).json({
+                    success: true,
+                    message: `Stage cron "${stageCron}" resumed for application #${applicationId}.`,
+                    isCronPaused: application.isCronPaused,
+                    pausedStageCrons: application.pausedStageCrons
+                });
+            } else {
+                application.isCronPaused = false;
+                application.pausedStageCrons = [];
+                await application.save();
+
+                res.status(200).json({
+                    success: true,
+                    message: `All stage crons resumed for application #${applicationId}.`,
+                    isCronPaused: false,
+                    pausedStageCrons: []
+                });
+            }
+        } catch (error: any) {
+            console.error('[AdminController.resumeApplicationCrons]', error);
+            res.status(500).json({ success: false, message: error.message || 'Failed to resume application crons' });
+        }
+    }
+
+    public async getApplicationCronStatus(req: Request, res: Response): Promise<void> {
+        try {
+            const applicationId = parseInt(req.params.id as string, 10);
+            const { Application } = require('../models');
+
+            const application = await Application.findByPk(applicationId);
+            if (!application) {
+                res.status(404).json({ success: false, message: 'Application not found' });
+                return;
+            }
+
+            res.status(200).json({
+                success: true,
+                applicationId,
+                isCronPaused: !!application.isCronPaused,
+                pausedStageCrons: application.pausedStageCrons || []
+            });
+        } catch (error: any) {
+            console.error('[AdminController.getApplicationCronStatus]', error);
+            res.status(500).json({ success: false, message: error.message || 'Failed to get application cron status' });
         }
     }
 }

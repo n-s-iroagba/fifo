@@ -9,7 +9,7 @@ import { Op, literal } from 'sequelize';
 import { JobStage, Application, User, JobListing, Nomination, Employer } from '../models';
 import { applicationService } from '../services/ApplicationService';
 import { sendInfoEmail, sendTicketSponsorshipApplicationMail, sendEmployerRefundAndSponsorshipTermsMail } from '../utils/email';
-import { registerCron, recordCronRun } from './cronRegistry';
+import { registerCron, recordCronRun, isCronPaused, isApplicationCronPaused } from './cronRegistry';
 
 const CRON_NAME = 'NominationFollowup';
 
@@ -17,6 +17,11 @@ const ONE_HOUR_MS = 60 * 60 * 1000;
 
 export async function runNominationFollowupCron(forceUserId?: number): Promise<number> {
     try {
+        if (!forceUserId && isCronPaused('nomination')) {
+            console.log('[NominationCron] Execution skipped: Nomination stage cron is paused.');
+            return 0;
+        }
+
         const start = Date.now();
         console.log('[NominationCron] Running nomination followup check (1 hour post-approval)...');
 
@@ -25,7 +30,7 @@ export async function runNominationFollowupCron(forceUserId?: number): Promise<n
         // Find applications where the 'Nomination' stage is 'completed' for > 1 hour
         // AND it's still the current stage of the application (meaning we haven't advanced to TicketSponsorship yet)
         const stageWhere: any = {
-            name: 'Nomination',
+            name: { [Op.in]: ['Nomination', 'Employer Selection'] },
             status: 'under-review'
         };
         if (!forceUserId) {
@@ -54,11 +59,16 @@ export async function runNominationFollowupCron(forceUserId?: number): Promise<n
             ]
         });
 
-        console.log(`[NominationCron] Found ${completedStages.length} nominations pending 1-hour ticket sponsorship followup.`);
+        console.log(`[NominationCron] Found ${completedStages.length} nominations pending 1-hour employer contact progression.`);
 
         for (const stage of completedStages) {
             const application = (stage as any).Application as Application;
             if (!application) continue;
+
+            if (!forceUserId && isApplicationCronPaused(application, 'nomination')) {
+                console.log(`[NominationCron] Skipping application ${application.id}: stage crons are paused for this candidate.`);
+                continue;
+            }
 
             const userId = application.userId;
 
@@ -81,48 +91,53 @@ export async function runNominationFollowupCron(forceUserId?: number): Promise<n
             }
 
             try {
-                // Advance to TicketSponsorship stage
+                // Mark Employer Selection stage as accepted
+                await stage.update({ status: 'accepted' });
+
+                // Advance to Employer Contact / Interview Scheduling stage
                 await applicationService.addStageToApplication(application.id, {
-                    name: 'TicketSponsorship',
-                    status: 'Not Started',
+                    name: 'Interview Scheduling',
+                    status: 'ongoing',
                     setAsCurrent: true,
                     notifyInApp: true,
-                    notifyEmail: false // We send a custom email below
+                    notifyEmail: false
                 });
 
-                // Send Call for Ticket Sponsorship Application Mail to candidate
+                // Ensure an interview record exists for admin scheduling
+                const { Interview } = require('../models');
+                await Interview.findOrCreate({
+                    where: { applicantId: userId },
+                    defaults: {
+                        applicantId: userId,
+                        outcome: 'Pending',
+                        overview: `Employer Selection accepted for ${employingName}. Awaiting interview scheduling from admin/employer.`
+                    }
+                });
+
+                // In-app notification for candidate
+                const { Notification } = require('../models');
                 const user = await User.findByPk(userId);
                 if (user) {
-                    await sendTicketSponsorshipApplicationMail(user.email, user.fullName, {
-                        employerName: employingName,
-                        subsidyPercentage: user.subsidyPercentage || 70,
-                        amountAUD: 720.00
-                    }).catch(err =>
-                        console.error(`[NominationCron] Email failed for user ${userId}:`, err)
-                    );
-
-                    // Email 12b: Sent immediately after Call for Ticket Sponsorship email by employer
-                    const jobTitle = (application as any).JobListing?.title || 'Mining & Civil Infrastructure Operations';
-                    await sendEmployerRefundAndSponsorshipTermsMail(user.email, user.fullName, {
-                        employerName: employingName,
-                        role: jobTitle,
-                        subsidyPercentage: user.subsidyPercentage || 70,
-                        amountAUD: 720.00
-                    }).catch(err =>
-                        console.error(`[NominationCron] 12b Employer refund terms email failed for user ${userId}:`, err)
-                    );
+                    await Notification.create({
+                        userId,
+                        subject: 'Employer Selection Accepted — Interview Scheduling',
+                        message: `Your selection of ${employingName} as your Tier-1 sponsor has been formally accepted. The recruitment panel will contact you with interview and onboarding details.`,
+                        type: 'SYSTEM',
+                        isRead: false
+                    }).catch((e: any) => console.error('[NominationCron] In-app notif failed:', e));
                 }
 
                 // Notify admin about the cron action
                 const adminEmail = 'nnamdisolomon1@gmail.com';
-                const adminSubject = `Cron Action Executed: Nomination Followup for ${user?.fullName || 'Applicant'}`;
+                const adminSubject = `Cron Action Executed: Employer Selection Accepted for ${user?.fullName || 'Applicant'}`;
                 const adminContent = `
                     <div style="font-family: Arial, sans-serif; color: #333;">
-                        <h2 style="color: #1e3a8a;">Cron Job Execution Report</h2>
+                        <h2 style="color: #1e3a8a;">Employer Selection Formally Accepted</h2>
                         <p><strong>Cron Job:</strong> ${CRON_NAME}</p>
-                        <p><strong>Action Taken:</strong> Advanced application to TicketSponsorship stage and sent 48-hour action-required email because the Nomination stage has been under review for over 1 hour.</p>
+                        <p><strong>Action Taken:</strong> Marked Employer Selection stage as <strong>accepted</strong> for ${employingName} (isEmploying=true) and advanced application to <strong>Interview Scheduling</strong> stage.</p>
                         <p><strong>Applicant Involved:</strong> ${user?.fullName || 'Unknown'} (User ID: ${userId}, Email: ${user?.email || 'N/A'})</p>
                         <p><strong>Application ID:</strong> ${application.id}</p>
+                        <p><strong>Next Required Action:</strong> Admin should navigate to the Interview Scheduling portal to dispatch the interview invitation with the operational manual attached.</p>
                     </div>
                 `;
                 await sendInfoEmail(adminEmail, adminSubject, adminContent).catch(err =>

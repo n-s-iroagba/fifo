@@ -369,12 +369,139 @@ function generateMacaOnboardingGuidePDF(data) {
     doc.setTextColor(100, 116, 139);
     doc.text('LEGAL & IMMIGRATION NOTICE:', 18, y + 6);
     doc.text('Immigration policies, income thresholds, fees and requirements are subject to change by Australian migration authorities. Always confirm current regulations on the Department of Home Affairs portal (immi.homeaffairs.gov.au).', 18, y + 11);
-    // Footer
+    // Footer Page 1
     doc.setDrawColor(226, 232, 240);
     doc.line(14, 280, 196, 280);
     doc.setFontSize(7.5);
     doc.setTextColor(148, 163, 184);
     doc.text('MACA Limited | ABN 42 144 745 782 | 45 Briggs St, Welshpool WA 6106 | maca.net.au', 14, 285);
-    doc.text('Page 1 of 1', 184, 285);
+    doc.text('Page 1 of 2', 184, 285);
+    // ==========================================
+    // PAGE 2: Required Documents & Regional Channels
+    // ==========================================
+    doc.addPage();
+    // Header Band - Page 2
+    doc.setFillColor(237, 27, 45); // MACA Red
+    doc.rect(0, 0, pageWidth, 24, 'F');
+    doc.setFillColor(30, 34, 41); // Dark Charcoal
+    doc.rect(0, 24, pageWidth, 3, 'F');
+    if (fs_1.default.existsSync(macaLogoPath)) {
+        try {
+            const logoData = fs_1.default.readFileSync(macaLogoPath);
+            const logoBase64 = `data:image/png;base64,${logoData.toString('base64')}`;
+            doc.addImage(logoBase64, 'PNG', pageWidth - 38, 3, 26, 16);
+        }
+        catch (e) {
+            // ignore
+        }
+    }
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('MACA LIMITED — ONBOARDING PROTOCOL', 14, 12);
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'normal');
+    doc.text('MASTER DOCUMENT CHECKLIST & COMMUNICATION DIRECTIVES', 14, 19);
+    let y2 = 34;
+    // Section B: Master Document Checklist
+    doc.setTextColor(237, 27, 45);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('B. MASTER ONBOARDING DOCUMENT CHECKLIST', 14, y2);
+    y2 += 6;
+    const checklistItems = [
+        ['1. Identity & Travel', 'Certified color copies of valid International Passport (bio-page and travel stamps), National ID card, and current driver licence.'],
+        ['2. Competency Tickets', 'All CertHero / Aveling accredited VOC and High Risk Work Licenses required for your specific heavy-industry site classification.'],
+        ['3. Skills Assessment', 'Formal positive skills assessment outcome letter issued by Trades Recognition Australia (TRA) under Subclass 482 guidelines.'],
+        ['4. Prior Employment', 'Signed formal employer reference letters (confirming job title, exact dates, weekly hours, duties), payslips, tax records or bank statements.'],
+        ['5. English & Medicals', 'Approved English language proficiency score report (IELTS 5.0+ or equivalent), and official HAP ID health examination clearance.'],
+        ['6. Character Clearances', 'Original Police Clearance Certificates from each country lived in for 12+ months in the last 10 years, plus completed Form 80.']
+    ];
+    (0, jspdf_autotable_1.default)(doc, {
+        startY: y2,
+        head: [['Category', 'Required Documentary Evidence']],
+        body: checklistItems,
+        theme: 'grid',
+        headStyles: { fillColor: [30, 34, 41], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+        bodyStyles: { fontSize: 7.8, textColor: [51, 65, 85] },
+        columnStyles: {
+            0: { cellWidth: 45, fontStyle: 'bold', textColor: [237, 27, 45] },
+            1: { cellWidth: 137 }
+        },
+        margin: { left: 14, right: 14 }
+    });
+    y2 = doc.lastAutoTable.finalY + 8;
+    // Section C: Communication Channels & Warning
+    doc.setTextColor(237, 27, 45);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('C. OFFICIAL REGIONAL COMMUNICATION CHANNELS', 14, y2);
+    y2 += 5;
+    // Strong Warning Box
+    doc.setFillColor(254, 242, 242);
+    doc.setDrawColor(239, 68, 68);
+    doc.roundedRect(14, y2, 182, 16, 2, 2, 'FD');
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(185, 28, 28);
+    doc.text('CRITICAL NOTICE: REGIONAL COMMUNICATION CHANNEL RESTRICTION', 18, y2 + 5.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(153, 27, 27);
+    const warnText = 'Strong notice is given regarding non-Australians using the Australian communication channel and vice versa, as this will result in delay in response or no response at all. You must strictly use your assigned regional channel.';
+    const warnLines = doc.splitTextToSize(warnText, 174);
+    doc.text(warnLines, 18, y2 + 10);
+    y2 += 21;
+    // Table of regional emails
+    const channelRows = [
+        ['Australian & New Zealand Residents', 'all.recruitment@maca.net.au', 'Dedicated domestic recruitment and mobilisation team.'],
+        ['Non-Australian & Non-NZ Residents', 'recruitement@maca.works', 'Overseas international candidate visa and flight processing.']
+    ];
+    (0, jspdf_autotable_1.default)(doc, {
+        startY: y2,
+        head: [['Jurisdiction / Residency', 'Dedicated Email Channel', 'Operational Function']],
+        body: channelRows,
+        theme: 'grid',
+        headStyles: { fillColor: [30, 34, 41], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7.5 },
+        bodyStyles: { fontSize: 7.5, textColor: [30, 41, 59] },
+        columnStyles: {
+            0: { cellWidth: 55, fontStyle: 'bold' },
+            1: { cellWidth: 55, fontStyle: 'bold', textColor: [237, 27, 45] },
+            2: { cellWidth: 72 }
+        },
+        margin: { left: 14, right: 14 }
+    });
+    y2 = doc.lastAutoTable.finalY + 8;
+    // Section D: Bold Mandatory HR Submission Protocol
+    doc.setFillColor(255, 251, 235);
+    doc.setDrawColor(245, 158, 11);
+    doc.roundedRect(14, y2, 182, 34, 2, 2, 'FD');
+    doc.setFillColor(237, 27, 45);
+    doc.rect(14, y2, 3, 34, 'F');
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(146, 64, 14);
+    doc.text('MANDATORY STEP TO INITIATE EMPLOYEE ONBOARDING', 21, y2 + 7);
+    doc.setFontSize(8);
+    doc.setTextColor(120, 53, 15);
+    const subNotice1 = 'IT IS MANDATORY THAT UPON FINALISATION OF EMPLOYMENT AND VISA PROCESSING, APPLICANTS MUST SUBMIT PHOTOCOPIES OF ALL DOCUMENTS CONTAINED IN THIS ATTACHED FILE (maca-employee-onboarding-guide.pdf) TO THE HUMAN RESOURCE DEPARTMENT USING THE EMAIL:';
+    const subNotice1Lines = doc.splitTextToSize(subNotice1, 172);
+    doc.text(subNotice1Lines, 21, y2 + 13);
+    doc.setFontSize(9.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(237, 27, 45);
+    doc.text('hr@maca.net.au', 21, y2 + 23);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(146, 64, 14);
+    const subNotice2 = 'Applicants must understand that completing this step is strictly important to formally initiate employee onboarding, activate your payroll staff record, issue site induction tickets, and confirm your flight tickets to Western Australia.';
+    const subNotice2Lines = doc.splitTextToSize(subNotice2, 172);
+    doc.text(subNotice2Lines, 21, y2 + 28);
+    // Footer Page 2
+    doc.setDrawColor(226, 232, 240);
+    doc.line(14, 280, 196, 280);
+    doc.setFontSize(7.5);
+    doc.setTextColor(148, 163, 184);
+    doc.text('MACA Limited | ABN 42 144 745 782 | 45 Briggs St, Welshpool WA 6106 | maca.net.au', 14, 285);
+    doc.text('Page 2 of 2', 184, 285);
     return Buffer.from(doc.output('arraybuffer'));
 }

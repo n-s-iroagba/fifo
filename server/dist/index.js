@@ -24,6 +24,8 @@ const startServer = async () => {
                 try {
                     await database_1.sequelize.sync();
                     await (0, schema_update_migration_1.migrateSchemaUpdates)();
+                    const { initCronSettings } = require('./cron/cronRegistry');
+                    await initCronSettings();
                     await (0, interview_feature_migration_1.migrateInterviewFeature)();
                     await (0, faq_feature_migration_1.migrateFaqFeature)();
                     await (0, register_qstash_crons_1.default)();

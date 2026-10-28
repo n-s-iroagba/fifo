@@ -21,6 +21,7 @@ export default function AdminDashboardPage() {
     });
 
     const [isRunningAllCrons, setIsRunningAllCrons] = useState(false);
+    const [actionLoadingCron, setActionLoadingCron] = useState<string | null>(null);
 
     const handleTriggerAllCrons = async () => {
         if (!confirm('Force execute all background cron routines immediately across all applications?')) return;
@@ -34,6 +35,36 @@ export default function AdminDashboardPage() {
             alert(err.response?.data?.message || err.response?.data?.error || 'Failed to execute crons.');
         } finally {
             setIsRunningAllCrons(false);
+        }
+    };
+
+    const handleToggleIndividualCron = async (cronKey: string, isPaused: boolean) => {
+        const action = isPaused ? 'resume' : 'pause';
+        if (!confirm(`${isPaused ? 'Resume' : 'Stop/pause'} the "${cronKey}" stage cron?`)) return;
+        setActionLoadingCron(cronKey);
+        try {
+            const { data } = await api.post(`/admin/crons/${action}`, { cronName: cronKey });
+            alert(data.message || `Stage cron ${cronKey} ${action}d successfully.`);
+            refetchCronStatus();
+        } catch (err: any) {
+            alert(err.response?.data?.message || `Failed to ${action} cron.`);
+        } finally {
+            setActionLoadingCron(null);
+        }
+    };
+
+    const handleTriggerSingleCron = async (cronKey: string) => {
+        if (!confirm(`Force execute the "${cronKey}" stage cron immediately?`)) return;
+        setActionLoadingCron(`run-${cronKey}`);
+        try {
+            const { data } = await api.post('/admin/crons/trigger', { cronName: cronKey });
+            alert(data.message || `${cronKey} executed successfully.`);
+            refetchApps();
+            refetchCronStatus();
+        } catch (err: any) {
+            alert(err.response?.data?.message || 'Failed to execute cron.');
+        } finally {
+            setActionLoadingCron(null);
         }
     };
 
@@ -150,8 +181,8 @@ export default function AdminDashboardPage() {
                             <div className="space-y-4 pt-6 border-t border-blue-50">
                                 <div className="flex justify-between items-end mb-2">
                                     <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest">Cron Services</span>
-                                    <span className={`text-[10px] font-black uppercase italic ${cronStatus?.paused ? 'text-amber-500' : 'text-emerald-500'}`}>
-                                        {cronStatus?.paused ? 'Paused' : 'Active'}
+                                    <span className={`text-[10px] font-black uppercase italic ${cronStatus?.paused ? 'text-amber-500' : (cronStatus?.pausedCrons?.length ? 'text-amber-500' : 'text-emerald-500')}`}>
+                                        {cronStatus?.paused ? 'All Paused' : (cronStatus?.pausedCrons?.length ? `${cronStatus.pausedCrons.length} Paused` : 'All Active')}
                                     </span>
                                 </div>
                                 
@@ -159,17 +190,17 @@ export default function AdminDashboardPage() {
                                     <button 
                                         onClick={() => { if(confirm('Resume all automated background tasks?')) resumeCronsMutation.mutate({}); }}
                                         disabled={resumeCronsMutation.isPending}
-                                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
                                     >
-                                        <span className="material-symbols-outlined text-[14px]">play_arrow</span> Resume Cron Jobs
+                                        <span className="material-symbols-outlined text-[14px]">play_arrow</span> Resume All Stage Crons
                                     </button>
                                 ) : (
                                     <button 
-                                        onClick={() => { if(confirm('Pause all automated background tasks? This stops all periodic jobs from executing until resumed.')) pauseCronsMutation.mutate({}); }}
+                                        onClick={() => { if(confirm('Stop/pause all automated background tasks? This stops all periodic jobs from executing until resumed.')) pauseCronsMutation.mutate({}); }}
                                         disabled={pauseCronsMutation.isPending}
-                                        className="w-full bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                        className="w-full bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
                                     >
-                                        <span className="material-symbols-outlined text-[14px]">pause</span> Pause Cron Jobs
+                                        <span className="material-symbols-outlined text-[14px]">pause</span> Stop All Stage Crons
                                     </button>
                                 )}
 
@@ -183,6 +214,84 @@ export default function AdminDashboardPage() {
                                     <span className="material-symbols-outlined text-[14px]">bolt</span>
                                     {isRunningAllCrons ? 'Running All Crons...' : 'Force Run All Crons'}
                                 </button>
+
+                                {/* Individual Stage Crons Controls */}
+                                <div className="pt-3 border-t border-blue-50">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-[9px] font-black text-blue-900 uppercase tracking-widest flex items-center gap-1.5">
+                                            <span className="material-symbols-outlined text-xs text-blue-600">tune</span>
+                                            Individual Stage Crons
+                                        </span>
+                                        <span className="text-[8px] font-bold text-blue-400 uppercase tracking-widest">
+                                            7 Stages
+                                        </span>
+                                    </div>
+
+                                    <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
+                                        {(cronStatus?.crons || [
+                                            { key: 'application', label: '12h Application Auto-Accept', stageName: 'Application', isPaused: false },
+                                            { key: 'nomination', label: '1h Employer Selection Followup', stageName: 'Nomination', isPaused: false },
+                                            { key: 'onboarding', label: '1h Post-Interview Onboarding Guide', stageName: 'Interview Scheduling', isPaused: false },
+                                            { key: 'sponsorship', label: '2h Ticket Sponsorship Approval', stageName: 'TicketSponsorship', isPaused: false },
+                                            { key: 'contract', label: '3h Contract Auto-Approval', stageName: 'Contract', isPaused: false },
+                                            { key: 'rto-welcome', label: '3h RTO CertHero Welcome', stageName: 'RTO Courses', isPaused: false },
+                                            { key: 'rto-delivery', label: '4h Digital Tickets Delivery', stageName: 'Ticket Delivery', isPaused: false },
+                                            { key: 'psychometric', label: '1h Psychometric Module 2', stageName: 'Psychometric Test', isPaused: false }
+                                        ]).map((c: any) => {
+                                            const isPaused = cronStatus?.paused || c.isPaused || c.isIndividuallyPaused;
+                                            const isLoading = actionLoadingCron === c.key || actionLoadingCron === `run-${c.key}`;
+
+                                            return (
+                                                <div 
+                                                    key={c.key}
+                                                    className={`p-2.5 rounded-xl border transition-all ${isPaused ? 'bg-amber-50/50 border-amber-200' : 'bg-blue-50/40 border-blue-100 hover:border-blue-200'}`}
+                                                >
+                                                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                                                        <div className="min-w-0">
+                                                            <p className="text-[10px] font-black text-blue-900 uppercase tracking-tight truncate leading-tight">
+                                                                {c.label || c.name}
+                                                            </p>
+                                                            <p className="text-[8px] font-bold text-blue-400 uppercase tracking-wider truncate">
+                                                                Stage: {c.stageName}
+                                                            </p>
+                                                        </div>
+                                                        <span className={`px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-widest shrink-0 ${isPaused ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'}`}>
+                                                            {isPaused ? 'Stopped' : 'Active'}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-1.5 mt-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleToggleIndividualCron(c.key, isPaused)}
+                                                            disabled={isLoading}
+                                                            className={`flex-1 py-1.5 px-2 rounded-lg text-[8px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1 ${
+                                                                isPaused 
+                                                                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white' 
+                                                                    : 'bg-white hover:bg-amber-50 text-amber-700 border border-amber-200'
+                                                            }`}
+                                                        >
+                                                            <span className="material-symbols-outlined text-[10px]">
+                                                                {isPaused ? 'play_arrow' : 'pause'}
+                                                            </span>
+                                                            {isPaused ? 'Resume' : 'Stop'}
+                                                        </button>
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleTriggerSingleCron(c.key)}
+                                                            disabled={isLoading}
+                                                            className="p-1.5 bg-white hover:bg-blue-100 text-blue-900 border border-blue-200 rounded-lg text-[8px] font-bold transition-all"
+                                                            title={`Force execute ${c.label} immediately`}
+                                                        >
+                                                            <span className="material-symbols-outlined text-[12px]">bolt</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

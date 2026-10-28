@@ -8,7 +8,6 @@ const models_1 = require("../models");
 const constants_1 = require("../constants");
 const logger_1 = require("../utils/logger");
 const email_1 = require("../utils/email");
-const macaOnboardingGuide_1 = require("../utils/macaOnboardingGuide");
 const axios_1 = __importDefault(require("axios"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
@@ -38,7 +37,7 @@ class InterviewController {
                     {
                         model: models_1.User,
                         as: 'applicant',
-                        attributes: ['id', 'fullName', 'email', 'candidateNumber', 'phoneNumber', 'canPickSchedule'],
+                        attributes: ['id', 'fullName', 'email', 'candidateNumber', 'phoneNumber', 'canPickSchedule', 'interviewEmailSentAt', 'onboardingEmailSent'],
                     },
                 ],
             });
@@ -532,23 +531,25 @@ class InterviewController {
             });
             const jobListing = application?.JobListing;
             const roleTitle = jobListing?.title || 'FIFO Mining & Resource Operations';
-            // Prepare operational manual attachment as a FILE (not a link)
+            // Prepare operational manual attachment as a FILE downloaded from Cloudinary/URL
+            const operationalUrl = req.body.manualUrl?.trim() || jobListing?.operationalManualUrl?.trim();
             let manualAttachment = null;
-            if (jobListing?.operationalManualUrl && jobListing.operationalManualUrl.startsWith('http')) {
+            if (operationalUrl && operationalUrl.startsWith('http')) {
                 try {
-                    const response = await axios_1.default.get(jobListing.operationalManualUrl, { responseType: 'arraybuffer', timeout: 8000 });
+                    const response = await axios_1.default.get(operationalUrl, { responseType: 'arraybuffer', timeout: 15000 });
+                    const filename = `${jobListing?.title ? jobListing.title.toLowerCase().replace(/[^a-z0-9]/g, '-') : 'role'}-operational-procedure-document.pdf`;
                     manualAttachment = {
-                        filename: `${jobListing.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}-operational-manual.pdf`,
+                        filename,
                         content: Buffer.from(response.data),
-                        contentType: 'application/pdf'
+                        contentType: response.headers['content-type'] || 'application/pdf'
                     };
                 }
                 catch (fetchErr) {
-                    logger_1.logger.warn('Failed to download remote operational manual from URL, falling back to local asset');
+                    logger_1.logger.warn(`Failed to download remote operational manual from URL (${operationalUrl}), falling back to local asset: ${fetchErr?.message || fetchErr}`);
                 }
             }
             if (!manualAttachment) {
-                // Check if local manual exists or use fallback HIRING_PROCESS_INFORMATION.pdf
+                // Fallback to local default operational procedure manual
                 const defaultManualPath = path_1.default.resolve(__dirname, '../assets/HIRING_PROCESS_INFORMATION.pdf');
                 if (fs_1.default.existsSync(defaultManualPath)) {
                     manualAttachment = {
@@ -564,6 +565,7 @@ class InterviewController {
             const emailContent = `
                 <p>Dear ${applicant.fullName},</p>
                 <p>We are pleased to inform you that following your screening assessment, you have been conditionally selected for a technical competency interview with <strong>MACA Limited / Australian Mining Operations</strong> for the position of <strong>${roleTitle}</strong>.</p>
+                
                 <div style="background-color: #f8fafc; border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; margin: 24px 0;">
                     <p style="margin: 0 0 10px 0; font-size: 13px; font-weight: 800; text-transform: uppercase; color: #18181b; letter-spacing: 1px;">Confirmed Interview Particulars</p>
                     <p style="margin: 6px 0; font-size: 14px;"><strong>Interview Date:</strong> ${interviewDate}</p>
@@ -571,14 +573,30 @@ class InterviewController {
                     <p style="margin: 6px 0; font-size: 14px;"><strong>Meeting Format:</strong> Video Call (Zoom)</p>
                     <p style="margin: 8px 0 0 0; font-size: 14px;"><strong>Zoom Meeting Link:</strong> <a href="${zoomLink.trim()}" style="color: #b45309; font-weight: bold; text-decoration: underline;">${zoomLink.trim()}</a></p>
                 </div>
-                <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 14px 18px; margin: 20px 0;">
-                    <p style="margin: 0; font-size: 13px; color: #92400e; font-weight: bold;">
-                        📄 Operational Knowledge Manual Attached
+
+                <!-- Operational Manual File Attachment Notice -->
+                <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 16px 20px; margin: 20px 0; border-radius: 4px;">
+                    <p style="margin: 0 0 6px 0; font-size: 13.5px; color: #92400e; font-weight: bold;">
+                        📄 Role Operational Document Attached
                     </p>
-                    <p style="margin: 6px 0 0 0; font-size: 13px; color: #78350f;">
-                        Attached to this email is the official <strong>Operational Procedure Manual</strong> for your applied job classification. You are required to review this document prior to your interview, as the technical panel will assess your operational and safety comprehension.
+                    <p style="margin: 0; font-size: 13px; color: #78350f; line-height: 1.5;">
+                        The official operational document for your role (<strong>${roleTitle}</strong>) has been downloaded from our operational repository and attached to this email as a file. You are required to review this document in detail prior to your interview, as the technical panel will assess your operational competencies and familiarity with site safety standards.
                     </p>
                 </div>
+
+                <!-- Critical Next Step Notice: Onboarding Process Email -->
+                <div style="background-color: #eff6ff; border-left: 4px solid #2563eb; border-radius: 6px; padding: 18px 20px; margin: 24px 0;">
+                    <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 800; color: #1e3a8a; text-transform: uppercase;">
+                        ⚠️ CRITICAL NEXT STEP: Onboarding Process Email Arriving in Less Than 2 Hours
+                    </p>
+                    <p style="margin: 0 0 8px 0; font-size: 13.5px; color: #1e40af; line-height: 1.5;">
+                        Please be advised that you will receive our second official email — the <strong>MACA Onboarding Process Email</strong> — in <strong>less than 2 hours (1 hour post-interview dispatch)</strong>.
+                    </p>
+                    <p style="margin: 0; font-size: 13px; color: #1e3a8a; line-height: 1.5; font-weight: bold;">
+                        This upcoming communication is of vital importance to your visa sponsorship and site deployment. You must ensure you monitor your inbox, thoroughly read the onboarding email, and carefully review its attached file (<code>maca-employee-onboarding-guide.pdf</code>) immediately upon arrival.
+                    </p>
+                </div>
+
                 <p>Please ensure you are connected 5 minutes prior to the scheduled time with your video and microphone tested.</p>
                 <div class="cta-block">
                     <a href="${zoomLink.trim()}" class="button" style="background-color: #f59e0b; color: #18181b !important;">Join Zoom Interview</a>
@@ -591,40 +609,7 @@ class InterviewController {
             `;
             await (0, email_1.sendEmployerEmail)(applicant.email, emailSubject, emailContent, attachments);
             logger_1.logger.info(`[InterviewController] Interview notification sent from Employer mail to ${applicant.email}`);
-            // INA02: Schedule employerSecondContact email 1 hour later with maca-employee-onboarding-guide.pdf
-            const sendSecondContact = async () => {
-                try {
-                    const onboardingPdf = (0, macaOnboardingGuide_1.generateMacaOnboardingGuidePDF)({
-                        applicantName: applicant.fullName,
-                        roleTitle,
-                        interviewDate,
-                        interviewTime,
-                        interviewLink: zoomLink,
-                        timezone
-                    });
-                    const secondSubject = 'MACA Employee Onboarding Guide: Interview to Mobilisation Roadmap';
-                    const secondContent = `
-                        <p>Dear ${applicant.fullName},</p>
-                        <p>Following your interview confirmation, we are providing the official <strong>MACA Employee Onboarding Guide (maca-employee-onboarding-guide.pdf)</strong> attached to this email.</p>
-                        <p>This comprehensive roadmap details the exact milestones from your upcoming interview to final site deployment in Western Australia, including our TRA skills assessment protocol, temporary resident nomination (TRN), pre-employment medical clearances, and zero-cost relocation benefits.</p>
-                        <p>Please review the attached guide carefully and retain it for your records.</p>
-                        <p>Yours faithfully,<br><strong>MACA Limited Human Resources</strong><br>Western Australia Mining Infrastructure</p>
-                    `;
-                    await (0, email_1.sendEmployerEmail)(applicant.email, secondSubject, secondContent, [
-                        {
-                            filename: 'maca-employee-onboarding-guide.pdf',
-                            content: onboardingPdf,
-                            contentType: 'application/pdf'
-                        }
-                    ]);
-                    logger_1.logger.info(`[InterviewController] INA02 employerSecondContact dispatched to ${applicant.email}`);
-                }
-                catch (scErr) {
-                    logger_1.logger.error('[InterviewController] Failed to dispatch INA02 second contact email:', scErr);
-                }
-            };
-            // Schedule 1 hour timer
-            setTimeout(sendSecondContact, 60 * 60 * 1000);
+            const now = new Date();
             // Also create or update Interview record in DB
             let interview = await models_1.Interview.findOne({ where: { applicantId: applicant.id } });
             if (interview) {
@@ -635,6 +620,8 @@ class InterviewController {
                 interview.meetingLink = zoomLink.trim();
                 interview.overview = `Interview scheduled for ${interviewDate} at ${interviewTime} (${timezone}). Zoom: ${zoomLink.trim()}`;
                 interview.outcome = 'Pending';
+                interview.interviewEmailSentAt = now;
+                interview.onboardingEmailSent = false;
                 await interview.save();
             }
             else {
@@ -647,12 +634,47 @@ class InterviewController {
                     interviewUrl: zoomLink.trim(),
                     meetingLink: zoomLink.trim(),
                     overview: `Interview scheduled for ${interviewDate} at ${interviewTime} (${timezone}). Zoom: ${zoomLink.trim()}`,
-                    outcome: 'Pending'
+                    outcome: 'Pending',
+                    interviewEmailSentAt: now,
+                    onboardingEmailSent: false
                 });
             }
+            // Update applicant record
+            applicant.interviewEmailSentAt = now;
+            applicant.onboardingEmailSent = false;
+            await applicant.save();
+            // Update application stage to Interview Scheduling
+            if (application) {
+                try {
+                    const { applicationService } = require('../services/ApplicationService');
+                    await applicationService.addStageToApplication(application.id, {
+                        name: 'Interview Scheduling',
+                        status: 'invited',
+                        setAsCurrent: true,
+                        notifyInApp: true,
+                        notifyEmail: false
+                    });
+                }
+                catch (stageErr) {
+                    logger_1.logger.warn(`[InterviewController] Could not update application stage: ${stageErr?.message || stageErr}`);
+                }
+            }
+            // INA02 Safety Timer (1 hour) in addition to background cron
+            const { dispatchApplicantOnboardingGuide } = require('../cron/onboardingCron');
+            setTimeout(async () => {
+                try {
+                    const currentInterview = await models_1.Interview.findOne({ where: { applicantId: applicant.id } });
+                    if (currentInterview && !currentInterview.onboardingEmailSent) {
+                        await dispatchApplicantOnboardingGuide(applicant.id);
+                    }
+                }
+                catch (tErr) {
+                    logger_1.logger.error('[InterviewController] Safety timer onboarding dispatch failed:', tErr);
+                }
+            }, 60 * 60 * 1000);
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({
                 success: true,
-                message: 'Interview invitation successfully dispatched from Employer email with operational manual attached. Onboarding guide scheduled for 1-hour follow-up.',
+                message: 'Interview invitation successfully dispatched from Employer email with operational document attached. Onboarding guide scheduled for 1-hour follow-up.',
                 data: {
                     applicantId: applicant.id,
                     interviewDate,
@@ -670,41 +692,20 @@ class InterviewController {
         }
     }
     /**
-     * Immediate dispatch of maca-employee-onboarding-guide.pdf on demand (for admin convenience)
+     * Dispatch of maca-employee-onboarding-guide.pdf on demand (for admin convenience)
      */
     async dispatchOnboardingGuide(req, res) {
         try {
             const { applicantId } = req.body;
-            const applicant = await models_1.User.findByPk(Number(applicantId));
-            if (!applicant) {
-                res.status(constants_1.CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: 'Applicant not found' });
+            if (!applicantId) {
+                res.status(constants_1.CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ error: 'Applicant ID is required' });
                 return;
             }
-            const interviewStr = applicant.interviewDate && applicant.interviewTime
-                ? `${applicant.interviewDate} at ${applicant.interviewTime}`
-                : 'Confirmed with Host Employer';
-            const onboardingPdf = (0, macaOnboardingGuide_1.generateMacaOnboardingGuidePDF)({
-                applicantName: applicant.fullName,
-                roleTitle: 'FIFO Mining & Civil Infrastructure Specialist',
-                interviewDate: applicant.interviewDate,
-                interviewTime: applicant.interviewTime,
-                interviewLink: applicant.interviewLink
-            });
-            await (0, email_1.sendEmployerEmail)(applicant.email, 'MACA Employee Onboarding Guide: Interview to Mobilisation Roadmap', `
-                    <p>Dear ${applicant.fullName},</p>
-                    <p>Please find attached your official <strong>MACA Employee Onboarding Guide (maca-employee-onboarding-guide.pdf)</strong>.</p>
-                    <p>This document details our direct visa sponsorship pathway, medical assessments, and deployment provisions.</p>
-                    <p>Yours faithfully,<br>MACA Limited Human Resources</p>
-                `, [
-                {
-                    filename: 'maca-employee-onboarding-guide.pdf',
-                    content: onboardingPdf,
-                    contentType: 'application/pdf'
-                }
-            ]);
+            const { dispatchApplicantOnboardingGuide } = require('../cron/onboardingCron');
+            const result = await dispatchApplicantOnboardingGuide(Number(applicantId));
             res.status(constants_1.CONSTANTS.HTTP_STATUS.OK).json({
                 success: true,
-                message: 'MACA Onboarding Guide successfully dispatched to applicant from Employer email.'
+                message: result.message
             });
         }
         catch (error) {

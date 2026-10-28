@@ -293,11 +293,11 @@ function getAll23EmailDefinitions(data) {
         {
             number: '12b',
             name: 'Employer refund account and sponsorship terms email - 12b',
-            senderType: 'System - Employer - Event',
+            senderType: 'System - Employer - Cron',
             fromAddress: 'MACA Mining Recruitment <recruitment@bluecollarrecruitment.co>',
             toAddress: `${name} <${email}>`,
             subject: 'MACA Limited: Refund Banking Details Request & Prerequisite Training Terms',
-            trigger: 'First RTO LMS Login (Post-Enrollment Letter & Credentials)',
+            trigger: 'Immediately Post-Call for Ticket Sponsorship',
             contentHtml: `
                 <p>Dear ${name},</p>
                 <p>Following your employer allocation to <strong>MACA Limited</strong> for the position of <strong>${role}</strong>, our corporate finance and mobilization department requires your banking particulars for our refund register.</p>

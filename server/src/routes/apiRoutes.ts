@@ -285,7 +285,14 @@ router.post('/admin/invoices/:id/receipt', upload.any(), ...adminMW, adminContro
 router.post('/admin/crons/trigger', ...adminMW, adminController.triggerCron.bind(adminController));
 router.post('/admin/crons/pause', ...adminMW, adminController.pauseCrons.bind(adminController));
 router.post('/admin/crons/resume', ...adminMW, adminController.resumeCrons.bind(adminController));
+router.post('/admin/crons/:cronName/pause', ...adminMW, adminController.pauseCrons.bind(adminController));
+router.post('/admin/crons/:cronName/resume', ...adminMW, adminController.resumeCrons.bind(adminController));
 router.get('/admin/crons/status', ...adminMW, adminController.getCronStatus.bind(adminController));
+
+// Application-specific stage cron pause/resume controls
+router.get('/admin/applications/:id/crons', ...adminMW, adminController.getApplicationCronStatus.bind(adminController));
+router.post('/admin/applications/:id/crons/pause', ...adminMW, adminController.pauseApplicationCrons.bind(adminController));
+router.post('/admin/applications/:id/crons/resume', ...adminMW, adminController.resumeApplicationCrons.bind(adminController));
 // Admin Psychometric Test Review
 router.get('/admin/psychometric/attempts', ...adminMW, psychometricController.getAdminAttempts.bind(psychometricController));
 router.post('/admin/psychometric/attempts/:id/approve', ...adminMW, psychometricController.approveAttempt.bind(psychometricController));

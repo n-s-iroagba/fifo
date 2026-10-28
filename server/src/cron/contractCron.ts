@@ -1,7 +1,7 @@
 import { Op, literal } from 'sequelize';
 import { JobStage, Application, User, JobListing } from '../models';
 import { sendInfoEmail } from '../utils/email';
-import { registerCron, recordCronRun } from './cronRegistry';
+import { registerCron, recordCronRun, isCronPaused, isApplicationCronPaused } from './cronRegistry';
 
 const CRON_NAME = 'ContractAutoApproval';
 
@@ -10,6 +10,11 @@ const ONE_HOUR_MS = 60 * 60 * 1000;
 
 export async function runContractApprovalCron(forceUserId?: number): Promise<number> {
     try {
+        if (!forceUserId && isCronPaused('contract')) {
+            console.log('[ContractCron] Execution skipped: Contract stage cron is paused.');
+            return 0;
+        }
+
         console.log('[ContractCron] Running contract auto-approval check...');
 
         const cutoff = new Date(Date.now() - THREE_HOURS_MS);
@@ -49,6 +54,11 @@ export async function runContractApprovalCron(forceUserId?: number): Promise<num
         for (const stage of pendingStages) {
             const application = (stage as any).Application as Application;
             if (!application) continue;
+
+            if (!forceUserId && isApplicationCronPaused(application, 'contract')) {
+                console.log(`[ContractCron] Skipping application ${application.id}: stage crons are paused for this candidate.`);
+                continue;
+            }
 
             const userId = application.userId;
 

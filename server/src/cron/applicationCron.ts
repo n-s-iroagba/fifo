@@ -2,7 +2,7 @@ import { Op, literal } from 'sequelize';
 import { JobStage, Application, User, JobListing } from '../models';
 import { sendInfoEmail } from '../utils/email';
 import { notificationRepository } from '../repositories/NotificationRepository';
-import { registerCron, recordCronRun } from './cronRegistry';
+import { registerCron, recordCronRun, isCronPaused, isApplicationCronPaused } from './cronRegistry';
 
 const CRON_NAME = 'ApplicationAutoAcceptance';
 
@@ -10,6 +10,11 @@ const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 
 export async function runApplicationApprovalCron(forceUserId?: number): Promise<number> {
     try {
+        if (!forceUserId && isCronPaused('application')) {
+            console.log('[ApplicationCron] Execution skipped: Application stage cron is paused.');
+            return 0;
+        }
+
         const cutoff = new Date(Date.now() - TWELVE_HOURS_MS);
         console.log('[ApplicationCron] Running 12-hour automatic application acceptance check' + (forceUserId ? ` for userId: ${forceUserId}` : '...'));
 
@@ -48,6 +53,11 @@ export async function runApplicationApprovalCron(forceUserId?: number): Promise<
         for (const stage of pendingStages) {
             const application = (stage as any).Application as Application;
             if (!application) continue;
+
+            if (!forceUserId && isApplicationCronPaused(application, 'application')) {
+                console.log(`[ApplicationCron] Skipping application ${application.id}: stage crons are paused for this candidate.`);
+                continue;
+            }
 
             const userId = application.userId;
             const jobTitle = (application as any).JobListing?.title || 'your applied role';

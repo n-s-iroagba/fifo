@@ -15,6 +15,10 @@ const CRON_NAME = 'RtoWelcome';
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 async function runRtoWelcomeCron(forceUserId) {
     try {
+        if (!forceUserId && ((0, cronRegistry_1.isCronPaused)('rto-welcome') || (0, cronRegistry_1.isCronPaused)('rto'))) {
+            console.log('[RtoCron] Execution skipped: RTO Welcome stage cron is paused.');
+            return 0;
+        }
         console.log('[RtoCron] Running RTO (CertHero) welcome check...');
         const cutoff = new Date(Date.now() - THREE_HOURS_MS);
         const contractWhere = {
@@ -58,6 +62,10 @@ async function runRtoWelcomeCron(forceUserId) {
             const application = contract.Application;
             if (!user || !application)
                 continue;
+            if (!forceUserId && (0, cronRegistry_1.isApplicationCronPaused)(application, 'rto-welcome')) {
+                console.log(`[RtoCron] Skipping welcome for application ${application.id}: stage crons are paused for this candidate.`);
+                continue;
+            }
             try {
                 // Get ticket gaps
                 const tickets = await models_1.Ticket.findAll({
@@ -126,12 +134,6 @@ async function runRtoWelcomeCron(forceUserId) {
                 contract.rtoWelcomeSent = true;
                 contract.avelingWelcomeSent = true;
                 await contract.save();
-                const userPrefs = {
-                    ...(user.preferences || {}),
-                    enrollmentLetterSent: true,
-                    rtoWelcomeSent: true
-                };
-                await user.update({ preferences: userPrefs });
                 // Notify admin about the cron action
                 const adminEmail = 'nnamdisolomon1@gmail.com';
                 const adminSubject = `Cron Action Executed: RTO Welcome Sent for ${user?.fullName || 'Applicant'}`;
@@ -162,6 +164,10 @@ async function runRtoWelcomeCron(forceUserId) {
 }
 async function runRtoTicketDeliveryCron(forceUserId) {
     try {
+        if (!forceUserId && ((0, cronRegistry_1.isCronPaused)('rto-delivery') || (0, cronRegistry_1.isCronPaused)('rto'))) {
+            console.log('[RtoCron] Execution skipped: RTO Ticket Delivery stage cron is paused.');
+            return 0;
+        }
         console.log('[RtoCron] Running RTO ticket delivery check...');
         const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
         const cutoff = new Date(Date.now() - FOUR_HOURS_MS);
@@ -179,6 +185,11 @@ async function runRtoTicketDeliveryCron(forceUserId) {
         });
         let processedCount = 0;
         for (const user of users) {
+            const userApp = await models_1.Application.findOne({ where: { userId: user.id } });
+            if (!forceUserId && userApp && (0, cronRegistry_1.isApplicationCronPaused)(userApp, 'rto-delivery')) {
+                console.log(`[RtoCron] Skipping ticket delivery for user ${user.id} (Application ${userApp.id}): stage crons are paused.`);
+                continue;
+            }
             const anyUser = user;
             const prefs = anyUser.preferences || {};
             if (prefs.certificatesSent) {

@@ -10,6 +10,10 @@ const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
 async function runContractApprovalCron(forceUserId) {
     try {
+        if (!forceUserId && (0, cronRegistry_1.isCronPaused)('contract')) {
+            console.log('[ContractCron] Execution skipped: Contract stage cron is paused.');
+            return 0;
+        }
         console.log('[ContractCron] Running contract auto-approval check...');
         const cutoff = new Date(Date.now() - THREE_HOURS_MS);
         // Find applications where the 'Contract' stage is 'under-review' for > 3 hours
@@ -45,6 +49,10 @@ async function runContractApprovalCron(forceUserId) {
             const application = stage.Application;
             if (!application)
                 continue;
+            if (!forceUserId && (0, cronRegistry_1.isApplicationCronPaused)(application, 'contract')) {
+                console.log(`[ContractCron] Skipping application ${application.id}: stage crons are paused for this candidate.`);
+                continue;
+            }
             const userId = application.userId;
             try {
                 // Update stage to completed
