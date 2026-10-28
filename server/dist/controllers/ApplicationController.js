@@ -9,6 +9,7 @@ const ApplicationService_1 = require("../services/ApplicationService");
 const constants_1 = require("../constants");
 const email_1 = require("../utils/email");
 const models_1 = require("../models");
+const pdfGenerator_1 = require("../utils/pdfGenerator");
 class ApplicationController {
     // Maps to STK-APP-APPLY-001, TRUST-009
     async startApplication(req, res) {
@@ -339,7 +340,55 @@ class ApplicationController {
                         </div>
                         <p>Yours sincerely,<br>Troy Latuff<br>Chief Executive Officer<br>Blue Collar Recruitment Pty Ltd</p>
                     `;
-                    const attachments = [{ filename: 'Employer_Selection_Form.pdf', path: documentUrl }];
+                    let attachments = [];
+                    if (documentUrl) {
+                        if (typeof documentUrl === 'string' && documentUrl.startsWith('data:')) {
+                            const base64Data = documentUrl.split(';base64,').pop() || '';
+                            attachments.push({
+                                filename: 'Employer_Selection_Form.pdf',
+                                content: Buffer.from(base64Data, 'base64'),
+                                contentType: 'application/pdf'
+                            });
+                        }
+                        else if (typeof documentUrl === 'string' && documentUrl.startsWith('http')) {
+                            attachments.push({
+                                filename: 'Employer_Selection_Form.pdf',
+                                path: documentUrl,
+                                contentType: 'application/pdf'
+                            });
+                        }
+                        else if (typeof documentUrl === 'string') {
+                            const localPath = path_1.default.isAbsolute(documentUrl)
+                                ? documentUrl
+                                : path_1.default.resolve(__dirname, '../../public', documentUrl.replace(/^\//, ''));
+                            attachments.push({
+                                filename: 'Employer_Selection_Form.pdf',
+                                path: localPath,
+                                contentType: 'application/pdf'
+                            });
+                        }
+                    }
+                    else {
+                        try {
+                            const pdfBuf = (0, pdfGenerator_1.generateEmployerSelectionFormPDF)({
+                                applicantId: userId,
+                                fullName: candidateName || 'Candidate',
+                                applicationId: id,
+                                jobTitle: app?.JobListing?.title || 'FIFO Specialist',
+                                dateStr: new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }),
+                                totalCompetitorApplicants: totalApplicants || 24,
+                                onlyEmployingEmployer: false
+                            });
+                            attachments.push({
+                                filename: 'Employer_Selection_Form.pdf',
+                                content: pdfBuf,
+                                contentType: 'application/pdf'
+                            });
+                        }
+                        catch (genErr) {
+                            console.error('[ApplicationController.createNominations] fallback pdf gen error:', genErr);
+                        }
+                    }
                     await (0, email_1.sendInfoEmail)(candidateEmail, subject, content, attachments);
                 }
                 catch (mailErr) {
@@ -477,7 +526,7 @@ class ApplicationController {
                 if (app && app.userId) {
                     await ApplicationService_1.applicationService.updateLatestApplicationStageStatus(app.userId, 'ongoing');
                     // Send the contract email to the applicant
-                    if (app.User && app.User.email && adminDocumentUrl) {
+                    if (app.User && app.User.email) {
                         const subject = 'Action Required: Your Training and Ticket Acquisition Contract';
                         const content = `
                             <p>Dear ${app.User.fullName || 'Candidate'},</p>
@@ -486,10 +535,47 @@ class ApplicationController {
                             <p>To return it, upload the signed document directly through your applicant dashboard.</p>
                             <p>Best regards,<br>The Blue Collar Recruitment Team</p>
                         `;
-                        const contractPath = adminDocumentUrl.startsWith('http')
-                            ? adminDocumentUrl
-                            : path_1.default.resolve(__dirname, '../../public', adminDocumentUrl.replace(/^\//, ''));
-                        const attachments = [{ filename: 'fifo-candidate-agreement.pdf', path: contractPath, contentType: 'application/pdf' }];
+                        let attachments = [];
+                        if (adminDocumentUrl) {
+                            if (typeof adminDocumentUrl === 'string' && adminDocumentUrl.startsWith('data:')) {
+                                const base64Data = adminDocumentUrl.split(';base64,').pop() || '';
+                                attachments.push({
+                                    filename: 'fifo-candidate-agreement.pdf',
+                                    content: Buffer.from(base64Data, 'base64'),
+                                    contentType: 'application/pdf'
+                                });
+                            }
+                            else if (typeof adminDocumentUrl === 'string' && adminDocumentUrl.startsWith('http')) {
+                                attachments.push({
+                                    filename: 'fifo-candidate-agreement.pdf',
+                                    path: adminDocumentUrl,
+                                    contentType: 'application/pdf'
+                                });
+                            }
+                            else if (typeof adminDocumentUrl === 'string') {
+                                const contractPath = path_1.default.isAbsolute(adminDocumentUrl)
+                                    ? adminDocumentUrl
+                                    : path_1.default.resolve(__dirname, '../../public', adminDocumentUrl.replace(/^\//, ''));
+                                attachments.push({
+                                    filename: 'fifo-candidate-agreement.pdf',
+                                    path: contractPath,
+                                    contentType: 'application/pdf'
+                                });
+                            }
+                        }
+                        else {
+                            try {
+                                const buf = (0, pdfGenerator_1.generateContractPDF)(app.User.fullName || 'Candidate', role, company, 70, 720);
+                                attachments.push({
+                                    filename: 'fifo-candidate-agreement.pdf',
+                                    content: buf,
+                                    contentType: 'application/pdf'
+                                });
+                            }
+                            catch (e) {
+                                console.error('[ApplicationController.createContract] Fallback contract PDF failed:', e);
+                            }
+                        }
                         await (0, email_1.sendInfoEmail)(app.User.email, subject, content, attachments);
                     }
                 }

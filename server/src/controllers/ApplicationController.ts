@@ -377,10 +377,8 @@ export class ApplicationController {
                             const pdfBuf = generateEmployerSelectionFormPDF({
                                 applicantId: userId,
                                 fullName: candidateName || 'Candidate',
-                                applicationId: id,
+                                email: candidateEmail,
                                 jobTitle: (app as any)?.JobListing?.title || 'FIFO Specialist',
-                                dateStr: new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }),
-                                totalCompetitorApplicants: totalApplicants || 24,
                                 onlyEmployingEmployer: false
                             });
                             attachments.push({
@@ -538,7 +536,7 @@ export class ApplicationController {
                     await applicationService.updateLatestApplicationStageStatus(app.userId, 'ongoing');
 
                     // Send the contract email to the applicant
-                    if (app.User && app.User.email && adminDocumentUrl) {
+                    if (app.User && app.User.email) {
                         const subject = 'Action Required: Your Training and Ticket Acquisition Contract';
                         const content = `
                             <p>Dear ${app.User.fullName || 'Candidate'},</p>
@@ -547,10 +545,43 @@ export class ApplicationController {
                             <p>To return it, upload the signed document directly through your applicant dashboard.</p>
                             <p>Best regards,<br>The Blue Collar Recruitment Team</p>
                         `;
-                        const contractPath = adminDocumentUrl.startsWith('http')
-                            ? adminDocumentUrl
-                            : path.resolve(__dirname, '../../public', adminDocumentUrl.replace(/^\//, ''));
-                        const attachments = [{ filename: 'fifo-candidate-agreement.pdf', path: contractPath, contentType: 'application/pdf' }];
+                        let attachments: any[] = [];
+                        if (adminDocumentUrl) {
+                            if (typeof adminDocumentUrl === 'string' && adminDocumentUrl.startsWith('data:')) {
+                                const base64Data = adminDocumentUrl.split(';base64,').pop() || '';
+                                attachments.push({
+                                    filename: 'fifo-candidate-agreement.pdf',
+                                    content: Buffer.from(base64Data, 'base64'),
+                                    contentType: 'application/pdf'
+                                });
+                            } else if (typeof adminDocumentUrl === 'string' && adminDocumentUrl.startsWith('http')) {
+                                attachments.push({
+                                    filename: 'fifo-candidate-agreement.pdf',
+                                    path: adminDocumentUrl,
+                                    contentType: 'application/pdf'
+                                });
+                            } else if (typeof adminDocumentUrl === 'string') {
+                                const contractPath = path.isAbsolute(adminDocumentUrl)
+                                    ? adminDocumentUrl
+                                    : path.resolve(__dirname, '../../public', adminDocumentUrl.replace(/^\//, ''));
+                                attachments.push({
+                                    filename: 'fifo-candidate-agreement.pdf',
+                                    path: contractPath,
+                                    contentType: 'application/pdf'
+                                });
+                            }
+                        } else {
+                            try {
+                                const buf = generateContractPDF(app.User.fullName || 'Candidate', role, company, 70, 720);
+                                attachments.push({
+                                    filename: 'fifo-candidate-agreement.pdf',
+                                    content: buf,
+                                    contentType: 'application/pdf'
+                                });
+                            } catch (e) {
+                                console.error('[ApplicationController.createContract] Fallback contract PDF failed:', e);
+                            }
+                        }
                         await sendInfoEmail(app.User.email, subject, content, attachments);
                     }
                 }
