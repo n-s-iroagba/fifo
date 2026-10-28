@@ -413,7 +413,7 @@ export class ApplicationController {
             const isMaca = selectedHost.toLowerCase().includes('maca') ||
                 (employingEmployer && selectedHost.toLowerCase().trim() === employingEmployer.name.toLowerCase().trim());
 
-            // 1. Email 7a ALWAYS runs on every submission
+            // 1. Email 7a ALWAYS runs on every submission (Submission Confirmation)
             if (user) {
                 try {
                     await sendEmployerSelectionSubmittedEmail(user.email, user.fullName, selectedHost || employingName);
@@ -422,150 +422,47 @@ export class ApplicationController {
                 }
             }
 
-            // 2. If submitted selection does NOT match MACA (isEmploying = true)
-            if (!isMaca) {
-                console.log(`[ApplicationController] Candidate selected non-employing employer: "${selectedHost}". Triggering Email 7b and resetting to MACA only.`);
-
-                // a) Generate updated Employer Selection Form containing ONLY MACA
-                let updatedAdminDocUrl: string | null = null;
-                let macBuffer: Buffer | undefined = undefined;
-                try {
-                    const macDocx = await generateEmployerSelectionFormDocx({
-                        applicantId: userId,
-                        fullName: user?.fullName || 'Candidate',
-                        email: user?.email || '',
-                        jobTitle: (app as any)?.JobListing?.title || 'SITE ENGINEER – FIFO (PERTH, WA)',
-                        employerName: employingName,
-                        onlyEmployingEmployer: true
-                    });
-                    macBuffer = await Packer.toBuffer(macDocx);
-
-                    const publicDocsDir = path.resolve(__dirname, '../../public/documents');
-                    if (!fs.existsSync(publicDocsDir)) fs.mkdirSync(publicDocsDir, { recursive: true });
-                    const docFilename = `Employer_Selection_Form_MACA_${applicationId}.docx`;
-                    const docFilePath = path.join(publicDocsDir, docFilename);
-                    fs.writeFileSync(docFilePath, macBuffer);
-                    updatedAdminDocUrl = `/documents/${docFilename}`;
-                } catch (docErr) {
-                    console.error('[ApplicationController] Failed to generate MACA-only DOCX:', docErr);
-                }
-
-                // b) Remove non-MACA nominations for this application so dashboard displays ONLY MACA
-                await Nomination.destroy({
-                    where: {
-                        applicationId,
-                        hostEmployer: { [Op.notLike]: '%MACA%' }
-                    }
-                });
-
-                // Ensure MACA nomination exists and is reset for selection
-                let macaNom = await Nomination.findOne({
-                    where: {
-                        applicationId,
-                        hostEmployer: { [Op.like]: '%MACA%' }
-                    }
-                });
-
-                if (!macaNom) {
-                    macaNom = await Nomination.create({
-                        applicationId,
-                        tradeStream: (app as any)?.JobListing?.title || 'SITE ENGINEER – FIFO (PERTH, WA)',
-                        hostEmployer: employingName,
-                        vacancies: '3 Slots Available',
-                        competitors: '5 Nominated Candidates',
-                        isSelected: false,
-                        documentUrl: null,
-                        adminDocumentUrl: updatedAdminDocUrl
-                    });
-                } else {
-                    macaNom.isSelected = false;
-                    macaNom.documentUrl = null;
-                    if (updatedAdminDocUrl) macaNom.adminDocumentUrl = updatedAdminDocUrl;
-                    await macaNom.save();
-                }
-
-                // c) Send Email 7b (Employer Selection Filled mail)
-                if (user) {
-                    try {
-                        await sendEmployerSelectionFilledEmail(
-                            user.email,
-                            user.fullName,
-                            selectedHost,
-                            updatedAdminDocUrl || undefined,
-                            macBuffer
-                        );
-                    } catch (mailErr7b) {
-                        console.error('[ApplicationController.uploadNominationDocument] Email 7b failed:', mailErr7b);
-                    }
-                }
-
-                // d) Create in-app notification
-                try {
-                    await Notification.create({
-                        userId,
-                        subject: 'Important: Employer Selection Quota Filled — Alternative Allocation Available',
-                        message: `Your previously selected employer (${selectedHost}) vacancy has been filled due to high candidate quota limits. MACA Limited is currently the only available Tier-1 Australian sponsor with immediate site allocation. Please visit your Employer Selection page to confirm and submit your selection for MACA Limited.`,
-                        type: 'SYSTEM',
-                        isRead: false
-                    });
-                } catch (notifErr) {
-                    console.error('[ApplicationController] Notification create failed:', notifErr);
-                }
-
-                // e) Keep stage on-going (candidate needs to submit MACA selection)
-                try {
-                    await applicationService.updateLatestApplicationStageStatus(userId, 'on-going');
-                } catch (stageErr) {
-                    console.error('[ApplicationController] stage update failed:', stageErr);
-                }
-
-                res.status(200).json({
-                    message: 'Your previous employer selection was filled. Updated MACA selection form has been dispatched.',
-                    isFilled: true,
-                    availableEmployer: employingName
-                });
-                return;
-            }
-
-            // 3. If selection IS MACA, set stage to under-review so cron can process acceptance
+            // 2. Mark stage as under-review for the Employer Acceptance Cron to evaluate
             try {
                 await applicationService.updateLatestApplicationStageStatus(userId, 'under-review');
             } catch (stageErr) {
                 console.error('[ApplicationController.uploadNominationDocument] stage update failed:', stageErr);
             }
 
-            // Ensure Interview record exists for admin scheduling
+            // 3. Create candidate in-app notification
             try {
-                const { Interview } = require('../models');
-                await Interview.findOrCreate({
-                    where: { applicantId: userId },
-                    defaults: {
-                        applicantId: userId,
-                        outcome: 'Pending',
-                        overview: `Employer Selection submitted for ${employingName}. Ready for employer contact interview scheduling.`
-                    }
+                const { Notification } = require('../models');
+                await Notification.create({
+                    userId,
+                    subject: 'Employer Selection Submitted — Verification In Progress',
+                    message: `Your signed Employer Selection Form has been received and is currently under review by our corporate partnerships desk. You will receive an operational update once quota verification concludes.`,
+                    type: 'SYSTEM',
+                    isRead: false
                 });
-            } catch (interviewErr) {
-                console.error('[ApplicationController] Failed to prepare Interview record:', interviewErr);
+            } catch (notifErr) {
+                console.error('[ApplicationController] Notification create failed:', notifErr);
             }
 
-            // Notify admin
+            // 4. Notify admin of submission
             const adminEmail = 'nnamdisolomon1@gmail.com';
-            const subject = `Signed Nomination Uploaded (MACA Confirmed) – User ID: ${userId}`;
+            const subject = `Signed Employer Selection Uploaded – Candidate: ${user?.fullName || userId}`;
             const content = `
                 <p>Hello Admin,</p>
-                <p>A candidate has uploaded their signed nomination form for <strong>${employingName}</strong> (isEmploying=true).</p>
+                <p>A candidate has uploaded their signed employer selection document.</p>
                 <ul>
-                    <li><strong>Candidate User ID:</strong> ${userId}</li>
+                    <li><strong>Candidate:</strong> ${user?.fullName || 'N/A'} (User ID: ${userId})</li>
                     <li><strong>Application ID:</strong> ${applicationId}</li>
-                    <li><strong>Employer:</strong> ${employingName}</li>
+                    <li><strong>Nominated Employer:</strong> ${selectedHost || 'Unspecified'}</li>
                     <li><strong>Document URL:</strong> <a href="${documentUrl}">View Document</a></li>
                 </ul>
-                <p>Employer Selection is now confirmed. Please schedule the employer technical interview.</p>
+                <p>Status has been set to <strong>under-review</strong>. The automated Employer Acceptance Cron will evaluate the quota allocation against active employing partners.</p>
             `;
             await sendInfoEmail(adminEmail, subject, content).catch(e => console.error('[uploadNominationDocument] admin email:', e));
 
-            res.status(200).json({ message: 'Document uploaded successfully. Your nomination is now under review for employer interview scheduling.' });
+            res.status(200).json({
+                message: 'Document uploaded successfully! Your nomination is now under review.',
+                status: 'under-review'
+            });
         } catch (error: any) {
             console.error('[ApplicationController.uploadNominationDocument]', error);
             res.status(500).json({ error: 'Failed to upload document' });

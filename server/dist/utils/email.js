@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendTicketCoursePassedEmail = exports.sendTicketCourseFailedEmail = exports.sendTicketCourseSubmittedEmail = exports.sendAvelingCredentialsEmail = exports.sendRtoCredentialsEmail = exports.sendContractApprovedEmail = exports.sendTicketSponsorshipApprovalMail = exports.sendSponsorshipReviewConfirmationMail = exports.sendEmployerRefundAndSponsorshipTermsMail = exports.sendTicketSponsorshipApplicationMail = exports.sendNominationApprovedEmail = exports.sendEmployerSelectionFilledEmail = exports.sendEmployerSelectionSubmittedEmail = exports.sendHowToExpressInterestEmail = exports.sendApplicationAcceptedEmail = exports.sendApplicationSubmittedEmail = exports.sendPsychoMod2PassedEmail = exports.sendPsychoMod2SubmittedEmail = exports.sendPsychoMod1PassedEmail = exports.sendBioReceivedEmail = exports.sendCVUploadEmail = exports.sendEOIReceivedEmail = exports.sendWelcomeApplicationFoundEmail = exports.sendVerificationEmail = exports.sendReceiptEmail = exports.sendCryptoPaymentDirectionEmail = exports.sendInvoiceEmail = exports.sendEmail = exports.sendEmailFrom = exports.sendAvelingEmail = exports.sendEmployerEmail = exports.sendRtoEmail = exports.sendInfoEmail = exports.sendAuthEmail = void 0;
+exports.sendTicketCoursePassedEmail = exports.sendTicketCourseFailedEmail = exports.sendTicketCourseSubmittedEmail = exports.sendAvelingCredentialsEmail = exports.sendRtoCredentialsEmail = exports.sendContractApprovedEmail = exports.sendTicketSponsorshipApprovalMail = exports.sendSponsorshipReviewConfirmationMail = exports.sendEmployerRefundAndSponsorshipTermsMail = exports.sendTicketSponsorshipApplicationMail = exports.sendNominationApprovedEmail = exports.sendEmployerSelectionApprovedEmail = exports.sendEmployerSelectionPresentationEmail = exports.sendEmployerSelectionFilledEmail = exports.sendEmployerSelectionSubmittedEmail = exports.sendHowToExpressInterestEmail = exports.sendApplicationAcceptedEmail = exports.sendApplicationSubmittedEmail = exports.sendPsychoMod2PassedEmail = exports.sendPsychoMod2SubmittedEmail = exports.sendPsychoMod1PassedEmail = exports.sendBioReceivedEmail = exports.sendCVUploadEmail = exports.sendEOIReceivedEmail = exports.sendWelcomeApplicationFoundEmail = exports.sendVerificationEmail = exports.sendReceiptEmail = exports.sendCryptoPaymentDirectionEmail = exports.sendInvoiceEmail = exports.sendEmail = exports.sendEmailFrom = exports.sendAvelingEmail = exports.sendEmployerEmail = exports.sendRtoEmail = exports.sendInfoEmail = exports.sendAuthEmail = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const path_1 = __importDefault(require("path"));
 const cryptoQr_1 = require("./cryptoQr");
@@ -795,6 +795,49 @@ const sendEmployerSelectionFilledEmail = async (to, userName, previouslySelected
     await (0, exports.sendInfoEmail)(to, subject, content, attachments);
 };
 exports.sendEmployerSelectionFilledEmail = sendEmployerSelectionFilledEmail;
+const sendEmployerSelectionPresentationEmail = async (to, userName, jobTitle, formUrl, attachmentBuffer) => {
+    const subject = 'Action Required: Official Notice of Employer Selection & Nomination Quota';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Following the formal acceptance of your initial FIFO application for the position of <strong>${jobTitle}</strong>, Blue Collar Recruitment Australia has advanced your profile to our tier-1 Australian resources and mining partners.</p>
+        <p>We have secured active vacancy nomination quotas mapped to specific tier-1 operations across Western Australia (Pilbara, Goldfields, and Southwest operations).</p>
+        <p><strong>Action Required:</strong></p>
+        <ol>
+            <li>Log in to your candidate dashboard at <a href="${process.env.CLIENT_URL || 'https://www.bluecollarrecruitment.co'}/dashboard/nominations">Employer Selection Portal</a>.</li>
+            <li>Review the available employer nomination quotas, vacancy details, and trade stream terms.</li>
+            <li>Download the official <strong>Employer Selection Form</strong>, sign the candidate declaration selecting your chosen host employer, and upload the signed document to your portal.</li>
+        </ol>
+        <p>Your prompt submission allows our corporate partnerships desk to lock in your sponsor allocation before company quotas close.</p>
+        <p>Yours faithfully,<br><strong>Gary Nexon Fletcher</strong><br>Hiring Operations Director<br>Blue Collar Recruitment Pty Ltd</p>
+    `;
+    const attachments = [];
+    if (attachmentBuffer) {
+        attachments.push({
+            filename: 'Employer_Selection_Form.docx',
+            content: attachmentBuffer
+        });
+    }
+    else if (formUrl) {
+        attachments.push({
+            filename: 'Employer_Selection_Form.docx',
+            path: formUrl
+        });
+    }
+    await (0, exports.sendInfoEmail)(to, subject, content, attachments);
+};
+exports.sendEmployerSelectionPresentationEmail = sendEmployerSelectionPresentationEmail;
+const sendEmployerSelectionApprovedEmail = async (to, userName, employerName) => {
+    const subject = `Congratulations: Employer Selection Formally Accepted — ${employerName}`;
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Congratulations! Your official Employer Selection Form nominating <strong>${employerName}</strong> as your Tier-1 sponsor has been reviewed, approved, and formally accepted.</p>
+        <p>Your candidate profile has now advanced to the <strong>Interview Scheduling</strong> stage.</p>
+        <p>The recruitment panel and HR operations desk of <strong>${employerName}</strong> will shortly contact you directly with your technical interview schedule, Zoom meeting link, and operational manual.</p>
+        <p>Yours faithfully,<br><strong>Blue Collar Employer Partnerships Team</strong><br>Blue Collar Recruitment Pty Ltd</p>
+    `;
+    await (0, exports.sendInfoEmail)(to, subject, content);
+};
+exports.sendEmployerSelectionApprovedEmail = sendEmployerSelectionApprovedEmail;
 const sendNominationApprovedEmail = async (to, userName) => {
     const subject = 'Nomination Approved';
     const content = `

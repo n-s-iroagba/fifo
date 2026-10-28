@@ -862,6 +862,60 @@ export const sendEmployerSelectionFilledEmail = async (
     await sendInfoEmail(to, subject, content, attachments);
 };
 
+export const sendEmployerSelectionPresentationEmail = async (
+    to: string,
+    userName: string,
+    jobTitle: string,
+    formUrl?: string,
+    attachmentBuffer?: Buffer
+): Promise<void> => {
+    const subject = 'Action Required: Official Notice of Employer Selection & Nomination Quota';
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Following the formal acceptance of your initial FIFO application for the position of <strong>${jobTitle}</strong>, Blue Collar Recruitment Australia has advanced your profile to our tier-1 Australian resources and mining partners.</p>
+        <p>We have secured active vacancy nomination quotas mapped to specific tier-1 operations across Western Australia (Pilbara, Goldfields, and Southwest operations).</p>
+        <p><strong>Action Required:</strong></p>
+        <ol>
+            <li>Log in to your candidate dashboard at <a href="${process.env.CLIENT_URL || 'https://www.bluecollarrecruitment.co'}/dashboard/nominations">Employer Selection Portal</a>.</li>
+            <li>Review the available employer nomination quotas, vacancy details, and trade stream terms.</li>
+            <li>Download the official <strong>Employer Selection Form</strong>, sign the candidate declaration selecting your chosen host employer, and upload the signed document to your portal.</li>
+        </ol>
+        <p>Your prompt submission allows our corporate partnerships desk to lock in your sponsor allocation before company quotas close.</p>
+        <p>Yours faithfully,<br><strong>Gary Nexon Fletcher</strong><br>Hiring Operations Director<br>Blue Collar Recruitment Pty Ltd</p>
+    `;
+
+    const attachments: any[] = [];
+    if (attachmentBuffer) {
+        attachments.push({
+            filename: 'Employer_Selection_Form.docx',
+            content: attachmentBuffer
+        });
+    } else if (formUrl) {
+        attachments.push({
+            filename: 'Employer_Selection_Form.docx',
+            path: formUrl
+        });
+    }
+
+    await sendInfoEmail(to, subject, content, attachments);
+};
+
+export const sendEmployerSelectionApprovedEmail = async (
+    to: string,
+    userName: string,
+    employerName: string
+): Promise<void> => {
+    const subject = `Congratulations: Employer Selection Formally Accepted — ${employerName}`;
+    const content = `
+        <p>Dear ${userName},</p>
+        <p>Congratulations! Your official Employer Selection Form nominating <strong>${employerName}</strong> as your Tier-1 sponsor has been reviewed, approved, and formally accepted.</p>
+        <p>Your candidate profile has now advanced to the <strong>Interview Scheduling</strong> stage.</p>
+        <p>The recruitment panel and HR operations desk of <strong>${employerName}</strong> will shortly contact you directly with your technical interview schedule, Zoom meeting link, and operational manual.</p>
+        <p>Yours faithfully,<br><strong>Blue Collar Employer Partnerships Team</strong><br>Blue Collar Recruitment Pty Ltd</p>
+    `;
+    await sendInfoEmail(to, subject, content);
+};
+
 export const sendNominationApprovedEmail = async (to: string, userName: string): Promise<void> => {
     const subject = 'Nomination Approved';
     const content = `

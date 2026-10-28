@@ -508,6 +508,14 @@ export class AdminController {
                         const { runApplicationApprovalCron } = require('../cron/applicationCron');
                         return await runApplicationApprovalCron(targetId, bypassDelay, bypassP);
                     }
+                    case 'employer-selection': {
+                        const { runEmployerSelectionDispatchCron } = require('../cron/nominationCron');
+                        return await runEmployerSelectionDispatchCron(targetId, bypassDelay, bypassP);
+                    }
+                    case 'employer-acceptance': {
+                        const { runEmployerAcceptanceCron } = require('../cron/nominationCron');
+                        return await runEmployerAcceptanceCron(targetId, bypassDelay, bypassP);
+                    }
                     case 'nomination': {
                         const { runNominationFollowupCron } = require('../cron/nominationCron');
                         return await runNominationFollowupCron(targetId, bypassDelay, bypassP);

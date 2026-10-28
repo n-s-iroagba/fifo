@@ -16,6 +16,8 @@ export class Application extends Model {
     declare sponsorshipCallEmailSent: boolean;
     declare sponsorshipCallEmailSentAt: Date | null;
     declare sponsorshipId: string | null;
+    declare employerSelectionEmailSent: boolean;
+    declare employerSelectionEmailSentAt: Date | null;
 
     // Associations
     declare User?: any;
@@ -72,6 +74,15 @@ Application.init({
     },
     sponsorshipId: {
         type: DataTypes.STRING,
+        allowNull: true
+    },
+    employerSelectionEmailSent: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
+    employerSelectionEmailSentAt: {
+        type: DataTypes.DATE,
         allowNull: true
     }
 }, {

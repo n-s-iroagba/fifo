@@ -253,6 +253,15 @@ User.init({
     firstLoginAt: {
         type: sequelize_1.DataTypes.DATE,
         allowNull: true,
+    },
+    employerSelectionEmailSent: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    employerSelectionEmailSentAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: true,
     }
 }, {
     sequelize: database_1.sequelize,

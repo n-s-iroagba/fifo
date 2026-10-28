@@ -26,11 +26,25 @@ export const STAGE_CRONS: CronDefinition[] = [
         intervalDesc: 'Auto-accepts applications under review > 12h'
     },
     {
+        key: 'employer-selection',
+        name: 'EmployerSelectionDispatch',
+        label: 'Employer Selection Presentation Cron',
+        stageName: 'Employer Selection',
+        intervalDesc: 'Dispatches Employer Selection options, form & presentation email post-application acceptance'
+    },
+    {
+        key: 'employer-acceptance',
+        name: 'EmployerAcceptanceCron',
+        label: 'Employer Acceptance Cron',
+        stageName: 'Employer Selection',
+        intervalDesc: 'Evaluates submitted employer selection: accepts if isEmploying, else sends filled email & makes isEmploying employer only option'
+    },
+    {
         key: 'nomination',
         name: 'NominationFollowup',
-        label: '1h Employer Selection Followup',
+        label: '1h Employer Selection Followup (All)',
         stageName: 'Nomination',
-        intervalDesc: 'Advances selected MACA nominations > 1h to Interview Scheduling'
+        intervalDesc: 'Composite cron executing both employer selection presentation and acceptance'
     },
     {
         key: 'onboarding',
@@ -105,7 +119,9 @@ let pausedCronKeys = new Set<string>();
 export function normalizeCronKey(nameOrKey: string): string {
     const lower = (nameOrKey || '').toLowerCase().trim();
     if (lower === 'applicationautoacceptance' || lower === 'application' || lower === 'applications') return 'application';
-    if (lower === 'nominationfollowup' || lower === 'nomination' || lower === 'nominations' || lower === 'employer-selection' || lower === 'employerselection') return 'nomination';
+    if (lower === 'employerselectiondispatch' || lower === 'employer-selection' || lower === 'employerselection' || lower === 'employer-selection-dispatch') return 'employer-selection';
+    if (lower === 'employeracceptancecron' || lower === 'employer-acceptance' || lower === 'employeracceptance') return 'employer-acceptance';
+    if (lower === 'nominationfollowup' || lower === 'nomination' || lower === 'nominations') return 'nomination';
     if (lower === 'onboardingfollowup' || lower === 'onboarding' || lower === 'onboardings' || lower === 'interview-onboarding' || lower === 'employer-contact') return 'onboarding';
     if (lower === 'sponsorshipautoapproval' || lower === 'sponsorshipdualcron' || lower === 'sponsorshipcallandrefundnotice' || lower === 'sponsorship' || lower === 'sponsorships' || lower === 'ticketsponsorship' || lower === 'ticket-sponsorship') return 'sponsorship';
     if (lower === 'contractautoapproval' || lower === 'contract' || lower === 'contracts') return 'contract';

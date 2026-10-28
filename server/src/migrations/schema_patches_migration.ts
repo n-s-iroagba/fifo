@@ -61,6 +61,14 @@ export async function runSchemaPatches(): Promise<void> {
         await sequelize.query("ALTER TABLE applications ADD COLUMN sponsorshipCallEmailSentAt DATETIME DEFAULT NULL;");
         console.log("[Migration] Patched applications table with sponsorshipCallEmailSentAt.");
     } catch (e: any) {}
+    try {
+        await sequelize.query("ALTER TABLE applications ADD COLUMN employerSelectionEmailSent BOOLEAN NOT NULL DEFAULT false;");
+        console.log("[Migration] Patched applications table with employerSelectionEmailSent.");
+    } catch (e: any) {}
+    try {
+        await sequelize.query("ALTER TABLE applications ADD COLUMN employerSelectionEmailSentAt DATETIME DEFAULT NULL;");
+        console.log("[Migration] Patched applications table with employerSelectionEmailSentAt.");
+    } catch (e: any) {}
 
     // 5. Patch invoices
     try {
@@ -216,6 +224,15 @@ export async function runSchemaPatches(): Promise<void> {
         } catch (e: any) {}
     }
 
+    try {
+        await sequelize.query("ALTER TABLE interviews MODIFY COLUMN scheduleCatalogueId INT NULL DEFAULT NULL;");
+        console.log("[Migration] Patched interviews table: scheduleCatalogueId NULL.");
+    } catch (e: any) {}
+    try {
+        await sequelize.query("ALTER TABLE interviews MODIFY COLUMN schedule_catalogue_id INT NULL DEFAULT NULL;");
+        console.log("[Migration] Patched interviews table: schedule_catalogue_id NULL.");
+    } catch (e: any) {}
+
     // 8. Drop sponsorshipPrice from ticket_catalogs
     try {
         await sequelize.query("ALTER TABLE ticket_catalogs DROP COLUMN sponsorshipPrice;");
@@ -249,7 +266,9 @@ export async function runSchemaPatches(): Promise<void> {
         "ADD COLUMN sponsorshipApprovedEmailSent BOOLEAN NOT NULL DEFAULT false",
         "ADD COLUMN sponsorshipApprovedEmailSentAt DATETIME DEFAULT NULL",
         "ADD COLUMN hasLoggedIn BOOLEAN NOT NULL DEFAULT false",
-        "ADD COLUMN firstLoginAt DATETIME DEFAULT NULL"
+        "ADD COLUMN firstLoginAt DATETIME DEFAULT NULL",
+        "ADD COLUMN employerSelectionEmailSent BOOLEAN NOT NULL DEFAULT false",
+        "ADD COLUMN employerSelectionEmailSentAt DATETIME DEFAULT NULL"
     ];
 
     for (const colDef of userColumns) {

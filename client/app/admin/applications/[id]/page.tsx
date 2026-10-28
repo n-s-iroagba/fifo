@@ -1161,7 +1161,9 @@ export default function ApplicationDetailPage() {
                                 <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
                                     {[
                                         { key: 'application', label: '12h Application Acceptance' },
-                                        { key: 'nomination', label: '1h Employer Selection' },
+                                        { key: 'employer-selection', label: 'Employer Selection Presentation' },
+                                        { key: 'employer-acceptance', label: 'Employer Selection Acceptance' },
+                                        { key: 'nomination', label: 'Employer Selection (All)' },
                                         { key: 'onboarding', label: '1h Post-Interview Onboarding' },
                                         { key: 'sponsorship', label: '2h Ticket Sponsorship' },
                                         { key: 'contract', label: '3h Contract Approval' },

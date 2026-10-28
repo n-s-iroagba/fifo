@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { runApplicationApprovalCron } from '../cron/applicationCron';
-import { runNominationFollowupCron } from '../cron/nominationCron';
+import { runNominationFollowupCron, runEmployerSelectionDispatchCron, runEmployerAcceptanceCron } from '../cron/nominationCron';
 import { runContractApprovalCron } from '../cron/contractCron';
 import { runSponsorshipCron, runSponsorshipApprovalCron, runSponsorshipCallCron } from '../cron/sponsorshipCron';
 import { runRtoWelcomeCron, runRtoTicketDeliveryCron, runAvelingWelcomeCron, runAvelingTicketDeliveryCron } from '../cron/rtoCron';
@@ -34,11 +34,33 @@ export const cronController = {
             res.status(500).json({ success: false, error: error.message });
         }
     },
+    async employerSelection(req: Request, res: Response) {
+        if (isCronPaused('employer-selection')) return res.status(200).json({ success: true, processed: 0, paused: true, cron: 'employer-selection' });
+        try {
+            const count = await runEmployerSelectionDispatchCron();
+            await notifyAdmin('Employer Selection Presentation Dispatch', count);
+            res.status(200).json({ success: true, processed: count });
+        } catch (error: any) {
+            console.error('Error in employer-selection cron webhook:', error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    },
+    async employerAcceptance(req: Request, res: Response) {
+        if (isCronPaused('employer-acceptance')) return res.status(200).json({ success: true, processed: 0, paused: true, cron: 'employer-acceptance' });
+        try {
+            const count = await runEmployerAcceptanceCron();
+            await notifyAdmin('Employer Selection Acceptance & Allocation Evaluation', count);
+            res.status(200).json({ success: true, processed: count });
+        } catch (error: any) {
+            console.error('Error in employer-acceptance cron webhook:', error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    },
     async nomination(req: Request, res: Response) {
         if (isCronPaused('nomination')) return res.status(200).json({ success: true, processed: 0, paused: true, cron: 'nomination' });
         try {
             const count = await runNominationFollowupCron();
-            await notifyAdmin('Nomination Followup', count);
+            await notifyAdmin('Nomination Followup (Composite)', count);
             res.status(200).json({ success: true, processed: count });
         } catch (error: any) {
             console.error('Error in nomination cron webhook:', error);

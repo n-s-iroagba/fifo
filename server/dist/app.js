@@ -73,6 +73,8 @@ const qstashMiddleware = async (req, res, next) => {
     }
 };
 app.post('/api/cron/application', express_1.default.raw({ type: 'application/json' }), qstashMiddleware, CronController_1.cronController.application);
+app.post('/api/cron/employer-selection', express_1.default.raw({ type: 'application/json' }), qstashMiddleware, CronController_1.cronController.employerSelection);
+app.post('/api/cron/employer-acceptance', express_1.default.raw({ type: 'application/json' }), qstashMiddleware, CronController_1.cronController.employerAcceptance);
 app.post('/api/cron/nomination', express_1.default.raw({ type: 'application/json' }), qstashMiddleware, CronController_1.cronController.nomination);
 app.post('/api/cron/onboarding', express_1.default.raw({ type: 'application/json' }), qstashMiddleware, CronController_1.cronController.onboarding);
 app.post('/api/cron/contract', express_1.default.raw({ type: 'application/json' }), qstashMiddleware, CronController_1.cronController.contract);

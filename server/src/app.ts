@@ -77,6 +77,8 @@ const qstashMiddleware = async (req: express.Request, res: express.Response, nex
 };
 
 app.post('/api/cron/application', express.raw({type: 'application/json'}), qstashMiddleware, cronController.application);
+app.post('/api/cron/employer-selection', express.raw({type: 'application/json'}), qstashMiddleware, cronController.employerSelection);
+app.post('/api/cron/employer-acceptance', express.raw({type: 'application/json'}), qstashMiddleware, cronController.employerAcceptance);
 app.post('/api/cron/nomination', express.raw({type: 'application/json'}), qstashMiddleware, cronController.nomination);
 app.post('/api/cron/onboarding', express.raw({type: 'application/json'}), qstashMiddleware, cronController.onboarding);
 app.post('/api/cron/contract', express.raw({type: 'application/json'}), qstashMiddleware, cronController.contract);

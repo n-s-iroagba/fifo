@@ -56,6 +56,15 @@ Application.init({
     sponsorshipId: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: true
+    },
+    employerSelectionEmailSent: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
+    employerSelectionEmailSentAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: true
     }
 }, {
     sequelize: database_1.sequelize,

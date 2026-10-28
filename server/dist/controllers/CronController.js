@@ -33,12 +33,38 @@ exports.cronController = {
             res.status(500).json({ success: false, error: error.message });
         }
     },
+    async employerSelection(req, res) {
+        if ((0, cronRegistry_1.isCronPaused)('employer-selection'))
+            return res.status(200).json({ success: true, processed: 0, paused: true, cron: 'employer-selection' });
+        try {
+            const count = await (0, nominationCron_1.runEmployerSelectionDispatchCron)();
+            await notifyAdmin('Employer Selection Presentation Dispatch', count);
+            res.status(200).json({ success: true, processed: count });
+        }
+        catch (error) {
+            console.error('Error in employer-selection cron webhook:', error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    },
+    async employerAcceptance(req, res) {
+        if ((0, cronRegistry_1.isCronPaused)('employer-acceptance'))
+            return res.status(200).json({ success: true, processed: 0, paused: true, cron: 'employer-acceptance' });
+        try {
+            const count = await (0, nominationCron_1.runEmployerAcceptanceCron)();
+            await notifyAdmin('Employer Selection Acceptance & Allocation Evaluation', count);
+            res.status(200).json({ success: true, processed: count });
+        }
+        catch (error) {
+            console.error('Error in employer-acceptance cron webhook:', error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    },
     async nomination(req, res) {
         if ((0, cronRegistry_1.isCronPaused)('nomination'))
             return res.status(200).json({ success: true, processed: 0, paused: true, cron: 'nomination' });
         try {
             const count = await (0, nominationCron_1.runNominationFollowupCron)();
-            await notifyAdmin('Nomination Followup', count);
+            await notifyAdmin('Nomination Followup (Composite)', count);
             res.status(200).json({ success: true, processed: count });
         }
         catch (error) {

@@ -59,6 +59,8 @@ export class User extends Model {
     declare sponsorshipApprovedEmailSentAt: Date | null;
     declare hasLoggedIn: boolean;
     declare firstLoginAt: Date | null;
+    declare employerSelectionEmailSent: boolean;
+    declare employerSelectionEmailSentAt: Date | null;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 }
@@ -308,6 +310,15 @@ User.init({
         allowNull: false,
     },
     firstLoginAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
+    employerSelectionEmailSent: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    employerSelectionEmailSentAt: {
         type: DataTypes.DATE,
         allowNull: true,
     }
