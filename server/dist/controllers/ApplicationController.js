@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.applicationController = exports.ApplicationController = void 0;
+const path_1 = __importDefault(require("path"));
 const ApplicationService_1 = require("../services/ApplicationService");
 const constants_1 = require("../constants");
 const email_1 = require("../utils/email");
@@ -482,7 +486,10 @@ class ApplicationController {
                             <p>To return it, upload the signed document directly through your applicant dashboard.</p>
                             <p>Best regards,<br>The Blue Collar Recruitment Team</p>
                         `;
-                        const attachments = [{ filename: 'Contract_Document.pdf', path: adminDocumentUrl }];
+                        const contractPath = adminDocumentUrl.startsWith('http')
+                            ? adminDocumentUrl
+                            : path_1.default.resolve(__dirname, '../../public', adminDocumentUrl.replace(/^\//, ''));
+                        const attachments = [{ filename: 'fifo-candidate-agreement.pdf', path: contractPath, contentType: 'application/pdf' }];
                         await (0, email_1.sendInfoEmail)(app.User.email, subject, content, attachments);
                     }
                 }

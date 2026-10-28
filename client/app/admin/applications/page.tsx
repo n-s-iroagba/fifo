@@ -59,7 +59,9 @@ export default function AdminApplicationsPage() {
                     >
                         <option value="all">All Scheduled Crons</option>
                         <option value="application">12h Automated Acceptance</option>
-                        <option value="nomination">Employer Selection (24h Invites / 5h Accept)</option>
+                        <option value="employer-selection">Employer Selection Presentation Dispatch</option>
+                        <option value="employer-acceptance">Employer Acceptance &amp; Quota Evaluation</option>
+                        <option value="nomination">Employer Selection Followup (Composite)</option>
                         <option value="onboarding">1h Post-Interview Onboarding Guide</option>
                         <option value="sponsorship">Ticket Sponsorship (3h Invites / 6h Approvals)</option>
                         <option value="contract">Sponsorship Contract Delivery &amp; ID</option>

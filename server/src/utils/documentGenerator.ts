@@ -251,21 +251,43 @@ export async function generateEmployerSelectionFormDocx(data: ApplicantDocData):
     );
 
     // Candidate Declaration & Signatures
+    const declarationText = isMacaOnly
+        ? `I, ${data.fullName}, formally accept and confirm ${employer} as my assigned sponsoring host employer for the position of ${data.jobTitle}. I understand that upon completion of prerequisite competency tickets with CertHero RTO, ${employer} will proceed with my Subclass 482 visa nomination and Australian site mobilisation.`
+        : `I, ${data.fullName}, formally submit my selection from the participating host employers listed above as my preferred vocational pathway for the position of ${data.jobTitle}. I acknowledge that this selection initiates my employer nomination and allocation under the Australian Subclass 482 visa program. I confirm my intention to acquire prerequisite competency tickets through CertHero RTO and proceed with site mobilisation under my chosen sponsor.`;
+
+    const declarationHeading = isMacaOnly
+        ? '2. CANDIDATE SPONSORSHIP ACCEPTANCE DECLARATION'
+        : '2. CANDIDATE SELECTION DECLARATION';
+
     children.push(
         new Paragraph({
             heading: HeadingLevel.HEADING_2,
             spacing: { before: 140, after: 80 },
-            children: [new TextRun({ text: '2. CANDIDATE SELECTION DECLARATION', bold: true, size: 22, color: NAVY })]
+            children: [new TextRun({ text: declarationHeading, bold: true, size: 22, color: NAVY })]
         }),
         new Paragraph({
             children: [
                 new TextRun({
-                    text: `I, ${data.fullName}, formally confirm my selection of ${employer} as my nominated sponsoring employer for the position of ${data.jobTitle}. I understand that upon completion of prerequisite competency tickets with CertHero RTO, ${employer} will proceed with my Subclass 482 visa nomination and Australian site mobilisation.`,
+                    text: declarationText,
                     size: 20
                 })
             ]
-        }),
-        new Paragraph({ spacing: { before: 240, after: 80 } }),
+        })
+    );
+
+    if (!isMacaOnly) {
+        children.push(
+            new Paragraph({
+                spacing: { before: 140, after: 80 },
+                children: [
+                    new TextRun({ text: 'Selected Host Employer: ____________________________________________________', bold: true, size: 20 })
+                ]
+            })
+        );
+    }
+
+    children.push(
+        new Paragraph({ spacing: { before: 180, after: 80 } }),
         new Table({
             width: { size: 100, type: WidthType.PERCENTAGE },
             rows: [

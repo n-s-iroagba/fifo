@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import path from 'path';
 import { generateWalletQrDataUrl, generateQrDataUrl, getActiveWalletAddress } from './cryptoQr';
+import { generateReceiptPDF, generateContractPDF } from './pdfGenerator';
 
 const createTransporter = (user: string | undefined, pass: string | undefined) => {
     return nodemailer.createTransport({
@@ -229,7 +230,7 @@ export const sendInfoEmail = async (to: string, subject: string, content: string
             to,
             subject,
             html: getStandardEmailTemplate(subject, content, 'info'),
-            ...(attachments[0] && { attachments: [attachments[0]] })
+            ...(attachments && attachments.length > 0 && { attachments })
         });
         console.log(`[EmailUtil] Info email dispatched to: ${to}`);
         notifyAdminOfEmail(to, subject, 'info');
@@ -624,10 +625,25 @@ export const sendReceiptEmail = async (
         <p>Thank you for your prompt commitment.</p>
     `;
 
+    const receiptAttachments = [...attachments];
+    const hasPdf = receiptAttachments.some(a => (a.filename && a.filename.toLowerCase().endsWith('.pdf')) || a.contentType === 'application/pdf');
+    if (!hasPdf) {
+        try {
+            const receiptPdf = generateReceiptPDF(invoiceId, invoiceId, candidateName, amountPaid);
+            receiptAttachments.push({
+                filename: `Official_Receipt_${invoiceId}.pdf`,
+                content: receiptPdf,
+                contentType: 'application/pdf'
+            });
+        } catch (err) {
+            console.error('[EmailUtil] Failed to auto-generate receipt PDF for email:', err);
+        }
+    }
+
     if (emailServer === 'aveling') {
-        await sendAvelingEmail(to, subject, content, attachments);
+        await sendAvelingEmail(to, subject, content, receiptAttachments);
     } else {
-        await sendInfoEmail(to, subject, content, attachments);
+        await sendInfoEmail(to, subject, content, receiptAttachments);
     }
 };
 
@@ -849,13 +865,15 @@ export const sendEmployerSelectionFilledEmail = async (
     const attachments: any[] = [];
     if (attachmentBuffer) {
         attachments.push({
-            filename: 'Employer_Selection_Form_MACA.docx',
-            content: attachmentBuffer
+            filename: 'Employer_Selection_Form_MACA.pdf',
+            content: attachmentBuffer,
+            contentType: 'application/pdf'
         });
     } else if (updatedFormUrl) {
         attachments.push({
-            filename: 'Employer_Selection_Form_MACA.docx',
-            path: updatedFormUrl
+            filename: 'Employer_Selection_Form_MACA.pdf',
+            path: updatedFormUrl.startsWith('http') ? updatedFormUrl : path.resolve(__dirname, '../../public', updatedFormUrl.replace(/^\//, '')),
+            contentType: 'application/pdf'
         });
     }
 
@@ -887,13 +905,15 @@ export const sendEmployerSelectionPresentationEmail = async (
     const attachments: any[] = [];
     if (attachmentBuffer) {
         attachments.push({
-            filename: 'Employer_Selection_Form.docx',
-            content: attachmentBuffer
+            filename: 'Employer_Selection_Form.pdf',
+            content: attachmentBuffer,
+            contentType: 'application/pdf'
         });
     } else if (formUrl) {
         attachments.push({
-            filename: 'Employer_Selection_Form.docx',
-            path: formUrl
+            filename: 'Employer_Selection_Form.pdf',
+            path: formUrl.startsWith('http') ? formUrl : path.resolve(__dirname, '../../public', formUrl.replace(/^\//, '')),
+            contentType: 'application/pdf'
         });
     }
 
@@ -1035,13 +1055,45 @@ export const sendTicketSponsorshipApprovalMail = async (
     await sendInfoEmail(to, subject, content);
 };
 
-export const sendContractApprovedEmail = async (to: string, userName: string): Promise<void> => {
-    const subject = 'Contract Approved';
+export const sendContractApprovedEmail = async (
+    to: string, 
+    userName: string,
+    contractBuffer?: Buffer,
+    contractUrl?: string
+): Promise<void> => {
+    const subject = 'Your Contract Has Been Approved';
     const content = `
         <p>Dear ${userName},</p>
         <p>Your signed contract has been reviewed and officially approved.</p>
+        <p>Please find attached your approved copy of the <strong>FIFO Candidate Ticketing, Training &amp; Visa Sponsorship Agreement</strong>.</p>
+        <p>Yours faithfully,<br><strong>Blue Collar Recruitment Pty Ltd</strong></p>
     `;
-    await sendInfoEmail(to, subject, content);
+
+    const attachments: any[] = [];
+    if (contractBuffer) {
+        attachments.push({
+            filename: 'fifo-candidate-agreement.pdf',
+            content: contractBuffer,
+            contentType: 'application/pdf'
+        });
+    } else if (contractUrl) {
+        attachments.push({
+            filename: 'fifo-candidate-agreement.pdf',
+            path: contractUrl.startsWith('http') ? contractUrl : path.resolve(__dirname, '../../public', contractUrl.replace(/^\//, '')),
+            contentType: 'application/pdf'
+        });
+    } else {
+        try {
+            const buf = generateContractPDF(userName, 'FIFO Mobile Plant Operator', 'MACA Limited', 70, 720);
+            attachments.push({
+                filename: 'fifo-candidate-agreement.pdf',
+                content: buf,
+                contentType: 'application/pdf'
+            });
+        } catch (e) {}
+    }
+
+    await sendInfoEmail(to, subject, content, attachments);
 };
 
 export const sendRtoCredentialsEmail = async (

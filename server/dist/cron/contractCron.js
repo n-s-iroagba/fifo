@@ -4,6 +4,7 @@ exports.runContractApprovalCron = runContractApprovalCron;
 const sequelize_1 = require("sequelize");
 const models_1 = require("../models");
 const email_1 = require("../utils/email");
+const pdfGenerator_1 = require("../utils/pdfGenerator");
 const cronRegistry_1 = require("./cronRegistry");
 const CRON_NAME = 'ContractAutoApproval';
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
@@ -71,22 +72,16 @@ async function runContractApprovalCron(forceUserId, bypassTimeDelay, bypassPause
                     await contract.save();
                     await application.update({ sponsorshipId: contract.sponsorshipId });
                 }
-                // Send Contract Approved Mail to candidate
+                // Send Contract Approved Mail to candidate with PDF attachment
                 const user = await models_1.User.findByPk(userId);
                 if (user) {
-                    const subject = 'Your Contract Has Been Approved';
-                    const content = `
-                        <p>Dear ${user.fullName},</p>
-                        <p>Your signed contract has been reviewed and <strong>approved</strong>.</p>
-                        <div style="background-color: #f8fafc; border-left: 4px solid #10b981; padding: 16px; margin: 20px 0; border-radius: 8px;">
-                            <p style="margin: 0; font-size: 13px; color: #64748b; text-transform: uppercase; font-weight: bold;">Official Sponsorship Identifier</p>
-                            <h3 style="margin: 4px 0 0; font-size: 20px; color: #065f46; font-family: monospace;">${contract?.sponsorshipId || 'MACA-SPON-2026'}</h3>
-                        </div>
-                        <p>We are excited to move forward with your deployment. Please log in to your dashboard to view your fully executed contract.</p>
-                        <p><strong>Important Note:</strong> The next stages of your onboarding, specifically the Ticket Courses and Exams phase, shall be handled by our partner Registered Training Organisation, <strong>CertHero</strong>. You will receive further communication from them shortly detailing your next steps.</p>
-                        <p>Yours sincerely,<br>Gary Nexon Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>
-                    `;
-                    await (0, email_1.sendInfoEmail)(user.email, subject, content).catch(err => console.error(`[ContractCron] Email failed for user ${userId}:`, err));
+                    try {
+                        const pdfBuf = (0, pdfGenerator_1.generateContractPDF)(user.fullName, application.JobListing?.title || 'FIFO Mobile Plant Operator', contract?.company || 'MACA Limited', 70, 720);
+                        await (0, email_1.sendContractApprovedEmail)(user.email, user.fullName, pdfBuf, contract?.documentUrl || contract?.adminDocumentUrl);
+                    }
+                    catch (mailErr) {
+                        console.error(`[ContractCron] Email failed for user ${userId}:`, mailErr.message);
+                    }
                 }
                 // Notify admin about the cron action
                 const adminEmail = 'nnamdisolomon1@gmail.com';

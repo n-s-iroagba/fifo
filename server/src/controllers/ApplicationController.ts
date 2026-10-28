@@ -13,6 +13,7 @@ import {
 } from '../utils/email';
 import { User, Application, JobListing, JoblistingEmployer, Employer, Nomination, Notification } from '../models';
 import { generateEmployerSelectionFormDocx } from '../utils/documentGenerator';
+import { generateEmployerSelectionFormPDF, generateContractPDF } from '../utils/pdfGenerator';
 
 export class ApplicationController {
     // Maps to STK-APP-APPLY-001, TRUST-009
@@ -346,7 +347,51 @@ export class ApplicationController {
                         </div>
                         <p>Yours sincerely,<br>Troy Latuff<br>Chief Executive Officer<br>Blue Collar Recruitment Pty Ltd</p>
                     `;
-                    const attachments = [{ filename: 'Employer_Selection_Form.pdf', path: documentUrl }];
+                    let attachments: any[] = [];
+                    if (documentUrl) {
+                        if (typeof documentUrl === 'string' && documentUrl.startsWith('data:')) {
+                            const base64Data = documentUrl.split(';base64,').pop() || '';
+                            attachments.push({
+                                filename: 'Employer_Selection_Form.pdf',
+                                content: Buffer.from(base64Data, 'base64'),
+                                contentType: 'application/pdf'
+                            });
+                        } else if (typeof documentUrl === 'string' && documentUrl.startsWith('http')) {
+                            attachments.push({
+                                filename: 'Employer_Selection_Form.pdf',
+                                path: documentUrl,
+                                contentType: 'application/pdf'
+                            });
+                        } else if (typeof documentUrl === 'string') {
+                            const localPath = path.isAbsolute(documentUrl)
+                                ? documentUrl
+                                : path.resolve(__dirname, '../../public', documentUrl.replace(/^\//, ''));
+                            attachments.push({
+                                filename: 'Employer_Selection_Form.pdf',
+                                path: localPath,
+                                contentType: 'application/pdf'
+                            });
+                        }
+                    } else {
+                        try {
+                            const pdfBuf = generateEmployerSelectionFormPDF({
+                                applicantId: userId,
+                                fullName: candidateName || 'Candidate',
+                                applicationId: id,
+                                jobTitle: (app as any)?.JobListing?.title || 'FIFO Specialist',
+                                dateStr: new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }),
+                                totalCompetitorApplicants: totalApplicants || 24,
+                                onlyEmployingEmployer: false
+                            });
+                            attachments.push({
+                                filename: 'Employer_Selection_Form.pdf',
+                                content: pdfBuf,
+                                contentType: 'application/pdf'
+                            });
+                        } catch (genErr) {
+                            console.error('[ApplicationController.createNominations] fallback pdf gen error:', genErr);
+                        }
+                    }
                     await sendInfoEmail(candidateEmail, subject, content, attachments);
                 } catch (mailErr) {
                     console.error('[ApplicationController.createNominations] email failed:', mailErr);
@@ -502,7 +547,10 @@ export class ApplicationController {
                             <p>To return it, upload the signed document directly through your applicant dashboard.</p>
                             <p>Best regards,<br>The Blue Collar Recruitment Team</p>
                         `;
-                        const attachments = [{ filename: 'Contract_Document.pdf', path: adminDocumentUrl }];
+                        const contractPath = adminDocumentUrl.startsWith('http')
+                            ? adminDocumentUrl
+                            : path.resolve(__dirname, '../../public', adminDocumentUrl.replace(/^\//, ''));
+                        const attachments = [{ filename: 'fifo-candidate-agreement.pdf', path: contractPath, contentType: 'application/pdf' }];
                         await sendInfoEmail(app.User.email, subject, content, attachments);
                     }
                 }

@@ -1216,7 +1216,9 @@ export default function ApplicationDetailPage() {
                                 >
                                     <option value="all">All Applicable Crons</option>
                                     <option value="application">Application Auto-Accept</option>
-                                    <option value="nomination">Nomination / Employer Selection</option>
+                                    <option value="employer-selection">Employer Selection Presentation Dispatch</option>
+                                    <option value="employer-acceptance">Employer Acceptance &amp; Quota Evaluation</option>
+                                    <option value="nomination">Employer Selection Followup (Composite)</option>
                                     <option value="onboarding">1h Post-Interview Onboarding Guide</option>
                                     <option value="sponsorship">Ticket Sponsorship (Call/Invite &amp; Auto-Approval)</option>
                                     <option value="contract">Contract Auto-Approve</option>
@@ -1478,8 +1480,10 @@ export default function ApplicationDetailPage() {
                                 >
                                     <option value="all">All Applicable Crons</option>
                                     <option value="application">Application 12-Hour Automated Acceptance</option>
-                                    <option value="nomination">Employer Selection Invite (24hr) & Acceptance (5hr)</option>
-                                    <option value="onboarding">1h Post-Interview Onboarding Guide & Regional Directives</option>
+                                    <option value="employer-selection">Employer Selection Presentation Dispatch</option>
+                                    <option value="employer-acceptance">Employer Acceptance &amp; Quota Evaluation</option>
+                                    <option value="nomination">Employer Selection Followup (Composite)</option>
+                                    <option value="onboarding">1h Post-Interview Onboarding Guide &amp; Regional Directives</option>
                                     <option value="sponsorship">Ticket Sponsorship Invite (3hr) & Approval (6hr)</option>
                                     <option value="contract">Sponsorship Contract Delivery & ID Generation (2hr)</option>
                                     <option value="rto-welcome">CertHero Enrollment Credentials & Letter (6hr)</option>

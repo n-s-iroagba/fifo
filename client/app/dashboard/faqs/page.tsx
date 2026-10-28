@@ -72,7 +72,7 @@ export default function ApplicantFaqsPage() {
                         <div className="bg-blue-50/60 rounded-2xl p-4 border border-blue-100 mb-6 space-y-2">
                             <p className="text-[10px] font-bold uppercase tracking-wider text-blue-900">Example Questions to Ask:</p>
                             <ul className="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
-                                <li>&quot;How do I complete my Aveling ticket examination?&quot;</li>
+                                <li>&quot;How do I complete my Cert Hero ticket examination?&quot;</li>
                                 <li>&quot;When am I eligible to book my interview schedule?&quot;</li>
                                 <li>&quot;What happens after passing all module tickets?&quot;</li>
                             </ul>

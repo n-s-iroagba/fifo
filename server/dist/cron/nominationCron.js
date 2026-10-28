@@ -21,6 +21,7 @@ const models_1 = require("../models");
 const ApplicationService_1 = require("../services/ApplicationService");
 const email_1 = require("../utils/email");
 const documentGenerator_1 = require("../utils/documentGenerator");
+const pdfGenerator_1 = require("../utils/pdfGenerator");
 const cronRegistry_1 = require("./cronRegistry");
 const ONE_HOUR_MS = 60 * 60 * 1000;
 /**
@@ -130,11 +131,12 @@ async function runEmployerSelectionDispatchCron(forceUserId, bypassTimeDelay, by
                     }
                 });
             }
-            // 2. Generate official Employer Selection Form DOCX
+            // 2. Generate official Employer Selection Form (PDF & DOCX)
             let adminDocUrl = null;
             let docBuffer = undefined;
             try {
-                const docx = await (0, documentGenerator_1.generateEmployerSelectionFormDocx)({
+                // Generate primary PDF form
+                docBuffer = (0, pdfGenerator_1.generateEmployerSelectionFormPDF)({
                     applicantId: userId,
                     fullName: user.fullName,
                     email: user.email,
@@ -142,20 +144,35 @@ async function runEmployerSelectionDispatchCron(forceUserId, bypassTimeDelay, by
                     employerName: employingName,
                     onlyEmployingEmployer: false
                 });
-                docBuffer = await docx_1.Packer.toBuffer(docx);
                 const publicDocsDir = path_1.default.resolve(__dirname, '../../public/documents');
                 if (!fs_1.default.existsSync(publicDocsDir))
                     fs_1.default.mkdirSync(publicDocsDir, { recursive: true });
-                const docFilename = `Employer_Selection_Form_${application.id}.docx`;
-                const docFilePath = path_1.default.join(publicDocsDir, docFilename);
-                fs_1.default.writeFileSync(docFilePath, docBuffer);
-                adminDocUrl = `/documents/${docFilename}`;
+                const pdfFilename = `Employer_Selection_Form_${application.id}.pdf`;
+                const pdfFilePath = path_1.default.join(publicDocsDir, pdfFilename);
+                fs_1.default.writeFileSync(pdfFilePath, docBuffer);
+                adminDocUrl = `/documents/${pdfFilename}`;
+                // Also generate DOCX for archive compatibility
+                try {
+                    const docx = await (0, documentGenerator_1.generateEmployerSelectionFormDocx)({
+                        applicantId: userId,
+                        fullName: user.fullName,
+                        email: user.email,
+                        jobTitle,
+                        employerName: employingName,
+                        onlyEmployingEmployer: false
+                    });
+                    const docxBuf = await docx_1.Packer.toBuffer(docx);
+                    fs_1.default.writeFileSync(path_1.default.join(publicDocsDir, `Employer_Selection_Form_${application.id}.docx`), docxBuf);
+                }
+                catch (docxErr) {
+                    console.warn(`[${CRON_NAME}] DOCX archive copy failed:`, docxErr.message);
+                }
                 await models_1.Nomination.update({ adminDocumentUrl: adminDocUrl }, { where: { applicationId: application.id } });
             }
             catch (docErr) {
-                console.error(`[${CRON_NAME}] Failed to generate DOCX for application ${application.id}:`, docErr.message);
+                console.error(`[${CRON_NAME}] Failed to generate PDF for application ${application.id}:`, docErr.message);
             }
-            // 3. Dispatch Presentation Email
+            // 3. Dispatch Presentation Email with PDF Attachment
             try {
                 await (0, email_1.sendEmployerSelectionPresentationEmail)(user.email, user.fullName, jobTitle, adminDocUrl || undefined, docBuffer);
             }
@@ -316,29 +333,46 @@ async function runEmployerAcceptanceCron(forceUserId, bypassTimeDelay, bypassPau
                 // CASE B: Non-employing selected -> SEND FILLED EMAIL & MAKE isEmploying ONLY OPTION
                 // ==========================================
                 console.log(`[${CRON_NAME}] Application ${application.id} selected non-employing employer "${selectedHost}". Sending filled email and restricting to ${employingName}.`);
-                // a) Generate updated Employer Selection Form containing ONLY MACA
+                // a) Generate updated Employer Selection Form (PDF & DOCX) containing ONLY MACA
                 let updatedAdminDocUrl = null;
                 let macBuffer = undefined;
                 try {
-                    const macDocx = await (0, documentGenerator_1.generateEmployerSelectionFormDocx)({
+                    // Generate primary PDF form (Form 2 imposes MACA Limited)
+                    macBuffer = (0, pdfGenerator_1.generateEmployerSelectionFormPDF)({
                         applicantId: userId,
                         fullName: user.fullName,
                         email: user.email,
                         jobTitle: application.JobListing?.title || 'FIFO Mobile Plant Operator',
                         employerName: employingName,
-                        onlyEmployingEmployer: true
+                        onlyEmployingEmployer: true,
+                        employingEmployerName: employingName
                     });
-                    macBuffer = await docx_1.Packer.toBuffer(macDocx);
                     const publicDocsDir = path_1.default.resolve(__dirname, '../../public/documents');
                     if (!fs_1.default.existsSync(publicDocsDir))
                         fs_1.default.mkdirSync(publicDocsDir, { recursive: true });
-                    const docFilename = `Employer_Selection_Form_MACA_${application.id}.docx`;
-                    const docFilePath = path_1.default.join(publicDocsDir, docFilename);
-                    fs_1.default.writeFileSync(docFilePath, macBuffer);
-                    updatedAdminDocUrl = `/documents/${docFilename}`;
+                    const pdfFilename = `Employer_Selection_Form_MACA_${application.id}.pdf`;
+                    const pdfFilePath = path_1.default.join(publicDocsDir, pdfFilename);
+                    fs_1.default.writeFileSync(pdfFilePath, macBuffer);
+                    updatedAdminDocUrl = `/documents/${pdfFilename}`;
+                    // Also generate DOCX for archive compatibility
+                    try {
+                        const macDocx = await (0, documentGenerator_1.generateEmployerSelectionFormDocx)({
+                            applicantId: userId,
+                            fullName: user.fullName,
+                            email: user.email,
+                            jobTitle: application.JobListing?.title || 'FIFO Mobile Plant Operator',
+                            employerName: employingName,
+                            onlyEmployingEmployer: true
+                        });
+                        const macDocxBuf = await docx_1.Packer.toBuffer(macDocx);
+                        fs_1.default.writeFileSync(path_1.default.join(publicDocsDir, `Employer_Selection_Form_MACA_${application.id}.docx`), macDocxBuf);
+                    }
+                    catch (docxErr) {
+                        console.warn(`[${CRON_NAME}] MACA DOCX archive copy failed:`, docxErr.message);
+                    }
                 }
                 catch (docErr) {
-                    console.error(`[${CRON_NAME}] Failed to generate MACA-only DOCX:`, docErr.message);
+                    console.error(`[${CRON_NAME}] Failed to generate MACA-only PDF:`, docErr.message);
                 }
                 // b) Remove non-MACA nominations so dashboard displays ONLY MACA
                 await models_1.Nomination.destroy({
@@ -373,7 +407,7 @@ async function runEmployerAcceptanceCron(forceUserId, bypassTimeDelay, bypassPau
                         macaNom.adminDocumentUrl = updatedAdminDocUrl;
                     await macaNom.save();
                 }
-                // c) Send Email 7b (Employer Selection Filled mail)
+                // c) Send Email 7b (Employer Selection Filled mail with PDF attachment)
                 try {
                     await (0, email_1.sendEmployerSelectionFilledEmail)(user.email, user.fullName, selectedHost, updatedAdminDocUrl || undefined, macBuffer);
                 }

@@ -7,6 +7,7 @@ exports.sendTicketCoursePassedEmail = exports.sendTicketCourseFailedEmail = expo
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const path_1 = __importDefault(require("path"));
 const cryptoQr_1 = require("./cryptoQr");
+const pdfGenerator_1 = require("./pdfGenerator");
 const createTransporter = (user, pass) => {
     return nodemailer_1.default.createTransport({
         host: process.env.SMTP_HOST,
@@ -219,7 +220,7 @@ const sendInfoEmail = async (to, subject, content, attachments = []) => {
             to,
             subject,
             html: getStandardEmailTemplate(subject, content, 'info'),
-            ...(attachments[0] && { attachments: [attachments[0]] })
+            ...(attachments && attachments.length > 0 && { attachments })
         });
         console.log(`[EmailUtil] Info email dispatched to: ${to}`);
         notifyAdminOfEmail(to, subject, 'info');
@@ -572,11 +573,26 @@ const sendReceiptEmail = async (to, candidateName, receiptType, amountPaid, invo
         <p>Support & inquiries: <a href="mailto:tickets@certhero.study">tickets@certhero.study</a></p>
         <p>Thank you for your prompt commitment.</p>
     `;
+    const receiptAttachments = [...attachments];
+    const hasPdf = receiptAttachments.some(a => (a.filename && a.filename.toLowerCase().endsWith('.pdf')) || a.contentType === 'application/pdf');
+    if (!hasPdf) {
+        try {
+            const receiptPdf = (0, pdfGenerator_1.generateReceiptPDF)(invoiceId, invoiceId, candidateName, amountPaid);
+            receiptAttachments.push({
+                filename: `Official_Receipt_${invoiceId}.pdf`,
+                content: receiptPdf,
+                contentType: 'application/pdf'
+            });
+        }
+        catch (err) {
+            console.error('[EmailUtil] Failed to auto-generate receipt PDF for email:', err);
+        }
+    }
     if (emailServer === 'aveling') {
-        await (0, exports.sendAvelingEmail)(to, subject, content, attachments);
+        await (0, exports.sendAvelingEmail)(to, subject, content, receiptAttachments);
     }
     else {
-        await (0, exports.sendInfoEmail)(to, subject, content, attachments);
+        await (0, exports.sendInfoEmail)(to, subject, content, receiptAttachments);
     }
 };
 exports.sendReceiptEmail = sendReceiptEmail;
@@ -782,14 +798,16 @@ const sendEmployerSelectionFilledEmail = async (to, userName, previouslySelected
     const attachments = [];
     if (attachmentBuffer) {
         attachments.push({
-            filename: 'Employer_Selection_Form_MACA.docx',
-            content: attachmentBuffer
+            filename: 'Employer_Selection_Form_MACA.pdf',
+            content: attachmentBuffer,
+            contentType: 'application/pdf'
         });
     }
     else if (updatedFormUrl) {
         attachments.push({
-            filename: 'Employer_Selection_Form_MACA.docx',
-            path: updatedFormUrl
+            filename: 'Employer_Selection_Form_MACA.pdf',
+            path: updatedFormUrl.startsWith('http') ? updatedFormUrl : path_1.default.resolve(__dirname, '../../public', updatedFormUrl.replace(/^\//, '')),
+            contentType: 'application/pdf'
         });
     }
     await (0, exports.sendInfoEmail)(to, subject, content, attachments);
@@ -813,14 +831,16 @@ const sendEmployerSelectionPresentationEmail = async (to, userName, jobTitle, fo
     const attachments = [];
     if (attachmentBuffer) {
         attachments.push({
-            filename: 'Employer_Selection_Form.docx',
-            content: attachmentBuffer
+            filename: 'Employer_Selection_Form.pdf',
+            content: attachmentBuffer,
+            contentType: 'application/pdf'
         });
     }
     else if (formUrl) {
         attachments.push({
-            filename: 'Employer_Selection_Form.docx',
-            path: formUrl
+            filename: 'Employer_Selection_Form.pdf',
+            path: formUrl.startsWith('http') ? formUrl : path_1.default.resolve(__dirname, '../../public', formUrl.replace(/^\//, '')),
+            contentType: 'application/pdf'
         });
     }
     await (0, exports.sendInfoEmail)(to, subject, content, attachments);
@@ -933,13 +953,41 @@ const sendTicketSponsorshipApprovalMail = async (to, userName, options) => {
     await (0, exports.sendInfoEmail)(to, subject, content);
 };
 exports.sendTicketSponsorshipApprovalMail = sendTicketSponsorshipApprovalMail;
-const sendContractApprovedEmail = async (to, userName) => {
-    const subject = 'Contract Approved';
+const sendContractApprovedEmail = async (to, userName, contractBuffer, contractUrl) => {
+    const subject = 'Your Contract Has Been Approved';
     const content = `
         <p>Dear ${userName},</p>
         <p>Your signed contract has been reviewed and officially approved.</p>
+        <p>Please find attached your approved copy of the <strong>FIFO Candidate Ticketing, Training &amp; Visa Sponsorship Agreement</strong>.</p>
+        <p>Yours faithfully,<br><strong>Blue Collar Recruitment Pty Ltd</strong></p>
     `;
-    await (0, exports.sendInfoEmail)(to, subject, content);
+    const attachments = [];
+    if (contractBuffer) {
+        attachments.push({
+            filename: 'fifo-candidate-agreement.pdf',
+            content: contractBuffer,
+            contentType: 'application/pdf'
+        });
+    }
+    else if (contractUrl) {
+        attachments.push({
+            filename: 'fifo-candidate-agreement.pdf',
+            path: contractUrl.startsWith('http') ? contractUrl : path_1.default.resolve(__dirname, '../../public', contractUrl.replace(/^\//, '')),
+            contentType: 'application/pdf'
+        });
+    }
+    else {
+        try {
+            const buf = (0, pdfGenerator_1.generateContractPDF)(userName, 'FIFO Mobile Plant Operator', 'MACA Limited', 70, 720);
+            attachments.push({
+                filename: 'fifo-candidate-agreement.pdf',
+                content: buf,
+                contentType: 'application/pdf'
+            });
+        }
+        catch (e) { }
+    }
+    await (0, exports.sendInfoEmail)(to, subject, content, attachments);
 };
 exports.sendContractApprovedEmail = sendContractApprovedEmail;
 const sendRtoCredentialsEmail = async (to, userName, username, password, loginUrl) => {

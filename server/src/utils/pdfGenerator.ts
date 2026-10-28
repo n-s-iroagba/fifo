@@ -624,3 +624,285 @@ export function generateEnrollmentLetterPDF(data: EnrollmentLetterData): Buffer 
     return Buffer.from(doc.output('arraybuffer'));
 }
 
+export interface EmployerSelectionFormData {
+    applicantId: number;
+    fullName: string;
+    email: string;
+    jobTitle: string;
+    employerName?: string;
+    onlyEmployingEmployer?: boolean;
+    employingEmployerName?: string;
+    options?: Array<{
+        hostEmployer: string;
+        tradeStream?: string;
+        vacancies?: string;
+        competitors?: string;
+    }>;
+}
+
+// 6. Official Employer Selection Form PDF (Form 1: Candidate Selection; Form 2: Quota Filled MACA Allocation)
+export function generateEmployerSelectionFormPDF(data: EmployerSelectionFormData): Buffer {
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    let y = 16;
+    const isMacaOnly = Boolean(data.onlyEmployingEmployer);
+    const employingEmployer = data.employingEmployerName || data.employerName || 'MACA Limited';
+
+    // Header Band - Blue Collar Navy & Gold Accent
+    doc.setFillColor(11, 52, 134); // #0B3486 Deep Navy
+    doc.rect(0, 0, 210, 36, 'F');
+    doc.setFillColor(234, 162, 64); // #EAA240 Gold/Orange
+    doc.rect(0, 36, 210, 2.5, 'F');
+
+    // Header Titles
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(15);
+    doc.text('BLUE COLLAR RECRUITMENT AUSTRALIA', 14, 15);
+
+    doc.setFontSize(9.5);
+    doc.setTextColor(234, 162, 64);
+    const subTitle = isMacaOnly 
+        ? 'OFFICIAL NOTICE OF EMPLOYER SELECTION & PRIORITY SPONSOR ALLOCATION'
+        : 'OFFICIAL NOTICE OF EMPLOYER SELECTION & TRADE SPONSORSHIP';
+    doc.text(subTitle, 14, 23);
+
+    doc.setTextColor(203, 213, 225);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Licensed Recruitment & Workforce Deployment | Suite 213/35-37 Doody St, Alexandria NSW 2015 | ABN 67 105 263 151', 14, 30);
+
+    y = 46;
+
+    // Candidate Particulars Card
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(14, y, 182, 32, 2.5, 2.5, 'FD');
+
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CANDIDATE NAME:', 20, y + 8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(11, 52, 134);
+    doc.text(data.fullName || 'Candidate', 65, y + 8);
+
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CONTACT EMAIL:', 20, y + 15);
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.email || 'N/A', 65, y + 15);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('TARGET FIFO ROLE:', 20, y + 22);
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.jobTitle || 'FIFO Mobile Plant Operator', 65, y + 22);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('DOCUMENT REF:', 20, y + 29);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 116, 139);
+    doc.text(`ESF-APP-${data.applicantId}-2026 | STRICTLY CONFIDENTIAL`, 65, y + 29);
+
+    y += 38;
+
+    if (isMacaOnly) {
+        // Quota Notice Banner (Form 2: Quota Filled)
+        doc.setFillColor(254, 243, 199); // Amber-50
+        doc.setDrawColor(217, 119, 6);   // Amber-600
+        doc.roundedRect(14, y, 182, 18, 2, 2, 'FD');
+        doc.setTextColor(146, 64, 14);
+        doc.setFontSize(8.5);
+        doc.setFont('helvetica', 'bold');
+        doc.text('URGENT ALLOCATION UPDATE — PRIORITY TIER-1 HOST SPONSOR ASSIGNMENT:', 18, y + 6);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        const filledNotice = `Alternative host employer vacancies have reached statutory capacity for this intake. Under the Blue Collar priority mobilization framework, ${employingEmployer} is assigned as your exclusive active Tier-1 sponsoring host employer with immediate Western Australian mine site deployment.`;
+        const filledLines = doc.splitTextToSize(filledNotice, 174);
+        doc.text(filledLines, 18, y + 11);
+
+        y += 24;
+
+        // Section 1: Assigned Host Employer Table
+        doc.setTextColor(15, 23, 42);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('1. ASSIGNED SPONSORING HOST EMPLOYER', 14, y);
+        y += 5;
+
+        const tableRows = [
+            [employingEmployer, data.jobTitle || 'FIFO Specialist', '3 Active Positions', 'Active Sponsor (Approved 482)']
+        ];
+
+        autoTable(doc, {
+            startY: y,
+            head: [['Host Mining Employer', 'Target FIFO Trade Stream', 'Allocated Slots', 'Sponsorship Status']],
+            body: tableRows,
+            theme: 'grid',
+            headStyles: { fillColor: [11, 52, 134], textColor: [255, 255, 255], fontSize: 8, fontStyle: 'bold' },
+            bodyStyles: { fontSize: 8, textColor: [51, 65, 85] },
+            columnStyles: {
+                0: { cellWidth: 50, fontStyle: 'bold' },
+                1: { cellWidth: 62 },
+                2: { cellWidth: 32 },
+                3: { cellWidth: 38, fontStyle: 'bold', textColor: [21, 128, 61] }
+            },
+            margin: { left: 14, right: 14 }
+        });
+
+        y = (doc as any).lastAutoTable.finalY + 5;
+
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(71, 85, 105);
+        doc.text('Total Host Employer Positions Available: 3 | Total Nominated Candidate Pool: 5 qualified candidates. Priority placement is secured upon receipt of signed acknowledgment.', 14, y);
+
+        y += 10;
+
+        // Section 2: Candidate Declaration (Form 2 imposes MACA Limited)
+        doc.setTextColor(15, 23, 42);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('2. CANDIDATE SPONSORSHIP ACCEPTANCE DECLARATION', 14, y);
+        y += 5;
+
+        doc.setFontSize(8.5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(51, 65, 85);
+        const declText = `I, ${data.fullName}, formally accept and confirm ${employingEmployer} as my assigned sponsoring host employer for the position of ${data.jobTitle}. I understand that upon completion of prerequisite competency tickets with CertHero RTO, ${employingEmployer} will proceed with my Subclass 482 visa nomination and Australian site mobilisation.`;
+        const declLines = doc.splitTextToSize(declText, 182);
+        doc.text(declLines, 14, y);
+        y += declLines.length * 4.5 + 10;
+
+        // Signature Lines
+        doc.setDrawColor(148, 163, 184);
+        doc.line(14, y + 14, 95, y + 14);
+        doc.line(115, y + 14, 196, y + 14);
+
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(15, 23, 42);
+        doc.text('Candidate Signature', 14, y + 19);
+        doc.text('Date of Signing', 115, y + 19);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(100, 116, 139);
+        doc.text(data.fullName, 14, y + 24);
+        doc.text(new Date().toLocaleDateString('en-AU'), 115, y + 24);
+
+    } else {
+        // Form 1: Initial Selection Form
+        // Section 1: Participating Host Employers Table (All 4 options)
+        doc.setTextColor(15, 23, 42);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('1. PARTICIPATING HOST EMPLOYERS & ALLOCATED SLOTS', 14, y);
+        y += 5;
+
+        const tableRows = [
+            ['MACA Limited', data.jobTitle || 'FIFO Specialist', '3 Active Positions', 'Active Sponsor (Approved 482)'],
+            ['Mineral Resources Limited', data.jobTitle || 'FIFO Specialist', '2 Active Positions', 'Active Sponsor (Approved 482)'],
+            ['Northern Star Resources Ltd.', data.jobTitle || 'FIFO Specialist', '2 Active Positions', 'Active Sponsor (Approved 482)'],
+            ['Rio Tinto', data.jobTitle || 'FIFO Specialist', '3 Active Positions', 'Active Sponsor (Approved 482)']
+        ];
+
+        autoTable(doc, {
+            startY: y,
+            head: [['Host Mining Employer', 'Target FIFO Trade Stream', 'Allocated Slots', 'Sponsorship Status']],
+            body: tableRows,
+            theme: 'grid',
+            headStyles: { fillColor: [11, 52, 134], textColor: [255, 255, 255], fontSize: 8, fontStyle: 'bold' },
+            bodyStyles: { fontSize: 8, textColor: [51, 65, 85] },
+            columnStyles: {
+                0: { cellWidth: 50, fontStyle: 'bold' },
+                1: { cellWidth: 62 },
+                2: { cellWidth: 32 },
+                3: { cellWidth: 38, fontStyle: 'bold', textColor: [21, 128, 61] }
+            },
+            margin: { left: 14, right: 14 }
+        });
+
+        y = (doc as any).lastAutoTable.finalY + 4;
+
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(71, 85, 105);
+        doc.text('Total Host Employer Positions Available: 10 | Total Nominated Candidate Pool: 12 qualified candidates (Sum of slots + 2). Slots are locked in order of signed document submission and ticket commencement.', 14, y);
+
+        y += 8;
+
+        // Visa Sponsor Register Box
+        doc.setFillColor(254, 243, 199);
+        doc.setDrawColor(245, 158, 11);
+        doc.roundedRect(14, y, 182, 15, 2, 2, 'FD');
+        doc.setTextColor(146, 64, 14);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.text('OFFICIAL AUSTRALIAN VISA SPONSORSHIP VERIFICATION:', 18, y + 5);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.text('You can verify approved Australian visa sponsors on the official public register: https://www.workvisalawyers.com.au/images/Approved-Sponsor-List-2025.pdf', 18, y + 10);
+
+        y += 21;
+
+        // Section 2: Candidate Selection Declaration
+        // CRITICAL REQUIREMENT: Candidate selection declaration must NOT have ANY company name!
+        // The aim of the form is for the applicant to select an employer.
+        doc.setTextColor(15, 23, 42);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('2. CANDIDATE SELECTION DECLARATION', 14, y);
+        y += 5;
+
+        doc.setFontSize(8.5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(51, 65, 85);
+        const declText = `I, ${data.fullName}, formally submit my selection from the participating host employers listed above as my preferred vocational pathway for the position of ${data.jobTitle}. I acknowledge that this selection initiates my employer nomination and allocation under the Australian Subclass 482 visa program. I confirm my intention to acquire prerequisite competency tickets through CertHero RTO and proceed with site mobilisation under my chosen sponsor.`;
+        const declLines = doc.splitTextToSize(declText, 182);
+        doc.text(declLines, 14, y);
+        y += declLines.length * 4.5 + 8;
+
+        // Candidate Selection Box
+        doc.setFillColor(248, 250, 252);
+        doc.setDrawColor(203, 213, 225);
+        doc.roundedRect(14, y, 182, 14, 2, 2, 'FD');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8.5);
+        doc.setTextColor(15, 23, 42);
+        doc.text('SELECTED HOST EMPLOYER (Print Name):', 18, y + 6);
+        doc.setDrawColor(148, 163, 184);
+        doc.line(88, y + 10, 190, y + 10);
+
+        y += 20;
+
+        // Signature Lines
+        doc.setDrawColor(148, 163, 184);
+        doc.line(14, y + 10, 95, y + 10);
+        doc.line(115, y + 10, 196, y + 10);
+
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(15, 23, 42);
+        doc.text('Candidate Signature', 14, y + 15);
+        doc.text('Date of Signing', 115, y + 15);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(100, 116, 139);
+        doc.text(data.fullName, 14, y + 20);
+        doc.text('____________________', 115, y + 20);
+    }
+
+    // Page Footer
+    doc.setDrawColor(226, 232, 240);
+    doc.line(14, 280, 196, 280);
+    doc.setFontSize(7);
+    doc.setTextColor(148, 163, 184);
+    const formCode = isMacaOnly ? 'FORM-ESF-MACA-2026' : 'FORM-ESF-SELECT-2026';
+    doc.text(`Blue Collar Recruitment Australia | ${formCode} | Australian Resources Trade Placement`, 14, 285);
+    doc.text('Page 1 of 1', 184, 285);
+
+    return Buffer.from(doc.output('arraybuffer'));
+}
+
+

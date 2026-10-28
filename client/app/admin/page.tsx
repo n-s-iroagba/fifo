@@ -223,14 +223,16 @@ export default function AdminDashboardPage() {
                                             Individual Stage Crons
                                         </span>
                                         <span className="text-[8px] font-bold text-blue-400 uppercase tracking-widest">
-                                            7 Stages
+                                            {cronStatus?.crons?.length || 10} Stage Crons
                                         </span>
                                     </div>
 
                                     <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
                                         {(cronStatus?.crons || [
                                             { key: 'application', label: '12h Application Auto-Accept', stageName: 'Application', isPaused: false },
-                                            { key: 'nomination', label: '1h Employer Selection Followup', stageName: 'Nomination', isPaused: false },
+                                            { key: 'employer-selection', label: 'Employer Selection Presentation Dispatch', stageName: 'Employer Selection', isPaused: false },
+                                            { key: 'employer-acceptance', label: 'Employer Acceptance & Quota Evaluation', stageName: 'Employer Selection', isPaused: false },
+                                            { key: 'nomination', label: 'Employer Selection Followup (Composite)', stageName: 'Employer Selection', isPaused: false },
                                             { key: 'onboarding', label: '1h Post-Interview Onboarding Guide', stageName: 'Interview Scheduling', isPaused: false },
                                             { key: 'sponsorship', label: '2h Ticket Sponsorship Approval', stageName: 'TicketSponsorship', isPaused: false },
                                             { key: 'contract', label: '3h Contract Auto-Approval', stageName: 'Contract', isPaused: false },
