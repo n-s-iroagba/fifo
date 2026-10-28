@@ -424,19 +424,25 @@ export default function UserTicketsPage() {
                                 <li className="flex items-start gap-2">
                                     <span className="text-emerald-600 font-black text-sm mt-[-2px]">&#10003;</span>
                                     <span>
-                                        <strong className="text-blue-950">100% Refund upon Passing:</strong> Upon successfully passing and acquiring your ticket certifications, 100% of your candidate contribution will be refunded.
+                                        <strong className="text-blue-950">100% Refund upon Passing:</strong> The employer shall refund 100% of your candidate expenditure upon successfully completing the training and acquiring the necessary tickets.
                                     </span>
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <span className="text-amber-600 font-black text-sm mt-[-2px]">&#9679;</span>
                                     <span>
-                                        <strong className="text-blue-950">60% Refund after failing two consecutive attempts on one ticket examination:</strong> In the event you are unable to acquire the tickets after two examination attempts, 60% of your candidate contribution will be refunded.
+                                        <strong className="text-blue-950">80% Refund upon Failure:</strong> In the event of failure to acquire the certifications, the employer shall refund 80% of your expenditure, with the remaining 20% accounting for institutional admin and assessment fees.
                                     </span>
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <span className="text-blue-600 font-black text-sm mt-[-2px]">&#9679;</span>
                                     <span>
-                                        <strong className="text-blue-950">Corporate Risk Mitigation:</strong> Your partial contribution is a commitment deposit to ensure candidates complete their sponsored training and prevent corporate wastage.
+                                        <strong className="text-blue-950">Commitment Rationale:</strong> The employer demands a temporary financial commitment to reduce candidate drop-off rates and prevent financial waste on uncompleted courses.
+                                    </span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-purple-600 font-black text-sm mt-[-2px]">&#9679;</span>
+                                    <span>
+                                        <strong className="text-blue-950">Refund Banking Details:</strong> You are not asked to submit bank or wallet details during this online form. Your host employer (MACA Limited) collects your refund bank account details directly via official email.
                                     </span>
                                 </li>
                             </ul>

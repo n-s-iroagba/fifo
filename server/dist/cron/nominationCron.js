@@ -14,22 +14,21 @@ const email_1 = require("../utils/email");
 const cronRegistry_1 = require("./cronRegistry");
 const CRON_NAME = 'NominationFollowup';
 const ONE_HOUR_MS = 60 * 60 * 1000;
-async function runNominationFollowupCron(forceUserId) {
+async function runNominationFollowupCron(forceUserId, bypassTimeDelay, bypassPause) {
     try {
-        if (!forceUserId && (0, cronRegistry_1.isCronPaused)('nomination')) {
+        if (!bypassPause && !forceUserId && (0, cronRegistry_1.isCronPaused)('nomination')) {
             console.log('[NominationCron] Execution skipped: Nomination stage cron is paused.');
             return 0;
         }
         const start = Date.now();
         console.log('[NominationCron] Running nomination followup check (1 hour post-approval)...');
         const cutoff = new Date(Date.now() - ONE_HOUR_MS);
-        // Find applications where the 'Nomination' stage is 'completed' for > 1 hour
-        // AND it's still the current stage of the application (meaning we haven't advanced to TicketSponsorship yet)
+        // Find applications where the 'Nomination' / 'Employer Selection' stage is under-review or ongoing
         const stageWhere = {
             name: { [sequelize_1.Op.in]: ['Nomination', 'Employer Selection'] },
-            status: 'under-review'
+            status: { [sequelize_1.Op.in]: ['under-review', 'ongoing'] }
         };
-        if (!forceUserId) {
+        if (!forceUserId && !bypassTimeDelay) {
             stageWhere.updatedAt = { [sequelize_1.Op.lte]: cutoff };
         }
         const completedStages = await models_1.JobStage.findAll({
@@ -57,7 +56,7 @@ async function runNominationFollowupCron(forceUserId) {
             const application = stage.Application;
             if (!application)
                 continue;
-            if (!forceUserId && (0, cronRegistry_1.isApplicationCronPaused)(application, 'nomination')) {
+            if (!bypassPause && !forceUserId && (0, cronRegistry_1.isApplicationCronPaused)(application, 'nomination')) {
                 console.log(`[NominationCron] Skipping application ${application.id}: stage crons are paused for this candidate.`);
                 continue;
             }

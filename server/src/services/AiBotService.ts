@@ -145,7 +145,34 @@ class AiBotService {
             { role: 'user', content: req.message }
         ];
 
-        // 1. If API key is present and provider specified, call the provider
+        // 1. Google Gemini Native Support (if GEMINI_API_KEY or provider is gemini)
+        const geminiKey = process.env.GEMINI_API_KEY || (rawProvider === 'gemini' ? apiKey : null);
+        if (geminiKey) {
+            try {
+                const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+                const promptParts = [
+                    { text: systemPrompt },
+                    ...(req.history || []).slice(-4).map(h => ({ text: `${h.role === 'user' ? 'Learner' : 'CertHero Mentor'}: ${h.content}` })),
+                    { text: `Learner: ${req.message}\nCertHero Mentor:` }
+                ];
+                const geminiRes = await axios.post(
+                    geminiUrl,
+                    {
+                        contents: [{ role: 'user', parts: promptParts }],
+                        generationConfig: { temperature: 0.6, maxOutputTokens: 800 }
+                    },
+                    { headers: { 'Content-Type': 'application/json' }, timeout: 15000 }
+                );
+                const reply = geminiRes.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (reply) {
+                    return { reply, provider: 'Google Gemini', model: 'gemini-1.5-flash', isGated: false };
+                }
+            } catch (gErr: any) {
+                console.warn('[AiBotService] Google Gemini provider failed, attempting OpenAI/OpenRouter fallback:', gErr.message);
+            }
+        }
+
+        // 2. If API key is present and OpenAI/OpenRouter provider specified
         if (apiKey && (rawProvider === 'openai' || rawProvider === 'openrouter')) {
             try {
                 const baseURL = rawProvider === 'openrouter' 

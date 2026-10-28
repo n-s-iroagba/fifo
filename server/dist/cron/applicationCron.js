@@ -8,9 +8,9 @@ const NotificationRepository_1 = require("../repositories/NotificationRepository
 const cronRegistry_1 = require("./cronRegistry");
 const CRON_NAME = 'ApplicationAutoAcceptance';
 const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
-async function runApplicationApprovalCron(forceUserId) {
+async function runApplicationApprovalCron(forceUserId, bypassTimeDelay, bypassPause) {
     try {
-        if (!forceUserId && (0, cronRegistry_1.isCronPaused)('application')) {
+        if (!bypassPause && !forceUserId && (0, cronRegistry_1.isCronPaused)('application')) {
             console.log('[ApplicationCron] Execution skipped: Application stage cron is paused.');
             return 0;
         }
@@ -20,7 +20,7 @@ async function runApplicationApprovalCron(forceUserId) {
             name: 'Application',
             status: { [sequelize_1.Op.in]: ['pending', 'under-review'] }
         };
-        if (!forceUserId) {
+        if (!forceUserId && !bypassTimeDelay) {
             stageWhere.updatedAt = { [sequelize_1.Op.lte]: cutoff };
         }
         const pendingStages = await models_1.JobStage.findAll({
@@ -49,7 +49,7 @@ async function runApplicationApprovalCron(forceUserId) {
             const application = stage.Application;
             if (!application)
                 continue;
-            if (!forceUserId && (0, cronRegistry_1.isApplicationCronPaused)(application, 'application')) {
+            if (!bypassPause && !forceUserId && (0, cronRegistry_1.isApplicationCronPaused)(application, 'application')) {
                 console.log(`[ApplicationCron] Skipping application ${application.id}: stage crons are paused for this candidate.`);
                 continue;
             }

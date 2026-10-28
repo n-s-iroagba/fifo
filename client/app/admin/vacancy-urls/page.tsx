@@ -24,7 +24,7 @@ interface JoblistingEmployerItem {
 }
 
 export default function VacancyUrlsAdminPage() {
-    const { data: items, isLoading, refetch } = useApiQuery<JoblistingEmployerItem[]>(
+    const { data: itemsRes, isLoading, refetch } = useApiQuery<any>(
         ['admin', 'joblisting-employers'],
         '/admin/joblisting-employers'
     );
@@ -34,7 +34,7 @@ export default function VacancyUrlsAdminPage() {
     const [savingId, setSavingId] = useState<number | null>(null);
     const [feedback, setFeedback] = useState<string | null>(null);
 
-    const updateMutation = useApiMutation('put', '/admin/joblisting-employers', {
+    const updateMutation = useApiMutation('put', '/admin/joblisting-employers/:id', {
         onSuccess: () => {
             refetch();
             setEditingId(null);
@@ -44,7 +44,7 @@ export default function VacancyUrlsAdminPage() {
         },
         onError: (err: any) => {
             setSavingId(null);
-            alert(err.response?.data?.message || 'Failed to update vacancy URL');
+            alert(err.response?.data?.error || err.response?.data?.message || 'Failed to update vacancy URL');
         }
     });
 
@@ -66,7 +66,7 @@ export default function VacancyUrlsAdminPage() {
         });
     };
 
-    const rows = items || [];
+    const rows: JoblistingEmployerItem[] = Array.isArray(itemsRes) ? itemsRes : (itemsRes?.data || []);
 
     return (
         <div className="font-sans">

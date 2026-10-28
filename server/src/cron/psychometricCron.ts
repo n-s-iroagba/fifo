@@ -7,9 +7,9 @@ import { recordCronRun, isCronPaused, isApplicationCronPaused } from './cronRegi
 const CRON_NAME = 'PsychometricAutoApproval';
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
-export async function runPsychometricApprovalCron(forceUserId?: number): Promise<number> {
+export async function runPsychometricApprovalCron(forceUserId?: number, bypassTimeDelay?: boolean, bypassPause?: boolean): Promise<number> {
     try {
-        if (!forceUserId && isCronPaused('psychometric')) {
+        if (!bypassPause && !forceUserId && isCronPaused('psychometric')) {
             console.log('[PsychometricCron] Execution skipped: Psychometric stage cron is paused.');
             return 0;
         }
@@ -26,7 +26,7 @@ export async function runPsychometricApprovalCron(forceUserId?: number): Promise
 
         if (forceUserId) {
             whereClause.userId = forceUserId;
-        } else {
+        } else if (!bypassTimeDelay) {
             whereClause.createdAt = { [Op.lte]: cutoff };
         }
 
@@ -44,7 +44,7 @@ export async function runPsychometricApprovalCron(forceUserId?: number): Promise
 
             const { Application } = require('../models');
             const userApp = await Application.findOne({ where: { userId: user.id } });
-            if (!forceUserId && userApp && isApplicationCronPaused(userApp, 'psychometric')) {
+            if (!bypassPause && !forceUserId && userApp && isApplicationCronPaused(userApp, 'psychometric')) {
                 console.log(`[PsychometricCron] Skipping user ${user.id} (Application ${userApp.id}): stage crons are paused for this candidate.`);
                 continue;
             }

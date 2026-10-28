@@ -188,13 +188,22 @@ export default function ContractsDashboardPage() {
                                     )}
 
                                     {/* Approved state */}
+                                    {/* Approved state */}
                                     {isApproved && (
-                                        <div className="p-5 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3">
-                                            <span className="material-symbols-outlined text-emerald-500 text-2xl">verified</span>
-                                            <div>
-                                                <p className="text-[11px] font-bold text-emerald-900 uppercase tracking-widest">Contract Approved</p>
-                                                <p className="text-[10px] text-emerald-700 mt-0.5">Your contract has been reviewed and approved by our team.</p>
+                                        <div className="p-5 bg-emerald-50 border border-emerald-100 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                            <div className="flex items-center gap-3">
+                                                <span className="material-symbols-outlined text-emerald-500 text-2xl">verified</span>
+                                                <div>
+                                                    <p className="text-[11px] font-bold text-emerald-900 uppercase tracking-widest">Contract Approved &amp; Candidate Sponsored</p>
+                                                    <p className="text-[10px] text-emerald-700 mt-0.5">Your contract has been reviewed and approved by our team.</p>
+                                                </div>
                                             </div>
+                                            {(contract.sponsorshipId || application?.sponsorshipId) && (
+                                                <div className="bg-white px-3.5 py-2 rounded-xl border border-emerald-200 shadow-xs flex items-center gap-2 self-start sm:self-auto">
+                                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Sponsorship ID:</span>
+                                                    <span className="text-xs font-mono font-bold text-emerald-800">{contract.sponsorshipId || application?.sponsorshipId}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 
@@ -219,15 +228,15 @@ export default function ContractsDashboardPage() {
                                                 <p className="text-[10px] text-blue-500">
                                                     {isApproved
                                                         ? 'You may still upload Page 1 if required by your recruiter.'
-                                                        : 'Upload Page 9 (required) and Page 1 (if applicable).'}
+                                                        : 'Upload Page 15 (Signature Page - required) and Page 1 (Particulars - optional).'}
                                                 </p>
                                             </div>
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                {/* Page 9 Upload — required */}
+                                                {/* Page 15 Upload — required */}
                                                 <div>
                                                     <div className="flex items-center gap-2 mb-2">
-                                                        <span className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Page 9</span>
+                                                        <span className="text-[10px] font-black text-blue-900 uppercase tracking-widest">Page 15 (Signature)</span>
                                                         <span className="text-[9px] font-bold text-red-500 uppercase bg-red-50 px-2 py-0.5 rounded border border-red-100">Required</span>
                                                         {(contractUploads.page15 || contract.documentUrl15) && (
                                                             <span className="text-[9px] font-bold text-emerald-600 uppercase bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 flex items-center gap-1">
@@ -256,8 +265,8 @@ export default function ContractsDashboardPage() {
                                                             {(uploadingTag?.contractId === contract.id && uploadingTag?.tag === 'page15')
                                                                 ? 'Uploading...'
                                                                 : (contractUploads.page15 || contract.documentUrl15)
-                                                                    ? 'Re-upload Page 9'
-                                                                    : 'Upload Page 9'}
+                                                                    ? 'Re-upload Page 15'
+                                                                    : 'Upload Page 15'}
                                                         </p>
                                                     </label>
                                                     {contract.documentUrl15 && (

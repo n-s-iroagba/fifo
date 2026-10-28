@@ -38,13 +38,21 @@ export function useApiMutation<TVariables = any, TData = any>(
             if (variables && typeof variables === 'object' && ('params' in variables || 'data' in variables || 'headers' in variables)) {
                 if (variables.params) {
                     Object.keys(variables.params).forEach(key => {
-                        url = url.replace(`:${key}`, variables.params[key]);
+                        if (url.includes(`:${key}`)) {
+                            url = url.replace(`:${key}`, String(variables.params[key]));
+                        } else if (key === 'id' && variables.params[key] !== undefined) {
+                            url = `${url.replace(/\/$/, '')}/${variables.params[key]}`;
+                        }
                     });
                 }
                 payload = variables.data;
                 headers = variables.headers || {};
             } else if (method === 'delete' && (typeof variables === 'number' || typeof variables === 'string')) {
-                url = `${baseUrl}/${variables}`;
+                if (url.includes(':id')) {
+                    url = url.replace(':id', String(variables));
+                } else {
+                    url = `${baseUrl.replace(/\/$/, '')}/${variables}`;
+                }
                 payload = undefined;
             }
 

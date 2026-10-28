@@ -16,7 +16,7 @@ interface Employer {
 }
 
 export default function EmployersAdminPage() {
-    const { data: employers, isLoading, refetch } = useApiQuery<Employer[]>(
+    const { data: employersRes, isLoading, refetch } = useApiQuery<any>(
         ['admin', 'employers'],
         '/admin/employers'
     );
@@ -38,22 +38,25 @@ export default function EmployersAdminPage() {
             closeModal();
         },
         onError: (err: any) => {
-            setFormError(err.response?.data?.message || 'Failed to save employer');
+            setFormError(err.response?.data?.error || err.response?.data?.message || 'Failed to save employer');
         }
     });
 
-    const updateMutation = useApiMutation('put', '/admin/employers', {
+    const updateMutation = useApiMutation('put', '/admin/employers/:id', {
         onSuccess: () => {
             refetch();
             closeModal();
         },
         onError: (err: any) => {
-            setFormError(err.response?.data?.message || 'Failed to update employer');
+            setFormError(err.response?.data?.error || err.response?.data?.message || 'Failed to update employer');
         }
     });
 
-    const deleteMutation = useApiMutation('delete', '/admin/employers', {
-        onSuccess: () => refetch()
+    const deleteMutation = useApiMutation('delete', '/admin/employers/:id', {
+        onSuccess: () => refetch(),
+        onError: (err: any) => {
+            alert(err.response?.data?.error || err.response?.data?.message || 'Failed to delete employer');
+        }
     });
 
     const openCreateModal = () => {
@@ -75,7 +78,7 @@ export default function EmployersAdminPage() {
         setFormCompanyDescription(emp.companyDescription || '');
         setFormLocation(emp.location || '');
         setFormLogoUrl(emp.logoUrl || '');
-        setFormIsEmploying(emp.isEmploying || false);
+        setFormIsEmploying(Boolean(emp.isEmploying));
         setFormError('');
         setIsModalOpen(true);
     };
@@ -118,14 +121,14 @@ export default function EmployersAdminPage() {
         try {
             await updateMutation.mutateAsync({
                 data: {
-                    ...emp,
                     isEmploying: !emp.isEmploying
                 },
                 params: { id: emp.id }
             });
             refetch();
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to toggle employing status:', err);
+            alert(err.response?.data?.error || err.response?.data?.message || 'Failed to toggle employing status');
         }
     };
 
@@ -134,13 +137,17 @@ export default function EmployersAdminPage() {
             return;
         }
         try {
-            await deleteMutation.mutateAsync(id);
-        } catch (err) {
+            await deleteMutation.mutateAsync({ params: { id } });
+            refetch();
+        } catch (err: any) {
             console.error('Failed to delete employer:', err);
+            alert(err.response?.data?.error || err.response?.data?.message || 'Failed to delete employer');
         }
     };
 
-    const employerList = employers || [];
+    const employerList: Employer[] = Array.isArray(employersRes)
+        ? employersRes
+        : (employersRes?.data || []);
 
     return (
         <div className="font-sans">

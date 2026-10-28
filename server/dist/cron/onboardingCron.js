@@ -124,6 +124,35 @@ async function dispatchApplicantOnboardingGuide(applicantId) {
     applicant.onboardingEmailSent = true;
     applicant.onboardingEmailSentAt = now;
     await applicant.save();
+    // 5. Advance application stage: complete Interview Scheduling and initiate TicketSponsorship
+    try {
+        const { Application, JobStage } = require('../models');
+        const { applicationService } = require('../services/ApplicationService');
+        const application = await Application.findOne({ where: { userId: applicant.id } });
+        if (application) {
+            const interviewStage = await JobStage.findOne({
+                where: { applicationId: application.id, name: 'Interview Scheduling' }
+            });
+            if (interviewStage && interviewStage.status !== 'completed') {
+                await interviewStage.update({ status: 'completed' });
+            }
+            const existingSponsorStage = await JobStage.findOne({
+                where: { applicationId: application.id, name: 'TicketSponsorship' }
+            });
+            if (!existingSponsorStage) {
+                await applicationService.addStageToApplication(application.id, {
+                    name: 'TicketSponsorship',
+                    status: 'invited',
+                    setAsCurrent: true,
+                    notifyInApp: true,
+                    notifyEmail: false
+                });
+            }
+        }
+    }
+    catch (stageErr) {
+        logger_1.logger.warn(`[OnboardingCron] Could not auto-advance application stage to TicketSponsorship: ${stageErr?.message || stageErr}`);
+    }
     logger_1.logger.info(`[OnboardingCron] Dispatched MACA Onboarding Guide PDF to ${applicant.email}`);
     return {
         success: true,
@@ -135,9 +164,9 @@ async function dispatchApplicantOnboardingGuide(applicantId) {
  * Finds all candidates whose interview email was dispatched >= 1 hour ago and who have
  * not yet received their onboarding process email.
  */
-async function runOnboardingCron(forceUserId) {
+async function runOnboardingCron(forceUserId, bypassTimeDelay, bypassPause) {
     try {
-        if (!forceUserId && (0, cronRegistry_1.isCronPaused)('onboarding')) {
+        if (!bypassPause && !forceUserId && (0, cronRegistry_1.isCronPaused)('onboarding')) {
             console.log('[OnboardingCron] Execution skipped: Onboarding stage cron is paused.');
             return 0;
         }
@@ -159,12 +188,13 @@ async function runOnboardingCron(forceUserId) {
             }
         }
         else {
-            // Find interviews where interview email was sent >= 1 hour ago and onboarding email is not yet sent
+            // Find interviews where onboarding email is not yet sent (respecting cutoff unless bypassTimeDelay is true)
+            const interviewWhere = { onboardingEmailSent: false };
+            if (!bypassTimeDelay) {
+                interviewWhere.interviewEmailSentAt = { [sequelize_1.Op.lte]: cutoff };
+            }
             matchingInterviews = await models_1.Interview.findAll({
-                where: {
-                    interviewEmailSentAt: { [sequelize_1.Op.lte]: cutoff },
-                    onboardingEmailSent: false
-                }
+                where: interviewWhere
             });
         }
         console.log(`[OnboardingCron] Found ${matchingInterviews.length} candidate(s) eligible for onboarding email.`);
@@ -173,7 +203,7 @@ async function runOnboardingCron(forceUserId) {
             const applicantId = interview.applicantId;
             // Check if cron is paused for this applicant's application
             const application = await models_1.Application.findOne({ where: { userId: applicantId } });
-            if (!forceUserId && application && (0, cronRegistry_1.isApplicationCronPaused)(application, 'onboarding')) {
+            if (!bypassPause && !forceUserId && application && (0, cronRegistry_1.isApplicationCronPaused)(application, 'onboarding')) {
                 console.log(`[OnboardingCron] Skipping applicant ${applicantId}: cron is paused for this application.`);
                 continue;
             }

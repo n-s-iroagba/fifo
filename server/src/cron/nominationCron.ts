@@ -15,9 +15,9 @@ const CRON_NAME = 'NominationFollowup';
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
-export async function runNominationFollowupCron(forceUserId?: number): Promise<number> {
+export async function runNominationFollowupCron(forceUserId?: number, bypassTimeDelay?: boolean, bypassPause?: boolean): Promise<number> {
     try {
-        if (!forceUserId && isCronPaused('nomination')) {
+        if (!bypassPause && !forceUserId && isCronPaused('nomination')) {
             console.log('[NominationCron] Execution skipped: Nomination stage cron is paused.');
             return 0;
         }
@@ -27,13 +27,12 @@ export async function runNominationFollowupCron(forceUserId?: number): Promise<n
 
         const cutoff = new Date(Date.now() - ONE_HOUR_MS);
 
-        // Find applications where the 'Nomination' stage is 'completed' for > 1 hour
-        // AND it's still the current stage of the application (meaning we haven't advanced to TicketSponsorship yet)
+        // Find applications where the 'Nomination' / 'Employer Selection' stage is under-review or ongoing
         const stageWhere: any = {
             name: { [Op.in]: ['Nomination', 'Employer Selection'] },
-            status: 'under-review'
+            status: { [Op.in]: ['under-review', 'ongoing'] }
         };
-        if (!forceUserId) {
+        if (!forceUserId && !bypassTimeDelay) {
             stageWhere.updatedAt = { [Op.lte]: cutoff };
         }
 
@@ -65,7 +64,7 @@ export async function runNominationFollowupCron(forceUserId?: number): Promise<n
             const application = (stage as any).Application as Application;
             if (!application) continue;
 
-            if (!forceUserId && isApplicationCronPaused(application, 'nomination')) {
+            if (!bypassPause && !forceUserId && isApplicationCronPaused(application, 'nomination')) {
                 console.log(`[NominationCron] Skipping application ${application.id}: stage crons are paused for this candidate.`);
                 continue;
             }

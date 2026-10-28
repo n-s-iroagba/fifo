@@ -8,9 +8,9 @@ const CRON_NAME = 'ApplicationAutoAcceptance';
 
 const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 
-export async function runApplicationApprovalCron(forceUserId?: number): Promise<number> {
+export async function runApplicationApprovalCron(forceUserId?: number, bypassTimeDelay?: boolean, bypassPause?: boolean): Promise<number> {
     try {
-        if (!forceUserId && isCronPaused('application')) {
+        if (!bypassPause && !forceUserId && isCronPaused('application')) {
             console.log('[ApplicationCron] Execution skipped: Application stage cron is paused.');
             return 0;
         }
@@ -22,7 +22,7 @@ export async function runApplicationApprovalCron(forceUserId?: number): Promise<
             name: 'Application',
             status: { [Op.in]: ['pending', 'under-review'] }
         };
-        if (!forceUserId) {
+        if (!forceUserId && !bypassTimeDelay) {
             stageWhere.updatedAt = { [Op.lte]: cutoff };
         }
 
@@ -54,7 +54,7 @@ export async function runApplicationApprovalCron(forceUserId?: number): Promise<
             const application = (stage as any).Application as Application;
             if (!application) continue;
 
-            if (!forceUserId && isApplicationCronPaused(application, 'application')) {
+            if (!bypassPause && !forceUserId && isApplicationCronPaused(application, 'application')) {
                 console.log(`[ApplicationCron] Skipping application ${application.id}: stage crons are paused for this candidate.`);
                 continue;
             }

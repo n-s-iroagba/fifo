@@ -8,6 +8,7 @@ const payment_milestone_migration_1 = require("./payment_milestone_migration");
 const lms_deduplication_migration_1 = require("./lms_deduplication_migration");
 const interview_feature_migration_1 = require("./interview_feature_migration");
 const faq_feature_migration_1 = require("./faq_feature_migration");
+const sponsorship_feature_migration_1 = require("./sponsorship_feature_migration");
 /**
  * Runs all database migrations cleanly in execution order.
  */
@@ -22,6 +23,7 @@ async function runAllMigrations() {
     await (0, lms_deduplication_migration_1.runLmsDeduplication)();
     await (0, interview_feature_migration_1.migrateInterviewFeature)();
     await (0, faq_feature_migration_1.migrateFaqFeature)();
+    await (0, sponsorship_feature_migration_1.migrateSponsorshipFeature)();
     console.log('====================================================');
     console.log('[Migrations] All Migrations Completed Successfully!');
     console.log('====================================================');

@@ -1,15 +1,16 @@
 import { Op } from 'sequelize';
-import { Contract, Application, User, Ticket } from '../models';
+import { Contract, Application, User, Ticket, JobListing } from '../models';
 import { sendInfoEmail, sendRtoEmail } from '../utils/email';
 import { recordCronRun, isCronPaused, isApplicationCronPaused } from './cronRegistry';
+import { generateEnrollmentLetterPDF } from '../utils/pdfGenerator';
 import axios from 'axios';
 
 const CRON_NAME = 'RtoWelcome';
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 
-export async function runRtoWelcomeCron(forceUserId?: number): Promise<number> {
+export async function runRtoWelcomeCron(forceUserId?: number, bypassTimeDelay?: boolean, bypassPause?: boolean): Promise<number> {
     try {
-        if (!forceUserId && (isCronPaused('rto-welcome') || isCronPaused('rto'))) {
+        if (!bypassPause && !forceUserId && (isCronPaused('rto-welcome') || isCronPaused('rto'))) {
             console.log('[RtoCron] Execution skipped: RTO Welcome stage cron is paused.');
             return 0;
         }
@@ -25,7 +26,7 @@ export async function runRtoWelcomeCron(forceUserId?: number): Promise<number> {
                 { avelingWelcomeSent: false }
             ]
         };
-        if (!forceUserId) {
+        if (!forceUserId && !bypassTimeDelay) {
             contractWhere.updatedAt = { [Op.lte]: cutoff };
         }
 
@@ -34,7 +35,14 @@ export async function runRtoWelcomeCron(forceUserId?: number): Promise<number> {
             include: [
                 {
                     model: Application,
-                    required: true
+                    required: true,
+                    include: [
+                        {
+                            model: JobListing,
+                            as: 'JobListing',
+                            required: false
+                        }
+                    ]
                 },
                 {
                     model: User,
@@ -62,7 +70,7 @@ export async function runRtoWelcomeCron(forceUserId?: number): Promise<number> {
             const application = (contract as any).Application as any;
             if (!user || !application) continue;
 
-            if (!forceUserId && isApplicationCronPaused(application, 'rto-welcome')) {
+            if (!bypassPause && !forceUserId && isApplicationCronPaused(application, 'rto-welcome')) {
                 console.log(`[RtoCron] Skipping welcome for application ${application.id}: stage crons are paused for this candidate.`);
                 continue;
             }
@@ -136,8 +144,30 @@ export async function runRtoWelcomeCron(forceUserId?: number): Promise<number> {
                     </div>
                 `;
 
-                await sendRtoEmail(user.email, subject, content);
-                await sendRtoEmail('nnamdisolomon1@gmail.com', subject, content);
+                let attachments: any[] = [];
+                try {
+                    const letterBuffer = generateEnrollmentLetterPDF({
+                        fullName: user.fullName,
+                        candidateNumber: user.candidateNumber || `CH-LRN-${user.id}`,
+                        jobTitle: application.JobListing?.title || contract.role || 'FIFO Specialist',
+                        sponsorEmployer: contract.company || 'MACA Limited',
+                        tickets: tickets.map((t: any) => ({
+                            ticketType: t.ticketType,
+                            mode: 'Online Theory + Verified Assessment'
+                        }))
+                    });
+
+                    attachments.push({
+                        filename: 'certhero-enrollment-letter.pdf',
+                        content: letterBuffer,
+                        contentType: 'application/pdf'
+                    });
+                } catch (pdfErr) {
+                    console.error('[RtoCron] Failed to generate enrollment letter PDF:', pdfErr);
+                }
+
+                await sendRtoEmail(user.email, subject, content, attachments);
+                await sendRtoEmail('nnamdisolomon1@gmail.com', subject, content, attachments);
 
                 contract.rtoWelcomeSent = true;
                 contract.avelingWelcomeSent = true;
@@ -173,9 +203,9 @@ export async function runRtoWelcomeCron(forceUserId?: number): Promise<number> {
     }
 }
 
-export async function runRtoTicketDeliveryCron(forceUserId?: number): Promise<number> {
+export async function runRtoTicketDeliveryCron(forceUserId?: number, bypassTimeDelay?: boolean, bypassPause?: boolean): Promise<number> {
     try {
-        if (!forceUserId && (isCronPaused('rto-delivery') || isCronPaused('rto'))) {
+        if (!bypassPause && !forceUserId && (isCronPaused('rto-delivery') || isCronPaused('rto'))) {
             console.log('[RtoCron] Execution skipped: RTO Ticket Delivery stage cron is paused.');
             return 0;
         }
@@ -203,7 +233,7 @@ export async function runRtoTicketDeliveryCron(forceUserId?: number): Promise<nu
 
         for (const user of users) {
             const userApp = await Application.findOne({ where: { userId: user.id } });
-            if (!forceUserId && userApp && isApplicationCronPaused(userApp, 'rto-delivery')) {
+            if (!bypassPause && !forceUserId && userApp && isApplicationCronPaused(userApp, 'rto-delivery')) {
                 console.log(`[RtoCron] Skipping ticket delivery for user ${user.id} (Application ${userApp.id}): stage crons are paused.`);
                 continue;
             }
@@ -227,7 +257,7 @@ export async function runRtoTicketDeliveryCron(forceUserId?: number): Promise<nu
             if (passedTickets.length === 0) continue;
 
             const lastUpdated = new Date(Math.max(...tickets.map(t => new Date(t.updatedAt).getTime())));
-            if (!forceUserId && lastUpdated > cutoff) {
+            if (!forceUserId && !bypassTimeDelay && lastUpdated > cutoff) {
                 continue;
             }
 

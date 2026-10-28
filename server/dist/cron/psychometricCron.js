@@ -8,9 +8,9 @@ const email_1 = require("../utils/email");
 const cronRegistry_1 = require("./cronRegistry");
 const CRON_NAME = 'PsychometricAutoApproval';
 const ONE_HOUR_MS = 60 * 60 * 1000;
-async function runPsychometricApprovalCron(forceUserId) {
+async function runPsychometricApprovalCron(forceUserId, bypassTimeDelay, bypassPause) {
     try {
-        if (!forceUserId && (0, cronRegistry_1.isCronPaused)('psychometric')) {
+        if (!bypassPause && !forceUserId && (0, cronRegistry_1.isCronPaused)('psychometric')) {
             console.log('[PsychometricCron] Execution skipped: Psychometric stage cron is paused.');
             return 0;
         }
@@ -24,7 +24,7 @@ async function runPsychometricApprovalCron(forceUserId) {
         if (forceUserId) {
             whereClause.userId = forceUserId;
         }
-        else {
+        else if (!bypassTimeDelay) {
             whereClause.createdAt = { [sequelize_1.Op.lte]: cutoff };
         }
         const attempts = await models_1.PsychometricAttempt.findAll({
@@ -38,7 +38,7 @@ async function runPsychometricApprovalCron(forceUserId) {
                 continue;
             const { Application } = require('../models');
             const userApp = await Application.findOne({ where: { userId: user.id } });
-            if (!forceUserId && userApp && (0, cronRegistry_1.isApplicationCronPaused)(userApp, 'psychometric')) {
+            if (!bypassPause && !forceUserId && userApp && (0, cronRegistry_1.isApplicationCronPaused)(userApp, 'psychometric')) {
                 console.log(`[PsychometricCron] Skipping user ${user.id} (Application ${userApp.id}): stage crons are paused for this candidate.`);
                 continue;
             }

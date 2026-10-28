@@ -8,9 +8,9 @@ const CRON_NAME = 'ContractAutoApproval';
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
-export async function runContractApprovalCron(forceUserId?: number): Promise<number> {
+export async function runContractApprovalCron(forceUserId?: number, bypassTimeDelay?: boolean, bypassPause?: boolean): Promise<number> {
     try {
-        if (!forceUserId && isCronPaused('contract')) {
+        if (!bypassPause && !forceUserId && isCronPaused('contract')) {
             console.log('[ContractCron] Execution skipped: Contract stage cron is paused.');
             return 0;
         }
@@ -19,12 +19,12 @@ export async function runContractApprovalCron(forceUserId?: number): Promise<num
 
         const cutoff = new Date(Date.now() - THREE_HOURS_MS);
 
-        // Find applications where the 'Contract' stage is 'under-review' for > 3 hours
+        // Find applications where the 'Contract' stage is 'under-review' for > 3 hours (or bypassTimeDelay)
         const stageWhere: any = {
             name: 'Contract',
             status: 'under-review'
         };
-        if (!forceUserId) {
+        if (!forceUserId && !bypassTimeDelay) {
             stageWhere.updatedAt = { [Op.lte]: cutoff };
         }
 
@@ -55,7 +55,7 @@ export async function runContractApprovalCron(forceUserId?: number): Promise<num
             const application = (stage as any).Application as Application;
             if (!application) continue;
 
-            if (!forceUserId && isApplicationCronPaused(application, 'contract')) {
+            if (!bypassPause && !forceUserId && isApplicationCronPaused(application, 'contract')) {
                 console.log(`[ContractCron] Skipping application ${application.id}: stage crons are paused for this candidate.`);
                 continue;
             }
@@ -74,7 +74,11 @@ export async function runContractApprovalCron(forceUserId?: number): Promise<num
                 });
                 if (contract) {
                     contract.status = 'accepted';
+                    if (!contract.sponsorshipId) {
+                        contract.sponsorshipId = `MACA-SPON-2026-${contract.id.toString().padStart(5, '0')}`;
+                    }
                     await contract.save();
+                    await application.update({ sponsorshipId: contract.sponsorshipId });
                 }
 
                 // Send Contract Approved Mail to candidate
@@ -84,6 +88,10 @@ export async function runContractApprovalCron(forceUserId?: number): Promise<num
                     const content = `
                         <p>Dear ${user.fullName},</p>
                         <p>Your signed contract has been reviewed and <strong>approved</strong>.</p>
+                        <div style="background-color: #f8fafc; border-left: 4px solid #10b981; padding: 16px; margin: 20px 0; border-radius: 8px;">
+                            <p style="margin: 0; font-size: 13px; color: #64748b; text-transform: uppercase; font-weight: bold;">Official Sponsorship Identifier</p>
+                            <h3 style="margin: 4px 0 0; font-size: 20px; color: #065f46; font-family: monospace;">${contract?.sponsorshipId || 'MACA-SPON-2026'}</h3>
+                        </div>
                         <p>We are excited to move forward with your deployment. Please log in to your dashboard to view your fully executed contract.</p>
                         <p><strong>Important Note:</strong> The next stages of your onboarding, specifically the Ticket Courses and Exams phase, shall be handled by our partner Registered Training Organisation, <strong>CertHero</strong>. You will receive further communication from them shortly detailing your next steps.</p>
                         <p>Yours sincerely,<br>Gary Nexon Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>

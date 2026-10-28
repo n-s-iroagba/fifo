@@ -13,6 +13,9 @@ export class Application extends Model {
     declare visaSponsorshipStatus: string | null;
     declare isCronPaused: boolean;
     declare pausedStageCrons: string[] | null;
+    declare sponsorshipCallEmailSent: boolean;
+    declare sponsorshipCallEmailSentAt: Date | null;
+    declare sponsorshipId: string | null;
 
     // Associations
     declare User?: any;
@@ -57,6 +60,19 @@ Application.init({
         type: DataTypes.JSON,
         allowNull: true,
         defaultValue: []
+    },
+    sponsorshipCallEmailSent: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
+    sponsorshipCallEmailSentAt: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    sponsorshipId: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 }, {
     sequelize,

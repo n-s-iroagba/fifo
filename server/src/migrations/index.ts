@@ -5,6 +5,7 @@ import { migratePaymentMilestone } from './payment_milestone_migration';
 import { runLmsDeduplication } from './lms_deduplication_migration';
 import { migrateInterviewFeature } from './interview_feature_migration';
 import { migrateFaqFeature } from './faq_feature_migration';
+import { migrateSponsorshipFeature } from './sponsorship_feature_migration';
 
 /**
  * Runs all database migrations cleanly in execution order.
@@ -21,6 +22,7 @@ export async function runAllMigrations(): Promise<void> {
     await runLmsDeduplication();
     await migrateInterviewFeature();
     await migrateFaqFeature();
+    await migrateSponsorshipFeature();
 
     console.log('====================================================');
     console.log('[Migrations] All Migrations Completed Successfully!');

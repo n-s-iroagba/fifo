@@ -12,6 +12,7 @@ const navItems = [
     { label: 'Active Opportunities', href: CONSTANTS.ROUTES.JOBS, icon: 'search' },
     { label: 'CV / Resume', href: CONSTANTS.ROUTES.CV, icon: 'description' },
     { label: 'Tickets & Training', href: '/dashboard/tickets', icon: 'confirmation_number' },
+    { label: 'Courses & Syllabus', href: '/dashboard/courses', icon: 'menu_book' },
     { label: 'Interviews', href: '/dashboard/interviews', icon: 'video_camera_front' },
     { label: 'Employer Selection', href: '/dashboard/nominations', icon: 'stars' },
     { label: 'Contracts', href: '/dashboard/contracts', icon: 'handshake' },

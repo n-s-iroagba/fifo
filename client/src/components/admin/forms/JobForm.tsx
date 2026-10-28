@@ -24,8 +24,8 @@ export default function JobForm({ initialData, isEdit = false }: JobFormProps) {
     const { data: ticketsResult } = useApiQuery<{ success: boolean; data: any[] }>(['admin', 'ticket-catalogs'], '/ticket-catalogs');
     const allTickets = ticketsResult?.data || [];
 
-    const { data: employersList } = useApiQuery<any[]>(['admin', 'employers'], '/admin/employers');
-    const allEmployers = employersList || [];
+    const { data: employersList } = useApiQuery<any>(['admin', 'employers'], '/admin/employers');
+    const allEmployers: any[] = Array.isArray(employersList) ? employersList : (employersList?.data || []);
 
     const [title, setTitle] = useState(initialData?.title || '');
     const [categoryId, setCategoryId] = useState(initialData?.categoryId || '');

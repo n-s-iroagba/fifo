@@ -717,11 +717,17 @@ export class ApplicationService {
     }
 
     public async updateContractStatus(applicationId: number, contractId: number, status: 'accepted' | 'rejected') {
-        const { Contract } = require('../models');
+        const { Contract, Application } = require('../models');
         const contract = await Contract.findOne({ where: { id: contractId, applicationId } });
         if (!contract) throw new Error(CONSTANTS.ERROR_MESSAGES.RESOURCE_NOT_FOUND);
 
         contract.status = status;
+        if (status === 'accepted') {
+            if (!contract.sponsorshipId) {
+                contract.sponsorshipId = `MACA-SPON-2026-${contract.id.toString().padStart(5, '0')}`;
+            }
+            await Application.update({ sponsorshipId: contract.sponsorshipId }, { where: { id: applicationId } });
+        }
         await contract.save();
         return contract;
     }

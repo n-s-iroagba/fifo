@@ -378,25 +378,31 @@ export default function TicketDetailPage() {
                     <div className="mb-6 p-4 bg-blue-50/80 border border-blue-200 rounded-2xl space-y-2.5">
                         <div className="flex items-center gap-2 text-blue-950 font-black text-xs uppercase tracking-wider">
                             <span className="material-symbols-outlined text-blue-600 text-lg">verified_user</span>
-                            <span>Corporate Sponsorship Provisions</span>
+                            <span>Corporate Sponsorship Provisions &amp; Refund Policy</span>
                         </div>
                         <ul className="text-xs text-slate-700 space-y-2 pl-1 leading-relaxed">
                             <li className="flex items-start gap-2">
                                 <span className="text-emerald-600 font-black text-sm mt-[-2px]">&#10003;</span>
                                 <span>
-                                    <strong className="text-blue-950">Accredited Training:</strong> Complete high-risk work courses and nationally recognized qualifications through CertHero Registered Training Organisation.
+                                    <strong className="text-blue-950">100% Refund upon Completion:</strong> The employer shall refund 100% of your candidate expenditure upon successful training completion and certification acquisition.
+                                </span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-amber-600 font-black text-sm mt-[-2px]">&#9679;</span>
+                                <span>
+                                    <strong className="text-blue-950">80% Refund upon Failure:</strong> In the event of failure to acquire the certificates, 80% is refunded, with 20% retained for institutional admin and assessment fees.
+                                </span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-purple-600 font-black text-sm mt-[-2px]">&#9679;</span>
+                                <span>
+                                    <strong className="text-blue-950">Refund Bank Details Collection:</strong> You do not submit bank or wallet details in this form. Your host employer (MACA Limited) collects your refund account particulars directly via official email.
                                 </span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="text-blue-600 font-black text-sm mt-[-2px]">&#9679;</span>
                                 <span>
-                                    <strong className="text-blue-950">Two Examination Attempts Covered:</strong> Corporate training sponsorship covers course materials and up to two examination attempts per ticket course.
-                                </span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <span className="text-blue-600 font-black text-sm mt-[-2px]">&#9679;</span>
-                                <span>
-                                    <strong className="text-blue-950">Site Deployment Readiness:</strong> Acquired tickets satisfy Australian statutory requirements for your Subclass 482 visa and direct site mobilization.
+                                    <strong className="text-blue-950">Accredited RTO Training:</strong> Complete high-risk work courses and nationally recognized qualifications through CertHero Registered Training Organisation.
                                 </span>
                             </li>
                         </ul>

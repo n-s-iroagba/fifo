@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { ApplicantSidebar } from '@/components/layout/ApplicantSidebar';
 import { useApiQuery } from '@/lib/hooks';
+import { AiStudyBot } from '@/components/AiStudyBot';
 
 function NotificationIndicator() {
     const { data: notifications } = useApiQuery<any>(
@@ -74,6 +75,9 @@ export default function ApplicantLayout({ children }: { children: React.ReactNod
                     {children}
                 </div>
             </main>
+
+            {/* Interactive CertHero AI Study Assistant */}
+            <AiStudyBot />
 
             {/* Beware of Scam Modal */}
             {showScamModal && (

@@ -14,6 +14,7 @@ export class Contract extends Model {
     declare documentUrl1: string | null;
     declare documentUrl15: string | null;
     declare adminDocumentUrl: string | null;
+    declare sponsorshipId: string | null;
     declare avelingWelcomeSent: boolean;
     declare rtoWelcomeSent: boolean;
     declare readonly createdAt: Date;
@@ -63,6 +64,10 @@ Contract.init({
         allowNull: true,
     },
     adminDocumentUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    sponsorshipId: {
         type: DataTypes.STRING,
         allowNull: true,
     },

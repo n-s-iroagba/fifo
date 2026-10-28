@@ -96,7 +96,7 @@ export class AuthController {
     public async login(req: Request, res: Response): Promise<void> {
         try {
             const { email, password, redirectUrl } = req.body;
-            const { user, accessToken, refreshToken } = await authService.login(email, password, redirectUrl);
+            const { user, accessToken, refreshToken, isFirstLogin } = await authService.login(email, password, redirectUrl);
 
             this.setRefreshTokenCookie(res, refreshToken);
             res.status(CONSTANTS.HTTP_STATUS.OK).json({
@@ -110,8 +110,11 @@ export class AuthController {
                     phoneNumber: user.phoneNumber,
                     nationality: user.nationality,
                     psychometricModule1Passed: user.psychometricModule1Passed,
-                    psychometricModule2Passed: user.psychometricModule2Passed
+                    psychometricModule2Passed: user.psychometricModule2Passed,
+                    hasLoggedIn: user.hasLoggedIn,
+                    firstLoginAt: user.firstLoginAt
                 },
+                isFirstLogin,
                 accessToken
             });
         } catch (error: any) {

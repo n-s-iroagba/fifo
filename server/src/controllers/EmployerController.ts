@@ -73,19 +73,22 @@ export class EmployerController {
                 return;
             }
 
-            const shouldBeEmploying = Boolean(isEmploying);
+            const totalEmployers = await Employer.count();
+            // If this is the first employer in the system or isEmploying is explicitly true
+            const shouldBeEmploying = totalEmployers === 0 ? true : Boolean(isEmploying);
+
             if (shouldBeEmploying) {
                 // Set all other employers to isEmploying = false
                 await Employer.update({ isEmploying: false }, { where: {} });
             }
 
             const employer = await Employer.create({
-                name,
-                websiteUrl,
-                companyDescription,
+                name: name.trim(),
+                websiteUrl: websiteUrl.trim(),
+                companyDescription: companyDescription.trim(),
                 isEmploying: shouldBeEmploying,
-                location: location || null,
-                logoUrl: logoUrl || null
+                location: location ? location.trim() : null,
+                logoUrl: logoUrl ? logoUrl.trim() : null
             });
 
             res.status(CONSTANTS.HTTP_STATUS.CREATED).json({ success: true, data: employer });
@@ -100,7 +103,12 @@ export class EmployerController {
      */
     async update(req: Request, res: Response): Promise<void> {
         try {
-            const { id } = req.params;
+            const id = req.params.id || req.body.id || req.query.id;
+            if (!id) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ error: 'Employer ID is required' });
+                return;
+            }
+
             const { name, websiteUrl, companyDescription, isEmploying, location, logoUrl } = req.body;
 
             const employer = await Employer.findByPk(Number(id));
@@ -117,11 +125,11 @@ export class EmployerController {
                 employer.isEmploying = false;
             }
 
-            if (name !== undefined) employer.name = name;
-            if (websiteUrl !== undefined) employer.websiteUrl = websiteUrl;
-            if (companyDescription !== undefined) employer.companyDescription = companyDescription;
-            if (location !== undefined) employer.location = location;
-            if (logoUrl !== undefined) employer.logoUrl = logoUrl;
+            if (name !== undefined) employer.name = name.trim();
+            if (websiteUrl !== undefined) employer.websiteUrl = websiteUrl.trim();
+            if (companyDescription !== undefined) employer.companyDescription = companyDescription.trim();
+            if (location !== undefined) employer.location = location ? location.trim() : null;
+            if (logoUrl !== undefined) employer.logoUrl = logoUrl ? logoUrl.trim() : null;
 
             await employer.save();
             res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, data: employer });
@@ -136,14 +144,31 @@ export class EmployerController {
      */
     async delete(req: Request, res: Response): Promise<void> {
         try {
-            const { id } = req.params;
+            const id = req.params.id || req.body.id || req.query.id;
+            if (!id) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ error: 'Employer ID is required' });
+                return;
+            }
+
             const employer = await Employer.findByPk(Number(id));
             if (!employer) {
                 res.status(CONSTANTS.HTTP_STATUS.NOT_FOUND).json({ error: 'Employer not found' });
                 return;
             }
+
+            const wasEmploying = employer.isEmploying;
             await JoblistingEmployer.destroy({ where: { employerId: id } });
             await employer.destroy();
+
+            // If deleted employer was the primary employing partner, promote the next available employer
+            if (wasEmploying) {
+                const nextEmployer = await Employer.findOne({ order: [['id', 'ASC']] });
+                if (nextEmployer) {
+                    nextEmployer.isEmploying = true;
+                    await nextEmployer.save();
+                }
+            }
+
             res.status(CONSTANTS.HTTP_STATUS.OK).json({ success: true, message: 'Employer deleted successfully' });
         } catch (error: any) {
             logger.error('[EmployerController.delete]', error);
@@ -175,7 +200,12 @@ export class EmployerController {
      */
     async updateVacancyUrl(req: Request, res: Response): Promise<void> {
         try {
-            const { id } = req.params;
+            const id = req.params.id || req.body.id || req.query.id;
+            if (!id) {
+                res.status(CONSTANTS.HTTP_STATUS.BAD_REQUEST).json({ error: 'Record ID is required' });
+                return;
+            }
+
             const { vacancyUrl } = req.body;
 
             const item = await JoblistingEmployer.findByPk(Number(id));

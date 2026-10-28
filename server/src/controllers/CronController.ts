@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { runApplicationApprovalCron } from '../cron/applicationCron';
 import { runNominationFollowupCron } from '../cron/nominationCron';
 import { runContractApprovalCron } from '../cron/contractCron';
-import { runSponsorshipApprovalCron } from '../cron/sponsorshipCron';
+import { runSponsorshipCron, runSponsorshipApprovalCron, runSponsorshipCallCron } from '../cron/sponsorshipCron';
 import { runRtoWelcomeCron, runRtoTicketDeliveryCron, runAvelingWelcomeCron, runAvelingTicketDeliveryCron } from '../cron/rtoCron';
 import { runPsychometricApprovalCron } from '../cron/psychometricCron';
 import { sendInfoEmail } from '../utils/email';
@@ -71,8 +71,8 @@ export const cronController = {
     async sponsorship(req: Request, res: Response) {
         if (isCronPaused('sponsorship')) return res.status(200).json({ success: true, processed: 0, paused: true, cron: 'sponsorship' });
         try {
-            const count = await runSponsorshipApprovalCron();
-            await notifyAdmin('Sponsorship Auto-Approval', count);
+            const count = await runSponsorshipCron();
+            await notifyAdmin('Ticket Sponsorship (Call/Invite & Auto-Approval)', count);
             res.status(200).json({ success: true, processed: count });
         } catch (error: any) {
             console.error('Error in sponsorship cron webhook:', error);

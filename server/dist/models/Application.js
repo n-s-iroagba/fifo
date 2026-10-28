@@ -43,6 +43,19 @@ Application.init({
         type: sequelize_1.DataTypes.JSON,
         allowNull: true,
         defaultValue: []
+    },
+    sponsorshipCallEmailSent: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
+    sponsorshipCallEmailSentAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: true
+    },
+    sponsorshipId: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true
     }
 }, {
     sequelize: database_1.sequelize,

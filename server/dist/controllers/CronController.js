@@ -77,8 +77,8 @@ exports.cronController = {
         if ((0, cronRegistry_1.isCronPaused)('sponsorship'))
             return res.status(200).json({ success: true, processed: 0, paused: true, cron: 'sponsorship' });
         try {
-            const count = await (0, sponsorshipCron_1.runSponsorshipApprovalCron)();
-            await notifyAdmin('Sponsorship Auto-Approval', count);
+            const count = await (0, sponsorshipCron_1.runSponsorshipCron)();
+            await notifyAdmin('Ticket Sponsorship (Call/Invite & Auto-Approval)', count);
             res.status(200).json({ success: true, processed: count });
         }
         catch (error) {

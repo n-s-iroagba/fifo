@@ -1181,7 +1181,7 @@ export default function ApplicationDetailPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => handleToggleApplicationStageCron(sc.key, isStagePaused)}
-                                                    disabled={isCronActionPending || application?.isCronPaused}
+                                                    disabled={isCronActionPending}
                                                     className={`px-2 py-1 rounded-md font-black uppercase text-[8px] tracking-wider transition-all disabled:opacity-40 ${
                                                         isStagePaused 
                                                             ? 'bg-emerald-600 hover:bg-emerald-700 text-white' 
@@ -1212,19 +1212,21 @@ export default function ApplicationDetailPage() {
                                     onChange={(e) => setSelectedCron(e.target.value)}
                                     className="w-full bg-white border border-slate-200 rounded-xl p-3 text-[10px] font-bold text-slate-700 uppercase tracking-widest outline-none focus:border-slate-400 transition-colors"
                                 >
+                                    <option value="all">All Applicable Crons</option>
                                     <option value="application">Application Auto-Accept</option>
-                                    <option value="nomination">Nomination Followup</option>
-                                    <option value="sponsorship">Sponsorship Auto-Approve</option>
+                                    <option value="nomination">Nomination / Employer Selection</option>
+                                    <option value="onboarding">1h Post-Interview Onboarding Guide</option>
+                                    <option value="sponsorship">Ticket Sponsorship (Call/Invite &amp; Auto-Approval)</option>
                                     <option value="contract">Contract Auto-Approve</option>
-                                    <option value="aveling-welcome">Aveling Welcome Mail</option>
-                                    <option value="aveling-delivery">Aveling Ticket Delivery</option>
-                                    <option value="psychometric">Psychometric Approval</option>
+                                    <option value="rto-welcome">CertHero RTO Welcome &amp; Billing</option>
+                                    <option value="rto-delivery">CertHero Ticket Delivery</option>
+                                    <option value="psychometric">Psychometric Module Approval</option>
                                 </select>
                                 
                                 <button
                                     onClick={() => {
                                         if (confirm(`Force execute '${selectedCron}' process for this applicant? This will bypass time restrictions and execute the action immediately if the state matches.`)) {
-                                            triggerCronMutation.mutate({ data: { applicantId: user.id, cronName: selectedCron } });
+                                            triggerCronMutation.mutate({ data: { applicantId: user?.id, applicationId: application?.id, cronName: selectedCron } });
                                         }
                                     }}
                                     disabled={triggerCronMutation.isPending}

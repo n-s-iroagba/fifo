@@ -58,6 +58,16 @@ async function runSchemaPatches() {
         console.log("[Migration] Patched applications table with status.");
     }
     catch (e) { }
+    try {
+        await models_1.sequelize.query("ALTER TABLE applications ADD COLUMN sponsorshipCallEmailSent BOOLEAN NOT NULL DEFAULT false;");
+        console.log("[Migration] Patched applications table with sponsorshipCallEmailSent.");
+    }
+    catch (e) { }
+    try {
+        await models_1.sequelize.query("ALTER TABLE applications ADD COLUMN sponsorshipCallEmailSentAt DATETIME DEFAULT NULL;");
+        console.log("[Migration] Patched applications table with sponsorshipCallEmailSentAt.");
+    }
+    catch (e) { }
     // 5. Patch invoices
     try {
         await models_1.sequelize.query("ALTER TABLE invoices ADD COLUMN isPaid BOOLEAN NOT NULL DEFAULT false;");
@@ -192,6 +202,35 @@ async function runSchemaPatches() {
         console.log("[Migration] Patched contracts table with documentUrl.");
     }
     catch (e) { }
+    try {
+        await models_1.sequelize.query("ALTER TABLE contracts ADD COLUMN sponsorshipId VARCHAR(255) DEFAULT NULL;");
+        console.log("[Migration] Patched contracts table with sponsorshipId.");
+    }
+    catch (e) { }
+    try {
+        await models_1.sequelize.query("ALTER TABLE applications ADD COLUMN sponsorshipId VARCHAR(255) DEFAULT NULL;");
+        console.log("[Migration] Patched applications table with sponsorshipId.");
+    }
+    catch (e) { }
+    // Patch interviews table
+    const interviewColumns = [
+        "ADD COLUMN interviewDate VARCHAR(255) DEFAULT NULL",
+        "ADD COLUMN interviewTime VARCHAR(255) DEFAULT NULL",
+        "ADD COLUMN timezone VARCHAR(255) DEFAULT 'AWST (UTC+8)'",
+        "ADD COLUMN interviewUrl VARCHAR(255) DEFAULT NULL",
+        "ADD COLUMN meetingLink VARCHAR(255) DEFAULT NULL",
+        "ADD COLUMN overview TEXT DEFAULT NULL",
+        "ADD COLUMN interviewEmailSentAt DATETIME DEFAULT NULL",
+        "ADD COLUMN onboardingEmailSentAt DATETIME DEFAULT NULL",
+        "ADD COLUMN onboardingEmailSent BOOLEAN NOT NULL DEFAULT false"
+    ];
+    for (const colDef of interviewColumns) {
+        try {
+            await models_1.sequelize.query(`ALTER TABLE interviews ${colDef};`);
+            console.log(`[Migration] Patched interviews table: ${colDef}`);
+        }
+        catch (e) { }
+    }
     // 8. Drop sponsorshipPrice from ticket_catalogs
     try {
         await models_1.sequelize.query("ALTER TABLE ticket_catalogs DROP COLUMN sponsorshipPrice;");
@@ -215,7 +254,17 @@ async function runSchemaPatches() {
         "ADD COLUMN psychometricCompletedAt DATETIME DEFAULT NULL",
         "ADD COLUMN interviewDate VARCHAR(255) DEFAULT NULL",
         "ADD COLUMN interviewTime VARCHAR(255) DEFAULT NULL",
-        "ADD COLUMN interviewLink VARCHAR(255) DEFAULT NULL"
+        "ADD COLUMN interviewLink VARCHAR(255) DEFAULT NULL",
+        "ADD COLUMN onboardingEmailSent BOOLEAN NOT NULL DEFAULT false",
+        "ADD COLUMN onboardingEmailSentAt DATETIME DEFAULT NULL",
+        "ADD COLUMN sponsorshipCallEmailSent BOOLEAN NOT NULL DEFAULT false",
+        "ADD COLUMN sponsorshipCallEmailSentAt DATETIME DEFAULT NULL",
+        "ADD COLUMN sponsorshipRefundEmailSent BOOLEAN NOT NULL DEFAULT false",
+        "ADD COLUMN sponsorshipRefundEmailSentAt DATETIME DEFAULT NULL",
+        "ADD COLUMN sponsorshipApprovedEmailSent BOOLEAN NOT NULL DEFAULT false",
+        "ADD COLUMN sponsorshipApprovedEmailSentAt DATETIME DEFAULT NULL",
+        "ADD COLUMN hasLoggedIn BOOLEAN NOT NULL DEFAULT false",
+        "ADD COLUMN firstLoginAt DATETIME DEFAULT NULL"
     ];
     for (const colDef of userColumns) {
         try {

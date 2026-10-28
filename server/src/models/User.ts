@@ -51,6 +51,14 @@ export class User extends Model {
     declare interviewEmailSentAt: Date | null;
     declare onboardingEmailSentAt: Date | null;
     declare onboardingEmailSent: boolean;
+    declare sponsorshipCallEmailSent: boolean;
+    declare sponsorshipCallEmailSentAt: Date | null;
+    declare sponsorshipRefundEmailSent: boolean;
+    declare sponsorshipRefundEmailSentAt: Date | null;
+    declare sponsorshipApprovedEmailSent: boolean;
+    declare sponsorshipApprovedEmailSentAt: Date | null;
+    declare hasLoggedIn: boolean;
+    declare firstLoginAt: Date | null;
     declare readonly createdAt: Date;
     declare readonly updatedAt: Date;
 }
@@ -266,6 +274,42 @@ User.init({
         type: DataTypes.BOOLEAN,
         defaultValue: false,
         allowNull: false,
+    },
+    sponsorshipCallEmailSent: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    sponsorshipCallEmailSentAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
+    sponsorshipRefundEmailSent: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    sponsorshipRefundEmailSentAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
+    sponsorshipApprovedEmailSent: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    sponsorshipApprovedEmailSentAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
+    hasLoggedIn: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    firstLoginAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
     }
 }, {
     sequelize,

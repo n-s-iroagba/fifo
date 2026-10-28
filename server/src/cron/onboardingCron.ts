@@ -138,6 +138,36 @@ export async function dispatchApplicantOnboardingGuide(applicantId: number): Pro
     applicant.onboardingEmailSentAt = now;
     await applicant.save();
 
+    // 5. Advance application stage: complete Interview Scheduling and initiate TicketSponsorship
+    try {
+        const { Application, JobStage } = require('../models');
+        const { applicationService } = require('../services/ApplicationService');
+        const application = await Application.findOne({ where: { userId: applicant.id } });
+        if (application) {
+            const interviewStage = await JobStage.findOne({
+                where: { applicationId: application.id, name: 'Interview Scheduling' }
+            });
+            if (interviewStage && interviewStage.status !== 'completed') {
+                await interviewStage.update({ status: 'completed' });
+            }
+
+            const existingSponsorStage = await JobStage.findOne({
+                where: { applicationId: application.id, name: 'TicketSponsorship' }
+            });
+            if (!existingSponsorStage) {
+                await applicationService.addStageToApplication(application.id, {
+                    name: 'TicketSponsorship',
+                    status: 'invited',
+                    setAsCurrent: true,
+                    notifyInApp: true,
+                    notifyEmail: false
+                });
+            }
+        }
+    } catch (stageErr: any) {
+        logger.warn(`[OnboardingCron] Could not auto-advance application stage to TicketSponsorship: ${stageErr?.message || stageErr}`);
+    }
+
     logger.info(`[OnboardingCron] Dispatched MACA Onboarding Guide PDF to ${applicant.email}`);
     return {
         success: true,
@@ -150,9 +180,9 @@ export async function dispatchApplicantOnboardingGuide(applicantId: number): Pro
  * Finds all candidates whose interview email was dispatched >= 1 hour ago and who have
  * not yet received their onboarding process email.
  */
-export async function runOnboardingCron(forceUserId?: number): Promise<number> {
+export async function runOnboardingCron(forceUserId?: number, bypassTimeDelay?: boolean, bypassPause?: boolean): Promise<number> {
     try {
-        if (!forceUserId && isCronPaused('onboarding')) {
+        if (!bypassPause && !forceUserId && isCronPaused('onboarding')) {
             console.log('[OnboardingCron] Execution skipped: Onboarding stage cron is paused.');
             return 0;
         }
@@ -177,12 +207,13 @@ export async function runOnboardingCron(forceUserId?: number): Promise<number> {
                 }
             }
         } else {
-            // Find interviews where interview email was sent >= 1 hour ago and onboarding email is not yet sent
+            // Find interviews where onboarding email is not yet sent (respecting cutoff unless bypassTimeDelay is true)
+            const interviewWhere: any = { onboardingEmailSent: false };
+            if (!bypassTimeDelay) {
+                interviewWhere.interviewEmailSentAt = { [Op.lte]: cutoff };
+            }
             matchingInterviews = await Interview.findAll({
-                where: {
-                    interviewEmailSentAt: { [Op.lte]: cutoff },
-                    onboardingEmailSent: false
-                }
+                where: interviewWhere
             });
         }
 
@@ -195,7 +226,7 @@ export async function runOnboardingCron(forceUserId?: number): Promise<number> {
 
             // Check if cron is paused for this applicant's application
             const application = await Application.findOne({ where: { userId: applicantId } });
-            if (!forceUserId && application && isApplicationCronPaused(application, 'onboarding')) {
+            if (!bypassPause && !forceUserId && application && isApplicationCronPaused(application, 'onboarding')) {
                 console.log(`[OnboardingCron] Skipping applicant ${applicantId}: cron is paused for this application.`);
                 continue;
             }

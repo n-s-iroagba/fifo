@@ -23,11 +23,11 @@
 2. For Non Australian or New Zealand Residents:  recruitement@maca.works  
 3.  IT should state boldly that upon finalisation of employment and visa processing applicants must submit photocopies of all documents contained in the attached file i.e maca-employee-onboarding-guide.pdf to the human resource department using the email [hr@maca.net.au](mailto:hr@maca.net.au). Applicant should know that this step is important to initiate employee onboarding  
 3. Ensure Ticket Sponsorship works properly  
-1. Call : email \- system-cron-sent by bluecollar mail  
+1. Call/invite : email \- system-cron-sent by bluecollar mail  
 2. Refund Account collection and notice of partial sponsorship by employer.  email \- system-cron(runs together with call cron above, both mails; call andRefund Account collection and notice of partial sponsorship by employer(i.e this mail) reference each other to the applicant)-sent by employer mail  
-3. Application by applicant  
+3. Application by applicant - during application remove the code on the client asking the applicant to submit bank details or wallet; the employer email in step 2 should be the one to collect this details.  
 4. Acceptance \- cron with email sent from blue collar  
-4. Ensure Ticket Training  
+4. Ensure Ticket Training  works properly
 1. Enrollment  
 1. Mail with attached enrollment letter from rto  
 2. First Applicant login  
@@ -50,3 +50,4 @@
 11. Examination  
 12. Partial payment completion  
 13. Ticket delivery
+14. employer crud

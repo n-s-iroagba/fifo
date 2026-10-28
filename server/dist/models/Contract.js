@@ -49,6 +49,10 @@ Contract.init({
         type: sequelize_1.DataTypes.STRING,
         allowNull: true,
     },
+    sponsorshipId: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
     avelingWelcomeSent: {
         type: sequelize_1.DataTypes.BOOLEAN,
         defaultValue: false,

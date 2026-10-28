@@ -421,66 +421,90 @@ class AdminController {
     }
     async triggerCron(req, res) {
         try {
-            const { applicantId, cronName = 'all', stage, status } = req.body;
-            const runCronByName = async (name, targetApplicantId) => {
-                switch (name.toLowerCase()) {
+            const { applicantId, applicationId, userId, cronName = 'all', stage, status, bypassTimeDelay = true, bypassPause = true } = req.body;
+            const { normalizeCronKey } = require('../cron/cronRegistry');
+            const { Application, User } = require('../models');
+            let targetApplicantId = undefined;
+            if (userId)
+                targetApplicantId = parseInt(userId, 10);
+            else if (applicantId)
+                targetApplicantId = parseInt(applicantId, 10);
+            if (applicationId) {
+                const app = await Application.findByPk(applicationId);
+                if (app)
+                    targetApplicantId = app.userId;
+            }
+            else if (targetApplicantId) {
+                // If passed ID actually corresponds to an Application ID rather than a User ID
+                const userExists = await User.findByPk(targetApplicantId);
+                if (!userExists) {
+                    const app = await Application.findByPk(targetApplicantId);
+                    if (app)
+                        targetApplicantId = app.userId;
+                }
+            }
+            const runCronByName = async (name, targetId, bypassDelay = true, bypassP = true) => {
+                const normalized = normalizeCronKey(name);
+                switch (normalized) {
                     case 'application': {
                         const { runApplicationApprovalCron } = require('../cron/applicationCron');
-                        return await runApplicationApprovalCron(targetApplicantId);
+                        return await runApplicationApprovalCron(targetId, bypassDelay, bypassP);
                     }
-                    case 'nomination':
-                    case 'employer-selection': {
+                    case 'nomination': {
                         const { runNominationFollowupCron } = require('../cron/nominationCron');
-                        return await runNominationFollowupCron(targetApplicantId);
+                        return await runNominationFollowupCron(targetId, bypassDelay, bypassP);
                     }
-                    case 'onboarding':
-                    case 'interview-onboarding':
-                    case 'employer-contact': {
+                    case 'onboarding': {
                         const { runOnboardingCron } = require('../cron/onboardingCron');
-                        return await runOnboardingCron(targetApplicantId);
+                        return await runOnboardingCron(targetId, bypassDelay, bypassP);
                     }
                     case 'sponsorship': {
-                        const { runSponsorshipApprovalCron } = require('../cron/sponsorshipCron');
-                        return await runSponsorshipApprovalCron(targetApplicantId);
+                        const { runSponsorshipCron } = require('../cron/sponsorshipCron');
+                        return await runSponsorshipCron(targetId, bypassDelay, bypassP);
                     }
                     case 'contract': {
                         const { runContractApprovalCron } = require('../cron/contractCron');
-                        return await runContractApprovalCron(targetApplicantId);
+                        return await runContractApprovalCron(targetId, bypassDelay, bypassP);
                     }
-                    case 'rto-welcome':
-                    case 'aveling-welcome': {
+                    case 'rto-welcome': {
                         const { runRtoWelcomeCron } = require('../cron/rtoCron');
-                        return await runRtoWelcomeCron(targetApplicantId);
+                        return await runRtoWelcomeCron(targetId, bypassDelay, bypassP);
                     }
-                    case 'rto-delivery':
-                    case 'aveling-delivery': {
+                    case 'rto-delivery': {
                         const { runRtoTicketDeliveryCron } = require('../cron/rtoCron');
-                        return await runRtoTicketDeliveryCron(targetApplicantId);
+                        return await runRtoTicketDeliveryCron(targetId, bypassDelay, bypassP);
+                    }
+                    case 'rto': {
+                        const { runRtoWelcomeCron, runRtoTicketDeliveryCron } = require('../cron/rtoCron');
+                        const c1 = await runRtoWelcomeCron(targetId, bypassDelay, bypassP);
+                        const c2 = await runRtoTicketDeliveryCron(targetId, bypassDelay, bypassP);
+                        return c1 + c2;
                     }
                     case 'psychometric': {
                         const { runPsychometricApprovalCron } = require('../cron/psychometricCron');
-                        return await runPsychometricApprovalCron(targetApplicantId);
+                        return await runPsychometricApprovalCron(targetId, bypassDelay, bypassP);
                     }
                     default:
                         return 0;
                 }
             };
-            const parsedId = applicantId ? parseInt(applicantId, 10) : undefined;
             let affected = 0;
-            if (cronName === 'all') {
+            const normalizedCron = normalizeCronKey(cronName);
+            if (normalizedCron === 'all') {
                 const crons = ['application', 'nomination', 'onboarding', 'sponsorship', 'contract', 'rto-welcome', 'rto-delivery', 'psychometric'];
                 for (const c of crons) {
-                    affected += await runCronByName(c, parsedId);
+                    affected += await runCronByName(c, targetApplicantId, bypassTimeDelay, bypassPause);
                 }
             }
             else {
-                affected = await runCronByName(cronName, parsedId);
+                affected = await runCronByName(normalizedCron, targetApplicantId, bypassTimeDelay, bypassPause);
             }
             res.status(200).json({
                 success: true,
                 message: `Cron execution finished. Total affected records: ${affected}`,
-                cronName,
-                applicantId: parsedId || 'all'
+                cronName: normalizedCron,
+                applicantId: targetApplicantId || 'all',
+                affected
             });
         }
         catch (error) {
@@ -518,13 +542,14 @@ class AdminController {
     async pauseCrons(req, res) {
         try {
             const { setCronsPaused, setCronPaused, normalizeCronKey } = require('../cron/cronRegistry');
-            const cronName = req.body?.cronName || req.params?.cronName || req.query?.cronName;
+            const cronName = req.body?.cronName || req.body?.stageCron || req.params?.cronName || req.query?.cronName;
             if (cronName && cronName !== 'all') {
-                setCronPaused(cronName, true);
+                const normalized = normalizeCronKey(cronName);
+                setCronPaused(normalized, true);
                 res.status(200).json({
                     success: true,
-                    message: `Stage cron "${cronName}" has been paused.`,
-                    cronName: normalizeCronKey(cronName),
+                    message: `Stage cron "${normalized}" has been paused.`,
+                    cronName: normalized,
                     paused: true
                 });
             }
@@ -545,13 +570,14 @@ class AdminController {
     async resumeCrons(req, res) {
         try {
             const { setCronsPaused, setCronPaused, normalizeCronKey } = require('../cron/cronRegistry');
-            const cronName = req.body?.cronName || req.params?.cronName || req.query?.cronName;
+            const cronName = req.body?.cronName || req.body?.stageCron || req.params?.cronName || req.query?.cronName;
             if (cronName && cronName !== 'all') {
-                setCronPaused(cronName, false);
+                const normalized = normalizeCronKey(cronName);
+                setCronPaused(normalized, false);
                 res.status(200).json({
                     success: true,
-                    message: `Stage cron "${cronName}" has been resumed.`,
-                    cronName: normalizeCronKey(cronName),
+                    message: `Stage cron "${normalized}" has been resumed.`,
+                    cronName: normalized,
                     paused: false
                 });
             }
@@ -587,9 +613,9 @@ class AdminController {
     async pauseApplicationCrons(req, res) {
         try {
             const applicationId = parseInt(req.params.id, 10);
-            const { stageCron } = req.body;
+            const stageCron = req.body?.stageCron || req.body?.cronName;
             const { Application } = require('../models');
-            const { normalizeCronKey } = require('../cron/cronRegistry');
+            const { normalizeCronKey, STAGE_CRONS } = require('../cron/cronRegistry');
             const application = await Application.findByPk(applicationId);
             if (!application) {
                 res.status(404).json({ success: false, message: 'Application not found' });
@@ -606,19 +632,31 @@ class AdminController {
                         current = [];
                     }
                 }
-                const set = new Set(Array.isArray(current) ? current : []);
+                const set = new Set(Array.isArray(current) ? current.map((k) => normalizeCronKey(k)) : []);
                 set.add(normalized);
+                if (normalized === 'rto') {
+                    set.add('rto-welcome');
+                    set.add('rto-delivery');
+                }
                 application.pausedStageCrons = Array.from(set);
+                // If all defined stage crons are now paused, mark isCronPaused = true
+                const allPaused = STAGE_CRONS.every((sc) => set.has(sc.key));
+                if (allPaused) {
+                    application.isCronPaused = true;
+                }
                 await application.save();
                 res.status(200).json({
                     success: true,
-                    message: `Stage cron "${stageCron}" paused for application #${applicationId}.`,
-                    isCronPaused: application.isCronPaused,
+                    message: `Stage cron "${normalized}" paused for application #${applicationId}.`,
+                    isCronPaused: !!application.isCronPaused,
                     pausedStageCrons: application.pausedStageCrons
                 });
             }
             else {
                 application.isCronPaused = true;
+                const set = new Set(STAGE_CRONS.map((sc) => sc.key));
+                set.add('rto');
+                application.pausedStageCrons = Array.from(set);
                 await application.save();
                 res.status(200).json({
                     success: true,
@@ -636,9 +674,9 @@ class AdminController {
     async resumeApplicationCrons(req, res) {
         try {
             const applicationId = parseInt(req.params.id, 10);
-            const { stageCron } = req.body;
+            const stageCron = req.body?.stageCron || req.body?.cronName;
             const { Application } = require('../models');
-            const { normalizeCronKey } = require('../cron/cronRegistry');
+            const { normalizeCronKey, STAGE_CRONS } = require('../cron/cronRegistry');
             const application = await Application.findByPk(applicationId);
             if (!application) {
                 res.status(404).json({ success: false, message: 'Application not found' });
@@ -655,14 +693,32 @@ class AdminController {
                         current = [];
                     }
                 }
-                const set = new Set(Array.isArray(current) ? current : []);
+                // If application had all crons paused, unpause globally and populate remaining stages
+                const isGloballyPaused = application.isCronPaused === true ||
+                    application.isCronPaused === 1 ||
+                    String(application.isCronPaused) === 'true';
+                let set;
+                if (isGloballyPaused) {
+                    application.isCronPaused = false;
+                    set = new Set(STAGE_CRONS.map((sc) => sc.key));
+                }
+                else {
+                    set = new Set(Array.isArray(current) ? current.map((k) => normalizeCronKey(k)) : []);
+                }
                 set.delete(normalized);
+                if (normalized === 'rto') {
+                    set.delete('rto-welcome');
+                    set.delete('rto-delivery');
+                }
+                else if (normalized === 'rto-welcome' || normalized === 'rto-delivery') {
+                    set.delete('rto');
+                }
                 application.pausedStageCrons = Array.from(set);
                 await application.save();
                 res.status(200).json({
                     success: true,
-                    message: `Stage cron "${stageCron}" resumed for application #${applicationId}.`,
-                    isCronPaused: application.isCronPaused,
+                    message: `Stage cron "${normalized}" resumed for application #${applicationId}.`,
+                    isCronPaused: !!application.isCronPaused,
                     pausedStageCrons: application.pausedStageCrons
                 });
             }

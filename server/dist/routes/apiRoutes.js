@@ -151,11 +151,14 @@ router.get('/admin/employers', ...adminMW, EmployerController_1.employerControll
 router.get('/admin/employers/:id', ...adminMW, EmployerController_1.employerController.getById.bind(EmployerController_1.employerController));
 router.post('/admin/employers', ...adminMW, EmployerController_1.employerController.create.bind(EmployerController_1.employerController));
 router.put('/admin/employers/:id', ...adminMW, EmployerController_1.employerController.update.bind(EmployerController_1.employerController));
+router.put('/admin/employers', ...adminMW, EmployerController_1.employerController.update.bind(EmployerController_1.employerController));
 router.delete('/admin/employers/:id', ...adminMW, EmployerController_1.employerController.delete.bind(EmployerController_1.employerController));
+router.delete('/admin/employers', ...adminMW, EmployerController_1.employerController.delete.bind(EmployerController_1.employerController));
 router.get('/employers', EmployerController_1.employerController.getAll.bind(EmployerController_1.employerController));
 router.get('/employers/currently-employing', EmployerController_1.employerController.getCurrentlyEmploying.bind(EmployerController_1.employerController));
 router.get('/admin/joblisting-employers', ...adminMW, EmployerController_1.employerController.getAllJoblistingEmployers.bind(EmployerController_1.employerController));
 router.put('/admin/joblisting-employers/:id', ...adminMW, EmployerController_1.employerController.updateVacancyUrl.bind(EmployerController_1.employerController));
+router.put('/admin/joblisting-employers', ...adminMW, EmployerController_1.employerController.updateVacancyUrl.bind(EmployerController_1.employerController));
 // Crypto Wallet CRUD (Single USDT TRC20 wallet)
 router.get('/admin/wallet', ...adminMW, WalletController_1.walletController.getWallet.bind(WalletController_1.walletController));
 router.post('/admin/wallet', ...adminMW, WalletController_1.walletController.setWallet.bind(WalletController_1.walletController));

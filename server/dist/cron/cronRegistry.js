@@ -46,10 +46,10 @@ exports.STAGE_CRONS = [
     },
     {
         key: 'sponsorship',
-        name: 'SponsorshipAutoApproval',
-        label: '2h Ticket Sponsorship Auto-Approval',
+        name: 'SponsorshipDualCron',
+        label: 'Ticket Sponsorship (Call/Invite & Auto-Approval)',
         stageName: 'TicketSponsorship',
-        intervalDesc: 'Auto-approves ticket sponsorships > 2h and advances to Contract'
+        intervalDesc: 'Dispatches Blue Collar call & Employer refund mail, and auto-approves submitted sponsorships > 2h'
     },
     {
         key: 'contract',
@@ -87,13 +87,13 @@ function normalizeCronKey(nameOrKey) {
     const lower = (nameOrKey || '').toLowerCase().trim();
     if (lower === 'applicationautoacceptance' || lower === 'application' || lower === 'applications')
         return 'application';
-    if (lower === 'nominationfollowup' || lower === 'nomination' || lower === 'employer-selection' || lower === 'employerselection')
+    if (lower === 'nominationfollowup' || lower === 'nomination' || lower === 'nominations' || lower === 'employer-selection' || lower === 'employerselection')
         return 'nomination';
-    if (lower === 'onboardingfollowup' || lower === 'onboarding' || lower === 'interview-onboarding' || lower === 'employer-contact')
+    if (lower === 'onboardingfollowup' || lower === 'onboarding' || lower === 'onboardings' || lower === 'interview-onboarding' || lower === 'employer-contact')
         return 'onboarding';
-    if (lower === 'sponsorshipautoapproval' || lower === 'sponsorship' || lower === 'ticketsponsorship')
+    if (lower === 'sponsorshipautoapproval' || lower === 'sponsorshipdualcron' || lower === 'sponsorshipcallandrefundnotice' || lower === 'sponsorship' || lower === 'sponsorships' || lower === 'ticketsponsorship' || lower === 'ticket-sponsorship')
         return 'sponsorship';
-    if (lower === 'contractautoapproval' || lower === 'contract')
+    if (lower === 'contractautoapproval' || lower === 'contract' || lower === 'contracts')
         return 'contract';
     if (lower === 'rtowelcome' || lower === 'rto-welcome' || lower === 'aveling-welcome' || lower === 'avelingwelcome')
         return 'rto-welcome';
@@ -103,6 +103,8 @@ function normalizeCronKey(nameOrKey) {
         return 'psychometric';
     if (lower === 'rto' || lower === 'aveling')
         return 'rto';
+    if (lower === 'all' || lower === '*')
+        return 'all';
     return lower;
 }
 async function persistSetting(key, value) {
@@ -140,7 +142,17 @@ async function initCronSettings() {
 }
 function setCronsPaused(paused) {
     globalCronsPaused = paused;
+    if (paused) {
+        for (const def of exports.STAGE_CRONS) {
+            pausedCronKeys.add(def.key);
+        }
+        pausedCronKeys.add('rto');
+    }
+    else {
+        pausedCronKeys.clear();
+    }
     persistSetting('global_paused', paused ? 'true' : 'false').catch(() => { });
+    persistSetting('paused_crons', JSON.stringify(Array.from(pausedCronKeys))).catch(() => { });
 }
 function areCronsPaused() {
     return globalCronsPaused;
@@ -151,32 +163,56 @@ function setCronPaused(nameOrKey, paused) {
         setCronsPaused(paused);
         return;
     }
-    if (key === 'rto') {
-        if (paused) {
+    if (!paused) {
+        // Resuming/starting an individual cron:
+        // If all crons were globally paused, break global pause into individual pauses
+        // so that the specific cron is now active and can start/run.
+        if (globalCronsPaused) {
+            globalCronsPaused = false;
+            persistSetting('global_paused', 'false').catch(() => { });
+            for (const def of exports.STAGE_CRONS) {
+                if (def.key !== key && !(key === 'rto' && (def.key === 'rto-welcome' || def.key === 'rto-delivery'))) {
+                    pausedCronKeys.add(def.key);
+                }
+            }
+        }
+        if (key === 'rto') {
+            pausedCronKeys.delete('rto-welcome');
+            pausedCronKeys.delete('rto-delivery');
+            pausedCronKeys.delete('rto');
+        }
+        else {
+            pausedCronKeys.delete(key);
+            if (key === 'rto-welcome' || key === 'rto-delivery') {
+                pausedCronKeys.delete('rto');
+            }
+        }
+    }
+    else {
+        // Pausing/stopping an individual cron
+        if (key === 'rto') {
             pausedCronKeys.add('rto-welcome');
             pausedCronKeys.add('rto-delivery');
             pausedCronKeys.add('rto');
         }
         else {
-            pausedCronKeys.delete('rto-welcome');
-            pausedCronKeys.delete('rto-delivery');
-            pausedCronKeys.delete('rto');
-        }
-    }
-    else {
-        if (paused) {
             pausedCronKeys.add(key);
         }
-        else {
-            pausedCronKeys.delete(key);
+        // If all individual crons are paused, set globalCronsPaused = true
+        const allPaused = exports.STAGE_CRONS.every(def => pausedCronKeys.has(def.key));
+        if (allPaused) {
+            globalCronsPaused = true;
+            persistSetting('global_paused', 'true').catch(() => { });
         }
     }
     persistSetting('paused_crons', JSON.stringify(Array.from(pausedCronKeys))).catch(() => { });
 }
 function isCronPaused(nameOrKey) {
+    const key = normalizeCronKey(nameOrKey);
+    if (key === 'all')
+        return globalCronsPaused;
     if (globalCronsPaused)
         return true;
-    const key = normalizeCronKey(nameOrKey);
     if (pausedCronKeys.has(key))
         return true;
     if (key === 'rto' && (pausedCronKeys.has('rto-welcome') || pausedCronKeys.has('rto-delivery')))
@@ -194,8 +230,13 @@ function getPausedCrons() {
 function isApplicationCronPaused(application, cronKey) {
     if (!application)
         return false;
-    // 1. If application has isCronPaused = true, all crons for this application are paused
-    if (application.isCronPaused === true || application.isCronPaused === 1) {
+    // Normalize boolean flag (MySQL tinyint 1/0 or strings 'true'/'1')
+    const isAppGloballyPaused = application.isCronPaused === true ||
+        application.isCronPaused === 1 ||
+        String(application.isCronPaused) === 'true' ||
+        String(application.isCronPaused) === '1';
+    // 1. If application is marked paused overall, all crons for this application are paused
+    if (isAppGloballyPaused) {
         return true;
     }
     // 2. If a specific cron is checked, verify application's pausedStageCrons array
@@ -223,44 +264,51 @@ function isApplicationCronPaused(application, cronKey) {
                 return true;
             if (normalizedTarget === 'rto' && (normalizedItem === 'rto-welcome' || normalizedItem === 'rto-delivery'))
                 return true;
-            if ((normalizedTarget === 'rto-welcome' || normalizedTarget === 'rto-delivery') && normalizedItem === 'rto')
+            if ((normalizedTarget === 'rto-welcome' || normalizedTarget === 'rto-delivery') && (normalizedItem === 'rto' || normalizedItem === normalizedTarget))
                 return true;
         }
     }
     return false;
 }
 function registerCron(name) {
-    registry.set(name, {
-        name,
-        lastRunAt: null,
-        lastStatus: 'never',
-        lastError: null,
-        runCount: 0
-    });
-}
-function recordCronRun(name, status, error) {
-    const existing = registry.get(name) ?? {
-        name,
+    const key = normalizeCronKey(name);
+    const rec = {
+        name: key,
         lastRunAt: null,
         lastStatus: 'never',
         lastError: null,
         runCount: 0
     };
-    registry.set(name, {
+    registry.set(key, rec);
+    registry.set(name, rec);
+}
+function recordCronRun(nameOrKey, status, error) {
+    const key = normalizeCronKey(nameOrKey);
+    const existing = (registry.get(key) || registry.get(nameOrKey)) ?? {
+        name: key,
+        lastRunAt: null,
+        lastStatus: 'never',
+        lastError: null,
+        runCount: 0
+    };
+    const updated = {
         ...existing,
+        name: key,
         lastRunAt: new Date(),
         lastStatus: status,
         lastError: error ?? null,
-        runCount: existing.runCount + 1
-    });
+        runCount: (existing.runCount || 0) + 1
+    };
+    registry.set(key, updated);
+    registry.set(nameOrKey, updated);
 }
 function getCronStatus() {
     return Array.from(registry.values());
 }
 function getCronStatusDetails() {
     const list = exports.STAGE_CRONS.map(def => {
-        const record = registry.get(def.name);
-        const isIndividuallyPaused = pausedCronKeys.has(def.key);
+        const record = registry.get(def.key) || registry.get(def.name);
+        const isIndividuallyPaused = pausedCronKeys.has(def.key) || (def.key.startsWith('rto-') && pausedCronKeys.has('rto'));
         const isPaused = globalCronsPaused || isIndividuallyPaused;
         return {
             key: def.key,

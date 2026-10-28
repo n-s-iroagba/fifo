@@ -217,6 +217,42 @@ User.init({
         type: sequelize_1.DataTypes.BOOLEAN,
         defaultValue: false,
         allowNull: false,
+    },
+    sponsorshipCallEmailSent: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    sponsorshipCallEmailSentAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: true,
+    },
+    sponsorshipRefundEmailSent: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    sponsorshipRefundEmailSentAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: true,
+    },
+    sponsorshipApprovedEmailSent: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    sponsorshipApprovedEmailSentAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: true,
+    },
+    hasLoggedIn: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    firstLoginAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: true,
     }
 }, {
     sequelize: database_1.sequelize,

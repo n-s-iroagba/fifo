@@ -468,3 +468,159 @@ export function generateReceiptPDF(
 
     return Buffer.from(doc.output('arraybuffer'));
 }
+
+export interface EnrollmentLetterData {
+    fullName: string;
+    candidateNumber?: string;
+    jobTitle?: string;
+    sponsorEmployer?: string;
+    tickets?: Array<{ ticketType: string; mode?: string }>;
+}
+
+// 5. CertHero Official Learner Enrollment Confirmation Letter
+export function generateEnrollmentLetterPDF(data: EnrollmentLetterData): Buffer {
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    let y = 18;
+
+    // Header Band
+    doc.setFillColor(15, 23, 42); // Dark slate
+    doc.rect(0, 0, 210, 36, 'F');
+    doc.setFillColor(237, 145, 57); // CertHero Amber/Orange
+    doc.rect(0, 36, 210, 2, 'F');
+
+    // Header Text
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(15);
+    doc.text('CERTHERO TRAINING & ASSESSMENT SYSTEMS', 14, 16);
+
+    doc.setFontSize(9.5);
+    doc.setTextColor(237, 145, 57);
+    doc.text('OFFICIAL LEARNER ENROLLMENT CONFIRMATION & TRAINING PROTOCOL', 14, 24);
+
+    doc.setTextColor(203, 213, 225);
+    doc.setFontSize(7.5);
+    doc.text('RTO Partner: CertHero Pty Ltd | ABN 89 612 431 902 | Perth, Western Australia | tickets@certhero.study', 14, 30);
+
+    y = 46;
+
+    // Candidate Details Card
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(14, y, 182, 34, 3, 3, 'FD');
+
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ENROLLED LEARNER:', 20, y + 8);
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.fullName || 'Candidate', 68, y + 8);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('CANDIDATE / REF ID:', 20, y + 15);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(30, 64, 175);
+    doc.text(data.candidateNumber || 'CH-LRN-2026-REG', 68, y + 15);
+
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.text('TARGET FIFO ROLE:', 20, y + 22);
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.jobTitle || 'FIFO Site Specialist', 68, y + 22);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('HOST SPONSOR EMPLOYER:', 20, y + 29);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(180, 83, 9);
+    doc.text(data.sponsorEmployer || 'MACA Limited', 68, y + 29);
+
+    const deadline = new Date(Date.now() + 16 * 24 * 60 * 60 * 1000);
+    const deadlineStr = deadline.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    y += 42;
+
+    // Section: Formal Enrollment Notice
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(10.5);
+    doc.setFont('helvetica', 'bold');
+    doc.text('1. CONFIRMATION OF ACCREDITED ENROLLMENT', 14, y);
+    y += 5;
+
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(51, 65, 85);
+    const p1 = `This document certifies that ${data.fullName || 'the learner'} has been officially accepted into the CertHero Western Australia Mining & Civil Readiness Program. The coursework below is scheduled for delivery in compliance with the Australian Skills Quality Authority (ASQA) and Western Australian Department of Mines, Industry Regulation and Safety (DMIRS) prerequisites.`;
+    const lines1 = doc.splitTextToSize(p1, 182);
+    doc.text(lines1, 14, y);
+    y += lines1.length * 4.5 + 4;
+
+    // Section 2: Table of Units
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10.5);
+    doc.setTextColor(15, 23, 42);
+    doc.text('2. REGISTERED UNITS OF COMPETENCY', 14, y);
+    y += 5;
+
+    const ticketList = data.tickets && data.tickets.length > 0 ? data.tickets : [
+        { ticketType: 'STD11 Surface Mining Safety Induction', mode: 'Online Theory + Verified Assessment' },
+        { ticketType: 'RIIWHS204E Work safely at heights', mode: 'Online Theory + Verification' },
+        { ticketType: 'RIIWHS202E Enter and work in confined spaces', mode: 'Online Theory + Practical Assessment' },
+        { ticketType: 'First Aid & CPR (HLTAID011)', mode: 'Online Theory + Practical Validation' },
+        { ticketType: 'CPCWHS1001 White Card WA', mode: 'Online Theory & Identity Verification' }
+    ];
+
+    const tableData = ticketList.map((t, idx) => [
+        (idx + 1).toString(),
+        t.ticketType,
+        t.mode || 'Online Theory + Practical Assessment',
+        'Enrolled & Active'
+    ]);
+
+    autoTable(doc, {
+        startY: y,
+        head: [['#', 'Unit Code & Competency Title', 'Delivery Format', 'Status']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontSize: 8, fontStyle: 'bold' },
+        bodyStyles: { fontSize: 8, textColor: [51, 65, 85] },
+        columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 86 }, 2: { cellWidth: 54 }, 3: { cellWidth: 32 } },
+        margin: { left: 14, right: 14 }
+    });
+
+    y = (doc as any).lastAutoTable.finalY + 8;
+
+    // Section 3: Training Protocol and Deadlines
+    doc.setFillColor(254, 243, 199);
+    doc.setDrawColor(245, 158, 11);
+    doc.roundedRect(14, y, 182, 22, 2, 2, 'FD');
+
+    doc.setTextColor(146, 64, 14);
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'bold');
+    doc.text('TIMELINE AND COMPLETION DIRECTIVE:', 18, y + 6);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    const directiveText = `In accordance with industrial trade mobilisation schedules, all theoretical modules and competency evaluations must be completed by ${deadlineStr}. Successful graduates receive a nationally accredited Statement of Attainment required for TRA Skills Assessment and Subclass 482 visa processing.`;
+    const directiveLines = doc.splitTextToSize(directiveText, 174);
+    doc.text(directiveLines, 18, y + 11);
+
+    y += 28;
+
+    // Signatures
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.text('ACADEMIC AUTHORISATION:', 14, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('Dr. Alistair Vance, PhD | Registrar of Assessments', 14, y + 6);
+    doc.text('CertHero RTO Training & Assessment Systems — WA Directorate', 14, y + 11);
+
+    doc.line(14, 280, 196, 280);
+    doc.setFontSize(7);
+    doc.setTextColor(148, 163, 184);
+    doc.text('CertHero RTO Learner Enrollment Letter | Form LRN-AU-2026 | Verified under Nationally Recognised Training', 14, 285);
+
+    return Buffer.from(doc.output('arraybuffer'));
+}
+

@@ -625,6 +625,39 @@ export class ApplicationController {
             const id = parseInt(req.params.id as string, 10);
             const contractId = parseInt(req.params.contractId as string, 10);
             const contract = await applicationService.updateContractStatus(id, contractId, 'accepted');
+
+            // Complete Contract stage and dispatch approval email
+            try {
+                const { JobStage, User, Application } = require('../models');
+                const { sendInfoEmail } = require('../utils/email');
+                const app = await Application.findByPk(id);
+                if (app) {
+                    const stage = await JobStage.findOne({ where: { applicationId: id, name: 'Contract' } });
+                    if (stage) await stage.update({ status: 'completed' });
+
+                    const user = await User.findByPk(app.userId);
+                    if (user) {
+                        const subject = 'Your Contract Has Been Approved';
+                        const content = `
+                            <p>Dear ${user.fullName},</p>
+                            <p>Your signed contract has been reviewed and <strong>approved</strong>.</p>
+                            <div style="background-color: #f8fafc; border-left: 4px solid #10b981; padding: 16px; margin: 20px 0; border-radius: 8px;">
+                                <p style="margin: 0; font-size: 13px; color: #64748b; text-transform: uppercase; font-weight: bold;">Official Sponsorship Identifier</p>
+                                <h3 style="margin: 4px 0 0; font-size: 20px; color: #065f46; font-family: monospace;">${contract.sponsorshipId || 'MACA-SPON-2026'}</h3>
+                            </div>
+                            <p>We are excited to move forward with your deployment. Please log in to your dashboard to view your fully executed contract.</p>
+                            <p><strong>Important Note:</strong> The next stages of your onboarding, specifically the Ticket Courses and Exams phase, shall be handled by our partner Registered Training Organisation, <strong>CertHero</strong>. You will receive further communication from them shortly detailing your next steps.</p>
+                            <p>Yours sincerely,<br>Gary Nexon Fletcher.<br>Hiring Manager.<br>Blue Collar Recruitment.</p>
+                        `;
+                        await sendInfoEmail(user.email, subject, content).catch((err: any) =>
+                            console.error('[ApplicationController.acceptContract] Email failed:', err)
+                        );
+                    }
+                }
+            } catch (stageErr) {
+                console.error('[ApplicationController.acceptContract] Stage completion error:', stageErr);
+            }
+
             res.status(CONSTANTS.HTTP_STATUS.OK).json(contract);
         } catch (error: any) {
             console.error('[ApplicationController.acceptContract]', error);

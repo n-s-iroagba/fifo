@@ -899,6 +899,11 @@ export const sendTicketSponsorshipApplicationMail = async (
             <li><strong>Refund Guarantee Policy:</strong> The employer shall refund <strong>100%</strong> of your expenditure if you successfully complete the training and acquire the necessary tickets, and <strong>80%</strong> on failure to do so, with the 20% accounting for institutional admin fees.</li>
             <li><strong>Approved Coverage & Payable Amount:</strong> Your approved employer subsidy coverage is <strong>${subsidy}%</strong>, leaving an applicant payable commitment amount of <strong>$${amount.toFixed(2)} AUD</strong>.</li>
         </ol>
+        <div style="background-color: #f0fdf4; border-left: 4px solid #16a34a; padding: 14px 18px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; font-size: 13px; color: #166534; line-height: 1.5;">
+                📬 <strong>Notice regarding Refund Details Request:</strong> Please note that we have coordinated with your host employer (<strong>${employer}</strong>), who is concurrently dispatching a separate email to collect your nominated bank account details for their official refund disbursement register. Please ensure you check your mailbox and respond to their request.
+            </p>
+        </div>
         <p>Please log in to your candidate dashboard (<a href="https://www.bluecollarrecruitment.co/dashboard/tickets">Tickets Portal</a>) to verify your competency requirements and submit your sponsorship application within 48 hours.</p>
         <p>Yours faithfully,<br><strong>Blue Collar Training & Sponsorship Desk</strong><br>Blue Collar Recruitment Pty Ltd</p>
     `;
@@ -922,7 +927,7 @@ export const sendEmployerRefundAndSponsorshipTermsMail = async (
     const subject = `${employer}: Refund Banking Details Request & Prerequisite Training Terms`;
     const content = `
         <p>Dear ${userName},</p>
-        <p>Following your employer allocation to <strong>${employer}</strong> for the position of <strong>${role}</strong>, our corporate finance and mobilization department requires your banking particulars for our refund register.</p>
+        <p>Following the formal <strong>Invitation to Apply for FIFO Ticket Training Sponsorship</strong> issued to you by Blue Collar Recruitment, and your employer allocation to <strong>${employer}</strong> for the position of <strong>${role}</strong>, our corporate finance and mobilization department requires your banking particulars for our refund register.</p>
         <div style="background-color: #fdfaf6; border-left: 4px solid #FFB800; padding: 16px 20px; border-radius: 8px; margin: 20px 0;">
             <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: 800; color: #111111; text-transform: uppercase; letter-spacing: 0.5px;">
                 Action Required — Refund Bank Account Submission
@@ -955,11 +960,23 @@ export const sendSponsorshipReviewConfirmationMail = async (to: string, userName
     await sendInfoEmail(to, subject, content);
 };
 
-export const sendTicketSponsorshipApprovalMail = async (to: string, userName: string): Promise<void> => {
-    const subject = 'Ticket Sponsorship Approved';
+export const sendTicketSponsorshipApprovalMail = async (
+    to: string, 
+    userName: string,
+    options?: {
+        employerName?: string;
+        subsidyPercentage?: number;
+    }
+): Promise<void> => {
+    const employer = options?.employerName || 'MACA Limited';
+    const subsidy = options?.subsidyPercentage ?? 70;
+    const subject = `Approved: Ticket Training Sponsorship Granted (${subsidy}% Employer Subsidy)`;
     const content = `
         <p>Dear ${userName},</p>
-        <p>Great news! Your ticket sponsorship application has been approved.</p>
+        <p>We are pleased to inform you that your application for Ticket Training Sponsorship has been officially <strong>APPROVED</strong>.</p>
+        <p><strong>${employer}</strong> and Blue Collar Recruitment will fund <strong>${subsidy}%</strong> of the costs associated with your prerequisite competency units and verification materials. Your candidate agreement and course enrollment packages are currently being generated.</p>
+        <p>Please log in to your candidate dashboard (<a href="https://www.bluecollarrecruitment.co/dashboard/tickets">Tickets Portal</a>) to review the next steps for your training agreement and LMS enrollment.</p>
+        <p>Yours faithfully,<br><strong>Blue Collar Training &amp; Sponsorship Desk</strong><br>Blue Collar Recruitment Pty Ltd</p>
     `;
     await sendInfoEmail(to, subject, content);
 };

@@ -331,7 +331,7 @@ export class AuthService {
     }
 
     // Maps to STK-APP-AUTH-005, SCR-PUB-LOGIN-001, NFR-SEC-008
-    public async login(email: string, password: string, redirectUrl?: string): Promise<{ user: any; accessToken: string; refreshToken: string }> {
+    public async login(email: string, password: string, redirectUrl?: string): Promise<{ user: any; accessToken: string; refreshToken: string; isFirstLogin: boolean }> {
         const user = await userRepository.findByEmail(email);
         if (!user) {
             throw new Error(CONSTANTS.ERROR_MESSAGES.INVALID_CREDENTIALS);
@@ -351,9 +351,49 @@ export class AuthService {
             throw new Error(CONSTANTS.ERROR_MESSAGES.EMAIL_NOT_VERIFIED);
         }
 
+        const isFirstLogin = !user.hasLoggedIn;
+        if (isFirstLogin) {
+            user.hasLoggedIn = true;
+            user.firstLoginAt = new Date();
+            await user.save();
+
+            // Contract Delivery - Executed upon First Applicant login (fix.md Item 5.1)
+            if (user.role === CONSTANTS.ROLES.APPLICANT) {
+                try {
+                    const { Application, Contract, Nomination, JobListing, Employer } = require('../models');
+                    const app = await Application.findOne({
+                        where: { userId: user.id },
+                        include: [{ model: JobListing, as: 'JobListing', required: false }],
+                        order: [['createdAt', 'DESC']]
+                    });
+
+                    if (app) {
+                        const existingContract = await Contract.findOne({ where: { applicationId: app.id } });
+                        if (!existingContract) {
+                            let companyName = app.JobListing?.company || 'MACA Limited';
+                            const nomination = await Nomination.findOne({ where: { applicationId: app.id, isSelected: true } });
+                            if (nomination?.company) {
+                                companyName = nomination.company;
+                            } else {
+                                const activeEmployer = await Employer.findOne({ where: { isEmploying: true } });
+                                if (activeEmployer?.name) companyName = activeEmployer.name;
+                            }
+
+                            const roleTitle = app.JobListing?.title || 'FIFO Mining Operations Specialist';
+                            const { applicationService } = require('./ApplicationService');
+                            await applicationService.createContract(app.id, companyName, roleTitle);
+                            console.log(`[AuthService.login] Executed Contract Delivery upon First Applicant login for User ID ${user.id}, Application ID ${app.id}`);
+                        }
+                    }
+                } catch (contractErr) {
+                    console.error('[AuthService.login] Error delivering contract on first login:', contractErr);
+                }
+            }
+        }
+
         const accessToken = generateAccessToken({ id: user.id, role: user.role });
         const refreshToken = generateRefreshToken({ id: user.id, role: user.role });
-        return { user, accessToken, refreshToken };
+        return { user, accessToken, refreshToken, isFirstLogin };
     }
 
     public async refresh(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
